@@ -1,0 +1,19 @@
+# Environment variables
+
+Web
+```
+NEXT_PUBLIC_API_URL=
+DATABASE_URL=
+JWT_SECRET=
+RECAPTCHA_SECRET=
+```
+Worker
+```
+DATABASE_URL=
+WORKER_AUTH_TOKEN=
+OPENAI_API_KEY=
+```
+Infra
+```
+COURSE_PEPPER=
+```
