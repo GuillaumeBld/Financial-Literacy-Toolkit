@@ -1,0 +1,33 @@
+# Node
+node_modules
+.pnp
+.pnp.js
+.pnpm-store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js
+.next
+out
+
+# Env
+.env*
+apps/web/.env.local
+apps/web/.env*
+apps/worker/.env*
+
+# Editor
+.DS_Store
+.idea
+.vscode
+
+# Python
+__pycache__
+*.py[cod]
+
+# Misc
+*.log
