@@ -120,6 +120,7 @@ export default function AssessmentPage() {
 
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
+  const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 3 : 3;
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
   const formatTime = (seconds: number) => {
