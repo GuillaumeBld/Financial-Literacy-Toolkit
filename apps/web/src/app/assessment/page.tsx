@@ -12,6 +12,13 @@ type Question = {
   domain: string;
 };
 
+type SessionData = {
+  courseCode: string;
+  studentId: string;
+  attemptType: string;
+  startedAt: string;
+};
+
 // Mock questions - in production, these would come from the API
 const mockQuestions: Question[] = [
   {
@@ -49,15 +56,10 @@ const mockQuestions: Question[] = [
 export default function AssessmentPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [confidence, setConfidence] = useState(3);
+  const [confidenceRatings, setConfidenceRatings] = useState<Record<string, number>>({});
   const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [sessionData, setSessionData] = useState<{
-    courseCode: string;
-    studentId: string;
-    attemptType: string;
-    startedAt: string;
-  } | null>(null);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -77,14 +79,17 @@ export default function AssessmentPage() {
       const session = localStorage.getItem('assessment-session');
       if (session) {
         try {
-          const parsedSession = JSON.parse(session);
-          const normalizedSession = {
-            courseCode: parsedSession.courseCode,
-            studentId: parsedSession.studentId,
-            attemptType: parsedSession.attemptType,
-            startedAt: parsedSession.startedAt ?? new Date().toISOString()
-          };
-          setSessionData(normalizedSession);
+          const parsedSession: SessionData = JSON.parse(session);
+          if (
+            parsedSession?.courseCode &&
+            parsedSession?.studentId &&
+            parsedSession?.attemptType &&
+            parsedSession?.startedAt
+          ) {
+            setSessionData(parsedSession);
+          } else {
+            throw new Error('Session data missing required fields');
+          }
         } catch (error) {
           console.error('Error parsing session data:', error);
           router.push('/start'); // Redirect if session is invalid
@@ -123,18 +128,16 @@ export default function AssessmentPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleAnswer = (answer: any) => {
-    if (!currentQuestion) return;
+  const handleAnswer = (questionId: string, answer: any) => {
     setAnswers((prev) => ({
       ...prev,
-      [currentQuestion.id]: answer,
+      [questionId]: answer,
     }));
   };
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
-      setConfidence(3); // Reset confidence for next question
     } else {
       handleSubmit();
     }
@@ -144,6 +147,14 @@ export default function AssessmentPage() {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
+  };
+
+  const handleConfidenceSelect = (value: number) => {
+    if (!currentQuestion) return;
+    setConfidenceRatings((prev) => ({
+      ...prev,
+      [currentQuestion.id]: value,
+    }));
   };
 
   const handleSubmit = async () => {
@@ -165,7 +176,7 @@ export default function AssessmentPage() {
         return {
           itemId: question.id, // Using question ID as item ID for now
           answer: answer,
-          confidence: confidence // Using the last confidence rating
+          confidence: confidenceRatings[question.id] ?? 3,
         };
       }).filter(Boolean);
 
@@ -204,12 +215,11 @@ export default function AssessmentPage() {
     }
   };
 
-  if (!currentQuestion) {
+  if (!sessionData || !currentQuestion || questions.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 mx-auto border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin" aria-hidden />
-          <p className="text-loyola-gray-700">Loading assessment questions...</p>
+        <div className="text-center text-loyola-gray-600">
+          <p className="text-lg font-medium">Loading assessment...</p>
         </div>
       </div>
     );
@@ -268,13 +278,13 @@ export default function AssessmentPage() {
                       ? 'border-loyola-maroon bg-loyola-maroon/5'
                       : 'border-loyola-gray-200 hover:border-loyola-maroon/30 hover:bg-loyola-gray-50'
                   }`}
-                  onClick={() => handleAnswer(option.id)}
+                  onClick={() => handleAnswer(currentQuestion.id, option.id)}
                 >
                   <div className="flex items-center">
                     <input
                       type="radio"
                       checked={answers[currentQuestion.id] === option.id}
-                      onChange={() => handleAnswer(option.id)}
+                      onChange={() => handleAnswer(currentQuestion.id, option.id)}
                       className="h-5 w-5 text-loyola-maroon accent-loyola-maroon"
                     />
                     <label className="ml-3 text-lg cursor-pointer text-loyola-gray-800">{option.text}</label>
@@ -289,7 +299,7 @@ export default function AssessmentPage() {
               className="w-full p-4 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon mb-8 transition"
               rows={6}
               value={answers[currentQuestion.id] || ''}
-              onChange={(e) => handleAnswer(e.target.value)}
+              onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
               onPaste={(e) => e.preventDefault()}
               placeholder="Type your answer here..."
             ></textarea>
@@ -306,11 +316,11 @@ export default function AssessmentPage() {
                   <button
                     key={num}
                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
-                      confidence === num
+                      currentConfidence === num
                         ? 'bg-loyola-maroon text-white scale-110 shadow-lg'
                         : 'bg-loyola-gray-100 text-loyola-gray-700 hover:bg-loyola-gray-200'
                     }`}
-                    onClick={() => setConfidence(num)}
+                    onClick={() => handleConfidenceSelect(num)}
                   >
                     {num}
                   </button>
