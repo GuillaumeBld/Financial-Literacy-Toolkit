@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type Question = {
   id: string;
-  type: string;
+  type: 'multiple_choice' | 'short_answer';
   text: string;
   options?: Array<{ id: string; text: string }>;
   domain: string;
@@ -15,11 +15,16 @@ type Question = {
 type SessionData = {
   courseCode: string;
   studentId: string;
-  attemptType: string;
+  attemptType: 'pre' | 'post';
   startedAt: string;
 };
 
-// Mock questions - in production, these would come from the API
+type SubmittedResponse = {
+  itemId: string;
+  answer: string;
+  confidence: number;
+};
+
 const mockQuestions: Question[] = [
   {
     id: 'q1',
@@ -53,132 +58,114 @@ const mockQuestions: Question[] = [
   },
 ];
 
+const shuffleQuestions = (questions: Question[]) => {
+  const shuffled = [...questions];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export default function AssessmentPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [confidenceRatings, setConfidenceRatings] = useState<Record<string, number>>({});
-  const [timeRemaining, setTimeRemaining] = useState(20 * 60); // 20 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(20 * 60);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Shuffle array function
-  const shuffleArray = (array: Question[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
     }
-    return shuffled;
-  };
+
+    const session = localStorage.getItem('assessment-session');
+
+    if (!session) {
+      router.replace('/start');
+      return;
+    }
+
+    try {
+      const parsedSession = JSON.parse(session) as SessionData;
+
+      if (
+        parsedSession?.courseCode &&
+        parsedSession?.studentId &&
+        parsedSession?.attemptType &&
+        parsedSession?.startedAt
+      ) {
+        setSessionData(parsedSession);
+        setTimeRemaining(20 * 60);
+      } else {
+        throw new Error('Session data missing required fields');
+      }
+    } catch (error) {
+      console.error('Error parsing session data:', error);
+      localStorage.removeItem('assessment-session');
+      router.replace('/start');
+    }
+  }, [router]);
 
   useEffect(() => {
-    // Load session data
-    if (typeof window !== 'undefined') {
-      const session = localStorage.getItem('assessment-session');
-      if (session) {
-        try {
-          const parsedSession: SessionData = JSON.parse(session);
-          if (
-            parsedSession?.courseCode &&
-            parsedSession?.studentId &&
-            parsedSession?.attemptType &&
-            parsedSession?.startedAt
-          ) {
-            setSessionData(parsedSession);
-          } else {
-            throw new Error('Session data missing required fields');
-          }
-        } catch (error) {
-          console.error('Error parsing session data:', error);
-          router.push('/start'); // Redirect if session is invalid
-          return;
-        }
-      } else {
-        router.push('/start'); // Redirect if no session
-        return;
-      }
-    }
+    setQuestions(shuffleQuestions(mockQuestions));
+  }, []);
 
-    // Shuffle questions when component mounts (simulating new questions on app restart)
-    setQuestions(shuffleArray(mockQuestions));
+  useEffect(() => {
+    if (!sessionData) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit();
           return 0;
         }
+
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [sessionData]);
 
-  const isLoadingQuestions = questions.length === 0;
-  const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
-  const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleAnswer = (questionId: string, answer: any) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: answer,
-    }));
-  };
-
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      handleSubmit();
+  const handleSubmit = useCallback(async () => {
+    if (!sessionData || isSubmitting) {
+      return;
     }
-  };
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+    if (questions.length === 0) {
+      alert('No assessment questions are available. Please refresh and try again.');
+      return;
     }
-  };
-
-  const handleConfidenceSelect = (value: number) => {
-    if (!currentQuestion) return;
-    setConfidenceRatings((prev) => ({
-      ...prev,
-      [currentQuestion.id]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!sessionData || isSubmitting) return;
 
     setIsSubmitting(true);
 
     try {
-      // Calculate time spent (from session start to now)
       const sessionStart = sessionData.startedAt ? new Date(sessionData.startedAt) : null;
-      const timeSpent = sessionStart ? Math.floor((Date.now() - sessionStart.getTime()) / 1000) : null;
+      const timeSpent = sessionStart
+        ? Math.max(0, Math.floor((Date.now() - sessionStart.getTime()) / 1000))
+        : undefined;
 
-      // Format responses for API
-      const formattedResponses = Object.entries(answers).map(([questionId, answer]) => {
-        // Find the question to get the item ID
-        const question = questions.find(q => q.id === questionId);
-        if (!question) return null;
+      const formattedResponses = Object.entries(answers).reduce<SubmittedResponse[]>((acc, [questionId, answer]) => {
+        const question = questions.find((q) => q.id === questionId);
 
-        return {
-          itemId: question.id, // Using question ID as item ID for now
-          answer: answer,
+        if (!question) {
+          return acc;
+        }
+
+        acc.push({
+          itemId: question.id,
+          answer,
           confidence: confidenceRatings[question.id] ?? 3,
-        };
-      }).filter(Boolean);
+        });
+
+        return acc;
+      }, []);
 
       const response = await fetch('/api/assessment/submit', {
         method: 'POST',
@@ -190,29 +177,80 @@ export default function AssessmentPage() {
           studentId: sessionData.studentId,
           attemptType: sessionData.attemptType,
           responses: formattedResponses,
-          timeSpent: timeSpent ?? undefined
+          timeSpent,
         }),
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        // Clear session data
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('assessment-session');
-        }
-
-        // Redirect to results
-        router.push('/results');
-      } else {
-        alert(`Submission failed: ${result.error}`);
-        setIsSubmitting(false);
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result?.error ?? 'Submission failed');
       }
+
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('assessment-session');
+      }
+
+      router.push('/results');
     } catch (error) {
       console.error('Submission error:', error);
-      alert('An error occurred while submitting your assessment. Please try again.');
+      const message =
+        error instanceof Error
+          ? `An error occurred while submitting your assessment: ${error.message}`
+          : 'An error occurred while submitting your assessment. Please try again.';
+      alert(message);
       setIsSubmitting(false);
     }
+  }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData]);
+
+  useEffect(() => {
+    if (!sessionData || timeRemaining > 0) {
+      return;
+    }
+
+    void handleSubmit();
+  }, [handleSubmit, sessionData, timeRemaining]);
+
+  const isLoadingQuestions = questions.length === 0;
+  const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
+  const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
+  const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleAnswer = (questionId: string, answer: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: answer,
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      void handleSubmit();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleConfidenceSelect = (value: number) => {
+    if (!currentQuestion) {
+      return;
+    }
+
+    setConfidenceRatings((prev) => ({
+      ...prev,
+      [currentQuestion.id]: value,
+    }));
   };
 
   if (!sessionData || !currentQuestion || questions.length === 0) {
@@ -254,14 +292,16 @@ export default function AssessmentPage() {
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>Question {currentIndex + 1} of {questions.length}</span>
+            <span>
+              Question {currentIndex + 1} of {questions.length}
+            </span>
             <span>{currentQuestion.domain}</span>
           </div>
           <div className="w-full bg-loyola-gray-200 rounded-full h-2.5">
             <div
               className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
-            ></div>
+            />
           </div>
         </div>
 
@@ -299,10 +339,10 @@ export default function AssessmentPage() {
               className="w-full p-4 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon mb-8 transition"
               rows={6}
               value={answers[currentQuestion.id] || ''}
-              onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
-              onPaste={(e) => e.preventDefault()}
+              onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
+              onPaste={(event) => event.preventDefault()}
               placeholder="Type your answer here..."
-            ></textarea>
+            />
           )}
 
           <div className="border-t border-loyola-gray-200 pt-6">
@@ -321,6 +361,7 @@ export default function AssessmentPage() {
                         : 'bg-loyola-gray-100 text-loyola-gray-700 hover:bg-loyola-gray-200'
                     }`}
                     onClick={() => handleConfidenceSelect(num)}
+                    type="button"
                   >
                     {num}
                   </button>
@@ -336,6 +377,7 @@ export default function AssessmentPage() {
             onClick={handlePrevious}
             disabled={currentIndex === 0}
             className="px-6 py-3 border-2 border-loyola-gray-300 rounded-lg text-loyola-gray-700 hover:bg-loyola-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+            type="button"
           >
             <ChevronLeft className="w-4 h-4" /> Previous
           </button>
@@ -348,13 +390,18 @@ export default function AssessmentPage() {
             onClick={handleNext}
             disabled={!answers[currentQuestion.id] || isSubmitting}
             className="px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+            type="button"
           >
             {isSubmitting ? (
               <>Submitting...</>
             ) : currentIndex === questions.length - 1 ? (
-              <>Submit <ChevronRight className="w-4 h-4" /></>
+              <>
+                Submit <ChevronRight className="w-4 h-4" />
+              </>
             ) : (
-              <>Next <ChevronRight className="w-4 h-4" /></>
+              <>
+                Next <ChevronRight className="w-4 h-4" />
+              </>
             )}
           </button>
         </div>
