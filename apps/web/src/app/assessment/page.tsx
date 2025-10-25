@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -75,6 +75,7 @@ export default function AssessmentPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasAutoSubmittedRef = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -100,6 +101,7 @@ export default function AssessmentPage() {
       ) {
         setSessionData(parsedSession);
         setTimeRemaining(20 * 60);
+        hasAutoSubmittedRef.current = false;
       } else {
         throw new Error('Session data missing required fields');
       }
@@ -203,10 +205,11 @@ export default function AssessmentPage() {
   }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData]);
 
   useEffect(() => {
-    if (!sessionData || timeRemaining > 0) {
+    if (!sessionData || timeRemaining > 0 || hasAutoSubmittedRef.current) {
       return;
     }
 
+    hasAutoSubmittedRef.current = true;
     void handleSubmit();
   }, [handleSubmit, sessionData, timeRemaining]);
 
