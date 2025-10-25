@@ -1,39 +1,39 @@
-# 🎓 Financial Literacy Assessment Platform
+# Financial Literacy Assessment Platform
 
-AI-assisted pre and post financial literacy assessment for finance students at Loyola University Chicago, Quinlan School of Business, Finance Department. **Web-based, FERPA-compliant, production-ready MVP**.
+AI-assisted pre and post financial literacy assessment for finance students at Loyola University Chicago, Quinlan School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
-## ✅ **Live Demo**
-🚀 **Deployed on Vercel**: [https://your-app.vercel.app](https://your-app.vercel.app) (after deployment)
+## Live Demo
+Deployed on Vercel: [https://your-app.vercel.app](https://your-app.vercel.app) (after deployment)
 
-**Test Credentials:**
+Test Credentials:
 - Course Code: `Financial Literacy`
 - Student ID: `123456789` (any 6-12 digits)
 
-## 📋 **Current Status: MVP COMPLETE** ✅
+## Current Status: MVP COMPLETE
 
-### ✅ **Delivered Features**
-- **Complete Assessment Flow**: Start → Questions → Submit → Results
-- **FERPA Compliance**: Hashed student IDs, no raw data stored
-- **Database**: Supabase PostgreSQL with Row Level Security
-- **Frontend**: Next.js 14 with Loyola University Chicago branding
-- **Production Ready**: Build tested, deployment guides ready
-- **Zero Cost**: Free Supabase + Vercel tiers
+### Delivered Features
+- Complete Assessment Flow: Start → Questions → Submit → Results
+- FERPA Compliance: Hashed student IDs, no raw data stored
+- Database: Supabase PostgreSQL with Row Level Security
+- Frontend: Next.js 14 with Loyola University Chicago branding
+- Production Ready: Build tested, deployment guides ready
+- Zero Cost: Free Supabase + Vercel tiers
 
-### 🚧 **Roadmap (Next Phases)**
-- **AI Scoring**: Modal workers for short answer evaluation
-- **Instructor Dashboard**: Analytics and cohort reporting
-- **LMS Integration**: LTI 1.3 for Canvas/Blackboard
-- **Advanced Analytics**: Pre/post comparison reports
+### Roadmap (Next Phases)
+- AI Scoring: Modal workers for short answer evaluation
+- Instructor Dashboard: Analytics and cohort reporting
+- LMS Integration: LTI 1.3 for Canvas/Blackboard
+- Advanced Analytics: Pre/post comparison reports
 
 ---
 
-## 🏛️ **Institutional Context**
-- **Institution**: Loyola University Chicago, Quinlan School of Business, Finance Department
-- **Audience**: Finance students in Quinlan courses
-- **Use Case**: Assess student financial literacy before and after class
-- **Governance**: Instructor-led administration, FERPA compliant storage, no raw student IDs
+## Institutional Context
+- Institution: Loyola University Chicago, Quinlan School of Business, Finance Department
+- Audience: Finance students in Quinlan courses
+- Use Case: Assess student financial literacy before and after class
+- Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
 
-## 📊 **Assessment Outcomes**
+## Assessment Outcomes
 
 ### Per Student
 - Pre-assessment score, post-assessment score, change metrics
@@ -48,25 +48,25 @@ AI-assisted pre and post financial literacy assessment for finance students at L
 
 ---
 
-## 🛠️ **Technology Stack**
+## Technology Stack
 
-### ✅ **Implemented**
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS with Loyola branding
-- **Database**: Supabase PostgreSQL with Row Level Security
-- **Authentication**: FERPA-compliant hashed student IDs
-- **Hosting**: Vercel (production deployment ready)
-- **Security**: SHA256 hashing with per-course peppers
+### Implemented
+- Frontend: Next.js 14, React 18, TypeScript
+- Styling: Tailwind CSS with Loyola branding
+- Database: Supabase PostgreSQL with Row Level Security
+- Authentication: FERPA-compliant hashed student IDs
+- Hosting: Vercel (production deployment ready)
+- Security: SHA256 hashing with per-course peppers
 
-### 🚧 **Planned**
-- **AI Worker**: Python 3.11 with Modal/AWS Lambda
-- **LLM Integration**: Together AI for scoring
-- **Analytics**: Advanced statistical analysis
-- **LMS SSO**: Canvas/Blackboard integration
+### Planned
+- AI Worker: Python 3.11 with Modal/AWS Lambda
+- LLM Integration: Together AI for scoring
+- Analytics: Advanced statistical analysis
+- LMS SSO: Canvas/Blackboard integration
 
 ---
 
-## 🏗️ **Architecture**
+## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -84,16 +84,16 @@ AI-assisted pre and post financial literacy assessment for finance students at L
 ```
 
 ### Data Flow
-1. **Student** → Enters course code + student ID
-2. **System** → Validates and hashes credentials
-3. **Assessment** → Serves randomized questions
-4. **Submission** → Saves responses to Supabase
-5. **AI Scoring** → Evaluates short answers (future)
-6. **Results** → Displays completion confirmation
+1. Student → Enters course code + student ID
+2. System → Validates and hashes credentials
+3. Assessment → Serves randomized questions
+4. Submission → Saves responses to Supabase
+5. AI Scoring → Evaluates short answers (future)
+6. Results → Displays completion confirmation
 
 ---
 
-## 📁 **Repository Structure**
+## Repository Structure
 
 ```
 /
@@ -113,7 +113,7 @@ AI-assisted pre and post financial literacy assessment for finance students at L
 
 ---
 
-## 🚀 **Quick Start**
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+
@@ -157,13 +157,13 @@ npm run dev
 
 ---
 
-## 🔐 **Security & FERPA Compliance**
+## Security & FERPA Compliance
 
-### ✅ **Implemented Security**
-- **Row Level Security**: Database-level access control
-- **Hashed Student IDs**: SHA256(course_pepper + student_id)
-- **No Raw Data Storage**: FERPA compliant from day one
-- **Per-Course Peppers**: Rotate security keys per term
+### Implemented Security
+- Row Level Security: Database-level access control
+- Hashed Student IDs: SHA256(course_pepper + student_id)
+- No Raw Data Storage: FERPA compliant from day one
+- Per-Course Peppers: Rotate security keys per term
 
 ### Authentication Flow
 ```
@@ -179,47 +179,47 @@ Result: Students identifiable within course, anonymous across system
 
 ---
 
-## 🎯 **Assessment Features**
+## Assessment Features
 
 ### Question Types
-- **Multiple Choice**: Financial knowledge questions
-- **Short Answer**: Open-ended responses (AI scoring ready)
-- **Confidence Ratings**: Self-assessment per question
+- Multiple Choice: Financial knowledge questions
+- Short Answer: Open-ended responses (AI scoring ready)
+- Confidence Ratings: Self-assessment per question
 
 ### Assessment Flow
-1. **Course Validation**: Verify course code exists
-2. **Student Authentication**: Hash and validate student ID
-3. **Question Randomization**: Prevent cheating, ensure fairness
-4. **Time Tracking**: 20-minute completion window
-5. **Response Validation**: Required answers, data integrity
-6. **Secure Submission**: All responses saved to database
-7. **Results Display**: Completion confirmation
+1. Course Validation: Verify course code exists
+2. Student Authentication: Hash and validate student ID
+3. Question Randomization: Prevent cheating, ensure fairness
+4. Time Tracking: 20-minute completion window
+5. Response Validation: Required answers, data integrity
+6. Secure Submission: All responses saved to database
+7. Results Display: Completion confirmation
 
 ### Scoring System
-- **MCQ**: Automated key-based scoring
-- **Short Answer**: Ready for AI evaluation (future)
-- **Confidence Gap**: z(confidence) - z(score) analysis
+- MCQ: Automated key-based scoring
+- Short Answer: Ready for AI evaluation (future)
+- Confidence Gap: z(confidence) - z(score) analysis
 
 ---
 
-## 📈 **Analytics & Reporting**
+## Analytics & Reporting
 
-### ✅ **Current (MVP)**
+### Current (MVP)
 - Individual student completion tracking
 - Response storage with timestamps
 - Basic results display
 
-### 🚧 **Planned Features**
-- **Cohort Analytics**: Pre/post score comparisons
-- **Domain Analysis**: Financial literacy sub-domains
-- **Effect Size**: Statistical significance testing
-- **Fairness Checks**: Demographic analysis (opt-in)
-- **Instructor Dashboard**: Real-time monitoring
-- **Export Capabilities**: CSV/PDF reports
+### Planned Features
+- Cohort Analytics: Pre/post score comparisons
+- Domain Analysis: Financial literacy sub-domains
+- Effect Size: Statistical significance testing
+- Fairness Checks: Demographic analysis (opt-in)
+- Instructor Dashboard: Real-time monitoring
+- Export Capabilities: CSV/PDF reports
 
 ---
 
-## 🚀 **Deployment Options**
+## Deployment Options
 
 ### Option 1: Vercel (Recommended)
 ```bash
@@ -230,16 +230,16 @@ Result: Students identifiable within course, anonymous across system
 # Deploy (5 minutes)
 ```
 
-**Benefits**: Free, fast, global CDN, automatic HTTPS
+Benefits: Free, fast, global CDN, automatic HTTPS
 
 ### Option 2: Self-Hosted
-- **Web Server**: Any Node.js hosting
-- **Database**: Supabase or PostgreSQL
-- **Domain**: Custom SSL certificate
+- Web Server: Any Node.js hosting
+- Database: Supabase or PostgreSQL
+- Domain: Custom SSL certificate
 
 ---
 
-## 🔧 **Development**
+## Development
 
 ### Available Scripts
 ```bash
@@ -261,7 +261,7 @@ See `GET_SUPABASE_CREDENTIALS.md` for setup instructions.
 
 ---
 
-## 🤝 **Contributing**
+## Contributing
 
 ### Development Workflow
 1. Fork the repository
@@ -271,14 +271,14 @@ See `GET_SUPABASE_CREDENTIALS.md` for setup instructions.
 5. Open Pull Request
 
 ### Code Standards
-- **TypeScript**: Strict type checking enabled
-- **ESLint**: Code quality and consistency
-- **Prettier**: Automated code formatting
-- **Accessibility**: WCAG 2.1 AA compliance
+- TypeScript: Strict type checking enabled
+- ESLint: Code quality and consistency
+- Prettier: Automated code formatting
+- Accessibility: WCAG 2.1 AA compliance
 
 ---
 
-## 📚 **Documentation**
+## Documentation
 
 - `SUPABASE_SETUP.md` - Database configuration
 - `VERCEL_DEPLOYMENT.md` - Production deployment
@@ -288,21 +288,21 @@ See `GET_SUPABASE_CREDENTIALS.md` for setup instructions.
 
 ---
 
-## 📞 **Support**
+## Support
 
 For questions or issues:
-- **GitHub Issues**: Bug reports and feature requests
-- **Documentation**: Check setup guides first
-- **FERPA Questions**: Review compliance documentation
+- GitHub Issues: Bug reports and feature requests
+- Documentation: Check setup guides first
+- FERPA Questions: Review compliance documentation
 
 ---
 
-## 📄 **License**
+## License
 
 This project is developed for Loyola University Chicago, Quinlan School of Business research purposes.
 
 ---
 
-**🎓 Ready for Quinlan pilot deployment! Built with ❤️ for Loyola University Chicago.**
+Ready for Quinlan pilot deployment! Built with love for Loyola University Chicago.
 
 _Last updated: 2025-10-25_
