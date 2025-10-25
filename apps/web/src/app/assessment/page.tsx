@@ -56,6 +56,7 @@ export default function AssessmentPage() {
     courseCode: string;
     studentId: string;
     attemptType: string;
+    startedAt: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -77,7 +78,13 @@ export default function AssessmentPage() {
       if (session) {
         try {
           const parsedSession = JSON.parse(session);
-          setSessionData(parsedSession);
+          const normalizedSession = {
+            courseCode: parsedSession.courseCode,
+            studentId: parsedSession.studentId,
+            attemptType: parsedSession.attemptType,
+            startedAt: parsedSession.startedAt ?? new Date().toISOString()
+          };
+          setSessionData(normalizedSession);
         } catch (error) {
           console.error('Error parsing session data:', error);
           router.push('/start'); // Redirect if session is invalid
@@ -106,8 +113,9 @@ export default function AssessmentPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const currentQuestion = questions[currentIndex];
-  const progress = ((currentIndex + 1) / questions.length) * 100;
+  const isLoadingQuestions = questions.length === 0;
+  const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
+  const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -116,6 +124,7 @@ export default function AssessmentPage() {
   };
 
   const handleAnswer = (answer: any) => {
+    if (!currentQuestion) return;
     setAnswers((prev) => ({
       ...prev,
       [currentQuestion.id]: answer,
@@ -144,8 +153,8 @@ export default function AssessmentPage() {
 
     try {
       // Calculate time spent (from session start to now)
-      const sessionStart = new Date(sessionData.startedAt);
-      const timeSpent = Math.floor((Date.now() - sessionStart.getTime()) / 1000);
+      const sessionStart = sessionData.startedAt ? new Date(sessionData.startedAt) : null;
+      const timeSpent = sessionStart ? Math.floor((Date.now() - sessionStart.getTime()) / 1000) : null;
 
       // Format responses for API
       const formattedResponses = Object.entries(answers).map(([questionId, answer]) => {
@@ -170,7 +179,7 @@ export default function AssessmentPage() {
           studentId: sessionData.studentId,
           attemptType: sessionData.attemptType,
           responses: formattedResponses,
-          timeSpent
+          timeSpent: timeSpent ?? undefined
         }),
       });
 
@@ -194,6 +203,17 @@ export default function AssessmentPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="h-12 w-12 mx-auto border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin" aria-hidden />
+          <p className="text-loyola-gray-700">Loading assessment questions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

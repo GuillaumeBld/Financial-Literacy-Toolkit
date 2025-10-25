@@ -106,5 +106,4 @@ ALTER TABLE attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scores ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies will be added after authentication setup</content>
-<parameter name="path">/Users/guillaumebld/Documents/Graduate_Research/Professor Abol Jalilvand/fall2025/Financial literacy- abol paper/infra/schema.sql
+-- RLS Policies will be added after authentication setup
