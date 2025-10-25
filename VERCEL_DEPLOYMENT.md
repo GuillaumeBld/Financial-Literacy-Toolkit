@@ -15,12 +15,12 @@
 - **Output Directory**: `.next` (default)
 
 ### Step 3: Environment Variables
-Add these from your `.env.local`:
+Add these from your `.env.local` (replace the placeholder values with your Supabase project credentials):
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://fzjirysmzvhsetmcmfqg.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6amlyeXNtenZoc2V0bWNtZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNTkyNDcsImV4cCI6MjA3NjkzNTI0N30.H2-PekFYBydLs2aqp6SV1DJxq7Hf5vRx4_pzwsj3pFs
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6amlyeXNtenZoc2V0bWNtZnFnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTM1OTI0NywiZXhwIjoyMDc2OTM1MjQ3fQ.skc9HtPFT56NbpS5KkeCF_3-GWU3WK9mKb5tDpQ1WOM
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
 
 ### Step 4: Deploy
@@ -78,5 +78,4 @@ After deployment, test:
 
 **Ready to deploy?** Go to [vercel.com](https://vercel.com) and import your GitHub repo! 🚀
 
-(The web interface takes 5 minutes vs CLI which needs more setup)</content>
-<parameter name="path">/Users/guillaumebld/Documents/Graduate_Research/Professor Abol Jalilvand/fall2025/Financial literacy- abol paper/VERCEL_DEPLOYMENT.md
+(The web interface takes 5 minutes vs CLI which needs more setup)

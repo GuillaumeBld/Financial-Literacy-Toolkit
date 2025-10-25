@@ -91,7 +91,7 @@ npm install @supabase/supabase-js @supabase/auth-helpers-nextjs @supabase/auth-h
 Create a simple test file to verify connection:
 
 ```typescript
-// apps/web/lib/supabase.ts
+// apps/web/src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

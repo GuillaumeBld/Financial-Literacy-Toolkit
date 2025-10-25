@@ -114,5 +114,4 @@ export class SessionManager {
     const sessionAge = Date.now() - new Date(session.startedAt).getTime();
     return sessionAge < 24 * 60 * 60 * 1000; // 24 hours
   }
-}</content>
-<parameter name="path">/Users/guillaumebld/Documents/Graduate_Research/Professor Abol Jalilvand/fall2025/Financial literacy- abol paper/apps/web/lib/auth.ts
+}

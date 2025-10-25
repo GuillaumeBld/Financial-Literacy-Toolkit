@@ -81,5 +81,4 @@ INSERT INTO scores (attempt_id, overall, by_domain, se_overall, overconfidence_i
 '{"Financial Planning": 100, "Budgeting": 100, "Credit Management": 85}',
 2.5,
 -0.2,
-NOW());</content>
-<parameter name="path">/Users/guillaumebld/Documents/Graduate_Research/Professor Abol Jalilvand/fall2025/Financial literacy- abol paper/infra/seed.sql
+NOW());
