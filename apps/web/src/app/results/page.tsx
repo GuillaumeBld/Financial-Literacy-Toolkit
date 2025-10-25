@@ -103,7 +103,7 @@ export default function ResultsPage() {
         {/* Next Steps */}
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
           <h2 className="text-2xl font-semibold text-loyola-gray-900 mb-6">
-            What's Next?
+            What&apos;s Next?
           </h2>
 
           <div className="space-y-4">
