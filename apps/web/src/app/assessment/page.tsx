@@ -118,13 +118,9 @@ export default function AssessmentPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const currentQuestion = questions[currentIndex];
-  const currentConfidence = currentQuestion
-    ? confidenceRatings[currentQuestion.id] ?? 3
-    : 3;
-  const progress = questions.length
-    ? ((currentIndex + 1) / questions.length) * 100
-    : 0;
+  const isLoadingQuestions = questions.length === 0;
+  const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
+  const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -168,8 +164,8 @@ export default function AssessmentPage() {
 
     try {
       // Calculate time spent (from session start to now)
-      const sessionStart = new Date(sessionData.startedAt);
-      const timeSpent = Math.floor((Date.now() - sessionStart.getTime()) / 1000);
+      const sessionStart = sessionData.startedAt ? new Date(sessionData.startedAt) : null;
+      const timeSpent = sessionStart ? Math.floor((Date.now() - sessionStart.getTime()) / 1000) : null;
 
       // Format responses for API
       const formattedResponses = Object.entries(answers).map(([questionId, answer]) => {
@@ -194,7 +190,7 @@ export default function AssessmentPage() {
           studentId: sessionData.studentId,
           attemptType: sessionData.attemptType,
           responses: formattedResponses,
-          timeSpent
+          timeSpent: timeSpent ?? undefined
         }),
       });
 
