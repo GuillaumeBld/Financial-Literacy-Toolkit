@@ -40,5 +40,4 @@ CREATE POLICY "Instructors can read all responses" ON responses FOR SELECT USING
 CREATE POLICY "Instructors can read all scores" ON scores FOR SELECT USING (auth.role() = 'authenticated');
 
 -- Allow public read access to items (questions) - students need to see questions
-CREATE POLICY "Anyone can read active items" ON items FOR SELECT USING (true);</content>
-<parameter name="path">/Users/guillaumebld/Documents/Graduate_Research/Professor Abol Jalilvand/fall2025/Financial literacy- abol paper/infra/rls-policies.sql
+CREATE POLICY "Anyone can read active items" ON items FOR SELECT USING (true);
