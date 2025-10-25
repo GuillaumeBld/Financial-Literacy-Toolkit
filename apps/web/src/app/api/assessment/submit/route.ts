@@ -95,6 +95,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure user was found or created
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User authentication failed' },
+        { status: 500 }
+      );
+    }
+
     // Get the appropriate instrument (pre/post assessment)
     const instrumentName = attemptType === 'pre'
       ? 'Pre-Course Assessment'
