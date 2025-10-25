@@ -13,7 +13,7 @@
 }
 
 body {
-  @apply bg-white text-neutral font-sans antialiased;
+  @apply bg-white text-gray-900 font-sans antialiased;
 }
 
 a {
@@ -21,9 +21,9 @@ a {
 }
 
 .section-title {
-  @apply text-2xl font-semibold text-neutral mb-4;
+  @apply text-2xl font-semibold text-gray-900 mb-4;
 }
 
 .section-body {
-  @apply text-base leading-7 text-neutral/80;
+  @apply text-base leading-7 text-gray-900/80;
 }
