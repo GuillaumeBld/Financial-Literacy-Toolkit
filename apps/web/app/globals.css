@@ -13,17 +13,17 @@
 }
 
 body {
-  @apply bg-white text-neutral font-sans antialiased;
+  @apply bg-white text-loyola-gray-900 font-sans antialiased;
 }
 
 a {
-  @apply text-primary underline-offset-2 transition hover:text-secondary;
+  @apply text-loyola-maroon underline-offset-2 transition hover:text-loyola-gold;
 }
 
 .section-title {
-  @apply text-2xl font-semibold text-neutral mb-4;
+  @apply text-2xl font-semibold text-loyola-gray-900 mb-4;
 }
 
 .section-body {
-  @apply text-base leading-7 text-neutral/80;
+  @apply text-base leading-7 text-loyola-gray-700;
 }

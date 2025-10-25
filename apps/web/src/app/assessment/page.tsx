@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -17,6 +17,15 @@ type SessionData = {
   studentId: string;
   attemptType: string;
   startedAt: string;
+};
+
+const shuffleArray = (array: Question[]) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
 // Mock questions - in production, these would come from the API
@@ -63,15 +72,72 @@ export default function AssessmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Shuffle array function
-  const shuffleArray = (array: Question[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  const handleSubmit = useCallback(async () => {
+    if (!sessionData || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Calculate time spent (from session start to now)
+      const sessionStart = new Date(sessionData.startedAt);
+      const timeSpent = Math.floor((Date.now() - sessionStart.getTime()) / 1000);
+
+      // Format responses for API
+      const formattedResponses = Object.entries(answers)
+        .map(([questionId, answer]) => {
+          // Find the question to get the item ID
+          const question = questions.find((q) => q.id === questionId);
+          if (!question) return null;
+
+          return {
+            itemId: question.id, // Using question ID as item ID for now
+            answer: answer,
+            confidence: confidenceRatings[question.id] ?? 3,
+          };
+        })
+        .filter(Boolean);
+
+      const response = await fetch('/api/assessment/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseCode: sessionData.courseCode,
+          studentId: sessionData.studentId,
+          attemptType: sessionData.attemptType,
+          responses: formattedResponses,
+          timeSpent,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Clear session data
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('assessment-session');
+        }
+
+        // Redirect to results
+        router.push('/results');
+      } else {
+        alert(`Submission failed: ${result.error}`);
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('An error occurred while submitting your assessment. Please try again.');
+      setIsSubmitting(false);
     }
-    return shuffled;
-  };
+  }, [
+    answers,
+    confidenceRatings,
+    isSubmitting,
+    questions,
+    router,
+    sessionData,
+  ]);
 
   useEffect(() => {
     // Load session data
@@ -103,6 +169,10 @@ export default function AssessmentPage() {
 
     // Shuffle questions when component mounts (simulating new questions on app restart)
     setQuestions(shuffleArray(mockQuestions));
+  }, [router]);
+
+  useEffect(() => {
+    if (!sessionData) return;
 
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -116,7 +186,7 @@ export default function AssessmentPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [handleSubmit, sessionData]);
 
   const currentQuestion = questions[currentIndex];
   const currentConfidence = currentQuestion
@@ -159,64 +229,6 @@ export default function AssessmentPage() {
       ...prev,
       [currentQuestion.id]: value,
     }));
-  };
-
-  const handleSubmit = async () => {
-    if (!sessionData || isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // Calculate time spent (from session start to now)
-      const sessionStart = new Date(sessionData.startedAt);
-      const timeSpent = Math.floor((Date.now() - sessionStart.getTime()) / 1000);
-
-      // Format responses for API
-      const formattedResponses = Object.entries(answers).map(([questionId, answer]) => {
-        // Find the question to get the item ID
-        const question = questions.find(q => q.id === questionId);
-        if (!question) return null;
-
-        return {
-          itemId: question.id, // Using question ID as item ID for now
-          answer: answer,
-          confidence: confidenceRatings[question.id] ?? 3,
-        };
-      }).filter(Boolean);
-
-      const response = await fetch('/api/assessment/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseCode: sessionData.courseCode,
-          studentId: sessionData.studentId,
-          attemptType: sessionData.attemptType,
-          responses: formattedResponses,
-          timeSpent
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // Clear session data
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('assessment-session');
-        }
-
-        // Redirect to results
-        router.push('/results');
-      } else {
-        alert(`Submission failed: ${result.error}`);
-        setIsSubmitting(false);
-      }
-    } catch (error) {
-      console.error('Submission error:', error);
-      alert('An error occurred while submitting your assessment. Please try again.');
-      setIsSubmitting(false);
-    }
   };
 
   if (!sessionData || !currentQuestion || questions.length === 0) {
