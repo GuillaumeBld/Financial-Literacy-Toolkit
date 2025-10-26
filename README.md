@@ -3,7 +3,7 @@
 AI-assisted pre and post financial literacy assessment for finance students at Loyola University Chicago, Quinlan School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
-Deployed on Vercel: [https://your-app.vercel.app](https://your-app.vercel.app) (after deployment)
+Deployed on Vercel: https://web-3pbwztn42-guillaume-bolivards-projects.vercel.app
 
 Test Credentials:
 - Course Code: `Financial Literacy`
