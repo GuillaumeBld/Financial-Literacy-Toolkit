@@ -89,6 +89,32 @@ export default function AssessmentPage() {
       return;
     }
 
+    // Fetch real questions from API
+    const loadQuestions = async () => {
+      try {
+        const response = await fetch('/api/items');
+        const data = await response.json();
+        
+        if (data.success && data.items) {
+          const formattedQuestions: Question[] = data.items.map((item: any) => ({
+            id: item.item_id,
+            type: item.type,
+            text: item.stem,
+            options: item.options,
+            domain: item.domain
+          }));
+          setQuestions(shuffleQuestions(formattedQuestions));
+        } else {
+          // Fallback to mock questions if API fails
+          setQuestions(shuffleQuestions(mockQuestions));
+        }
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+        // Fallback to mock questions
+        setQuestions(shuffleQuestions(mockQuestions));
+      }
+    };
+
     try {
       const parsedSession = JSON.parse(session) as SessionData;
 
@@ -100,6 +126,7 @@ export default function AssessmentPage() {
       ) {
         setSessionData(parsedSession);
         setTimeRemaining(20 * 60);
+        void loadQuestions();
       } else {
         throw new Error('Session data missing required fields');
       }
@@ -109,10 +136,6 @@ export default function AssessmentPage() {
       router.replace('/start');
     }
   }, [router]);
-
-  useEffect(() => {
-    setQuestions(shuffleQuestions(mockQuestions));
-  }, []);
 
   useEffect(() => {
     if (!sessionData) {
