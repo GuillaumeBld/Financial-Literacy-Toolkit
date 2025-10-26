@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     } else {
-      console.log('Existing user found:', user.user_id);
+      console.log('Existing user found:', user?.user_id);
     }
 
     // Ensure user was found or created
