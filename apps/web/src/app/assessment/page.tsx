@@ -150,7 +150,6 @@ export default function AssessmentPage() {
         courseCode: sessionData.courseCode,
         studentId: sessionData.studentId,
         attemptType: sessionData.attemptType,
-        responsesCount: formattedResponses.length,
         timeSpent
       });
 
