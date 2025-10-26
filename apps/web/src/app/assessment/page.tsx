@@ -146,6 +146,26 @@ export default function AssessmentPage() {
     setIsSubmitting(true);
 
     try {
+      const sessionStart = sessionData.startedAt ? new Date(sessionData.startedAt) : null;
+      const timeSpent = sessionStart
+        ? Math.max(0, Math.floor((Date.now() - sessionStart.getTime()) / 1000))
+        : undefined;
+
+      const formattedResponses = Object.entries(answers).reduce<SubmittedResponse[]>((acc, [questionId, answer]) => {
+        const question = questions.find((q) => q.id === questionId);
+
+        if (!question) {
+          return acc;
+        }
+
+        acc.push({
+          itemId: question.id,
+          answer,
+          confidence: confidenceRatings[question.id] ?? 3,
+        });
+
+        return acc;
+      }, []);
 
       const response = await fetch('/api/assessment/submit', {
         method: 'POST',
