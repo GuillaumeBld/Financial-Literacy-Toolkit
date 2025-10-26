@@ -1,9 +1,9 @@
-# UI Improvements - Loyola University Chicago Branding
+# UI Improvements - L. University Branding
 
 ## Changes Made
 
 ### 1. **Color Scheme Update**
-- Replaced generic blue colors with Loyola University Chicago's official brand colors:
+- Replaced generic blue colors with L. University official brand colors:
   - **Maroon**: `#8B0015` (Primary)
   - **Gold**: `#F1BE48` (Accent)
   - Updated Tailwind config with full color palette including light/dark variants
@@ -55,7 +55,7 @@
 
 ## Brand Consistency
 
-All UI elements now align with Loyola University Chicago's brand guidelines:
+All UI elements now align with L. University brand guidelines:
 - Primary color: Maroon (#8B0015)
 - Secondary color: Gold (#F1BE48)
 - Professional icon system

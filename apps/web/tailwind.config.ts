@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Loyola University Chicago Official Colors
+        // L. University Official Colors
         'loyola-maroon': '#8B0015',
         'loyola-maroon-dark': '#6B0011',
         'loyola-maroon-light': '#A8001A',

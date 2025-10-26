@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Financial Literacy Toolkit - Loyola University Chicago',
+  title: 'Financial Literacy Toolkit - L. University',
   description: 'AI-assisted financial literacy assessment for Quinlan School of Business',
 }
 

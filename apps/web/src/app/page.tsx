@@ -11,7 +11,7 @@ export default function HomePage() {
         <header className="flex justify-between items-center mb-16">
           <div>
             <h1 className="text-3xl font-bold gradient-text">Financial Literacy Toolkit</h1>
-            <p className="text-sm text-loyola-gray-600">Loyola University Chicago - Quinlan School of Business</p>
+            <p className="text-sm text-loyola-gray-600">L. University - Quinlan School of Business</p>
           </div>
           <nav>
             <ul className="flex space-x-6 items-center">
@@ -119,7 +119,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-loyola-gold font-bold text-lg mb-4">Financial Literacy Toolkit</h3>
-              <p className="text-white/80">Empowering financial education at Loyola University Chicago.</p>
+              <p className="text-white/80">Empowering financial education at L. University.</p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
@@ -139,11 +139,11 @@ export default function HomePage() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Connect</h4>
-              <p className="text-white/80">Quinlan School of Business<br />Loyola University Chicago</p>
+              <p className="text-white/80">Quinlan School of Business<br />L. University</p>
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-sm">
-            <p className="text-white/80">© 2025 Loyola University Chicago. All rights reserved.</p>
+            <p className="text-white/80">© 2025 L. University. All rights reserved.</p>
           </div>
         </div>
       </footer>
