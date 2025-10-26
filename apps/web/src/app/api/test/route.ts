@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
           results[table] = { status: 'success', count: data?.length || 0 };
         }
       } catch (err) {
-        results[table] = { status: 'exception', error: err.message };
+        results[table] = { status: 'exception', error: err instanceof Error ? err.message : String(err) };
       }
     }
 
