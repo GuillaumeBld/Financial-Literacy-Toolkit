@@ -14,15 +14,23 @@ export async function POST(request: NextRequest) {
       timeSpent: body.timeSpent
     });
 
+    const {
+      courseCode,
+      studentId,
+      attemptType, // 'pre' or 'post'
+      responses, // Array of { itemId, answer, confidence }
+      timeSpent // in seconds
+    } = body;
+
     // Validate required fields
+    console.log('Validating required fields...');
     if (!courseCode || !studentId || !attemptType || !responses) {
+      console.error('Missing required fields:', { courseCode, studentId, attemptType, responsesCount: responses?.length });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-
-    // Validate attempt type
     if (!['pre', 'post'].includes(attemptType)) {
       return NextResponse.json(
         { error: 'Invalid attempt type. Must be "pre" or "post"' },
