@@ -146,26 +146,13 @@ export default function AssessmentPage() {
     setIsSubmitting(true);
 
     try {
-      const sessionStart = sessionData.startedAt ? new Date(sessionData.startedAt) : null;
-      const timeSpent = sessionStart
-        ? Math.max(0, Math.floor((Date.now() - sessionStart.getTime()) / 1000))
-        : undefined;
-
-      const formattedResponses = Object.entries(answers).reduce<SubmittedResponse[]>((acc, [questionId, answer]) => {
-        const question = questions.find((q) => q.id === questionId);
-
-        if (!question) {
-          return acc;
-        }
-
-        acc.push({
-          itemId: question.id,
-          answer,
-          confidence: confidenceRatings[question.id] ?? 3,
-        });
-
-        return acc;
-      }, []);
+      console.log('Starting submission with data:', {
+        courseCode: sessionData.courseCode,
+        studentId: sessionData.studentId,
+        attemptType: sessionData.attemptType,
+        responsesCount: formattedResponses.length,
+        timeSpent
+      });
 
       const response = await fetch('/api/assessment/submit', {
         method: 'POST',
@@ -181,10 +168,17 @@ export default function AssessmentPage() {
         }),
       });
 
+      console.log('API response status:', response.status);
+      console.log('API response ok:', response.ok);
+
       if (!response.ok) {
         const result = await response.json();
+        console.error('API returned error:', result);
         throw new Error(result?.error ?? 'Submission failed');
       }
+
+      const result = await response.json();
+      console.log('API success response:', result);
 
       if (typeof window !== 'undefined') {
         localStorage.removeItem('assessment-session');
@@ -340,7 +334,6 @@ export default function AssessmentPage() {
               rows={6}
               value={answers[currentQuestion.id] || ''}
               onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
-              onPaste={(event) => event.preventDefault()}
               placeholder="Type your answer here..."
             />
           )}
