@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     console.log('Testing service role access...');
     const tables = ['users', 'courses', 'instruments', 'items', 'attempts', 'responses', 'scores'];
 
-    const results = {};
+    const results: Record<string, any> = {};
     for (const table of tables) {
       try {
         const { data, error } = await supabase
