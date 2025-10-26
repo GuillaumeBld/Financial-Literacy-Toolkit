@@ -146,13 +146,6 @@ export default function AssessmentPage() {
     setIsSubmitting(true);
 
     try {
-      console.log('Starting submission with data:', {
-        courseCode: sessionData.courseCode,
-        studentId: sessionData.studentId,
-        attemptType: sessionData.attemptType,
-        responsesCount: formattedResponses.length,
-        timeSpent
-      });
 
       const response = await fetch('/api/assessment/submit', {
         method: 'POST',
