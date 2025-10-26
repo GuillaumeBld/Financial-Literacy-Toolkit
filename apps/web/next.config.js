@@ -5,8 +5,6 @@ const nextConfig = {
   experimental: {
     typedRoutes: true,
   },
-  // Disable Next.js telemetry for privacy
-  telemetry: false,
 };
 
 module.exports = nextConfig;
