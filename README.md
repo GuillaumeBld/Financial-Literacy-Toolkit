@@ -3,7 +3,7 @@
 AI-assisted pre and post financial literacy assessment for finance students at L. University, Q School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
-Deployed on Vercel: https://web-3pbwztn42-guillaume-bolivards-projects.vercel.app
+Deployed on Vercel: https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app
 
 Test Credentials:
 - Course Code: `Financial Literacy`
@@ -29,7 +29,7 @@ Test Credentials:
 
 ## Institutional Context
 - Institution: L. University, Q School of Business, Finance Department
-- Audience: Finance students in Quinlan courses
+- Audience: Finance students in Q courses
 - Use Case: Assess student financial literacy before and after class
 - Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
 
