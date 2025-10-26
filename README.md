@@ -1,6 +1,6 @@
 # Financial Literacy Assessment Platform
 
-AI-assisted pre and post financial literacy assessment for finance students at Loyola University Chicago, Quinlan School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
+AI-assisted pre and post financial literacy assessment for finance students at L. University, Quinlan School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
 Deployed on Vercel: https://web-3pbwztn42-guillaume-bolivards-projects.vercel.app
@@ -15,7 +15,7 @@ Test Credentials:
 - Complete Assessment Flow: Start → Questions → Submit → Results
 - FERPA Compliance: Hashed student IDs, no raw data stored
 - Database: Supabase PostgreSQL with Row Level Security
-- Frontend: Next.js 14 with Loyola University Chicago branding
+- Frontend: Next.js 14 with L. University branding
 - Production Ready: Build tested, deployment guides ready
 - Zero Cost: Free Supabase + Vercel tiers
 
@@ -28,7 +28,7 @@ Test Credentials:
 ---
 
 ## Institutional Context
-- Institution: Loyola University Chicago, Quinlan School of Business, Finance Department
+- Institution: L. University, Quinlan School of Business, Finance Department
 - Audience: Finance students in Quinlan courses
 - Use Case: Assess student financial literacy before and after class
 - Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
@@ -52,7 +52,7 @@ Test Credentials:
 
 ### Implemented
 - Frontend: Next.js 14, React 18, TypeScript
-- Styling: Tailwind CSS with Loyola branding
+- Styling: Tailwind CSS with L. University branding
 - Database: Supabase PostgreSQL with Row Level Security
 - Authentication: FERPA-compliant hashed student IDs
 - Hosting: Vercel (production deployment ready)
@@ -299,10 +299,10 @@ For questions or issues:
 
 ## License
 
-This project is developed for Loyola University Chicago, Quinlan School of Business research purposes.
+This project is developed for L. University, Quinlan School of Business research purposes.
 
 ---
 
-Ready for Quinlan pilot deployment! Built with love for Loyola University Chicago.
+Ready for Quinlan pilot deployment! Built with love for L. University.
 
 _Last updated: 2025-10-25_
