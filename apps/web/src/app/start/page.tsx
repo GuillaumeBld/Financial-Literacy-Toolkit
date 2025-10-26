@@ -187,7 +187,7 @@ export default function StartPage() {
 
       <footer className="bg-white border-t border-loyola-gray-200 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 Loyola University Chicago. All rights reserved.</p>
+          <p>© 2025 L. University. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -1,7 +1,7 @@
 # 🚀 Financial Literacy Toolkit - Next Steps Roadmap
 
 ## 📊 Current Status
-✅ **Frontend UI Complete**: Loyola University Chicago branding, responsive design, assessment flow  
+✅ **Frontend UI Complete**: L. University branding, responsive design, assessment flow  
 ✅ **Basic Assessment Logic**: Question randomization, paste prevention, confidence tracking  
 ❌ **Backend Missing**: No database, no APIs, no persistence  
 
