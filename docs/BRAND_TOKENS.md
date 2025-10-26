@@ -1,6 +1,6 @@
 # Brand tokens
 
-Use these tokens to match Loyola and Quinlan atmosphere.
+Use these tokens to match L. University and Q atmosphere.
 
 ```
 color.primary = maroon

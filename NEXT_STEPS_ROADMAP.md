@@ -134,7 +134,7 @@
 - Full deployment pipeline
 - Performance optimized
 - Accessibility compliant
-- Ready for Quinlan School of Business pilot
+- Ready for Q School of Business pilot
 
 ---
 
