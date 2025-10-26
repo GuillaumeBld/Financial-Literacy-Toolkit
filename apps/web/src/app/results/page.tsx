@@ -177,7 +177,7 @@ export default function ResultsPage() {
           <p className="text-sm text-loyola-gray-600">
             Questions about your results? Contact your instructor or visit the
             <a href="#" className="text-loyola-maroon hover:text-loyola-maroon-dark ml-1">
-              Quinlan School of Business support page
+              Q School of Business support page
             </a>.
           </p>
         </div>

@@ -1,6 +1,6 @@
 # Financial Literacy Assessment Platform
 
-AI-assisted pre and post financial literacy assessment for finance students at L. University, Quinlan School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
+AI-assisted pre and post financial literacy assessment for finance students at L. University, Q School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
 Deployed on Vercel: https://web-3pbwztn42-guillaume-bolivards-projects.vercel.app
@@ -28,7 +28,7 @@ Test Credentials:
 ---
 
 ## Institutional Context
-- Institution: L. University, Quinlan School of Business, Finance Department
+- Institution: L. University, Q School of Business, Finance Department
 - Audience: Finance students in Quinlan courses
 - Use Case: Assess student financial literacy before and after class
 - Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
@@ -299,10 +299,10 @@ For questions or issues:
 
 ## License
 
-This project is developed for L. University, Quinlan School of Business research purposes.
+This project is developed for L. University, Q School of Business research purposes.
 
 ---
 
-Ready for Quinlan pilot deployment! Built with love for L. University.
+Ready for Q pilot deployment! Built with love for L. University.
 
 _Last updated: 2025-10-25_
