@@ -3,15 +3,16 @@ import { supabase } from '@/lib/supabase';
 import { AuthUtils } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  console.log('=== API SUBMISSION START ===');
   try {
     const body = await request.json();
-    const {
-      courseCode,
-      studentId,
-      attemptType, // 'pre' or 'post'
-      responses, // Array of { itemId, answer, confidence }
-      timeSpent // in seconds
-    } = body;
+    console.log('Request body received:', {
+      courseCode: body.courseCode,
+      studentId: body.studentId,
+      attemptType: body.attemptType,
+      responsesCount: body.responses?.length,
+      timeSpent: body.timeSpent
+    });
 
     // Validate required fields
     if (!courseCode || !studentId || !attemptType || !responses) {
@@ -43,9 +44,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Creating hashed student key...');
     // Create hashed student key (FERPA compliant)
     const hashedStudentKey = AuthUtils.createHashedStudentKey(course.pepper, studentId);
 
+    console.log('Looking up existing user...');
     // Find or create user
     let { data: user, error: userError } = await supabase
       .from('users')
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError && userError.code === 'PGRST116') { // Not found
+      console.log('User not found, creating new user...');
       // Create new user
       const { data: newUser, error: createUserError } = await supabase
         .from('users')
@@ -73,8 +77,10 @@ export async function POST(request: NextRequest) {
       }
 
       user = newUser;
+      console.log('New user created:', user.user_id);
 
       // Enroll user in course
+      console.log('Enrolling user in course...');
       const { error: enrollError } = await supabase
         .from('enrollments')
         .insert({
@@ -93,6 +99,8 @@ export async function POST(request: NextRequest) {
         { error: 'Authentication failed' },
         { status: 500 }
       );
+    } else {
+      console.log('Existing user found:', user.user_id);
     }
 
     // Ensure user was found or created
@@ -140,6 +148,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Creating assessment attempt...');
     // Create assessment attempt
     const { data: attempt, error: attemptError } = await supabase
       .from('attempts')
@@ -162,6 +171,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Attempt created:', attempt.attempt_id);
+
+    console.log('Inserting responses...');
     // Insert responses
     const responseInserts = responses.map((response: any) => ({
       attempt_id: attempt.attempt_id,
@@ -181,6 +193,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    console.log('Responses inserted successfully');
 
     // Calculate basic scores (this would be enhanced with AI scoring)
     // For now, just calculate multiple choice scores
@@ -240,7 +254,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Assessment submission error:', error);
+    console.error('=== API SUBMISSION ERROR ===', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
