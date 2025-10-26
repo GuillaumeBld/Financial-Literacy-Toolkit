@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Financial Literacy Toolkit - L. University',
-  description: 'AI-assisted financial literacy assessment for Quinlan School of Business',
+  description: 'AI-assisted financial literacy assessment for Q School of Business',
 }
 
 export default function RootLayout({

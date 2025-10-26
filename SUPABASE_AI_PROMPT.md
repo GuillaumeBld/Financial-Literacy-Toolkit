@@ -9,7 +9,7 @@
 I need help setting up a complete database schema for a FERPA-compliant educational assessment platform. Please execute the following SQL in order and help me troubleshoot any issues.
 
 ### 📋 Context
-- **Institution**: L. University, Quinlan School of Business
+- **Institution**: L. University, Q School of Business
 - **Purpose**: Pre and post financial literacy assessments
 - **Compliance**: FERPA (no raw student IDs stored)
 - **Tech Stack**: Next.js, Supabase, PostgreSQL

@@ -89,4 +89,4 @@ The app is configured to deploy on Windsurf. See `docs/DEPLOY.md` for details.
 
 ## Support
 
-For questions or issues, contact the Quinlan School of Business Finance Department.
+For questions or issues, contact the Q School of Business Finance Department.

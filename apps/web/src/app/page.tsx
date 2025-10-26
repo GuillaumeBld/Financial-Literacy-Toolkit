@@ -11,7 +11,7 @@ export default function HomePage() {
         <header className="flex justify-between items-center mb-16">
           <div>
             <h1 className="text-3xl font-bold gradient-text">Financial Literacy Toolkit</h1>
-            <p className="text-sm text-loyola-gray-600">L. University - Quinlan School of Business</p>
+            <p className="text-sm text-loyola-gray-600">L. University - Q School of Business</p>
           </div>
           <nav>
             <ul className="flex space-x-6 items-center">
@@ -42,7 +42,7 @@ export default function HomePage() {
 
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-sm font-medium text-loyola-gray-700">Trusted by Quinlan School of Business</p>
+                <p className="text-sm font-medium text-loyola-gray-700">Trusted by Q School of Business</p>
                 <div className="flex items-center mt-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-loyola-gold text-loyola-gold" />
@@ -139,7 +139,7 @@ export default function HomePage() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Connect</h4>
-              <p className="text-white/80">Quinlan School of Business<br />L. University</p>
+              <p className="text-white/80">Q School of Business<br />L. University</p>
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-sm">

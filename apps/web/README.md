@@ -14,7 +14,7 @@ pnpm --filter web start
 ## Tech notes
 
 - Next.js 14 app router with TypeScript and Tailwind CSS.
-- Loyola and Quinlan brand tokens mapped to Tailwind theme extensions.
+- L. University and Q brand tokens mapped to Tailwind theme extensions.
 - Content structured as an MVP overview page highlighting scope, workflow, and next steps.
 
 Environment variables live in `apps/web/.env.example` (add as needed for future sprints).
