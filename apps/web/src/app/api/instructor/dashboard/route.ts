@@ -101,7 +101,10 @@ export async function GET(request: NextRequest) {
 
     const completedAttempts = attempts?.filter(a => a.submitted_at) || [];
     const avgScore = completedAttempts.length > 0
-      ? completedAttempts.reduce((sum, a) => sum + (a.scores?.overall || 0), 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum, a) => {
+          const scoreData = Array.isArray(a.scores) ? a.scores[0] : a.scores;
+          return sum + (scoreData?.overall || 0);
+        }, 0) / completedAttempts.length
       : 0;
 
     const avgDuration = completedAttempts.length > 0
@@ -111,8 +114,9 @@ export async function GET(request: NextRequest) {
     // Calculate domain-specific averages
     const domainScores: Record<string, number[]> = {};
     completedAttempts.forEach(attempt => {
-      if (attempt.scores?.by_domain) {
-        Object.entries(attempt.scores.by_domain).forEach(([domain, score]) => {
+      const scoreData = Array.isArray(attempt.scores) ? attempt.scores[0] : attempt.scores;
+      if (scoreData?.by_domain) {
+        Object.entries(scoreData.by_domain).forEach(([domain, score]) => {
           if (!domainScores[domain]) {
             domainScores[domain] = [];
           }
