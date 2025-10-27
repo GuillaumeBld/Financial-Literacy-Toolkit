@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Find instructor by email
     const { data: instructor, error: instructorError } = await supabase
       .from('instructors')
-      .select('instructor_id, email, hashed_password, full_name, is_active')
+      .select('id, email, password_hash')
       .eq('email', email.toLowerCase())
       .single();
 
@@ -38,15 +38,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!instructor.is_active) {
-      return NextResponse.json(
-        { error: 'Account is inactive. Please contact administrator.' },
-        { status: 403 }
-      );
-    }
-
     // Verify password
-    const isValidPassword = await verifyPassword(password, instructor.hashed_password);
+    const isValidPassword = await verifyPassword(password, instructor.password_hash);
     
     if (!isValidPassword) {
       console.log('Invalid password for:', email);
@@ -64,8 +57,8 @@ export async function POST(request: NextRequest) {
     const { error: sessionError } = await supabase
       .from('instructor_sessions')
       .insert({
-        instructor_id: instructor.instructor_id,
-        token,
+        instructor_id: instructor.id,
+        token_hash: token,
         expires_at: expiresAt.toISOString()
       });
 
@@ -77,11 +70,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update last login
-    await supabase
-      .from('instructors')
-      .update({ last_login_at: new Date().toISOString() })
-      .eq('instructor_id', instructor.instructor_id);
+    // Note: last_login_at column doesn't exist yet in database
+    // Skipping last login update for now
 
     console.log('Login successful for:', email);
 
@@ -89,9 +79,9 @@ export async function POST(request: NextRequest) {
       success: true,
       token,
       instructor: {
-        id: instructor.instructor_id,
+        id: instructor.id,
         email: instructor.email,
-        name: instructor.full_name
+        name: instructor.email.split('@')[0]
       }
     });
 

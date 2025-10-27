@@ -6,7 +6,7 @@ async function verifyInstructorToken(token: string) {
   const { data: session, error } = await supabase
     .from('instructor_sessions')
     .select('instructor_id, expires_at')
-    .eq('token', token)
+    .eq('token_hash', token)
     .single();
 
   if (error || !session) {
