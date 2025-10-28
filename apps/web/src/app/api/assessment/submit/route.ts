@@ -39,18 +39,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Get course information (including pepper for hashing)
-    const { data: course, error: courseError } = await supabase
+    const { data: courses, error: courseError } = await supabase
       .from('courses')
       .select('course_id, pepper')
-      .eq('name', courseCode)
-      .single();
+      .eq('name', courseCode);
 
-    if (courseError || !course) {
+    if (courseError || !courses || courses.length === 0) {
+      console.error('Course lookup error:', courseError);
       return NextResponse.json(
         { error: 'Invalid course code' },
         { status: 404 }
       );
     }
+
+    // Use first course if multiple exist
+    const course = courses[0];
+    console.log('Course found:', course.course_id);
 
     console.log('Creating hashed student key...');
     // Create hashed student key (FERPA compliant)
