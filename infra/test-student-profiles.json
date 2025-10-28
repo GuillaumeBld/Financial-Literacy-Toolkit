@@ -1,0 +1,156 @@
+{
+  "courseCode": "FIN101",
+  "courseName": "Financial Literacy",
+  "term": "Fall 2025",
+  "students": [
+    {
+      "studentId": "TEST001",
+      "name": "Alex High-Performer",
+      "profile": "high_achiever",
+      "description": "Strong financial literacy, confident and accurate",
+      "targetScore": 90,
+      "confidencePattern": "accurate",
+      "responseTime": "fast",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST002",
+      "name": "Bailey Overconfident",
+      "profile": "overconfident",
+      "description": "Average knowledge but very high confidence",
+      "targetScore": 60,
+      "confidencePattern": "overconfident",
+      "responseTime": "fast",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST003",
+      "name": "Casey Underconfident",
+      "profile": "underconfident",
+      "description": "Good knowledge but low confidence",
+      "targetScore": 75,
+      "confidencePattern": "underconfident",
+      "responseTime": "slow",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST004",
+      "name": "Dakota Struggling",
+      "profile": "struggling",
+      "description": "Low financial literacy, needs support",
+      "targetScore": 40,
+      "confidencePattern": "low",
+      "responseTime": "slow",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST005",
+      "name": "Ellis Average",
+      "profile": "average",
+      "description": "Typical student, moderate knowledge and confidence",
+      "targetScore": 70,
+      "confidencePattern": "moderate",
+      "responseTime": "medium",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST006",
+      "name": "Finley Inconsistent",
+      "profile": "inconsistent",
+      "description": "Variable performance across domains",
+      "targetScore": 65,
+      "confidencePattern": "variable",
+      "responseTime": "medium",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST007",
+      "name": "Gray Perfectionist",
+      "profile": "perfectionist",
+      "description": "High achiever, takes time to ensure accuracy",
+      "targetScore": 95,
+      "confidencePattern": "calibrated",
+      "responseTime": "slow",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST008",
+      "name": "Harper Rushed",
+      "profile": "rushed",
+      "description": "Fast but careless, makes avoidable mistakes",
+      "targetScore": 55,
+      "confidencePattern": "moderate",
+      "responseTime": "very_fast",
+      "completionRate": 100
+    },
+    {
+      "studentId": "TEST009",
+      "name": "Indigo Improving",
+      "profile": "improving",
+      "description": "Shows growth from pre to post assessment",
+      "targetScore": 50,
+      "confidencePattern": "growing",
+      "responseTime": "medium",
+      "completionRate": 100,
+      "postAssessmentBoost": 25
+    },
+    {
+      "studentId": "TEST010",
+      "name": "Jordan Partial",
+      "profile": "incomplete",
+      "description": "Starts but doesn't always finish",
+      "targetScore": 70,
+      "confidencePattern": "moderate",
+      "responseTime": "medium",
+      "completionRate": 67
+    }
+  ],
+  "confidencePatterns": {
+    "accurate": {
+      "description": "Confidence matches performance",
+      "correct": 5,
+      "incorrect": 2
+    },
+    "overconfident": {
+      "description": "High confidence regardless of correctness",
+      "correct": 5,
+      "incorrect": 5
+    },
+    "underconfident": {
+      "description": "Low confidence even when correct",
+      "correct": 2,
+      "incorrect": 1
+    },
+    "low": {
+      "description": "Generally low confidence",
+      "correct": 2,
+      "incorrect": 1
+    },
+    "moderate": {
+      "description": "Moderate confidence across the board",
+      "correct": 3,
+      "incorrect": 3
+    },
+    "variable": {
+      "description": "Confidence varies unpredictably",
+      "correct": 4,
+      "incorrect": 2
+    },
+    "calibrated": {
+      "description": "Well-calibrated confidence",
+      "correct": 5,
+      "incorrect": 1
+    },
+    "growing": {
+      "description": "Confidence improves over time",
+      "correct": 4,
+      "incorrect": 2
+    }
+  },
+  "responseTimePatterns": {
+    "very_fast": { "min": 2, "max": 5 },
+    "fast": { "min": 5, "max": 10 },
+    "medium": { "min": 10, "max": 20 },
+    "slow": { "min": 20, "max": 40 }
+  }
+}
