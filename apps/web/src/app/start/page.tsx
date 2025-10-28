@@ -6,14 +6,43 @@ import { useRouter } from 'next/navigation';
 import { Settings, User, Clock, Info, CheckCircle } from 'lucide-react';
 
 export default function StartPage() {
-  const [courseCode, setCourseCode] = useState('');
-  const [studentId, setStudentId] = useState('');
+  const [courseCode, setCourseCode] = useState('FINC 000');
+  const [studentId, setStudentId] = useState('123456789');
   const [consent, setConsent] = useState(false);
+  const [error, setError] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (courseCode && studentId && consent) {
+    setError('');
+    
+    if (!courseCode || !studentId || !consent) {
+      setError('Please fill in all fields and check the consent box.');
+      return;
+    }
+
+    // Validate course code
+    setIsValidating(true);
+    try {
+      const response = await fetch('/api/courses/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseCode: courseCode.trim()
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.valid) {
+        setError('Invalid course code. Please check your course code and try again.');
+        setIsValidating(false);
+        return;
+      }
+
       // Store session data for assessment
       const sessionData = {
         courseCode: courseCode.trim(),
@@ -27,6 +56,11 @@ export default function StartPage() {
       }
 
       router.push('/assessment');
+    } catch (err) {
+      console.error('Error validating course:', err);
+      setError('Unable to validate course code. Please try again.');
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -56,6 +90,11 @@ export default function StartPage() {
 
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
           <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
             <div className="mb-6">
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
                 Course Code
@@ -113,10 +152,11 @@ export default function StartPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 type="submit"
-                className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex-1 flex items-center justify-center gap-2"
+                disabled={isValidating}
+                className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle className="w-5 h-5" />
-                Start Assessment
+                {isValidating ? 'Validating...' : 'Start Assessment'}
               </button>
               <a
                 href="#"
