@@ -10,6 +10,7 @@ type Question = {
   text: string;
   options?: Array<{ id: string; text: string }>;
   domain: string;
+  correct_answer?: string;
 };
 
 type SessionData = {
@@ -37,6 +38,7 @@ const mockQuestions: Question[] = [
       { id: 'd', text: 'Become unpredictable' },
     ],
     domain: 'Financial Planning',
+    correct_answer: 'c',
   },
   {
     id: 'q2',
@@ -49,12 +51,14 @@ const mockQuestions: Question[] = [
       { id: 'd', text: 'To get approved for loans' },
     ],
     domain: 'Budgeting',
+    correct_answer: 'a',
   },
   {
     id: 'q3',
     type: 'short_answer',
     text: 'Explain the difference between a debit card and a credit card.',
     domain: 'Credit Management',
+    correct_answer: 'Debit cards withdraw money directly from your bank account, while credit cards allow you to borrow money that you must pay back later.',
   },
 ];
 
@@ -71,6 +75,7 @@ export default function AssessmentPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [confidenceRatings, setConfidenceRatings] = useState<Record<string, number>>({});
+  const [answerCorrectness, setAnswerCorrectness] = useState<Record<string, boolean>>({});
   const [timeRemaining, setTimeRemaining] = useState(20 * 60);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
@@ -101,7 +106,8 @@ export default function AssessmentPage() {
             type: item.type,
             text: item.stem,
             options: item.options,
-            domain: item.domain
+            domain: item.domain,
+            correct_answer: item.key || item.correct_answer
           }));
           setQuestions(shuffleQuestions(formattedQuestions));
         } else {
@@ -251,10 +257,29 @@ export default function AssessmentPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const checkAnswerCorrectness = (questionId: string, answer: string): boolean => {
+    const question = questions.find(q => q.id === questionId);
+    if (!question || !question.correct_answer) return false;
+    
+    if (question.type === 'multiple_choice') {
+      return answer === question.correct_answer;
+    } else {
+      // For short answers, do a simple text comparison (case insensitive)
+      return answer.toLowerCase().trim() === question.correct_answer.toLowerCase().trim();
+    }
+  };
+
   const handleAnswer = (questionId: string, answer: string) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: answer,
+    }));
+    
+    // Check if the answer is correct and update correctness state
+    const isCorrect = checkAnswerCorrectness(questionId, answer);
+    setAnswerCorrectness((prev) => ({
+      ...prev,
+      [questionId]: isCorrect,
     }));
   };
 
@@ -340,38 +365,103 @@ export default function AssessmentPage() {
 
           {currentQuestion.type === 'multiple_choice' && currentQuestion.options && (
             <div className="space-y-3 mb-8">
-              {currentQuestion.options.map((option) => (
-                <div
-                  key={option.id}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    answers[currentQuestion.id] === option.id
-                      ? 'border-loyola-maroon bg-loyola-maroon/5'
-                      : 'border-loyola-gray-200 hover:border-loyola-maroon/30 hover:bg-loyola-gray-50'
-                  }`}
-                  onClick={() => handleAnswer(currentQuestion.id, option.id)}
-                >
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={answers[currentQuestion.id] === option.id}
-                      onChange={() => handleAnswer(currentQuestion.id, option.id)}
-                      className="h-5 w-5 text-loyola-maroon accent-loyola-maroon"
-                    />
-                    <label className="ml-3 text-lg cursor-pointer text-loyola-gray-800">{option.text}</label>
+              {currentQuestion.options.map((option) => {
+                const isSelected = answers[currentQuestion.id] === option.id;
+                const isCorrect = currentQuestion.correct_answer === option.id;
+                const isIncorrect = isSelected && !isCorrect;
+                const showFeedback = isSelected && currentQuestion.correct_answer;
+                
+                return (
+                  <div
+                    key={option.id}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      showFeedback
+                        ? isCorrect
+                          ? 'border-green-500 bg-green-50'
+                          : isIncorrect
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-loyola-gray-200'
+                        : isSelected
+                        ? 'border-loyola-maroon bg-loyola-maroon/5'
+                        : 'border-loyola-gray-200 hover:border-loyola-maroon/30 hover:bg-loyola-gray-50'
+                    }`}
+                    onClick={() => handleAnswer(currentQuestion.id, option.id)}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        checked={isSelected}
+                        onChange={() => handleAnswer(currentQuestion.id, option.id)}
+                        className={`h-5 w-5 ${
+                          showFeedback
+                            ? isCorrect
+                              ? 'text-green-600 accent-green-600'
+                              : isIncorrect
+                              ? 'text-red-600 accent-red-600'
+                              : 'text-loyola-maroon accent-loyola-maroon'
+                            : 'text-loyola-maroon accent-loyola-maroon'
+                        }`}
+                      />
+                      <label className={`ml-3 text-lg cursor-pointer ${
+                        showFeedback
+                          ? isCorrect
+                            ? 'text-green-800 font-semibold'
+                            : isIncorrect
+                            ? 'text-red-800 font-semibold'
+                            : 'text-loyola-gray-800'
+                          : 'text-loyola-gray-800'
+                      }`}>
+                        {option.text}
+                        {showFeedback && isCorrect && (
+                          <span className="ml-2 text-green-600 font-bold">✓ Correct!</span>
+                        )}
+                        {showFeedback && isIncorrect && (
+                          <span className="ml-2 text-red-600 font-bold">✗ Incorrect</span>
+                        )}
+                      </label>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
           {currentQuestion.type === 'short_answer' && (
-            <textarea
-              className="w-full p-4 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon mb-8 transition"
-              rows={6}
-              value={answers[currentQuestion.id] || ''}
-              onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
-              placeholder="Type your answer here..."
-            />
+            <div className="mb-8">
+              <textarea
+                className={`w-full p-4 border-2 rounded-lg focus:ring-2 focus:ring-loyola-maroon transition ${
+                  answers[currentQuestion.id] && currentQuestion.correct_answer
+                    ? answerCorrectness[currentQuestion.id]
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-red-500 bg-red-50'
+                    : 'border-loyola-gray-300 focus:border-loyola-maroon'
+                }`}
+                rows={6}
+                value={answers[currentQuestion.id] || ''}
+                onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
+                placeholder="Type your answer here..."
+              />
+              {answers[currentQuestion.id] && currentQuestion.correct_answer && (
+                <div className={`mt-2 p-3 rounded-lg ${
+                  answerCorrectness[currentQuestion.id]
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <div className={`font-semibold ${
+                    answerCorrectness[currentQuestion.id]
+                      ? 'text-green-800'
+                      : 'text-red-800'
+                  }`}>
+                    {answerCorrectness[currentQuestion.id] ? '✓ Correct!' : '✗ Incorrect'}
+                  </div>
+                  {!answerCorrectness[currentQuestion.id] && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      <strong>Correct answer:</strong> {currentQuestion.correct_answer}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           <div className="border-t border-loyola-gray-200 pt-6">
