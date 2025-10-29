@@ -322,13 +322,20 @@ function ActionCard({
   description: string;
   href: string;
 }) {
+  const router = useRouter();
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push(href);
+  };
+
   return (
-    <a
-      href={href}
-      className="block bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-loyola-maroon"
+    <button
+      onClick={handleClick}
+      className="w-full text-left bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-loyola-maroon"
     >
       <h3 className="text-lg font-bold text-loyola-gray-800 mb-2">{title}</h3>
       <p className="text-sm text-loyola-gray-600">{description}</p>
-    </a>
+    </button>
   );
 }
