@@ -2,8 +2,20 @@
 
 import Link from 'next/link';
 import { BarChart3, Brain, Shield, Clock, ChevronRight, Star } from 'lucide-react';
+import { useState } from 'react';
 
 export default function HomePage() {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  
+  const sampleQuestion = {
+    text: "If inflation increases while your income stays the same, your purchasing power will:",
+    options: ['Increase', 'Stay the same', 'Decrease', 'Become unpredictable'],
+    correctAnswer: 'Decrease'
+  };
+
+  const handleAnswerSelect = (answer: string) => {
+    setSelectedAnswer(answer);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -71,15 +83,71 @@ export default function HomePage() {
               </div>
 
               <div className="mb-6">
-                <p className="text-lg mb-4 text-loyola-gray-800 font-medium">If inflation increases while your income stays the same, your purchasing power will:</p>
+                <p className="text-lg mb-4 text-loyola-gray-800 font-medium">{sampleQuestion.text}</p>
                 <div className="space-y-3">
-                  {['Increase', 'Stay the same', 'Decrease', 'Become unpredictable'].map((option, idx) => (
-                    <div key={idx} className="flex items-center p-3 border-2 border-loyola-gray-200 rounded-lg hover:border-loyola-maroon hover:bg-loyola-maroon/5 cursor-pointer transition-all">
-                      <input type="radio" name="sample" className="h-5 w-5 text-loyola-maroon accent-loyola-maroon" />
-                      <label className="ml-3 cursor-pointer text-loyola-gray-700">{option}</label>
-                    </div>
-                  ))}
+                  {sampleQuestion.options.map((option, idx) => {
+                    const isSelected = selectedAnswer === option;
+                    const isCorrect = option === sampleQuestion.correctAnswer;
+                    const isIncorrect = isSelected && !isCorrect;
+                    const showFeedback = selectedAnswer !== null;
+                    
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                          showFeedback
+                            ? isCorrect
+                              ? 'border-green-500 bg-green-50'
+                              : isIncorrect
+                              ? 'border-red-500 bg-red-50'
+                              : 'border-loyola-gray-200'
+                            : 'border-loyola-gray-200 hover:border-loyola-maroon hover:bg-loyola-maroon/5'
+                        }`}
+                        onClick={() => handleAnswerSelect(option)}
+                      >
+                        <input 
+                          type="radio" 
+                          name="sample" 
+                          checked={isSelected}
+                          onChange={() => handleAnswerSelect(option)}
+                          className={`h-5 w-5 ${
+                            showFeedback
+                              ? isCorrect
+                                ? 'text-green-600 accent-green-600'
+                                : isIncorrect
+                                ? 'text-red-600 accent-red-600'
+                                : 'text-loyola-maroon accent-loyola-maroon'
+                              : 'text-loyola-maroon accent-loyola-maroon'
+                          }`}
+                        />
+                        <label className={`ml-3 cursor-pointer ${
+                          showFeedback
+                            ? isCorrect
+                              ? 'text-green-800 font-semibold'
+                              : isIncorrect
+                              ? 'text-red-800 font-semibold'
+                              : 'text-loyola-gray-700'
+                            : 'text-loyola-gray-700'
+                        }`}>
+                          {option}
+                          {showFeedback && isCorrect && (
+                            <span className="ml-2 text-green-600 font-bold">✓ Correct!</span>
+                          )}
+                          {showFeedback && isIncorrect && (
+                            <span className="ml-2 text-red-600 font-bold">✗ Incorrect</span>
+                          )}
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
+                {selectedAnswer && (
+                  <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Try the full assessment</strong> to see more questions and get detailed feedback on your financial literacy knowledge!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
