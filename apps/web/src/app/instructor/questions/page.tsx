@@ -42,6 +42,8 @@ export default function InstructorQuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [instructorName, setInstructorName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({
     domain: '',
     type: '',
@@ -91,6 +93,90 @@ export default function InstructorQuestionsPage() {
       alert('Failed to load questions data');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const parseCsvQuestions = (fileText: string) => {
+    const lines = fileText.trim().split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+
+    return lines.slice(1).map((line) => {
+      const values = line.split(',').map((value) => value.trim());
+      const row: Record<string, string> = {};
+
+      headers.forEach((header, index) => {
+        row[header] = values[index] || '';
+      });
+
+      const optionsField = row.options || row.choices || '';
+      const options = optionsField
+        ? optionsField
+            .split('|')
+            .map((option) => option.trim())
+            .filter(Boolean)
+        : undefined;
+
+      return {
+        question_text: row.question_text || row.question || '',
+        type: (row.type as Question['type']) || 'multiple-choice',
+        domain: row.domain || 'General',
+        subdomain: row.subdomain || '',
+        difficulty: Number(row.difficulty || 1),
+        options,
+        key: row.key || row.answer || undefined,
+        explanation: row.explanation || '',
+      };
+    });
+  };
+
+  const handleFileUpload = async (file: File) => {
+    const token = localStorage.getItem('instructor-token');
+    if (!token) {
+      router.push('/instructor');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadMessage('');
+
+    try {
+      const fileText = await file.text();
+      const parsedQuestions = parseCsvQuestions(fileText).filter(
+        (question) => question.question_text && question.domain
+      );
+
+      if (parsedQuestions.length === 0) {
+        setUploadMessage('No valid rows found in the upload.');
+        return;
+      }
+
+      const response = await fetch('/api/instructor/questions/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questions: parsedQuestions,
+          source: file.name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload questionnaire');
+      }
+
+      setUploadMessage(`Uploaded ${data.insertedCount || parsedQuestions.length} questions.`);
+      loadQuestions(token);
+    } catch (error) {
+      console.error('Error uploading questionnaire:', error);
+      setUploadMessage('Upload failed. Please verify the file format and try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -208,6 +294,54 @@ export default function InstructorQuestionsPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Upload */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-loyola-gray-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+            <div>
+              <p className="text-sm font-semibold text-loyola-maroon uppercase tracking-wide">Questionnaire upload</p>
+              <h2 className="text-xl font-bold text-loyola-gray-900">Import multiple choice and short answer sets</h2>
+              <p className="text-loyola-gray-700 mt-1">
+                Upload a CSV with columns for question_text, type, domain, subdomain, difficulty, options (pipe-separated), key, and explanation.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 px-4 py-2 bg-loyola-maroon text-white rounded-lg cursor-pointer hover:bg-loyola-maroon-dark transition">
+                <FileText className="w-5 h-5" />
+                <span>{isUploading ? 'Uploading...' : 'Upload CSV'}</span>
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) {
+                      handleFileUpload(file);
+                      event.target.value = '';
+                    }
+                  }}
+                  disabled={isUploading}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-loyola-gray-700">
+            <div className="bg-loyola-gold/10 border border-loyola-gold/50 rounded-lg p-3">
+              <p className="font-semibold text-loyola-maroon mb-2">Expected headers</p>
+              <p className="font-mono text-xs break-all">question_text,type,domain,subdomain,difficulty,options,key,explanation</p>
+              <p className="mt-2">Use <strong>|</strong> to separate multiple options inside the <em>options</em> column.</p>
+            </div>
+            <div className="bg-loyola-gray-50 border border-loyola-gray-200 rounded-lg p-3">
+              <p className="font-semibold text-loyola-gray-900 mb-2">Upload status</p>
+              {uploadMessage ? (
+                <p className="text-loyola-gray-800">{uploadMessage}</p>
+              ) : (
+                <p className="text-loyola-gray-600">No upload yet. New rows will appear in the table below after a successful import.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
