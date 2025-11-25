@@ -2,21 +2,29 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl =
   process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
-if (!supabaseUrl) {
-  throw new Error('Missing SUPABASE_URL environment variable')
+export const hasSupabaseCredentials =
+  Boolean(supabaseUrl) && Boolean(supabaseServiceRoleKey)
+
+if (!hasSupabaseCredentials && !isBuildPhase) {
+  throw new Error('Missing Supabase configuration environment variables')
 }
 
-if (!supabaseServiceRoleKey) {
-  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+if (!hasSupabaseCredentials) {
+  console.warn('Supabase credentials are missing. Using placeholder values for build-time steps.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: {
-    persistSession: false,
-  },
-})
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.local',
+  supabaseServiceRoleKey || 'placeholder-key',
+  {
+    auth: {
+      persistSession: false,
+    },
+  }
+)
 
 // Database types for TypeScript
 export type Database = {
