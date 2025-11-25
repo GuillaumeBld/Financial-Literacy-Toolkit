@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 // Verify instructor session token
 async function verifyInstructorToken(token: string) {
   const { data: session, error } = await supabase
@@ -254,10 +256,16 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      courses: instructorCourses.map(ic => ({
-        id: ic.course_id,
-        name: ic.courses?.name || 'Unknown Course'
-      })),
+      courses: instructorCourses.map(ic => {
+        const courseName = Array.isArray(ic.courses) && ic.courses.length > 0
+          ? ic.courses[0]?.name
+          : undefined;
+
+        return {
+          id: ic.course_id,
+          name: courseName || 'Unknown Course'
+        };
+      }),
       analytics
     });
 
