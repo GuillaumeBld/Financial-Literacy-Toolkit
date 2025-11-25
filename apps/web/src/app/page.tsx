@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
+import type { LucideIcon } from 'lucide-react';
 import {
   BarChart3,
   Brain,
@@ -81,7 +83,7 @@ export default function HomePage() {
     }
   ];
 
-  const educatorActions = [
+  const educatorActions: Array<{ label: string; description: string; href: Route; icon: LucideIcon }> = [
     {
       label: 'Launch a pre-assessment',
       description: 'Spin up a class-ready set of questions with pre-set timing and completion reminders.',

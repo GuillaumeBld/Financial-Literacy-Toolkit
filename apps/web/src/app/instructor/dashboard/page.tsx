@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -320,7 +321,7 @@ function ActionCard({
 }: {
   title: string;
   description: string;
-  href: string;
+  href: Route;
 }) {
   const router = useRouter();
   
