@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { hasSupabaseCredentials, supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   console.log('=== TEST API START ===');
   try {
+    if (!hasSupabaseCredentials) {
+      return NextResponse.json({
+        success: false,
+        message: 'Supabase credentials are not configured; skipping connectivity checks.',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     // Test basic connection
     console.log('Testing basic connection...');
     const { data: courses, error: coursesError } = await supabase

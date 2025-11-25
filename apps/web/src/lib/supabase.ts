@@ -5,11 +5,14 @@ const supabaseUrl =
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
-if ((!supabaseUrl || !supabaseServiceRoleKey) && !isBuildPhase) {
+export const hasSupabaseCredentials =
+  Boolean(supabaseUrl) && Boolean(supabaseServiceRoleKey)
+
+if (!hasSupabaseCredentials && !isBuildPhase) {
   throw new Error('Missing Supabase configuration environment variables')
 }
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
+if (!hasSupabaseCredentials) {
   console.warn('Supabase credentials are missing. Using placeholder values for build-time steps.')
 }
 
