@@ -250,6 +250,7 @@ export default function AssessmentPage() {
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
+  const hasSelectedConfidence = currentConfidence > 0;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -369,7 +370,7 @@ export default function AssessmentPage() {
                 const isSelected = answers[currentQuestion.id] === option.id;
                 const isCorrect = currentQuestion.correct_answer === option.id;
                 const isIncorrect = isSelected && !isCorrect;
-                const showFeedback = isSelected && currentQuestion.correct_answer;
+                const showFeedback = isSelected && currentQuestion.correct_answer && hasSelectedConfidence;
                 
                 return (
                   <div
@@ -441,7 +442,7 @@ export default function AssessmentPage() {
                 onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
                 placeholder="Type your answer here..."
               />
-              {answers[currentQuestion.id] && currentQuestion.correct_answer && (
+              {answers[currentQuestion.id] && currentQuestion.correct_answer && hasSelectedConfidence && (
                 <div className={`mt-2 p-3 rounded-lg ${
                   answerCorrectness[currentQuestion.id]
                     ? 'bg-green-50 border border-green-200'
@@ -507,7 +508,7 @@ export default function AssessmentPage() {
 
           <button
             onClick={handleNext}
-            disabled={!answers[currentQuestion.id] || isSubmitting}
+            disabled={!answers[currentQuestion.id] || !hasSelectedConfidence || isSubmitting}
             className="px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             type="button"
           >
