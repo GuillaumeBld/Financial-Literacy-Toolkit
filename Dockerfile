@@ -9,22 +9,23 @@ WORKDIR /app
 # Install dependencies needed for native modules
 RUN apk add --no-cache libc6-compat
 
-# Copy package files
-COPY package.json package-lock.json* ./
-COPY apps/web/package.json ./apps/web/
-COPY pnpm-workspace.yaml ./
+# Copy package files - install dependencies from apps/web where pg is declared
+COPY apps/web/package.json ./apps/web/package.json
+# Copy package-lock.json if it exists (wildcard matches 0 files if missing - handled in RUN)
+COPY apps/web/package-lock.json* ./apps/web/
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Install dependencies from apps/web (where pg and other dependencies are declared)
+WORKDIR /app/apps/web
+RUN if [ -f package-lock.json ]; then npm ci --legacy-peer-deps || npm install --legacy-peer-deps; else npm install --legacy-peer-deps; fi
+WORKDIR /app
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./package.json
-COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/apps/web/package.json ./apps/web/package.json
 
 # Copy application source
 COPY apps/web ./apps/web
@@ -38,8 +39,21 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Ensure public directory exists before build
+RUN mkdir -p /app/apps/web/public
+
 # Build the application
 RUN npm run build
+
+# Verify standalone output was created and show structure for debugging
+RUN ls -la /app/apps/web/.next/ 2>&1 || echo "No .next directory found"
+RUN if [ -d /app/apps/web/.next/standalone ]; then \
+      echo "Standalone directory exists at /app/apps/web/.next/standalone"; \
+      ls -la /app/apps/web/.next/standalone/; \
+    else \
+      echo "Standalone directory NOT found at expected path"; \
+      find /app/apps/web/.next -name "standalone" -type d 2>&1 || echo "Could not find standalone directory anywhere"; \
+    fi
 
 # Stage 3: Runner
 FROM node:18-alpine AS runner
@@ -54,8 +68,14 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
 # With standalone output, the structure is different
+# Copy public directory (created empty if it didn't exist)
 COPY --from=builder /app/apps/web/public ./public
+
+# Copy standalone output - handle different possible locations
+# First, try the standard location
 COPY --from=builder /app/apps/web/.next/standalone ./
+
+# Copy static files
 COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions

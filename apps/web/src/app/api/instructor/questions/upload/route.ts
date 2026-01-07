@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
           subdomain: question.subdomain?.trim() || '',
           difficulty,
           stem: questionText,
-          options: options && options.length > 0 ? JSON.stringify(options) : null,
+          options: options && options.length > 0 ? options : null, // pg driver automatically serializes arrays to JSONB
           key: question.key?.trim() || null,
-          rubric: question.explanation?.trim() ? JSON.stringify({ explanation: question.explanation }) : null,
+          rubric: question.explanation?.trim() ? { explanation: question.explanation } : null, // pg driver automatically serializes objects to JSONB
         }
       })
       .filter(Boolean) as Array<{
@@ -73,9 +73,9 @@ export async function POST(request: NextRequest) {
         subdomain: string
         difficulty: number
         stem: string
-        options: string | null
+        options: string[] | null
         key: string | null
-        rubric: string | null
+        rubric: { explanation: string } | null
       }>
 
     if (sanitizedQuestions.length === 0) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queryOne } from '@/lib/db';
+import { queryOne, query } from '@/lib/db';
 import { verifyInstructorToken } from '@/lib/instructor-auth';
 
 export async function GET(
@@ -125,20 +125,21 @@ export async function PUT(
       options: any;
       key: string | null;
       rubric: any;
+      created_at: string;
     }>(
       `UPDATE items 
        SET type = $1, domain = $2, subdomain = $3, difficulty = $4, stem = $5, options = $6, key = $7, rubric = $8
        WHERE item_id = $9
-       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric`,
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at`,
       [
         type,
         domain,
         subdomain || '',
-        difficulty || 1,
+        difficulty ?? 1, // Use nullish coalescing to preserve 0 as valid difficulty value
         question_text,
-        options ? JSON.stringify(options) : null,
+        options || null, // pg driver automatically serializes objects/arrays to JSONB
         key || null,
-        explanation ? JSON.stringify(explanation) : null,
+        explanation || null, // pg driver automatically serializes objects/arrays to JSONB
         params.id
       ]
     );
@@ -154,7 +155,19 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      question: updatedQuestion
+      question: {
+        item_id: updatedQuestion.item_id,
+        type: updatedQuestion.type,
+        domain: updatedQuestion.domain,
+        subdomain: updatedQuestion.subdomain,
+        difficulty: updatedQuestion.difficulty,
+        question_text: updatedQuestion.stem,
+        options: updatedQuestion.options,
+        key: updatedQuestion.key,
+        explanation: updatedQuestion.rubric,
+        created_at: updatedQuestion.created_at,
+        updated_at: updatedQuestion.created_at
+      }
     });
 
   } catch (error) {
@@ -192,10 +205,10 @@ export async function DELETE(
     }
 
     // Delete the question
-    await queryOne(
+    await query(
       'DELETE FROM items WHERE item_id = $1',
       [params.id]
-      );
+    );
 
     console.log('Question deleted:', params.id);
 

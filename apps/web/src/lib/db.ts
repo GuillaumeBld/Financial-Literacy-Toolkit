@@ -17,9 +17,16 @@ const pool = new Pool({
 });
 
 // Handle pool errors
+// Note: Pool errors on idle connections are common and should not crash the application
+// These can occur due to network issues, database restarts, or connection timeouts
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  console.error('Unexpected error on idle database client', err);
+  // Log the error but don't crash - the pool will handle reconnection automatically
+  // Only exit if this is a critical configuration error
+  if (err.message && err.message.includes('connectionString')) {
+    console.error('Fatal: Database connection string is invalid');
+    process.exit(1);
+  }
 });
 
 /**

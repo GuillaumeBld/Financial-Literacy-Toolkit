@@ -124,17 +124,33 @@ export async function POST(request: NextRequest) {
     console.log('Inserting responses...');
     // Insert responses
       for (const response of responses) {
+        // Ensure raw_answer is properly formatted for JSONB column
+        // The pg driver automatically serializes JavaScript objects/arrays to JSONB
+        // If answer is already an object/array, pass it directly (don't stringify)
+        // If answer is a string, check if it's JSON and parse it, otherwise use as-is
+        let rawAnswer = response.answer;
+        if (typeof rawAnswer === 'string') {
+          // Try to parse if it looks like JSON, otherwise store as string value
+          try {
+            const parsed = JSON.parse(rawAnswer);
+            rawAnswer = parsed;
+          } catch {
+            // Not valid JSON, store as string (pg will handle JSONB serialization)
+            rawAnswer = rawAnswer;
+          }
+        }
+        // pg driver handles JSONB serialization automatically - don't use JSON.stringify()
         await client.query(
           'INSERT INTO responses (attempt_id, item_id, raw_answer, confidence) VALUES ($1, $2, $3, $4)',
-          [attemptId, response.itemId, JSON.stringify(response.answer), response.confidence || null]
-      );
-    }
+          [attemptId, response.itemId, rawAnswer, response.confidence || null]
+        );
+      }
 
     console.log('Responses inserted successfully');
 
       // Calculate basic scores
     let totalScore = 0;
-    let totalItems = responses.length;
+    let scoredItems = 0; // Track only items that were actually scored
 
     for (const response of responses) {
       // Get item details to check answer
@@ -157,19 +173,22 @@ export async function POST(request: NextRequest) {
             );
 
         totalScore += score;
+        scoredItems += 1; // Increment scored items count
       } else {
         // For short answers, mark as pending AI scoring
         totalScore += 50; // Placeholder score
+        scoredItems += 1; // Increment scored items count
           }
-      }
+        }
+        // If item not found, skip scoring (don't increment scoredItems)
     }
 
-    const overallScore = totalItems > 0 ? totalScore / totalItems : 0;
+    const overallScore = scoredItems > 0 ? totalScore / scoredItems : 0;
 
     // Insert overall scores
       await client.query(
         'INSERT INTO scores (attempt_id, overall, by_domain, se_overall, overconfidence_index) VALUES ($1, $2, $3, $4, $5)',
-        [attemptId, overallScore, JSON.stringify({}), 5.0, 0]
+        [attemptId, overallScore, {}, 5.0, 0]
       );
 
       return {

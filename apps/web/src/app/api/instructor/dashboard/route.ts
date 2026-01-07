@@ -55,7 +55,17 @@ export async function GET(request: NextRequest) {
     const courseIds = instructorCourses.map(ic => ic.course_id);
     const targetCourseId = courseId || courseIds[0];
 
-    // Get all attempts for the course(s)
+    // Validate that targetCourseId is one of the instructor's courses
+    const isValidCourse = courseIds.includes(targetCourseId);
+    if (!isValidCourse) {
+      return NextResponse.json({
+        error: 'Invalid course ID or access denied'
+      }, { status: 403 });
+    }
+
+    // Get attempts for the target course (or all courses if no filter specified)
+    const filterCourseIds = courseId ? [targetCourseId] : courseIds;
+    
     let attemptsQuery = `
       SELECT 
         a.attempt_id,
@@ -82,7 +92,7 @@ export async function GET(request: NextRequest) {
       overall: number | null;
       by_domain: any;
       overconfidence_index: number | null;
-    }>(attemptsQuery, [courseIds]);
+    }>(attemptsQuery, [filterCourseIds]);
 
     // Calculate aggregate statistics
     const totalAttempts = attempts.length;

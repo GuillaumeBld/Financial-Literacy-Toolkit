@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queryOne } from '@/lib/db';
+import { queryOne, query } from '@/lib/db';
 import { randomBytes } from 'crypto';
 import { createHash } from 'crypto';
 
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour session
 
-    await queryOne(
-      'INSERT INTO instructor_sessions (instructor_id, token, expires_at) VALUES ($1, $2, $3) RETURNING token',
+    await query(
+      'INSERT INTO instructor_sessions (instructor_id, token, expires_at) VALUES ($1, $2, $3)',
       [instructor.instructor_id, token, expiresAt.toISOString()]
     );
 
