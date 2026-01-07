@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, queryMany, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
+import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   console.log('=== API SUBMISSION START ===');
@@ -44,17 +45,17 @@ export async function POST(request: NextRequest) {
       // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
-        courseCode
+        courseCode as string
       );
 
-      if (!courseData) {
+      if (!courseData || !courseData.pepper) {
         throw new Error('Invalid course code');
       }
       
       console.log('Course found:', courseData.course_id);
 
     // Create hashed student key (FERPA compliant)
-      const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
+      const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId as string);
 
     // Find or create user
       let user = await client.query(
