@@ -251,7 +251,7 @@ export default function HomePage() {
 
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-sm font-medium text-loyola-gray-700">Trusted by Q School of Business</p>
+                <p className="text-sm font-medium text-loyola-gray-700">by Dr, Abol Jalilvand and Guillaume Bolivard</p>
                 <div className="flex items-center mt-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-loyola-gold text-loyola-gold" />
@@ -662,7 +662,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-loyola-gold font-bold text-lg mb-4">Financial Literacy Toolkit</h3>
-              <p className="text-white/80">Empowering financial education at L. University.</p>
+              <p className="text-white/80">Empowering financial education by Dr, Abol Jalilvand and Guillaume Bolivard.</p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
@@ -682,11 +682,11 @@ export default function HomePage() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Connect</h4>
-              <p className="text-white/80">Q School of Business<br />L. University</p>
+              <p className="text-white/80">by Dr, Abol Jalilvand and Guillaume Bolivard</p>
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-sm">
-            <p className="text-white/80">© 2025 L. University. All rights reserved.</p>
+            <p className="text-white/80">© 2025 by Dr, Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
           </div>
         </div>
       </footer>
