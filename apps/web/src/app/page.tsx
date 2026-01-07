@@ -207,7 +207,7 @@ export default function HomePage() {
         <header className="flex justify-between items-center mb-16">
           <div>
             <h1 className="text-3xl font-bold gradient-text">Financial Literacy Toolkit</h1>
-            <p className="text-sm text-loyola-gray-600">L. University - Q School of Business</p>
+            <p className="text-sm text-loyola-gray-600">by Dr, Abol Jalilvand and Guillaume Bolivard</p>
           </div>
           <nav>
             <ul className="flex space-x-6 items-center">
