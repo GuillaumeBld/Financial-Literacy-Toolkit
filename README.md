@@ -20,17 +20,17 @@ git commit -m "Your changes"
 git push origin main
 ```
 
-See `QUICK_DEPLOY.md` for details.
+See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for details.
 
 ## Deployment Status
 
 ✅ **Dokploy Setup**: Complete  
 ✅ **GitHub Auto-Deploy**: Enabled  
 ✅ **PostgreSQL Database**: Created  
-⚠️ **Database Schema**: Needs initialization (see `migration/NEXT_STEPS.md`)  
-⏳ **First Deployment**: Pending (push to GitHub or deploy via Dokploy dashboard)
+✅ **Website**: Live at https://financial-literacy.qualiaai.fr  
+✅ **Styling**: CSS and static files working correctly
 
-**Quick Start**: See `migration/NEXT_STEPS.md` for immediate actions.
+**Deployment Documentation**: See [docs/deployment/](./docs/deployment/) for all deployment guides.
 
 ## Current Status: MVP COMPLETE
 
@@ -129,9 +129,18 @@ See `QUICK_DEPLOY.md` for details.
 │   ├── schema.sql          # PostgreSQL schema
 │   ├── seed.sql            # Sample data
 │   └── rls-policies.sql    # Row Level Security policies
+├── docs/                    # Main documentation
+│   ├── deployment/         # Deployment guides and workflows
+│   ├── troubleshooting/    # Fix guides and issue resolution
+│   └── *.md                # Feature and architecture docs
+├── archive/                 # Archived files and old documentation
+│   ├── migration/          # Old migration notes
+│   └── *.md                # Historical test results and planning docs
 ├── PDF/                     # Financial literacy research PDFs
-├── docs/                    # Documentation (legacy)
-└── *.md                     # Setup and deployment guides
+├── scripts/                 # Utility scripts
+├── Dockerfile               # Production Docker configuration
+├── dokploy.yml             # Dokploy deployment configuration
+└── README.md               # This file
 ```
 
 ---
@@ -174,8 +183,8 @@ npm run dev
 
 ### 5. Deploy to Production
 ```bash
-# Follow VERCEL_DEPLOYMENT.md
-# Deploy takes 5 minutes, costs $0/month
+# See docs/deployment/DEPLOYMENT_WORKFLOW.md
+# Auto-deploy on push to main branch via Dokploy
 ```
 
 ---
@@ -280,7 +289,7 @@ cd apps/web && node test-supabase.js
 ```
 
 ### Environment Variables
-See `GET_SUPABASE_CREDENTIALS.md` for setup instructions.
+See `docs/ENVIRONMENT_VARIABLES.md` for setup instructions.
 
 ---
 
@@ -303,11 +312,23 @@ See `GET_SUPABASE_CREDENTIALS.md` for setup instructions.
 
 ## Documentation
 
-- `SUPABASE_SETUP.md` - Database configuration
-- `VERCEL_DEPLOYMENT.md` - Production deployment
-- `NEXT_STEPS_ROADMAP.md` - Development roadmap
-- `OPTIMAL_TECH_STACK.md` - Technology decisions
-- `FERPA_COMPLIANCE.md` - Privacy and security
+### Main Documentation (`docs/`)
+- **Architecture & Features**: See `docs/ARCHITECTURE.md`, `docs/UX_SPEC.md`, `docs/API_REFERENCE.md`
+- **Security & Compliance**: See `docs/FERPA_COMPLIANCE.md`, `docs/SECURITY_PRIVACY.md`
+- **Development**: See `docs/LOCAL_DEVELOPMENT.md`, `docs/SETUP.md`
+
+### Deployment (`docs/deployment/`)
+- **DEPLOYMENT_WORKFLOW.md** - Main deployment workflow
+- **QUICK_DEPLOY.md** - Quick deployment guide
+- **DOKPLOY_*.md** - Dokploy configuration guides
+
+### Troubleshooting (`docs/troubleshooting/`)
+- **VPS_TROUBLESHOOTING.md** - VPS and deployment issues
+- **STATIC_FILES_FIX.md** - CSS/JS serving fixes
+- **ASSESSMENT_*.md** - Application issue resolutions
+
+### Archived (`archive/`)
+- Historical migration notes, test results, and planning documents
 
 ---
 
@@ -328,4 +349,4 @@ This project is developed for L. University, Q School of Business research purpo
 
 Ready for Q pilot deployment! Built with love for L. University.
 
-_Last updated: 2025-10-25_
+_Last updated: 2026-01-07_
