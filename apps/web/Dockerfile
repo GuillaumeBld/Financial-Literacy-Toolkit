@@ -51,9 +51,19 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
-# With standalone output, the structure is different
+# With standalone output, Next.js creates a minimal server in .next/standalone
+# Since our app is at apps/web, the standalone output is at .next/standalone/apps/web
+# We need to copy the contents of that directory to the root of our container
+
+# Copy public assets
 COPY --from=builder /app/apps/web/public ./public
-COPY --from=builder /app/apps/web/.next/standalone ./
+
+# Copy standalone server files - since app is at apps/web, standalone is at .next/standalone/apps/web
+# Copy the contents of that directory to root (server.js will be at root)
+COPY --from=builder /app/apps/web/.next/standalone/apps/web ./
+
+# Copy static files - these must be at .next/static relative to where server.js runs
+# Static files are always at .next/static regardless of app location
 COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions
