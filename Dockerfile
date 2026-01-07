@@ -66,17 +66,18 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
-# With standalone output, the structure is different
-# Copy public directory (created empty if it didn't exist)
-COPY --from=builder /app/apps/web/public ./public
-
 # Copy standalone output - handle different possible locations
-# First, try the standard location
+# The standalone output includes the server at apps/web/server.js
 COPY --from=builder /app/apps/web/.next/standalone ./
 
-# Copy static files
-COPY --from=builder /app/apps/web/.next/static ./.next/static
+# Copy static files to the correct location relative to standalone server
+# In standalone mode, server runs from /app and executes apps/web/server.js
+# Static files need to be at apps/web/.next/static relative to /app
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+
+# Copy public directory to match server location
+# Public files should be at apps/web/public relative to /app
+COPY --from=builder /app/apps/web/public ./apps/web/public
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
