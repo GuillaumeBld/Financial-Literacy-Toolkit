@@ -198,7 +198,10 @@ export default function InstructorQuestionsPage() {
       }
     });
 
-    return parsed.filter((q): q is CsvQuestion => q !== null && q.question_text !== '' && q.domain !== '');
+    // Filter out null values and invalid questions, with proper type narrowing
+    return parsed.filter((q): q is CsvQuestion => {
+      return q !== null && q.question_text !== '' && q.domain !== '';
+    });
   };
 
   const handleFileUpload = async (file: File) => {
