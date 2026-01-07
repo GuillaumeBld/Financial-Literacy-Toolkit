@@ -122,19 +122,20 @@ export async function POST(request: NextRequest) {
       options: any;
       key: string | null;
       rubric: any;
+      created_at: string;
     }>(
       `INSERT INTO items (type, domain, subdomain, difficulty, stem, options, key, rubric)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric`,
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at`,
       [
         type,
         domain,
         subdomain || '',
-        difficulty || 1,
+        difficulty ?? 1, // Use nullish coalescing to preserve 0 as valid difficulty value
         question_text,
-        options ? JSON.stringify(options) : null,
+        options || null, // pg driver automatically serializes objects/arrays to JSONB
         key || null,
-        explanation ? JSON.stringify(explanation) : null
+        explanation || null // pg driver automatically serializes objects/arrays to JSONB
       ]
     );
 
@@ -149,7 +150,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      question: newQuestion
+      question: {
+        item_id: newQuestion.item_id,
+        type: newQuestion.type,
+        domain: newQuestion.domain,
+        subdomain: newQuestion.subdomain,
+        difficulty: newQuestion.difficulty,
+        question_text: newQuestion.stem,
+        options: newQuestion.options,
+        key: newQuestion.key,
+        explanation: newQuestion.rubric,
+        created_at: newQuestion.created_at,
+        updated_at: newQuestion.created_at
+      }
     });
 
   } catch (error) {

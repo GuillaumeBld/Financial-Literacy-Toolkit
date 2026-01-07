@@ -89,10 +89,8 @@ async function importTable(client, tableName, jsonFile) {
     for (const row of rows) {
       const rowValues = columns.map(col => {
         const value = row[col];
-        // Handle JSONB fields
-        if (typeof value === 'object' && value !== null) {
-          return JSON.stringify(value);
-        }
+        // pg driver automatically serializes JavaScript objects/arrays to JSONB
+        // Pass objects/arrays directly without stringifying
         return value;
       });
       valueClauses.push(`(${rowValues.map((_, i) => `$${paramIndex++}`).join(', ')})`);
