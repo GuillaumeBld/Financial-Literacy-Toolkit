@@ -83,18 +83,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-        // Enroll user in course
-        await client.query(
-          'INSERT INTO enrollments (user_id, course_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-          [user.rows[0].user_id, courseData.course_id, 'student']
-        );
-      } else {
-        // Ensure enrollment exists
-        await client.query(
-          'INSERT INTO enrollments (user_id, course_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-          [user.rows[0].user_id, courseData.course_id, 'student']
-        );
-      }
+      // Enroll user in course (regardless of whether user was created or updated)
+      await client.query(
+        'INSERT INTO enrollments (user_id, course_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [user.rows[0].user_id, courseData.course_id, 'student']
+      );
 
       const userId = user.rows[0].user_id;
 
