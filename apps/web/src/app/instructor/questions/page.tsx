@@ -39,6 +39,443 @@ type FilterOptions = {
   searchTerm: string;
 };
 
+type EditQuestionModalProps = {
+  question: Question | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  domains: string[];
+  subdomains: string[];
+};
+
+function EditQuestionModal({
+  question,
+  isOpen,
+  onClose,
+  onSave,
+  domains,
+  subdomains
+}: EditQuestionModalProps) {
+  const [formData, setFormData] = useState({
+    question_text: question?.question_text || '',
+    type: (question?.type || 'multiple-choice') as 'multiple-choice' | 'short-answer',
+    domain: question?.domain || '',
+    subdomain: question?.subdomain || '',
+    difficulty: question?.difficulty || 1,
+    options: question?.options || ['', '', '', ''],
+    key: question?.key || '',
+    explanation: typeof question?.explanation === 'string' 
+      ? question.explanation 
+      : (question?.explanation as any)?.explanation || ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (question) {
+      setFormData({
+        question_text: question.question_text || '',
+        type: question.type || 'multiple-choice',
+        domain: question.domain || '',
+        subdomain: question.subdomain || '',
+        difficulty: question.difficulty || 1,
+        options: question.options || ['', '', '', ''],
+        key: question.key || '',
+        explanation: typeof question.explanation === 'string' 
+          ? question.explanation 
+          : (question.explanation as any)?.explanation || ''
+      });
+    } else {
+      setFormData({
+        question_text: '',
+        type: 'multiple-choice',
+        domain: '',
+        subdomain: '',
+        difficulty: 1,
+        options: ['', '', '', ''],
+        key: '',
+        explanation: ''
+      });
+    }
+    setError('');
+  }, [question]);
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...formData.options];
+    newOptions[index] = value;
+    setFormData({ ...formData, options: newOptions });
+  };
+
+  const addOption = () => {
+    setFormData({
+      ...formData,
+      options: [...formData.options, '']
+    });
+  };
+
+  const removeOption = (index: number) => {
+    if (formData.options.length > 2) {
+      const newOptions = formData.options.filter((_, i) => i !== index);
+      setFormData({ ...formData, options: newOptions });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem('instructor-token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      // Validate required fields
+      if (!formData.question_text.trim()) {
+        throw new Error('Question text is required');
+      }
+      if (!formData.domain) {
+        throw new Error('Domain is required');
+      }
+      if (formData.type === 'multiple-choice') {
+        const validOptions = formData.options.filter(opt => opt.trim());
+        if (validOptions.length < 2) {
+          throw new Error('Multiple choice questions require at least 2 options');
+        }
+        if (!formData.key.trim()) {
+          throw new Error('Correct answer key is required for multiple choice questions');
+        }
+        // Validate that the key corresponds to a valid option
+        const keyIndex = formData.key.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, etc.
+        if (keyIndex < 0 || keyIndex >= validOptions.length) {
+          throw new Error(`Answer key must be a letter between A and ${String.fromCharCode(65 + validOptions.length - 1)}`);
+        }
+      }
+
+      const payload = {
+        type: formData.type,
+        domain: formData.domain,
+        subdomain: formData.subdomain || '',
+        difficulty: formData.difficulty,
+        question_text: formData.question_text.trim(),
+        options: formData.type === 'multiple-choice' 
+          ? formData.options.filter(opt => opt.trim())
+          : null,
+        key: formData.type === 'multiple-choice' ? formData.key.trim() : null,
+        explanation: formData.explanation.trim() || null
+      };
+
+      const url = question 
+        ? `/api/instructor/questions/${question.item_id}`
+        : '/api/instructor/questions';
+      
+      const method = question ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save question');
+      }
+
+      onSave();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-loyola-gray-200 sticky top-0 bg-white z-10">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-loyola-gray-800">
+              {question ? 'Edit Question' : 'Add New Question'}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-loyola-gray-400 hover:text-loyola-gray-600 text-2xl leading-none"
+              disabled={isSubmitting}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Question Text */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+              Question Text <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.question_text}
+              onChange={(e) => setFormData({ ...formData, question_text: e.target.value })}
+              className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              rows={4}
+              required
+              disabled={isSubmitting}
+              placeholder="Enter the question text..."
+            />
+          </div>
+
+          {/* Question Type */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+              Question Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => {
+                const newType = e.target.value as 'multiple-choice' | 'short-answer';
+                setFormData({ 
+                  ...formData, 
+                  type: newType,
+                  // Reset options and key when switching to short-answer
+                  // Preserve options when switching to multiple-choice if they exist
+                  options: newType === 'multiple-choice' 
+                    ? (formData.options.length > 0 ? formData.options : ['', '', '', ''])
+                    : [],
+                  key: newType === 'short-answer' ? '' : formData.key
+                });
+              }}
+              className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              required
+              disabled={isSubmitting}
+            >
+              <option value="multiple-choice">Multiple Choice</option>
+              <option value="short-answer">Short Answer</option>
+            </select>
+          </div>
+
+          {/* Domain and Subdomain */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+                Domain <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                list="domains-list"
+                value={formData.domain}
+                onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                placeholder="Enter domain (e.g., Numeracy, Borrowing)"
+                required
+                disabled={isSubmitting}
+              />
+              <datalist id="domains-list">
+                {domains.map((domain) => (
+                  <option key={domain} value={domain} />
+                ))}
+              </datalist>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+                Subdomain
+              </label>
+              <input
+                type="text"
+                list="subdomains-list"
+                value={formData.subdomain}
+                onChange={(e) => setFormData({ ...formData, subdomain: e.target.value })}
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                placeholder="Enter subdomain (optional)"
+                disabled={isSubmitting}
+              />
+              <datalist id="subdomains-list">
+                {subdomains.filter(sub => sub).map((subdomain) => (
+                  <option key={subdomain} value={subdomain} />
+                ))}
+              </datalist>
+            </div>
+          </div>
+
+          {/* Difficulty */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+              Difficulty Level <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.difficulty}
+              onChange={(e) => setFormData({ ...formData, difficulty: parseInt(e.target.value) })}
+              className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              required
+              disabled={isSubmitting}
+            >
+              <option value={1}>Easy (1)</option>
+              <option value={2}>Medium (2)</option>
+              <option value={3}>Hard (3)</option>
+            </select>
+          </div>
+
+          {/* Answer Options (for multiple choice) */}
+          {formData.type === 'multiple-choice' && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-semibold text-loyola-gray-700">
+                  Answer Options <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={addOption}
+                  className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark font-medium"
+                  disabled={isSubmitting}
+                >
+                  + Add Option
+                </button>
+              </div>
+              <div className="space-y-2">
+                {formData.options.map((option, index) => {
+                  const optionLetter = String.fromCharCode(65 + index);
+                  const isCorrectAnswer = formData.key.toUpperCase() === optionLetter;
+                  return (
+                    <div 
+                      key={index} 
+                      className={`flex items-center gap-2 p-2 rounded-lg ${
+                        isCorrectAnswer ? 'bg-green-50 border-2 border-green-300' : 'bg-loyola-gray-50'
+                      }`}
+                    >
+                      <span className={`text-sm font-medium w-6 ${
+                        isCorrectAnswer ? 'text-green-700 font-bold' : 'text-loyola-gray-600'
+                      }`}>
+                        {optionLetter}.
+                      </span>
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        className={`flex-1 px-3 py-2 border-2 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon ${
+                          isCorrectAnswer 
+                            ? 'border-green-300 bg-white' 
+                            : 'border-loyola-gray-300'
+                        }`}
+                        placeholder={`Option ${optionLetter}`}
+                        disabled={isSubmitting}
+                      />
+                      {isCorrectAnswer && (
+                        <span className="text-xs text-green-600 font-medium px-2">
+                          ✓ Correct
+                        </span>
+                      )}
+                      {formData.options.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // If removing the correct answer, clear the key
+                            if (isCorrectAnswer) {
+                              setFormData({ ...formData, key: '' });
+                            }
+                            removeOption(index);
+                          }}
+                          className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                          disabled={isSubmitting}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Correct Answer Key (for multiple choice) */}
+          {formData.type === 'multiple-choice' && (
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+                Correct Answer Key <span className="text-red-500">*</span>
+                <span className="text-xs font-normal text-loyola-gray-500 ml-2">
+                  Select the letter of the correct answer
+                </span>
+              </label>
+              <select
+                value={formData.key}
+                onChange={(e) => setFormData({ ...formData, key: e.target.value })}
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                required
+                disabled={isSubmitting}
+              >
+                <option value="">Select correct answer...</option>
+                {formData.options
+                  .map((opt, index) => ({ letter: String.fromCharCode(65 + index), text: opt.trim(), index }))
+                  .filter(({ text }) => text)
+                  .map(({ letter, text }) => (
+                    <option key={letter} value={letter}>
+                      {letter} - {text.substring(0, 50)}{text.length > 50 ? '...' : ''}
+                    </option>
+                  ))}
+              </select>
+              {formData.key && (() => {
+                const keyIndex = formData.key.charCodeAt(0) - 65;
+                const optionText = formData.options[keyIndex]?.trim() || 'No option text';
+                return (
+                  <p className="mt-2 text-sm text-loyola-gray-600">
+                    Selected: <span className="font-medium text-green-600">{formData.key}</span> - {optionText}
+                  </p>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Explanation */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+              Explanation
+            </label>
+            <textarea
+              value={formData.explanation}
+              onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
+              className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              rows={3}
+              disabled={isSubmitting}
+              placeholder="Enter explanation or feedback for this question..."
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-loyola-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-loyola-gray-700 hover:text-loyola-gray-900 border border-loyola-gray-300 rounded-lg hover:bg-loyola-gray-50 transition"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : question ? 'Update Question' : 'Create Question'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function InstructorQuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -693,40 +1130,24 @@ export default function InstructorQuestionsPage() {
 
       {/* Add/Edit Question Modal */}
       {(showAddForm || editingQuestion) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-loyola-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-loyola-gray-800">
-                  {editingQuestion ? 'Edit Question' : 'Add New Question'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowAddForm(false);
-                    setEditingQuestion(null);
-                  }}
-                  className="text-loyola-gray-400 hover:text-loyola-gray-600"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <p className="text-loyola-gray-600 mb-6">
-                Question management form will be implemented here. This would include:
-              </p>
-              <ul className="list-disc list-inside text-loyola-gray-600 space-y-2">
-                <li>Question text input</li>
-                <li>Question type selection</li>
-                <li>Domain and subdomain assignment</li>
-                <li>Difficulty level setting</li>
-                <li>Answer options (for multiple choice)</li>
-                <li>Explanation text</li>
-                <li>Save and cancel actions</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+        <EditQuestionModal
+          question={editingQuestion}
+          isOpen={showAddForm || !!editingQuestion}
+          onClose={() => {
+            setShowAddForm(false);
+            setEditingQuestion(null);
+          }}
+          onSave={() => {
+            const token = localStorage.getItem('instructor-token');
+            if (token) {
+              loadQuestions(token);
+            }
+            setShowAddForm(false);
+            setEditingQuestion(null);
+          }}
+          domains={domains}
+          subdomains={subdomains}
+        />
       )}
     </div>
   );
