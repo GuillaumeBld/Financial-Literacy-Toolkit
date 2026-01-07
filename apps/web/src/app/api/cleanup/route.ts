@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, queryMany, transaction, Database } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
+import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   console.log('=== CLEANUP API START ===');
@@ -17,16 +18,15 @@ export async function POST(request: NextRequest) {
 
     const result = await transaction(async (client) => {
     // Get course
-      const course = await client.query(
-        'SELECT course_id, pepper FROM courses WHERE name = $1',
-        [courseCode]
+      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      const courseData = await findCourseByName(
+        (sql: string, params: any[]) => client.query(sql, params),
+        courseCode
       );
 
-      if (!course.rows || course.rows.length === 0) {
+      if (!courseData) {
         throw new Error('Course not found');
-    }
-
-      const courseData = course.rows[0];
+      }
 
     // Create hashed key
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
