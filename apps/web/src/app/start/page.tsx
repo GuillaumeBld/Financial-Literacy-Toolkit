@@ -41,8 +41,8 @@ export default function StartPage() {
         return;
       }
 
-      // Redirect to onboarding with course code
-      router.push(`/onboarding?courseCode=${encodeURIComponent(courseCode.trim())}`);
+      // Redirect to login with course code
+      router.push(`/login?courseCode=${encodeURIComponent(courseCode.trim())}`);
     } catch (err) {
       console.error('Error validating course:', err);
       setError('Unable to validate course code. Please try again.');
@@ -190,7 +190,7 @@ export default function StartPage() {
 
       <footer className="bg-white border-t border-loyola-gray-200 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 L. University. All rights reserved.</p>
+          <p>© 2025 by Dr, Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
         </div>
       </footer>
     </div>

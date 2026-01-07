@@ -1,6 +1,6 @@
 # Financial Literacy Assessment Platform
 
-AI-assisted pre and post financial literacy assessment for finance students at L. University, Q School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
+AI-assisted pre and post financial literacy assessment for finance students by Dr, Abol Jalilvand and Guillaume Bolivard. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
 **Production**: https://financial-literacy.qualiaai.fr  
@@ -38,7 +38,7 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 - Complete Assessment Flow: Start → Questions → Submit → Results
 - FERPA Compliance: Hashed student IDs, no raw data stored
 - Database: Supabase PostgreSQL with Row Level Security
-- Frontend: Next.js 14 with L. University branding
+- Frontend: Next.js 14 with custom branding
 - Production Ready: Build tested, deployment guides ready
 - Zero Cost: Free Supabase + Vercel tiers
 
@@ -51,10 +51,19 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 ---
 
 ## Institutional Context
-- Institution: L. University, Q School of Business, Finance Department
-- Audience: Finance students in Q courses
+- Institution: by Dr, Abol Jalilvand and Guillaume Bolivard
+- Audience: Finance students in Q courses (specifically Quinn 102 - Financial Literacy)
 - Use Case: Assess student financial literacy before and after class
 - Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
+
+## Research Objectives
+
+This platform supports an independent study evaluating learning outcomes in Quinn 102 (Financial Literacy) during the 2026 offering. The study addresses two primary research questions:
+
+- **RQ1 (Learning gains)**: What is the magnitude of student learning in Quinn 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre to post changes in knowledge?
+- **RQ2 (Heterogeneity)**: Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
+
+For detailed information about the study design, assessment structure, and research methodology, see [`docs/research/independant_study.md`](./docs/research/independant_study.md).
 
 ## Assessment Outcomes
 
@@ -62,12 +71,15 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 - Pre-assessment score, post-assessment score, change metrics
 - Domain-specific deltas and confidence gaps
 - Completion time and response patterns
+- Baseline demographic and socioeconomic covariates (for heterogeneity analysis)
 
 ### Per Course
 - Participation rates and completion funnels
 - Mean pre/post scores with 95% confidence intervals
 - Within-subject effect size analysis
 - Fairness checks and anomaly detection
+- Domain-level analysis (Borrowing & Credit, Investment, Risk Management)
+- Heterogeneity analysis by baseline characteristics
 
 ---
 
@@ -75,7 +87,7 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 
 ### Implemented
 - Frontend: Next.js 14, React 18, TypeScript
-- Styling: Tailwind CSS with L. University branding
+- Styling: Tailwind CSS with custom branding
 - Database: Supabase PostgreSQL with Row Level Security
 - Authentication: FERPA-compliant hashed student IDs
 - Hosting: Vercel (production deployment ready)
@@ -343,10 +355,10 @@ For questions or issues:
 
 ## License
 
-This project is developed for L. University, Q School of Business research purposes.
+This project is developed by Dr, Abol Jalilvand and Guillaume Bolivard for research purposes.
 
 ---
 
-Ready for Q pilot deployment! Built with love for L. University.
+Ready for Q pilot deployment! Built with love by Dr, Abol Jalilvand and Guillaume Bolivard.
 
 _Last updated: 2026-01-07_

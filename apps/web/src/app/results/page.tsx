@@ -177,7 +177,7 @@ export default function ResultsPage() {
           <p className="text-sm text-loyola-gray-600">
             Questions about your results? Contact your instructor or visit the
             <a href="#" className="text-loyola-maroon hover:text-loyola-maroon-dark ml-1">
-              Q School of Business support page
+              support page
             </a>.
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function ResultsPage() {
       <footer className="bg-loyola-maroon text-white py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
           <p className="text-white/80">
-            © 2025 L. University. All rights reserved.
+            © 2025 by Dr, Abol Jalilvand and Guillaume Bolivard. All rights reserved.
           </p>
         </div>
       </footer>

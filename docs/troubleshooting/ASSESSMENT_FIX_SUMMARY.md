@@ -164,9 +164,8 @@ Assessment submissions were failing silently with "Failed to save responses" err
 - ✅ RLS policies enforce data isolation
 - ✅ Service role used only for backend operations
 
-### Anonymization:
-- ✅ "Loyola University" → "L. University"
-- ✅ "Quinlan School of Business" → "Q School of Business"
+### Branding:
+- ✅ Updated to "by Dr, Abol Jalilvand and Guillaume Bolivard"
 - ✅ All branding references updated
 
 ---
