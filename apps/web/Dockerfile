@@ -56,8 +56,10 @@ RUN adduser --system --uid 1001 nextjs
 # Since we build from apps/web, standalone output is at .next/standalone/apps/web
 # We need to copy the entire standalone directory structure
 
-# Copy public assets
+# Copy public assets - copy to both root and apps/web locations
+# Root level for direct URL access, apps/web for server.js relative paths
 COPY --from=builder /app/apps/web/public ./public
+COPY --from=builder /app/apps/web/public ./apps/web/public
 
 # Copy standalone server files - copy entire standalone directory
 # With standalone mode, if app is at apps/web, standalone is at .next/standalone/apps/web
