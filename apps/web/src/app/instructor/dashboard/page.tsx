@@ -254,7 +254,7 @@ export default function InstructorDashboardPage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <ActionCard
                 title="View All Submissions"
                 description="Review individual student responses"
@@ -269,6 +269,11 @@ export default function InstructorDashboardPage() {
                 title="Analytics & Reports"
                 description="Detailed statistical analysis"
                 href="/instructor/analytics"
+              />
+              <ActionCard
+                title="Student Password Reset"
+                description="Reset student passwords (free, no email service needed)"
+                href="/instructor/students"
               />
             </div>
           </>

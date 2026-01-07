@@ -96,39 +96,85 @@ export default function InstructorQuestionsPage() {
     }
   };
 
-  const parseCsvQuestions = (fileText: string) => {
+  /**
+   * Parse CSV line handling quoted fields properly
+   * Handles commas and quotes within field values
+   */
+  const parseCsvLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote (double quote)
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // Field separator (only when not in quotes)
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add last field
+    result.push(current.trim());
+    return result;
+  };
+
+  const parseCsvQuestions = (fileText: string): Question[] => {
     const lines = fileText.trim().split(/\r?\n/).filter(Boolean);
     if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+    // Parse header line
+    const headers = parseCsvLine(lines[0]).map((h) => h.replace(/^"|"$/g, '').trim().toLowerCase());
 
-    return lines.slice(1).map((line) => {
-      const values = line.split(',').map((value) => value.trim());
-      const row: Record<string, string> = {};
+    return lines.slice(1).map((line, lineIndex) => {
+      try {
+        const values = parseCsvLine(line).map((value) => {
+          // Remove surrounding quotes if present
+          return value.replace(/^"|"$/g, '').trim();
+        });
+        
+        const row: Record<string, string> = {};
 
-      headers.forEach((header, index) => {
-        row[header] = values[index] || '';
-      });
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
 
-      const optionsField = row.options || row.choices || '';
-      const options = optionsField
-        ? optionsField
-            .split('|')
-            .map((option) => option.trim())
-            .filter(Boolean)
-        : undefined;
+        const optionsField = row.options || row.choices || '';
+        const options = optionsField
+          ? optionsField
+              .split('|')
+              .map((option) => option.trim())
+              .filter(Boolean)
+          : undefined;
 
-      return {
-        question_text: row.question_text || row.question || '',
-        type: (row.type as Question['type']) || 'multiple-choice',
-        domain: row.domain || 'General',
-        subdomain: row.subdomain || '',
-        difficulty: Number(row.difficulty || 1),
-        options,
-        key: row.key || row.answer || undefined,
-        explanation: row.explanation || '',
-      };
-    });
+        return {
+          question_text: row.question_text || row.question || '',
+          type: (row.type as Question['type']) || 'multiple-choice',
+          domain: row.domain || 'General',
+          subdomain: row.subdomain || '',
+          difficulty: Number(row.difficulty || 1),
+          options,
+          key: row.key || row.answer || undefined,
+          explanation: row.explanation || '',
+        };
+      } catch (error) {
+        console.error(`Error parsing CSV line ${lineIndex + 2}:`, error);
+        return null;
+      }
+    }).filter((q): q is Question => q !== null && q.question_text !== '' && q.domain !== '');
   };
 
   const handleFileUpload = async (file: File) => {
