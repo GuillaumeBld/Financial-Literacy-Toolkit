@@ -2,8 +2,9 @@
 -- This creates a sample course and questions for testing
 
 -- Insert sample course
+-- Note: Course name is "QUINN 102" to match the actual course code used in the application
 INSERT INTO courses (course_id, name, term, pepper) VALUES
-('550e8400-e29b-41d4-a716-446655440000', 'Financial Literacy', 'Fall 2025', 'course_pepper_salt_123456789');
+('550e8400-e29b-41d4-a716-446655440000', 'QUINN 102', 'Fall 2025', 'course_pepper_salt_123456789');
 
 -- Insert sample instruments
 INSERT INTO instruments (instrument_id, name, version, status) VALUES

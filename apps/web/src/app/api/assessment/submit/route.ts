@@ -41,16 +41,16 @@ export async function POST(request: NextRequest) {
     // Use transaction for all database operations
     const result = await transaction(async (client) => {
     // Get course information (including pepper for hashing)
-      const course = await client.query(
-        'SELECT course_id, pepper FROM courses WHERE name = $1 LIMIT 1',
-        [courseCode]
+      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      const courseData = await findCourseByName(
+        (sql: string, params: any[]) => client.query(sql, params),
+        courseCode
       );
 
-      if (!course.rows || course.rows.length === 0) {
+      if (!courseData) {
         throw new Error('Invalid course code');
-    }
-
-      const courseData = course.rows[0];
+      }
+      
       console.log('Course found:', courseData.course_id);
 
     // Create hashed student key (FERPA compliant)

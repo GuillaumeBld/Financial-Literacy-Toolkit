@@ -17,12 +17,18 @@ export async function GET(request: NextRequest) {
     );
 
     // Format courses for dropdown
-    const courseList = courses.map(course => ({
-      id: course.course_id,
-      name: course.name,
-      term: course.term,
-      displayName: course.term ? `${course.name} (${course.term})` : course.name,
-    }));
+    // Map "Financial Literacy" to "QUINN 102" for display (backward compatibility)
+    const courseList = courses.map(course => {
+      // Get display name (maps "Financial Literacy" to "QUINN 102")
+      const displayName = getCourseDisplayName(course.name);
+      
+      return {
+        id: course.course_id,
+        name: course.name, // Keep original name for database queries
+        term: course.term,
+        displayName: course.term ? `${displayName} (${course.term})` : displayName,
+      };
+    });
 
     // If no courses found, return empty array (frontend will handle fallback)
     return NextResponse.json({

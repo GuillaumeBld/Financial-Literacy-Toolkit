@@ -11,7 +11,7 @@ VALUES (
 )
 ON CONFLICT (email) DO NOTHING;
 
--- Link instructor to Financial Literacy course
+-- Link instructor to QUINN 102 course
 INSERT INTO instructor_courses (instructor_id, course_id, access_level)
 SELECT 
   i.instructor_id,
@@ -20,5 +20,5 @@ SELECT
 FROM instructors i
 CROSS JOIN courses c
 WHERE i.email = 'instructor@university.edu'
-  AND c.name = 'Financial Literacy'
+  AND c.name = 'QUINN 102'
 ON CONFLICT (instructor_id, course_id) DO NOTHING;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
+import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,16 +19,15 @@ export async function POST(request: NextRequest) {
     // Use transaction for database operations
     const result = await transaction(async (client) => {
       // Get course information (including pepper for hashing)
-      const course = await client.query(
-        'SELECT course_id, pepper FROM courses WHERE name = $1 LIMIT 1',
-        [courseCode.trim()]
+      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      const courseData = await findCourseByName(
+        (sql: string, params: any[]) => client.query(sql, params),
+        courseCode
       );
 
-      if (!course.rows || course.rows.length === 0) {
+      if (!courseData) {
         throw new Error('Invalid course code');
       }
-
-      const courseData = course.rows[0];
 
       // Create hashed student key (FERPA compliant)
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
