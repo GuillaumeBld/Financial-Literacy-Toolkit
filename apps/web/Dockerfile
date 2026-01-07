@@ -67,7 +67,9 @@ COPY --from=builder /app/apps/web/.next/standalone ./
 # Copy static files - Next.js standalone server expects static files at .next/static
 # relative to where server.js runs. Since server.js is at apps/web/server.js,
 # static files should be at apps/web/.next/static
+# Also copy to root level for URL path /_next/static/ to work
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
