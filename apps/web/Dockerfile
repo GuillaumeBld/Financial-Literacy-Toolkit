@@ -52,18 +52,22 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
 # With standalone output, Next.js creates a minimal server in .next/standalone
-# Since our app is at apps/web, the standalone output is at .next/standalone/apps/web
-# We need to copy the contents of that directory to the root of our container
+# The standalone directory structure mirrors the app structure
+# Since we build from apps/web, standalone output is at .next/standalone/apps/web
+# We need to copy the entire standalone directory structure
 
 # Copy public assets
 COPY --from=builder /app/apps/web/public ./public
 
-# Copy standalone server files - since app is at apps/web, standalone is at .next/standalone/apps/web
-# Copy the contents of that directory to root (server.js will be at root)
-COPY --from=builder /app/apps/web/.next/standalone/apps/web ./
+# Copy standalone server files - copy entire standalone directory
+# This preserves the directory structure that Next.js expects
+# With standalone mode, if app is at apps/web, standalone is at .next/standalone/apps/web
+COPY --from=builder /app/apps/web/.next/standalone ./
 
-# Copy static files - these must be at .next/static relative to where server.js runs
-# Static files are always at .next/static regardless of app location
+# Copy static files - these must be accessible at .next/static relative to server.js
+# The standalone structure includes apps/web, so static files should be at apps/web/.next/static
+# But we also copy them to root .next/static for direct access
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions
@@ -77,8 +81,10 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the application (standalone output puts server.js in root)
-CMD ["node", "server.js"]
+# Start the application
+# With standalone mode, server.js is at apps/web/server.js within the standalone structure
+# But Next.js standalone might put it at the root of standalone, so try both locations
+CMD ["sh", "-c", "if [ -f apps/web/server.js ]; then node apps/web/server.js; else node server.js; fi"]
 
 
 
