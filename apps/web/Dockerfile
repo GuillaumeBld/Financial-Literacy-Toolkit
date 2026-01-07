@@ -50,9 +50,10 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
-COPY --from=builder /app/apps/web/public ./apps/web/public
+# With standalone output, the structure is different
+COPY --from=builder /app/apps/web/public ./public
 COPY --from=builder /app/apps/web/.next/standalone ./
-COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -65,8 +66,8 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the application
-CMD ["node", "apps/web/server.js"]
+# Start the application (standalone output puts server.js in root)
+CMD ["node", "server.js"]
 
 
 
