@@ -1,26 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryMany, queryOne } from '@/lib/db';
+import { verifyInstructorToken } from '@/lib/instructor-auth';
 
 // Verify instructor session token
-async function verifyInstructorToken(token: string) {
-  const { data: session, error } = await supabase
-    .from('instructor_sessions')
-    .select('instructor_id, expires_at')
-    .eq('token_hash', token)
-    .single();
-
-  if (error || !session) {
-    return null;
-  }
-
-  // Check if session expired
-  if (new Date(session.expires_at) < new Date()) {
-    return null;
-  }
-
-  return session.instructor_id;
-}
-
 export async function GET(request: NextRequest) {
   console.log('=== INSTRUCTOR QUESTIONS DATA START ===');
   try {
@@ -44,36 +26,38 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all questions from the item bank
-    const { data: questions, error: questionsError } = await supabase
-      .from('items')
-      .select(`
-        item_id,
-        type,
-        domain,
-        subdomain,
-        difficulty,
-        question_text,
-        options,
-        key,
-        explanation,
-        created_at,
-        updated_at
-      `)
-      .order('created_at', { ascending: false });
+    const questions = await queryMany<{
+      item_id: string;
+      type: string;
+      domain: string;
+      subdomain: string;
+      difficulty: number;
+      stem: string;
+      options: any;
+      key: string | null;
+      rubric: any;
+      created_at: string;
+    }>(
+      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at FROM items ORDER BY created_at DESC'
+    );
 
-    if (questionsError) {
-      console.error('Error fetching questions:', questionsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch questions' },
-        { status: 500 }
-      );
-    }
-
-    console.log('Questions loaded:', questions?.length || 0);
+    console.log('Questions loaded:', questions.length);
 
     return NextResponse.json({
       success: true,
-      questions: questions || []
+      questions: questions.map(q => ({
+        item_id: q.item_id,
+        type: q.type,
+        domain: q.domain,
+        subdomain: q.subdomain,
+        difficulty: q.difficulty,
+        question_text: q.stem,
+        options: q.options,
+        key: q.key,
+        explanation: q.rubric,
+        created_at: q.created_at,
+        updated_at: q.created_at
+      }))
     });
 
   } catch (error) {
@@ -128,23 +112,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the question
-    const { data: newQuestion, error: createError } = await supabase
-      .from('items')
-      .insert({
+    const newQuestion = await queryOne<{
+      item_id: string;
+      type: string;
+      domain: string;
+      subdomain: string;
+      difficulty: number;
+      stem: string;
+      options: any;
+      key: string | null;
+      rubric: any;
+    }>(
+      `INSERT INTO items (type, domain, subdomain, difficulty, stem, options, key, rubric)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric`,
+      [
         type,
         domain,
-        subdomain: subdomain || '',
-        difficulty: difficulty || 1,
+        subdomain || '',
+        difficulty || 1,
         question_text,
-        options: options || null,
-        key: key || null,
-        explanation: explanation || null
-      })
-      .select()
-      .single();
+        options ? JSON.stringify(options) : null,
+        key || null,
+        explanation ? JSON.stringify(explanation) : null
+      ]
+    );
 
-    if (createError) {
-      console.error('Error creating question:', createError);
+    if (!newQuestion) {
       return NextResponse.json(
         { error: 'Failed to create question' },
         { status: 500 }

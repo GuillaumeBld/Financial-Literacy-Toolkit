@@ -3,11 +3,34 @@
 AI-assisted pre and post financial literacy assessment for finance students at L. University, Q School of Business, Finance Department. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
-Deployed on Vercel: https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app
+**Production**: https://financial-literacy.qualiaai.fr  
+**Previous (Vercel)**: https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app
 
 Test Credentials:
 - Course Code: `Financial Literacy`
 - Student ID: `123456789` (any 6-12 digits)
+
+## Quick Update Workflow
+
+**To update the website**: Push changes to GitHub's `main` branch. Dokploy will automatically deploy.
+
+```bash
+git add .
+git commit -m "Your changes"
+git push origin main
+```
+
+See `QUICK_DEPLOY.md` for details.
+
+## Deployment Status
+
+✅ **Dokploy Setup**: Complete  
+✅ **GitHub Auto-Deploy**: Enabled  
+✅ **PostgreSQL Database**: Created  
+⚠️ **Database Schema**: Needs initialization (see `migration/NEXT_STEPS.md`)  
+⏳ **First Deployment**: Pending (push to GitHub or deploy via Dokploy dashboard)
+
+**Quick Start**: See `migration/NEXT_STEPS.md` for immediate actions.
 
 ## Current Status: MVP COMPLETE
 

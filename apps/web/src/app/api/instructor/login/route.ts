@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryOne } from '@/lib/db';
 import { randomBytes } from 'crypto';
+import { createHash } from 'crypto';
 
-// Simple bcrypt-like password verification (you'll need to install bcryptjs)
-// For now, using a simple hash comparison (REPLACE WITH BCRYPT IN PRODUCTION)
+// Simple password verification (REPLACE WITH BCRYPT IN PRODUCTION)
 async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-  const crypto = require('crypto');
-  const hash = crypto.createHash('sha256').update(plainPassword).digest('hex');
+  const hash = createHash('sha256').update(plainPassword).digest('hex');
   return hash === hashedPassword;
 }
 
@@ -24,13 +23,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Find instructor by email
-    const { data: instructor, error: instructorError } = await supabase
-      .from('instructors')
-      .select('id, email, password_hash')
-      .eq('email', email.toLowerCase())
-      .single();
+    const instructor = await queryOne<{
+      instructor_id: string;
+      email: string;
+      hashed_password: string;
+    }>(
+      'SELECT instructor_id, email, hashed_password FROM instructors WHERE email = $1',
+      [email.toLowerCase()]
+    );
 
-    if (instructorError || !instructor) {
+    if (!instructor) {
       console.log('Instructor not found:', email);
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await verifyPassword(password, instructor.password_hash);
+    const isValidPassword = await verifyPassword(password, instructor.hashed_password);
     
     if (!isValidPassword) {
       console.log('Invalid password for:', email);
@@ -54,24 +56,10 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour session
 
-    const { error: sessionError } = await supabase
-      .from('instructor_sessions')
-      .insert({
-        instructor_id: instructor.id,
-        token_hash: token,
-        expires_at: expiresAt.toISOString()
-      });
-
-    if (sessionError) {
-      console.error('Failed to create session:', sessionError);
-      return NextResponse.json(
-        { error: 'Failed to create session' },
-        { status: 500 }
-      );
-    }
-
-    // Note: last_login_at column doesn't exist yet in database
-    // Skipping last login update for now
+    await queryOne(
+      'INSERT INTO instructor_sessions (instructor_id, token, expires_at) VALUES ($1, $2, $3) RETURNING token',
+      [instructor.instructor_id, token, expiresAt.toISOString()]
+    );
 
     console.log('Login successful for:', email);
 
@@ -79,7 +67,7 @@ export async function POST(request: NextRequest) {
       success: true,
       token,
       instructor: {
-        id: instructor.id,
+        id: instructor.instructor_id,
         email: instructor.email,
         name: instructor.email.split('@')[0]
       }

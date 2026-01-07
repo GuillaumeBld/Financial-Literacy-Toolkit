@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryOne } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,20 +14,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if course exists in database
-    const { data: courses, error } = await supabase
-      .from('courses')
-      .select('course_id, name')
-      .eq('name', courseCode.trim());
+    const course = await queryOne<{
+      course_id: string;
+      name: string;
+    }>(
+      'SELECT course_id, name FROM courses WHERE name = $1',
+      [courseCode.trim()]
+    );
 
-    if (error) {
-      console.error('Error checking course:', error);
-      return NextResponse.json(
-        { valid: false, error: 'Unable to validate course code' },
-        { status: 500 }
-      );
-    }
-
-    if (!courses || courses.length === 0) {
+    if (!course) {
       return NextResponse.json({
         valid: false,
         error: 'Course not found'
@@ -37,8 +32,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       valid: true,
       course: {
-        id: courses[0].course_id,
-        name: courses[0].name
+        id: course.course_id,
+        name: course.name
       }
     });
 

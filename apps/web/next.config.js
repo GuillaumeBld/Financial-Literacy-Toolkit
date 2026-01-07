@@ -9,6 +9,8 @@ const nextConfig = {
   experimental: {
     typedRoutes: false,
   },
+  // Enable standalone output for Docker
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
