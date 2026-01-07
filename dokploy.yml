@@ -30,21 +30,26 @@ app:
   # Port configuration
   port: 3000
   
-  # Health check
+  # Health check - uses fast /api/healthz endpoint with database ping
   healthcheck:
-    path: /api/test
+    path: /api/healthz
     interval: 30s
-    timeout: 10s
+    timeout: 3s
     retries: 3
-    start_period: 40s
+    start_period: 30s
   
   # Resource limits
   resources:
     memory: 512M
     cpu: 0.5
   
-  # Restart policy
+  # Restart policy - automatic restart on failure
   restart: unless-stopped
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    max_attempts: 5
+    window: 120s
 
 # Environment variables
 # These should be set in Dokploy UI, but listed here for reference
