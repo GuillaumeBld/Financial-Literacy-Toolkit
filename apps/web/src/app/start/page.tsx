@@ -60,26 +60,30 @@ export default function StartPage() {
     // Validate course code
     setIsValidating(true);
     try {
+      const trimmedCode = courseCode.trim();
+      console.log('Validating course code:', trimmedCode);
+      
       const response = await fetch('/api/courses/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          courseCode: courseCode.trim()
+          courseCode: trimmedCode
         }),
       });
 
       const data = await response.json();
+      console.log('Validation response:', data);
 
       if (!response.ok || !data.valid) {
-        setError('Invalid course code. Please check your course code and try again.');
+        setError(data.error || 'Invalid course code. Please check your course code and try again.');
         setIsValidating(false);
         return;
       }
 
       // Redirect to login with course code
-      router.push(`/login?courseCode=${encodeURIComponent(courseCode.trim())}`);
+      router.push(`/login?courseCode=${encodeURIComponent(trimmedCode)}`);
     } catch (err) {
       console.error('Error validating course:', err);
       setError('Unable to validate course code. Please try again.');
