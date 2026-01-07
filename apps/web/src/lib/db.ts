@@ -1,4 +1,4 @@
-import { Pool, QueryResult, QueryConfig } from 'pg';
+import { Pool, QueryResult, QueryConfig, QueryResultRow } from 'pg';
 
 // Database connection configuration
 const databaseUrl = process.env.DATABASE_URL || '';
@@ -32,7 +32,7 @@ pool.on('error', (err) => {
 /**
  * Execute a SQL query
  */
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string | QueryConfig,
   params?: any[]
 ): Promise<QueryResult<T>> {
@@ -51,7 +51,7 @@ export async function query<T = any>(
 /**
  * Get a single row from a query
  */
-export async function queryOne<T = any>(
+export async function queryOne<T extends QueryResultRow = any>(
   text: string | QueryConfig,
   params?: any[]
 ): Promise<T | null> {
@@ -62,7 +62,7 @@ export async function queryOne<T = any>(
 /**
  * Get multiple rows from a query
  */
-export async function queryMany<T = any>(
+export async function queryMany<T extends QueryResultRow = any>(
   text: string | QueryConfig,
   params?: any[]
 ): Promise<T[]> {
