@@ -165,9 +165,17 @@ async function testConnection() {
     process.exit(1);
   } finally {
     if (client) {
-      client.release();
+      try {
+        client.release();
+      } catch (e) {
+        // Client already released, ignore
+      }
     }
-    await pool.end();
+    try {
+      await pool.end();
+    } catch (e) {
+      // Pool already ended, ignore
+    }
   }
 }
 
