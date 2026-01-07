@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Shield, BarChart3, Brain, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, Shield, BarChart3, Brain, CheckCircle2, TrendingUp, DollarSign, PieChart } from 'lucide-react';
 
 export default function HomePage() {
   const featureCards = [
@@ -36,12 +36,30 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12">
+    <div className="min-h-screen bg-gray-50 text-gray-900 relative overflow-hidden">
+      {/* Decorative background pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32">
+          <DollarSign className="w-full h-full text-loyola-maroon" />
+        </div>
+        <div className="absolute top-40 right-20 w-24 h-24">
+          <TrendingUp className="w-full h-full text-loyola-gold" />
+        </div>
+        <div className="absolute bottom-40 left-20 w-28 h-28">
+          <PieChart className="w-full h-full text-loyola-maroon" />
+        </div>
+        <div className="absolute bottom-20 right-10 w-20 h-20">
+          <BarChart3 className="w-full h-full text-loyola-gold" />
+        </div>
+      </div>
+      
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-loyola-maroon/5 via-transparent to-loyola-gold/5 pointer-events-none"></div>
+      
+      <div className="container mx-auto px-4 py-6 sm:py-8 md:py-12 relative z-10">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12 md:mb-16">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Financial Literacy Toolkit</h1>
-            <p className="text-xs sm:text-sm text-loyola-gray-600">by Dr. Abol Jalilvand and Guillaume Bolivard</p>
           </div>
           <nav>
             <Link href="/start" className="bg-loyola-maroon text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-loyola-maroon-dark transition flex items-center gap-2 text-sm sm:text-base">
@@ -51,13 +69,26 @@ export default function HomePage() {
         </header>
 
         <main className="mb-12 sm:mb-16 md:mb-20">
-          <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
-              Financial Literacy <span className="gradient-text">Assessment</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-              Pre and post assessment platform for finance students to measure financial literacy growth.
-            </p>
+          <div className="text-center mb-8 sm:mb-12 relative">
+            {/* Decorative icons around hero content */}
+            <div className="hidden md:block absolute -left-8 top-1/2 -translate-y-1/2 w-16 h-16 text-loyola-maroon/20">
+              <TrendingUp className="w-full h-full" />
+            </div>
+            <div className="hidden md:block absolute -right-8 top-1/2 -translate-y-1/2 w-16 h-16 text-loyola-gold/20">
+              <PieChart className="w-full h-full" />
+            </div>
+            
+            <div className="flex justify-center items-center gap-4 mb-6 sm:mb-8">
+              <div className="hidden sm:flex items-center gap-2 text-loyola-maroon/30">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8" />
+              </div>
+              <p className="text-xl sm:text-2xl md:text-3xl text-gray-700 max-w-3xl font-medium">
+                Pre and post assessment platform for finance students to measure financial literacy growth.
+              </p>
+              <div className="hidden sm:flex items-center gap-2 text-loyola-gold/30">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8" />
+              </div>
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 sm:mb-12">
               <Link href="/start" className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 sm:px-8 rounded-lg text-center transition flex items-center justify-center gap-2">
