@@ -9,6 +9,8 @@ This document describes the organization of the Financial Literacy Toolkit repos
 ├── apps/web/              # Next.js application source code
 ├── infra/                 # Database schemas and SQL scripts
 ├── docs/                  # Main documentation
+│   ├── research/         # Research and study documentation
+│   ├── implementation/   # Implementation notes and details
 │   ├── deployment/       # Deployment guides and workflows
 │   ├── troubleshooting/  # Fix guides and issue resolution
 │   └── *.md             # Feature, architecture, and API docs
@@ -33,6 +35,13 @@ This document describes the organization of the Financial Literacy Toolkit repos
 - `UX_SPEC.md` - User experience specifications
 - `SECURITY_PRIVACY.md` - Security and privacy policies
 - `FERPA_COMPLIANCE.md` - FERPA compliance documentation
+
+**Research (`docs/research/`):**
+- `independant_study.md` - Complete independent study document
+- `ALIGNMENT_SUMMARY.md` - Platform alignment with research objectives
+
+**Implementation (`docs/implementation/`):**
+- `IMPLEMENTATION_NOTES.md` - Feature implementation details and notes
 
 **Development:**
 - `LOCAL_DEVELOPMENT.md` - Local setup and development
@@ -87,10 +96,55 @@ Historical documentation kept for reference:
 - **Architecture**: See `docs/ARCHITECTURE.md`
 - **API**: See `docs/API_REFERENCE.md`
 
+## File Organization Rules
+
+### Documentation Placement
+
+1. **Research & Study Documentation** → `docs/research/`
+   - Independent study documents
+   - Research objectives and methodology
+   - Alignment analyses
+
+2. **Implementation Documentation** → `docs/implementation/`
+   - Feature implementation notes
+   - Development guides
+   - Implementation checklists
+
+3. **Deployment Documentation** → `docs/deployment/`
+   - Deployment workflows
+   - Platform-specific guides
+   - Status updates
+
+4. **Troubleshooting** → `docs/troubleshooting/`
+   - Issue resolution guides
+   - Fix instructions
+   - Diagnostic procedures
+
+5. **Core Documentation** → `docs/` (root)
+   - Architecture, API, data model
+   - Setup, operations, security
+   - General project documentation
+
+### Root Directory
+
+**Keep Clean**: Only essential files at root:
+- `README.md` - Main project documentation
+- `package.json` - Project dependencies
+- `Dockerfile` - Production container config
+- `dokploy.yml` - Deployment config
+- Configuration files (`.gitignore`, etc.)
+
+**Do NOT place at root**:
+- Documentation files (use `docs/`)
+- Implementation notes (use `docs/implementation/`)
+- Research documents (use `docs/research/`)
+- Scripts (use `scripts/`)
+
 ## Maintenance
 
 - Keep root directory clean - only essential files
 - New documentation should go in appropriate `docs/` subdirectory
 - Archive old/outdated docs to `archive/` rather than deleting
 - Update this file when structure changes
+- Follow naming conventions: UPPERCASE for important docs, lowercase for features
 

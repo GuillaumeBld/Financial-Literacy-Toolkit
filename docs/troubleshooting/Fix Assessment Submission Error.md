@@ -5520,10 +5520,10 @@ Assistant:
 - ✅ **Preserved Functionality**: Tailwind classes and technical references unchanged
 
 ## **Current Branding:**
-- **Institution**: "by Dr, Abol Jalilvand and Guillaume Bolivard"
+- **Institution**: "by Dr. Abol Jalilvand and Guillaume Bolivard"
 
 ## **Live Status:**
-- ✅ **Root (`/`)**: 200 OK - Shows "by Dr, Abol Jalilvand and Guillaume Bolivard"
+- ✅ **Root (`/`)**: 200 OK - Shows "by Dr. Abol Jalilvand and Guillaume Bolivard"
 - ✅ **Start ([/start](cci:7://file:///Users/guillaumebld/Documents/Graduate_Research/Professor%20Abol%20Jalilvand/fall2025/Financial%20literacy-%20abol%20paper/apps/web/src/app/start:0:0-0:0))**: 200 OK - Assessment form accessible
 - ✅ **Production URL**: `https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app`
 
@@ -5901,7 +5901,7 @@ The build completed successfully! Here's what we've accomplished:
 ### **🚀 Live Site Ready:**
 - **Production URL**: `https://web-o0x5tjngq-guillaume-bolivards-projects.vercel.app`
 - **Status**: ✅ All pages return 200 OK
-- **Branding**: Updated to "by Dr, Abol Jalilvand and Guillaume Bolivard"
+- **Branding**: Updated to "by Dr. Abol Jalilvand and Guillaume Bolivard"
 
 ### **🧪 Test the Complete Flow:**
 

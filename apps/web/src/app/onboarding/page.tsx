@@ -8,7 +8,7 @@ import { User, Info, CheckCircle, ChevronRight, ArrowLeft } from 'lucide-react';
 export default function OnboardingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const courseCode = searchParams.get('courseCode') || '';
+  const courseCode = searchParams.get('courseCode') || 'QUINN 102';
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,6 +16,7 @@ export default function OnboardingPage() {
   
   // Form state
   const [studentId, setStudentId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [ageRange, setAgeRange] = useState(''); // B3: 20 or under, Above 20
@@ -46,6 +47,16 @@ export default function OnboardingPage() {
       }
       if (!courseCode.trim()) {
         setError('Course code is required');
+        return;
+      }
+      if (!email.trim()) {
+        setError('Please enter your email address');
+        return;
+      }
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError('Please enter a valid email address');
         return;
       }
       if (!password.trim()) {
@@ -118,6 +129,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           courseCode: courseCode.trim(),
           studentId: studentId.trim(),
+          email: email.trim(),
           password: password.trim(),
           demographic: {
             age_range: ageRange || null, // B3
@@ -149,19 +161,21 @@ export default function OnboardingPage() {
         throw new Error(data.error || 'Failed to save onboarding data');
       }
 
-      // Store session data and redirect to assessment
+      // Store session data
       const sessionData = {
         courseCode: courseCode.trim(),
         studentId: studentId.trim(),
-        attemptType: 'pre',
-        startedAt: new Date().toISOString(),
-        onboardingCompleted: true,
+        userId: data.data.userId,
+        courseId: data.data.courseId,
+        hasCompletedOnboarding: true,
+        loginTime: new Date().toISOString(),
       };
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('assessment-session', JSON.stringify(sessionData));
+        localStorage.setItem('student-session', JSON.stringify(sessionData));
       }
 
+      // Redirect to assessment (user can choose pre or post)
       router.push('/assessment');
     } catch (err: any) {
       console.error('Error submitting onboarding:', err);
@@ -250,6 +264,24 @@ export default function OnboardingPage() {
                 />
                 <p className="mt-1 text-sm text-loyola-gray-500">
                   Your student ID will be securely hashed and never stored in plain text.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                  placeholder="Enter your email address"
+                  required
+                />
+                <p className="mt-1 text-sm text-loyola-gray-500">
+                  We'll use this email to send you password reset links if needed.
                 </p>
               </div>
 
@@ -786,7 +818,7 @@ export default function OnboardingPage() {
 
       <footer className="bg-white border-t border-loyola-gray-200 py-6 mt-12">
         <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 by Dr, Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+          <p>© 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
         </div>
       </footer>
     </div>

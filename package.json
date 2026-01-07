@@ -16,6 +16,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "csv-parse": "^6.1.0",
     "typescript": "5.4.5"
   },
   "pnpm": {

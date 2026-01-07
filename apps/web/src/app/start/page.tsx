@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Settings, User, Clock, Info, CheckCircle } from 'lucide-react';
 
 export default function StartPage() {
-  const [courseCode, setCourseCode] = useState('FINC 000');
+  const [courseCode, setCourseCode] = useState('QUINN 102');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const router = useRouter();
@@ -92,11 +92,11 @@ export default function StartPage() {
                 value={courseCode}
                 onChange={(e) => setCourseCode(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                placeholder="Enter your course code"
+                placeholder="QUINN 102"
                 required
               />
               <p className="mt-1 text-sm text-loyola-gray-500">
-                You'll be asked to provide additional information in the next step.
+                Default: QUINN 102 (Financial Literacy). You can change this if needed.
               </p>
             </div>
 
@@ -190,7 +190,7 @@ export default function StartPage() {
 
       <footer className="bg-white border-t border-loyola-gray-200 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 by Dr, Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+          <p>© 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
         </div>
       </footer>
     </div>

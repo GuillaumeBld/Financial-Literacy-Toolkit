@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash, pbkdf2Sync, randomBytes } from 'crypto';
 
 /**
  * FERPA-Compliant Authentication Utilities
@@ -6,6 +6,34 @@ import { createHash } from 'crypto';
  */
 
 export class AuthUtils {
+  /**
+   * Hash a password using PBKDF2 (can be upgraded to bcrypt in production)
+   * @param password - Plain text password
+   * @returns Hashed password with salt
+   */
+  static hashPassword(password: string): string {
+    const salt = randomBytes(16).toString('hex');
+    const hash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return `${salt}:${hash}`;
+  }
+
+  /**
+   * Verify a password against a hash
+   * @param password - Plain text password to verify
+   * @param hashedPassword - Stored hash (format: salt:hash)
+   * @returns boolean indicating if password matches
+   */
+  static verifyPassword(password: string, hashedPassword: string): boolean {
+    try {
+      const [salt, hash] = hashedPassword.split(':');
+      if (!salt || !hash) return false;
+      
+      const verifyHash = pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+      return hash === verifyHash;
+    } catch {
+      return false;
+    }
+  }
   /**
    * Create a hashed student key for authentication
    * @param coursePepper - Unique salt for the course

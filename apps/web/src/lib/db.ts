@@ -105,18 +105,21 @@ export type Database = {
         Row: {
           user_id: string;
           hashed_student_key: string;
+          hashed_password: string | null;
           sso_provider: string | null;
           created_at: string;
         };
         Insert: {
           user_id?: string;
           hashed_student_key: string;
+          hashed_password?: string | null;
           sso_provider?: string | null;
           created_at?: string;
         };
         Update: {
           user_id?: string;
           hashed_student_key?: string;
+          hashed_password?: string | null;
           sso_provider?: string | null;
           created_at?: string;
         };
@@ -329,16 +332,25 @@ export type Database = {
           profile_id: string;
           user_id: string;
           course_id: string;
-          age: number | null;
-          gender: string | null;
-          race_ethnicity: string | null;
+          // Baseline Demographic Characteristics (B1-B5)
+          gender: string | null; // B1
+          race_ethnicity: string | null; // B2
+          age_range: string | null; // B3
+          first_language: string | null; // B4
+          first_language_other: string | null; // B4: Other specification
+          work_experience: string | null; // B5
+          // Baseline Financial Background & Context (B6-B8)
+          prior_financial_products: any | null; // B6: JSONB array
+          self_rated_financial_knowledge: string | null; // B7
+          financial_stress_frequency: string | null; // B8
+          // Additional Socio-economic data (Optional)
           household_income: string | null;
           parental_education: string | null;
-          employment_status: string | null;
           first_generation_college: boolean | null;
           financial_aid_recipient: boolean | null;
           living_situation: string | null;
           work_study: boolean | null;
+          email: string | null; // Optional email for password recovery
           completed_at: string;
           created_at: string;
           updated_at: string;
@@ -347,16 +359,25 @@ export type Database = {
           profile_id?: string;
           user_id: string;
           course_id: string;
-          age?: number | null;
-          gender?: string | null;
-          race_ethnicity?: string | null;
+          // Baseline Demographic Characteristics (B1-B5)
+          gender?: string | null; // B1
+          race_ethnicity?: string | null; // B2
+          age_range?: string | null; // B3
+          first_language?: string | null; // B4
+          first_language_other?: string | null; // B4: Other specification
+          work_experience?: string | null; // B5
+          // Baseline Financial Background & Context (B6-B8)
+          prior_financial_products?: any | null; // B6: JSONB array
+          self_rated_financial_knowledge?: string | null; // B7
+          financial_stress_frequency?: string | null; // B8
+          // Additional Socio-economic data (Optional)
           household_income?: string | null;
           parental_education?: string | null;
-          employment_status?: string | null;
           first_generation_college?: boolean | null;
           financial_aid_recipient?: boolean | null;
           living_situation?: string | null;
           work_study?: boolean | null;
+          email?: string | null; // Optional email for password recovery
           completed_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -365,19 +386,57 @@ export type Database = {
           profile_id?: string;
           user_id?: string;
           course_id?: string;
-          age?: number | null;
-          gender?: string | null;
-          race_ethnicity?: string | null;
+          // Baseline Demographic Characteristics (B1-B5)
+          gender?: string | null; // B1
+          race_ethnicity?: string | null; // B2
+          age_range?: string | null; // B3
+          first_language?: string | null; // B4
+          first_language_other?: string | null; // B4: Other specification
+          work_experience?: string | null; // B5
+          // Baseline Financial Background & Context (B6-B8)
+          prior_financial_products?: any | null; // B6: JSONB array
+          self_rated_financial_knowledge?: string | null; // B7
+          financial_stress_frequency?: string | null; // B8
+          // Additional Socio-economic data (Optional)
           household_income?: string | null;
           parental_education?: string | null;
-          employment_status?: string | null;
           first_generation_college?: boolean | null;
           financial_aid_recipient?: boolean | null;
           living_situation?: string | null;
           work_study?: boolean | null;
+          email?: string | null; // Optional email for password recovery
           completed_at?: string;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      password_reset_tokens: {
+        Row: {
+          token_id: string;
+          user_id: string;
+          course_id: string;
+          token: string;
+          expires_at: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          token_id?: string;
+          user_id: string;
+          course_id: string;
+          token: string;
+          expires_at: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          token_id?: string;
+          user_id?: string;
+          course_id?: string;
+          token?: string;
+          expires_at?: string;
+          used_at?: string | null;
+          created_at?: string;
         };
       };
     };

@@ -1,6 +1,6 @@
 # Financial Literacy Assessment Platform
 
-AI-assisted pre and post financial literacy assessment for finance students by Dr, Abol Jalilvand and Guillaume Bolivard. Web-based, FERPA-compliant, production-ready MVP.
+AI-assisted pre and post financial literacy assessment for finance students by Dr. Abol Jalilvand and Guillaume Bolivard. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
 **Production**: https://financial-literacy.qualiaai.fr  
@@ -51,7 +51,7 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 ---
 
 ## Institutional Context
-- Institution: by Dr, Abol Jalilvand and Guillaume Bolivard
+- Institution: by Dr. Abol Jalilvand and Guillaume Bolivard
 - Audience: Finance students in Q courses (specifically Quinn 102 - Financial Literacy)
 - Use Case: Assess student financial literacy before and after class
 - Governance: Instructor-led administration, FERPA compliant storage, no raw student IDs
@@ -64,6 +64,8 @@ This platform supports an independent study evaluating learning outcomes in Quin
 - **RQ2 (Heterogeneity)**: Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
 For detailed information about the study design, assessment structure, and research methodology, see [`docs/research/independant_study.md`](./docs/research/independant_study.md).
+
+**Quick Start**: See [`docs/implementation/QUICK_START.md`](./docs/implementation/QUICK_START.md) to execute the baseline covariates implementation.
 
 ## Assessment Outcomes
 
@@ -355,10 +357,10 @@ For questions or issues:
 
 ## License
 
-This project is developed by Dr, Abol Jalilvand and Guillaume Bolivard for research purposes.
+This project is developed by Dr. Abol Jalilvand and Guillaume Bolivard for research purposes.
 
 ---
 
-Ready for Q pilot deployment! Built with love by Dr, Abol Jalilvand and Guillaume Bolivard.
+Ready for Q pilot deployment! Built with love by Dr. Abol Jalilvand and Guillaume Bolivard.
 
 _Last updated: 2026-01-07_
