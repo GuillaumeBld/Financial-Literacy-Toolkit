@@ -161,23 +161,32 @@ export async function POST(request: NextRequest) {
 
         if (item.rows && item.rows.length > 0) {
           const itemData = item.rows[0];
-          if (itemData.type === 'multiple_choice' && itemData.key) {
-        // Simple scoring for multiple choice
-            const isCorrect = response.answer === itemData.key;
-        const score = isCorrect ? 100 : 0;
+          
+          if (itemData.type === 'multiple_choice') {
+            if (itemData.key) {
+              // Simple scoring for multiple choice with answer key
+              const isCorrect = response.answer === itemData.key;
+              const score = isCorrect ? 100 : 0;
 
-        // Update response with score
-            await client.query(
-              'UPDATE responses SET score = $1 WHERE attempt_id = $2 AND item_id = $3',
-              [score, attemptId, response.itemId]
-            );
+              // Update response with score
+              await client.query(
+                'UPDATE responses SET score = $1 WHERE attempt_id = $2 AND item_id = $3',
+                [score, attemptId, response.itemId]
+              );
 
-        totalScore += score;
-        scoredItems += 1; // Increment scored items count
-      } else {
-        // For short answers, mark as pending AI scoring
-        totalScore += 50; // Placeholder score
-        scoredItems += 1; // Increment scored items count
+              totalScore += score;
+              scoredItems += 1; // Increment scored items count
+            } else {
+              // Multiple choice item without answer key - misconfigured, mark as pending
+              // Don't assign placeholder score to prevent inflated assessment scores
+              console.warn(`Multiple choice item ${response.itemId} missing answer key - marking as pending`);
+              // Score remains null, will be handled by AI scoring or manual review
+              // Don't increment scoredItems to exclude from average calculation
+            }
+          } else {
+            // For short answers and other types, mark as pending AI scoring
+            totalScore += 50; // Placeholder score
+            scoredItems += 1; // Increment scored items count
           }
         }
         // If item not found, skip scoring (don't increment scoredItems)

@@ -7,8 +7,6 @@ import { Settings, User, Clock, Info, CheckCircle } from 'lucide-react';
 
 export default function StartPage() {
   const [courseCode, setCourseCode] = useState('FINC 000');
-  const [studentId, setStudentId] = useState('123456789');
-  const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const router = useRouter();
@@ -17,8 +15,8 @@ export default function StartPage() {
     e.preventDefault();
     setError('');
     
-    if (!courseCode || !studentId || !consent) {
-      setError('Please fill in all fields and check the consent box.');
+    if (!courseCode) {
+      setError('Please enter a course code.');
       return;
     }
 
@@ -43,19 +41,8 @@ export default function StartPage() {
         return;
       }
 
-      // Store session data for assessment
-      const sessionData = {
-        courseCode: courseCode.trim(),
-        studentId: studentId.trim(),
-        attemptType: 'pre', // Default to pre-assessment
-        startedAt: new Date().toISOString()
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('assessment-session', JSON.stringify(sessionData));
-      }
-
-      router.push('/assessment');
+      // Redirect to onboarding with course code
+      router.push(`/onboarding?courseCode=${encodeURIComponent(courseCode.trim())}`);
     } catch (err) {
       console.error('Error validating course:', err);
       setError('Unable to validate course code. Please try again.');
@@ -85,7 +72,7 @@ export default function StartPage() {
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Start Your Assessment</h1>
-          <p className="text-loyola-gray-600">Enter your course code to begin</p>
+          <p className="text-loyola-gray-600">Enter your course code to begin the onboarding process</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
@@ -97,7 +84,7 @@ export default function StartPage() {
             )}
             <div className="mb-6">
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                Course Code
+                Course Code <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -108,42 +95,18 @@ export default function StartPage() {
                 placeholder="Enter your course code"
                 required
               />
+              <p className="mt-1 text-sm text-loyola-gray-500">
+                You'll be asked to provide additional information in the next step.
+              </p>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
-                Student ID
-              </label>
-              <input
-                type="text"
-                id="student-id"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                placeholder="Enter your student ID"
-                required
-              />
-            </div>
-
-            <div className="mb-6">
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input
-                    id="consent"
-                    name="consent"
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => setConsent(e.target.checked)}
-                    className="focus:ring-loyola-maroon h-5 w-5 text-loyola-maroon accent-loyola-maroon border-loyola-gray-300 rounded"
-                    required
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="consent" className="font-medium text-gray-700">
-                    I consent to participate
-                  </label>
-                  <p className="text-gray-500">
-                    Your assessment data will be anonymized and used for learning improvement purposes.
+            <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-loyola-maroon mb-2">What's Next?</h3>
+                  <p className="text-sm text-loyola-gray-700">
+                    After validating your course code, you'll complete a brief onboarding form that collects demographic and socio-economic information. This helps us ensure fair and equitable assessment practices.
                   </p>
                 </div>
               </div>
@@ -156,7 +119,7 @@ export default function StartPage() {
                 className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle className="w-5 h-5" />
-                {isValidating ? 'Validating...' : 'Start Assessment'}
+                {isValidating ? 'Validating...' : 'Continue to Onboarding'}
               </button>
               <a
                 href="#"
