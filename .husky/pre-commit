@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+cd apps/web
+
+echo "🔍 Running TypeScript type check..."
+npx tsc --noEmit || {
+  echo "❌ TypeScript errors found. Please fix them before committing."
+  exit 1
+}
+
+echo "✅ TypeScript check passed"
+
+echo "🔍 Running ESLint..."
+npm run lint || {
+  echo "❌ ESLint errors found. Please fix them before committing."
+  exit 1
+}
+
+echo "✅ ESLint check passed"
+

@@ -298,9 +298,28 @@ cd apps/web && npm run dev
 # Build for production
 cd apps/web && npm run build
 
+# Type check (catches syntax errors)
+cd apps/web && npm run type-check
+
+# Lint check
+cd apps/web && npm run lint
+
+# Run all checks
+cd apps/web && npm run check
+
 # Test database connection
 cd apps/web && node test-supabase.js
 ```
+
+### Code Quality Safeguards
+
+This project includes automated checks to prevent errors:
+
+- **Pre-commit hooks**: TypeScript and ESLint checks before each commit
+- **Pre-push hooks**: Build verification before pushing to GitHub
+- **CI/CD pipeline**: Automated checks on every push via GitHub Actions
+
+See [docs/DEVELOPMENT_GUIDE.md](./docs/DEVELOPMENT_GUIDE.md) for details.
 
 ### Environment Variables
 See `docs/ENVIRONMENT_VARIABLES.md` for setup instructions.
