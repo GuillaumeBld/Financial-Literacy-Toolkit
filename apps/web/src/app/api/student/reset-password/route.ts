@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
-        courseCode
+        courseCode as string
       );
 
       if (!courseData) {

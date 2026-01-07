@@ -33,14 +33,17 @@ export async function POST(request: NextRequest) {
       // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
-        courseCode
+        courseCode as string
       );
 
-      if (!courseData) {
+      if (!courseData || !courseData.pepper) {
         throw new Error('Invalid course code');
       }
 
       // Create hashed student key from student ID and course pepper
+      if (!studentId) {
+        throw new Error('Student ID is required');
+      }
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId.trim());
 
       // Find user by hashed_student_key
