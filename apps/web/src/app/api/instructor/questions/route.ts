@@ -36,9 +36,10 @@ export async function GET(request: NextRequest) {
       options: any;
       key: string | null;
       rubric: any;
+      is_active: boolean;
       created_at: string;
     }>(
-      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at FROM items ORDER BY created_at DESC'
+      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, COALESCE(is_active, false) as is_active, created_at FROM items ORDER BY created_at DESC'
     );
 
     console.log('Questions loaded:', questions.length);
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         options: q.options,
         key: q.key,
         explanation: q.rubric,
+        is_active: q.is_active,
         created_at: q.created_at,
         updated_at: q.created_at
       }))
