@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne } from '@/lib/db';
+import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +15,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if course exists in database
-    const course = await queryOne<{
-      course_id: string;
-      name: string;
-    }>(
-      'SELECT course_id, name FROM courses WHERE name = $1',
-      [courseCode.trim()]
+    // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+    const course = await findCourseByName(
+      async (sql: string, params: any[]) => {
+        const result = await queryOne<{
+          course_id: string;
+          name: string;
+          pepper?: string;
+        }>(sql, params);
+        // Convert queryOne result to query format
+        return { rows: result ? [result] : [] };
+      },
+      courseCode
     );
 
     if (!course) {
