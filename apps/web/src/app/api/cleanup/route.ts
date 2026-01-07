@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queryOne, queryMany, transaction } from '@/lib/db';
+import { queryOne, queryMany, transaction, Database } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       );
 
       if (attempts.rows && attempts.rows.length > 0) {
-        const attemptIds = attempts.rows.map(a => a.attempt_id);
+        const attemptIds = (attempts.rows as Array<{ attempt_id: string }>).map((a) => a.attempt_id);
 
       console.log('Deleting scores...');
         await client.query(
