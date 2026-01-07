@@ -5,22 +5,56 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Mail, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
+type Course = {
+  id: string;
+  name: string;
+  term: string;
+  displayName: string;
+};
+
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
+  const [courses, setCourses] = useState<Course[]>([]);
   const [courseCode, setCourseCode] = useState('');
+  const [studentId, setStudentId] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Pre-fill course code from URL if provided, otherwise default to QUINN 102
+  // Load available courses
   useEffect(() => {
-    const urlCourseCode = searchParams.get('courseCode');
-    if (urlCourseCode) {
-      setCourseCode(urlCourseCode);
-    } else {
-      setCourseCode('QUINN 102');
-    }
+    const loadCourses = async () => {
+      try {
+        const response = await fetch('/api/courses/list');
+        const data = await response.json();
+        
+        if (data.success && data.courses && data.courses.length > 0) {
+          setCourses(data.courses);
+          // Pre-fill course code from URL or default to first course
+          const urlCourseCode = searchParams.get('courseCode');
+          if (urlCourseCode) {
+            setCourseCode(urlCourseCode);
+          } else {
+            setCourseCode(data.courses[0].name);
+          }
+        } else {
+          // No courses found or API returned empty - use fallback
+          setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
+          setCourseCode('QUINN 102');
+        }
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        // Fallback to QUINN 102 if API fails
+        setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
+        setCourseCode('QUINN 102');
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    loadCourses();
   }, [searchParams]);
 
   const handleRequestReset = async (e: React.FormEvent) => {
@@ -28,7 +62,7 @@ export default function ForgotPasswordPage() {
     setError('');
     setSuccess('');
 
-    if (!courseCode.trim() || !email.trim()) {
+    if (!courseCode.trim() || !studentId.trim() || !email.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -50,6 +84,7 @@ export default function ForgotPasswordPage() {
         },
         body: JSON.stringify({
           courseCode: courseCode.trim(),
+          studentId: studentId.trim(),
           email: email.trim(),
         }),
       });
@@ -84,7 +119,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Password Recovery</h1>
           <p className="text-loyola-gray-600">
-            Enter your email address and we'll send you a password reset link
+            Enter your Student ID, email address, and course code to receive a password reset link
           </p>
         </div>
 
@@ -108,23 +143,58 @@ export default function ForgotPasswordPage() {
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
                 Course Code <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 id="course-code"
                 value={courseCode}
                 onChange={(e) => setCourseCode(e.target.value)}
-                readOnly={!!searchParams.get('courseCode')}
+                disabled={isLoadingCourses || !!searchParams.get('courseCode')}
                 className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
-                  searchParams.get('courseCode') ? 'bg-loyola-gray-50 text-loyola-gray-600' : ''
+                  searchParams.get('courseCode') || isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
                 }`}
-                placeholder="QUINN 102"
                 required
-              />
-              {!searchParams.get('courseCode') && (
+              >
+                {isLoadingCourses ? (
+                  <option value="">Loading courses...</option>
+                ) : courses.length > 0 ? (
+                  courses.map((course) => (
+                    <option key={course.id} value={course.name}>
+                      {course.displayName}
+                    </option>
+                  ))
+                ) : (
+                  <option value="QUINN 102">QUINN 102 (Financial Literacy)</option>
+                )}
+              </select>
+              {!searchParams.get('courseCode') && !isLoadingCourses && (
                 <p className="mt-1 text-sm text-loyola-gray-500">
-                  Default: QUINN 102 (Financial Literacy)
+                  Select your course from the list
                 </p>
               )}
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
+                Student ID <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-loyola-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="student-id"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                  placeholder="Enter your Student ID"
+                  required
+                />
+              </div>
+              <p className="mt-1 text-sm text-loyola-gray-500">
+                Your Student ID used during registration
+              </p>
             </div>
 
             <div className="mb-6">
