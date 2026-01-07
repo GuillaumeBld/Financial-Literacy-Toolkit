@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Mail, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [courseCode, setCourseCode] = useState('');
   const [email, setEmail] = useState('');

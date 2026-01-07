@@ -2,7 +2,7 @@
 
 ## Overview
 
-Students can recover their passwords using a secure token-based reset system. The system generates a temporary reset token that expires after 1 hour and can only be used once.
+Students can recover their passwords using a secure email-based reset system. The system sends a password reset link to the student's email address. The reset link contains a token that expires after 1 hour and can only be used once.
 
 ## User Flow
 
@@ -10,18 +10,21 @@ Students can recover their passwords using a secure token-based reset system. Th
 
 1. **Request Reset**
    - Student visits `/forgot-password` page
-   - Enters Course Code and Student ID
-   - System validates credentials and generates reset token
-   - Token is displayed to the user (can be copied)
+   - Enters Course Code and Email Address
+   - System validates email and generates reset token
+   - Reset link is sent to student's email address
+   - Success message is displayed (doesn't reveal if email exists - security best practice)
 
-2. **Use Token**
-   - Student copies the reset token
-   - Token is shown on screen with copy button
-   - Student proceeds to password reset form
+2. **Receive Email**
+   - Student receives email with password reset link
+   - Link format: `/reset-password?token=XXX&courseCode=XXX`
+   - Link expires in 1 hour
 
 3. **Reset Password**
+   - Student clicks link in email (or manually navigates to reset page)
    - Student enters:
-     - Reset token
+     - Course Code (pre-filled from link)
+     - Reset Token (pre-filled from link)
      - New password (minimum 8 characters)
      - Confirm password
    - System validates token and updates password
@@ -49,8 +52,8 @@ Students can recover their passwords using a secure token-based reset system. Th
 **Request:**
 ```json
 {
-  "courseCode": "FINC 000",
-  "studentId": "123456789"
+  "courseCode": "QUINN 102",
+  "email": "student@example.com"
 }
 ```
 
@@ -58,26 +61,25 @@ Students can recover their passwords using a secure token-based reset system. Th
 ```json
 {
   "success": true,
-  "message": "Password reset token generated",
-  "token": "a1b2c3d4e5f6...",
-  "expiresAt": "2025-01-15T11:30:00.000Z"
+  "message": "If an account exists with this email, a password reset link has been sent."
 }
 ```
 
 **Response (Error):**
 ```json
 {
-  "error": "Student ID not found"
+  "error": "Please provide a valid email address"
 }
 ```
+
+**Note**: The API always returns success (even if email doesn't exist) to prevent email enumeration attacks.
 
 ### POST `/api/student/reset-password`
 
 **Request:**
 ```json
 {
-  "courseCode": "FINC 000",
-  "studentId": "123456789",
+  "courseCode": "QUINN 102",
   "token": "a1b2c3d4e5f6...",
   "newPassword": "newsecurepassword"
 }
@@ -118,53 +120,74 @@ CREATE TABLE password_reset_tokens (
 
 - Added `email` field (optional) for future email-based recovery
 
-## Token Display
+## Email Delivery
 
-Currently, reset tokens are displayed directly to the user on the forgot password page. This allows:
+The system sends password reset links via email using the `sendPasswordResetEmail` function in `/lib/email.ts`.
 
-1. **Immediate Access**: Student can copy and use the token right away
-2. **No Email Dependency**: Works without email infrastructure
-3. **Instructor Assistance**: Instructors can help students if needed
+### Email Service Integration
 
-### Future Enhancement: Email Delivery
-
-The system is structured to support email delivery:
+Currently, the email sending function is structured but requires an email service to be configured:
 
 ```typescript
-// In forgot-password route.ts
-// TODO: If email is available in student_profiles, send email with reset link
-if (studentProfile.email) {
-  await sendPasswordResetEmail(studentProfile.email, token);
-}
+// In lib/email.ts
+// TODO: Implement with email service (SendGrid, AWS SES, Nodemailer, etc.)
 ```
 
-When email is implemented:
-- Token will be sent to student's email
-- Reset link will be: `/forgot-password?token=XXX&courseCode=XXX&studentId=XXX`
-- Token will be auto-filled from URL parameters
+**To enable email sending**, you need to:
+
+1. **Choose an email service** (recommended: SendGrid, AWS SES, or Resend)
+2. **Install the service SDK** (e.g., `npm install @sendgrid/mail`)
+3. **Set environment variables**:
+   ```env
+   SENDGRID_API_KEY=your_api_key
+   NEXT_PUBLIC_APP_URL=https://your-domain.com
+   ```
+4. **Update `lib/email.ts`** to use the actual email service
+
+### Email Template
+
+The reset email includes:
+- Professional HTML template with L. University branding
+- Clear call-to-action button
+- Plain text fallback
+- Security notice about expiration
+- Direct link and copyable URL
+
+### Reset Link Format
+
+Reset links are in the format:
+```
+/reset-password?token=XXX&courseCode=QUINN%20102
+```
+
+The reset page automatically pre-fills these values from URL parameters.
 
 ## Error Handling
 
 ### Common Errors
 
-1. **"Student ID not found"**
-   - Student hasn't completed onboarding
-   - Invalid student ID entered
+1. **"Please provide a valid email address"**
+   - Invalid email format entered
 
 2. **"No password set for this account"**
    - Student needs to complete onboarding first
 
-3. **"Student not enrolled in this course"**
-   - Student ID doesn't match course enrollment
-
-4. **"Invalid or expired reset token"**
+3. **"Invalid or expired reset token"**
    - Token doesn't exist
    - Token has expired (older than 1 hour)
    - Token was already used
+   - Wrong course code provided
 
-5. **"This reset token has already been used"**
+4. **"This reset token has already been used"**
    - Token was used previously
    - Student needs to request a new token
+
+### Security Features
+
+- **Email Enumeration Prevention**: API always returns success message, even if email doesn't exist
+- **Token Expiration**: Tokens expire after 1 hour
+- **Single Use**: Tokens can only be used once
+- **Course Validation**: Token is validated against course code
 
 ## Migration
 
@@ -182,13 +205,14 @@ This creates:
 ## Usage Example
 
 1. Student forgets password
-2. Visits `/forgot-password?courseCode=FINC%20000`
-3. Enters Student ID
-4. Clicks "Generate Reset Token"
-5. Copies the displayed token
-6. Enters token and new password
-7. Password is reset
-8. Redirected to login page
+2. Visits `/forgot-password?courseCode=QUINN%20102`
+3. Enters Email Address
+4. Clicks "Send Reset Link"
+5. Receives email with reset link
+6. Clicks link in email (or navigates to `/reset-password?token=XXX&courseCode=QUINN%20102`)
+7. Enters new password
+8. Password is reset
+9. Redirected to login page
 
 ## Security Considerations
 
