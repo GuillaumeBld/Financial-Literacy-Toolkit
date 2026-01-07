@@ -150,7 +150,8 @@ def read_all_questions(csv_path: str) -> List[Dict]:
             # Use simplified question if available, otherwise original
             question_text = simplified_question if simplified_question else original_question
             
-            if not question_text or not global_id:
+            # Allow questions even if global_id is empty (some rows might not have it)
+            if not question_text:
                 continue
             
             # Parse options

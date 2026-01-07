@@ -29,6 +29,7 @@ type Question = {
   explanation?: string;
   created_at: string;
   updated_at: string;
+  is_active?: boolean;
 };
 
 type FilterOptions = {
@@ -150,7 +151,7 @@ export default function InstructorQuestionsPage() {
     // Parse header line
     const headers = parseCsvLine(lines[0]).map((h) => h.replace(/^"|"$/g, '').trim().toLowerCase());
 
-    return lines.slice(1).map((line, lineIndex) => {
+    const parsed: (CsvQuestion | null)[] = lines.slice(1).map((line, lineIndex) => {
       try {
         const values = parseCsvLine(line).map((value) => {
           // Remove surrounding quotes if present
@@ -179,9 +180,9 @@ export default function InstructorQuestionsPage() {
             ? 'short-answer' 
             : 'multiple-choice');
 
-        return {
+        const question: CsvQuestion = {
           question_text: row.question_text || row.question || '',
-          type: normalizedType as CsvQuestion['type'],
+          type: normalizedType,
           domain: row.domain || 'General',
           subdomain: row.subdomain || '',
           difficulty: Number(row.difficulty || 1),
@@ -189,11 +190,15 @@ export default function InstructorQuestionsPage() {
           key: row.key || row.answer || undefined,
           explanation: row.explanation || '',
         };
+
+        return question;
       } catch (error) {
         console.error(`Error parsing CSV line ${lineIndex + 2}:`, error);
         return null;
       }
-    }).filter((q): q is CsvQuestion => q !== null && q.question_text !== '' && q.domain !== '');
+    });
+
+    return parsed.filter((q): q is CsvQuestion => q !== null && q.question_text !== '' && q.domain !== '');
   };
 
   const handleFileUpload = async (file: File) => {

@@ -5,23 +5,56 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Lock, Info, AlertCircle } from 'lucide-react';
 
+type Course = {
+  id: string;
+  name: string;
+  term: string;
+  displayName: string;
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [courses, setCourses] = useState<Course[]>([]);
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [error, setError] = useState('');
 
-  // Pre-fill course code from URL if provided, otherwise default to QUINN 102
+  // Load available courses
   useEffect(() => {
-    const urlCourseCode = searchParams.get('courseCode');
-    if (urlCourseCode) {
-      setCourseCode(urlCourseCode);
-    } else {
-      setCourseCode('QUINN 102');
-    }
+    const loadCourses = async () => {
+      try {
+        const response = await fetch('/api/courses/list');
+        const data = await response.json();
+        
+        if (data.success && data.courses && data.courses.length > 0) {
+          setCourses(data.courses);
+          // Pre-fill course code from URL or default to first course
+          const urlCourseCode = searchParams.get('courseCode');
+          if (urlCourseCode) {
+            setCourseCode(urlCourseCode);
+          } else {
+            setCourseCode(data.courses[0].name);
+          }
+        } else {
+          // No courses found or API returned empty - use fallback
+          setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
+          setCourseCode('QUINN 102');
+        }
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        // Fallback to QUINN 102 if API fails
+        setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
+        setCourseCode('QUINN 102');
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    loadCourses();
   }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -116,21 +149,31 @@ export default function LoginPage() {
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
                 Course Code <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 id="course-code"
                 value={courseCode}
                 onChange={(e) => setCourseCode(e.target.value)}
-                readOnly={!!searchParams.get('courseCode')}
+                disabled={isLoadingCourses || !!searchParams.get('courseCode')}
                 className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
-                  searchParams.get('courseCode') ? 'bg-loyola-gray-50 text-loyola-gray-600' : ''
+                  searchParams.get('courseCode') || isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
                 }`}
-                placeholder="QUINN 102"
                 required
-              />
-              {!searchParams.get('courseCode') && (
+              >
+                {isLoadingCourses ? (
+                  <option value="">Loading courses...</option>
+                ) : courses.length > 0 ? (
+                  courses.map((course) => (
+                    <option key={course.id} value={course.name}>
+                      {course.displayName}
+                    </option>
+                  ))
+                ) : (
+                  <option value="QUINN 102">QUINN 102 (Financial Literacy)</option>
+                )}
+              </select>
+              {!searchParams.get('courseCode') && !isLoadingCourses && (
                 <p className="mt-1 text-sm text-loyola-gray-500">
-                  Default: QUINN 102 (Financial Literacy)
+                  Select your course from the list
                 </p>
               )}
             </div>
