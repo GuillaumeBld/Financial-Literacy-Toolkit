@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryMany } from '@/lib/db';
+import { getCourseDisplayName } from '@/lib/course-utils';
 
 /**
  * Get list of available courses for student selection
