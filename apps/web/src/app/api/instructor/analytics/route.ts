@@ -1,27 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryMany } from '@/lib/db';
+import { verifyInstructorToken } from '@/lib/instructor-auth';
 
 export const dynamic = 'force-dynamic';
-
-// Verify instructor session token
-async function verifyInstructorToken(token: string) {
-  const { data: session, error } = await supabase
-    .from('instructor_sessions')
-    .select('instructor_id, expires_at')
-    .eq('token_hash', token)
-    .single();
-
-  if (error || !session) {
-    return null;
-  }
-
-  // Check if session expired
-  if (new Date(session.expires_at) < new Date()) {
-    return null;
-  }
-
-  return session.instructor_id;
-}
 
 export async function GET(request: NextRequest) {
   console.log('=== INSTRUCTOR ANALYTICS DATA START ===');
@@ -50,10 +31,16 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId');
 
     // Get instructor's courses
-    const { data: instructorCourses } = await supabase
-      .from('instructor_courses')
-      .select('course_id, courses(course_id, name)')
-      .eq('instructor_id', instructorId);
+    const instructorCourses = await queryMany<{
+      course_id: string;
+      course_name: string;
+    }>(
+      `SELECT ic.course_id, c.name as course_name
+       FROM instructor_courses ic
+       JOIN courses c ON ic.course_id = c.course_id
+       WHERE ic.instructor_id = $1`,
+      [instructorId]
+    );
 
     if (!instructorCourses || instructorCourses.length === 0) {
       return NextResponse.json({
@@ -68,44 +55,41 @@ export async function GET(request: NextRequest) {
     const targetCourseId = courseId || courseIds[0];
 
     // Get all attempts for analysis
-    let attemptsQuery = supabase
-      .from('attempts')
-      .select(`
-        attempt_id,
-        user_id,
-        course_id,
-        attempt_type,
-        submitted_at,
-        duration_s,
-        scores(overall, by_domain, overconfidence_index)
-      `);
-
-    if (courseId) {
-      attemptsQuery = attemptsQuery.eq('course_id', courseId);
-    } else {
-      attemptsQuery = attemptsQuery.in('course_id', courseIds);
-    }
-
-    const { data: attempts, error: attemptsError } = await attemptsQuery;
-
-    if (attemptsError) {
-      console.error('Error fetching attempts:', attemptsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch attempts' },
-        { status: 500 }
-      );
-    }
+    let attemptsQuery = `
+      SELECT 
+        a.attempt_id,
+        a.user_id,
+        a.course_id,
+        a.attempt_type,
+        a.submitted_at,
+        a.duration_s,
+        s.overall,
+        s.by_domain,
+        s.overconfidence_index
+      FROM attempts a
+      LEFT JOIN scores s ON a.attempt_id = s.attempt_id
+      WHERE a.course_id = ANY($1::uuid[])
+    `;
+    
+    const attempts = await queryMany<{
+      attempt_id: string;
+      user_id: string;
+      course_id: string;
+      attempt_type: string;
+      submitted_at: string | null;
+      duration_s: number | null;
+      overall: number | null;
+      by_domain: any;
+      overconfidence_index: number | null;
+    }>(attemptsQuery, [courseIds]);
 
     // Calculate summary statistics
-    const totalAttempts = attempts?.length || 0;
-    const completedAttempts = attempts?.filter(a => a.submitted_at) || [];
-    const uniqueStudents = new Set(attempts?.map(a => a.user_id)).size;
+    const totalAttempts = attempts.length;
+    const completedAttempts = attempts.filter(a => a.submitted_at);
+    const uniqueStudents = new Set(attempts.map(a => a.user_id)).size;
     
     const avgScore = completedAttempts.length > 0
-      ? completedAttempts.reduce((sum, a) => {
-          const scoreData = Array.isArray(a.scores) ? a.scores[0] : a.scores;
-          return sum + (scoreData?.overall || 0);
-        }, 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / completedAttempts.length
       : 0;
 
     const avgDuration = completedAttempts.length > 0
@@ -118,9 +102,8 @@ export async function GET(request: NextRequest) {
     const domainScores: Record<string, { scores: number[], preScores: number[], postScores: number[] }> = {};
     
     completedAttempts.forEach(attempt => {
-      const scoreData = Array.isArray(attempt.scores) ? attempt.scores[0] : attempt.scores;
-      if (scoreData?.by_domain) {
-        Object.entries(scoreData.by_domain).forEach(([domain, score]) => {
+      if (attempt.by_domain) {
+        Object.entries(attempt.by_domain).forEach(([domain, score]) => {
           if (!domainScores[domain]) {
             domainScores[domain] = { scores: [], preScores: [], postScores: [] };
           }
@@ -160,8 +143,7 @@ export async function GET(request: NextRequest) {
 
     const scoreDistribution = scoreRanges.map(range => {
       const count = completedAttempts.filter(attempt => {
-        const scoreData = Array.isArray(attempt.scores) ? attempt.scores[0] : attempt.scores;
-        const score = scoreData?.overall || 0;
+        const score = attempt.overall || 0;
         return score >= range.min && score <= range.max;
       }).length;
       
@@ -190,14 +172,11 @@ export async function GET(request: NextRequest) {
     ].map(period => {
       const cutoffDate = new Date(now.getTime() - (period.days * 24 * 60 * 60 * 1000));
       const periodAttempts = completedAttempts.filter(attempt => 
-        new Date(attempt.submitted_at) >= cutoffDate
+        attempt.submitted_at && new Date(attempt.submitted_at) >= cutoffDate
       );
       
       const avgScore = periodAttempts.length > 0
-        ? periodAttempts.reduce((sum, a) => {
-            const scoreData = Array.isArray(a.scores) ? a.scores[0] : a.scores;
-            return sum + (scoreData?.overall || 0);
-          }, 0) / periodAttempts.length
+        ? periodAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / periodAttempts.length
         : 0;
 
       return {
@@ -211,8 +190,7 @@ export async function GET(request: NextRequest) {
     const studentProgressMap: Record<string, { preScore: number, postScore: number, attempts: number }> = {};
     
     completedAttempts.forEach(attempt => {
-      const scoreData = Array.isArray(attempt.scores) ? attempt.scores[0] : attempt.scores;
-      const score = scoreData?.overall || 0;
+      const score = attempt.overall || 0;
       
       if (!studentProgressMap[attempt.user_id]) {
         studentProgressMap[attempt.user_id] = { preScore: 0, postScore: 0, attempts: 0 };
@@ -256,16 +234,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      courses: instructorCourses.map(ic => {
-        const courseName = Array.isArray(ic.courses) && ic.courses.length > 0
-          ? ic.courses[0]?.name
-          : undefined;
-
-        return {
+      courses: instructorCourses.map(ic => ({
           id: ic.course_id,
-          name: courseName || 'Unknown Course'
-        };
-      }),
+        name: ic.course_name
+      })),
       analytics
     });
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryOne, queryMany, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -15,87 +15,96 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const result = await transaction(async (client) => {
     // Get course
-    const { data: course } = await supabase
-      .from('courses')
-      .select('course_id, pepper')
-      .eq('name', courseCode)
-      .single();
-
-    if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
+      const course = await client.query(
+        'SELECT course_id, pepper FROM courses WHERE name = $1',
+        [courseCode]
       );
+
+      if (!course.rows || course.rows.length === 0) {
+        throw new Error('Course not found');
     }
+
+      const courseData = course.rows[0];
 
     // Create hashed key
-    const hashedStudentKey = AuthUtils.createHashedStudentKey(course.pepper, studentId);
+      const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
 
     // Find user
-    const { data: user } = await supabase
-      .from('users')
-      .select('user_id')
-      .eq('hashed_student_key', hashedStudentKey)
-      .single();
-
-    if (!user) {
-      return NextResponse.json(
-        { message: 'No data found for this student' },
-        { status: 200 }
+      const user = await client.query(
+        'SELECT user_id FROM users WHERE hashed_student_key = $1',
+        [hashedStudentKey]
       );
+
+      if (!user.rows || user.rows.length === 0) {
+        return { message: 'No data found for this student', deletedUserId: null };
     }
 
-    // Get all attempts for this user
-    const { data: attempts } = await supabase
-      .from('attempts')
-      .select('attempt_id')
-      .eq('user_id', user.user_id);
+      const userId = user.rows[0].user_id;
 
-    if (attempts && attempts.length > 0) {
-      const attemptIds = attempts.map(a => a.attempt_id);
+    // Get all attempts for this user
+      const attempts = await client.query(
+        'SELECT attempt_id FROM attempts WHERE user_id = $1',
+        [userId]
+      );
+
+      if (attempts.rows && attempts.rows.length > 0) {
+        const attemptIds = attempts.rows.map(a => a.attempt_id);
 
       console.log('Deleting scores...');
-      await supabase
-        .from('scores')
-        .delete()
-        .in('attempt_id', attemptIds);
+        await client.query(
+          'DELETE FROM scores WHERE attempt_id = ANY($1)',
+          [attemptIds]
+        );
 
       console.log('Deleting responses...');
-      await supabase
-        .from('responses')
-        .delete()
-        .in('attempt_id', attemptIds);
+        await client.query(
+          'DELETE FROM responses WHERE attempt_id = ANY($1)',
+          [attemptIds]
+        );
 
       console.log('Deleting attempts...');
-      await supabase
-        .from('attempts')
-        .delete()
-        .eq('user_id', user.user_id);
+        await client.query(
+          'DELETE FROM attempts WHERE user_id = $1',
+          [userId]
+        );
     }
 
     console.log('Deleting enrollments...');
-    await supabase
-      .from('enrollments')
-      .delete()
-      .eq('user_id', user.user_id);
+      await client.query(
+        'DELETE FROM enrollments WHERE user_id = $1',
+        [userId]
+      );
 
     console.log('Deleting user...');
-    await supabase
-      .from('users')
-      .delete()
-      .eq('user_id', user.user_id);
+      await client.query(
+        'DELETE FROM users WHERE user_id = $1',
+        [userId]
+      );
+
+      return { message: 'Student data cleaned up successfully', deletedUserId: userId };
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Student data cleaned up successfully',
-      deletedUserId: user.user_id
+      message: result.message,
+      deletedUserId: result.deletedUserId
     });
 
   } catch (error) {
     console.error('=== CLEANUP API ERROR ===', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    
+    if (errorMessage.includes('Course not found')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }

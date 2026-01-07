@@ -1,27 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryMany } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const { data: items, error } = await supabase
-      .from('items')
-      .select('item_id, stem, type, domain, options, key')
-      .order('item_id');
-
-    if (error) {
-      return NextResponse.json(
-        { error: 'Failed to fetch items', details: error },
-        { status: 500 }
+    const items = await queryMany<{
+      item_id: string;
+      stem: string;
+      type: string;
+      domain: string;
+      options: any;
+      key: string | null;
+    }>(
+      'SELECT item_id, stem, type, domain, options, key FROM items ORDER BY item_id'
       );
-    }
 
     return NextResponse.json({
       success: true,
       items,
-      count: items?.length || 0
+      count: items.length
     });
 
   } catch (error) {
+    console.error('Error fetching items:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

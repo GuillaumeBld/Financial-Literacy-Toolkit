@@ -1,27 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, hasSupabaseCredentials } from '@/lib/supabase'
-
-// Verify instructor session token
-async function verifyInstructorToken(token: string) {
-  const { data: session, error } = await supabase
-    .from('instructor_sessions')
-    .select('instructor_id, expires_at')
-    .eq('token_hash', token)
-    .single()
-
-  if (error || !session) {
-    return null
-  }
-
-  // Check if session expired
-  if (new Date(session.expires_at) < new Date()) {
-    return null
-  }
-
-  return session.instructor_id
-}
+import { queryMany, transaction } from '@/lib/db'
+import { verifyInstructorToken } from '@/lib/instructor-auth'
 
 type IncomingQuestion = {
   type?: string
@@ -36,13 +17,6 @@ type IncomingQuestion = {
 
 export async function POST(request: NextRequest) {
   console.log('=== BULK QUESTIONNAIRE UPLOAD START ===')
-
-  if (!hasSupabaseCredentials) {
-    return NextResponse.json(
-      { error: 'Supabase credentials are not configured' },
-      { status: 503 }
-    )
-  }
 
   try {
     const authHeader = request.headers.get('authorization')
@@ -68,7 +42,7 @@ export async function POST(request: NextRequest) {
       .map((question, idx) => {
         const questionText = question.question_text?.trim()
         const domain = question.domain?.trim()
-        const type = question.type?.trim() || 'multiple-choice'
+        const type = question.type?.trim() || 'multiple_choice'
 
         if (!questionText || !domain) {
           console.warn(`Skipping row ${idx + 1} due to missing required fields`)
@@ -87,13 +61,22 @@ export async function POST(request: NextRequest) {
           domain,
           subdomain: question.subdomain?.trim() || '',
           difficulty,
-          question_text: questionText,
-          options: options && options.length > 0 ? options : null,
+          stem: questionText,
+          options: options && options.length > 0 ? JSON.stringify(options) : null,
           key: question.key?.trim() || null,
-          explanation: question.explanation?.trim() || null,
+          rubric: question.explanation?.trim() ? JSON.stringify({ explanation: question.explanation }) : null,
         }
       })
-      .filter(Boolean) as Record<string, unknown>[]
+      .filter(Boolean) as Array<{
+        type: string
+        domain: string
+        subdomain: string
+        difficulty: number
+        stem: string
+        options: string | null
+        key: string | null
+        rubric: string | null
+      }>
 
     if (sanitizedQuestions.length === 0) {
       return NextResponse.json(
@@ -102,25 +85,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: insertedQuestions, error: insertError } = await supabase
-      .from('items')
-      .insert(sanitizedQuestions)
-      .select()
+    // Insert questions in a transaction
+    const insertedQuestions = await transaction(async (client) => {
+      const results = []
+      for (const question of sanitizedQuestions) {
+        const result = await client.query(
+          `INSERT INTO items (type, domain, subdomain, difficulty, stem, options, key, rubric)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric`,
+          [
+            question.type,
+            question.domain,
+            question.subdomain,
+            question.difficulty,
+            question.stem,
+            question.options,
+            question.key,
+            question.rubric
+          ]
+        )
+        results.push(result.rows[0])
+      }
+      return results
+    })
 
-    if (insertError) {
-      console.error('Error uploading questionnaire:', insertError)
-      return NextResponse.json(
-        { error: 'Failed to save questionnaire rows' },
-        { status: 500 }
-      )
-    }
-
-    console.log('Uploaded questionnaire rows:', insertedQuestions?.length || 0)
+    console.log('Uploaded questionnaire rows:', insertedQuestions.length)
 
     return NextResponse.json({
       success: true,
-      insertedCount: insertedQuestions?.length || sanitizedQuestions.length,
-      questions: insertedQuestions ?? [],
+      insertedCount: insertedQuestions.length,
+      questions: insertedQuestions,
     })
   } catch (error) {
     console.error('=== BULK QUESTIONNAIRE UPLOAD ERROR ===', error)

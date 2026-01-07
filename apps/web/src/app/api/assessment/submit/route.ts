@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { queryOne, queryMany, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -38,235 +38,172 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use transaction for all database operations
+    const result = await transaction(async (client) => {
     // Get course information (including pepper for hashing)
-    const { data: courses, error: courseError } = await supabase
-      .from('courses')
-      .select('course_id, pepper')
-      .eq('name', courseCode);
-
-    if (courseError || !courses || courses.length === 0) {
-      console.error('Course lookup error:', courseError);
-      return NextResponse.json(
-        { error: 'Invalid course code' },
-        { status: 404 }
+      const course = await client.query(
+        'SELECT course_id, pepper FROM courses WHERE name = $1 LIMIT 1',
+        [courseCode]
       );
+
+      if (!course.rows || course.rows.length === 0) {
+        throw new Error('Invalid course code');
     }
 
-    // Use first course if multiple exist
-    const course = courses[0];
-    console.log('Course found:', course.course_id);
+      const courseData = course.rows[0];
+      console.log('Course found:', courseData.course_id);
 
-    console.log('Creating hashed student key...');
     // Create hashed student key (FERPA compliant)
-    const hashedStudentKey = AuthUtils.createHashedStudentKey(course.pepper, studentId);
+      const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
 
-    console.log('Looking up existing user...');
     // Find or create user
-    let { data: user, error: userError } = await supabase
-      .from('users')
-      .select('user_id')
-      .eq('hashed_student_key', hashedStudentKey)
-      .single();
+      let user = await client.query(
+        'SELECT user_id FROM users WHERE hashed_student_key = $1',
+        [hashedStudentKey]
+      );
 
-    if (userError && userError.code === 'PGRST116') { // Not found
+      if (!user.rows || user.rows.length === 0) {
       console.log('User not found, creating new user...');
       // Create new user
-      const { data: newUser, error: createUserError } = await supabase
-        .from('users')
-        .insert({
-          hashed_student_key: hashedStudentKey,
-          sso_provider: 'hashed'
-        })
-        .select('user_id')
-        .single();
-
-      if (createUserError) {
-        console.error('Error creating user:', createUserError);
-        return NextResponse.json(
-          { error: 'Failed to create user' },
-          { status: 500 }
+        const newUser = await client.query(
+          'INSERT INTO users (hashed_student_key, sso_provider) VALUES ($1, $2) RETURNING user_id',
+          [hashedStudentKey, 'hashed']
         );
-      }
 
       user = newUser;
-      console.log('New user created:', user.user_id);
+        console.log('New user created:', user.rows[0].user_id);
 
       // Enroll user in course
       console.log('Enrolling user in course...');
-      const { error: enrollError } = await supabase
-        .from('enrollments')
-        .insert({
-          user_id: user.user_id,
-          course_id: course.course_id,
-          role: 'student'
-        });
-
-      if (enrollError) {
-        console.error('Error enrolling user:', enrollError);
-        // Don't fail the request, just log the error
-      }
-    } else if (userError) {
-      console.error('Error finding user:', userError);
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 500 }
+        await client.query(
+          'INSERT INTO enrollments (user_id, course_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+          [user.rows[0].user_id, courseData.course_id, 'student']
       );
     } else {
-      console.log('Existing user found:', user?.user_id);
+        console.log('Existing user found:', user.rows[0].user_id);
     }
 
-    // Ensure user was found or created
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User authentication failed' },
-        { status: 500 }
-      );
-    }
+      const userId = user.rows[0].user_id;
 
     // Get the appropriate instrument (pre/post assessment)
     const instrumentName = attemptType === 'pre'
       ? 'Pre-Course Assessment'
       : 'Post-Course Assessment';
 
-    const { data: instrument, error: instrumentError } = await supabase
-      .from('instruments')
-      .select('instrument_id')
-      .eq('name', instrumentName)
-      .eq('status', 'active')
-      .single();
-
-    if (instrumentError || !instrument) {
-      return NextResponse.json(
-        { error: `No active ${attemptType} assessment found` },
-        { status: 404 }
+      const instrument = await client.query(
+        'SELECT instrument_id FROM instruments WHERE name = $1 AND status = $2 LIMIT 1',
+        [instrumentName, 'active']
       );
-    }
+
+      if (!instrument.rows || instrument.rows.length === 0) {
+        throw new Error(`No active ${attemptType} assessment found`);
+      }
+
+      const instrumentId = instrument.rows[0].instrument_id;
 
     // Check if user already completed this assessment type
-    const { data: existingAttempt, error: attemptCheckError } = await supabase
-      .from('attempts')
-      .select('attempt_id')
-      .eq('user_id', user.user_id)
-      .eq('course_id', course.course_id)
-      .eq('instrument_id', instrument.instrument_id)
-      .eq('attempt_type', attemptType)
-      .not('submitted_at', 'is', null)
-      .single();
-
-    if (existingAttempt) {
-      return NextResponse.json(
-        { error: `You have already completed the ${attemptType} assessment for this course` },
-        { status: 409 }
+      const existingAttempt = await client.query(
+        'SELECT attempt_id FROM attempts WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND attempt_type = $4 AND submitted_at IS NOT NULL',
+        [userId, courseData.course_id, instrumentId, attemptType]
       );
+
+      if (existingAttempt.rows && existingAttempt.rows.length > 0) {
+        throw new Error(`You have already completed the ${attemptType} assessment for this course`);
     }
 
     console.log('Creating assessment attempt...');
     // Create assessment attempt
-    const { data: attempt, error: attemptError } = await supabase
-      .from('attempts')
-      .insert({
-        user_id: user.user_id,
-        course_id: course.course_id,
-        instrument_id: instrument.instrument_id,
-        attempt_type: attemptType,
-        submitted_at: new Date().toISOString(),
-        duration_s: timeSpent || null
-      })
-      .select('attempt_id')
-      .single();
-
-    if (attemptError) {
-      console.error('Error creating attempt:', attemptError);
-      return NextResponse.json(
-        { error: 'Failed to create assessment attempt' },
-        { status: 500 }
+      const attempt = await client.query(
+        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
+        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null]
       );
-    }
 
-    console.log('Attempt created:', attempt.attempt_id);
+      const attemptId = attempt.rows[0].attempt_id;
+      console.log('Attempt created:', attemptId);
 
     console.log('Inserting responses...');
     // Insert responses
-    const responseInserts = responses.map((response: any) => ({
-      attempt_id: attempt.attempt_id,
-      item_id: response.itemId,
-      raw_answer: response.answer,
-      confidence: response.confidence || null
-    }));
-
-    const { error: responsesError } = await supabase
-      .from('responses')
-      .insert(responseInserts);
-
-    if (responsesError) {
-      console.error('Error inserting responses:', responsesError);
-      return NextResponse.json(
-        { error: 'Failed to save responses' },
-        { status: 500 }
+      for (const response of responses) {
+        await client.query(
+          'INSERT INTO responses (attempt_id, item_id, raw_answer, confidence) VALUES ($1, $2, $3, $4)',
+          [attemptId, response.itemId, JSON.stringify(response.answer), response.confidence || null]
       );
     }
 
     console.log('Responses inserted successfully');
 
-    // Calculate basic scores (this would be enhanced with AI scoring)
-    // For now, just calculate multiple choice scores
+      // Calculate basic scores
     let totalScore = 0;
     let totalItems = responses.length;
 
     for (const response of responses) {
       // Get item details to check answer
-      const { data: item } = await supabase
-        .from('items')
-        .select('key, type')
-        .eq('item_id', response.itemId)
-        .single();
+        const item = await client.query(
+          'SELECT key, type FROM items WHERE item_id = $1',
+          [response.itemId]
+        );
 
-      if (item && item.type === 'multiple_choice' && item.key) {
+        if (item.rows && item.rows.length > 0) {
+          const itemData = item.rows[0];
+          if (itemData.type === 'multiple_choice' && itemData.key) {
         // Simple scoring for multiple choice
-        const isCorrect = response.answer === item.key;
+            const isCorrect = response.answer === itemData.key;
         const score = isCorrect ? 100 : 0;
 
         // Update response with score
-        await supabase
-          .from('responses')
-          .update({ score })
-          .eq('attempt_id', attempt.attempt_id)
-          .eq('item_id', response.itemId);
+            await client.query(
+              'UPDATE responses SET score = $1 WHERE attempt_id = $2 AND item_id = $3',
+              [score, attemptId, response.itemId]
+            );
 
         totalScore += score;
       } else {
         // For short answers, mark as pending AI scoring
         totalScore += 50; // Placeholder score
+          }
       }
     }
 
     const overallScore = totalItems > 0 ? totalScore / totalItems : 0;
 
     // Insert overall scores
-    const { error: scoresError } = await supabase
-      .from('scores')
-      .insert({
-        attempt_id: attempt.attempt_id,
-        overall: overallScore,
-        by_domain: {}, // Would be calculated by domain
-        se_overall: 5.0, // Placeholder standard error
-        overconfidence_index: 0 // Would be calculated
-      });
+      await client.query(
+        'INSERT INTO scores (attempt_id, overall, by_domain, se_overall, overconfidence_index) VALUES ($1, $2, $3, $4, $5)',
+        [attemptId, overallScore, JSON.stringify({}), 5.0, 0]
+      );
 
-    if (scoresError) {
-      console.error('Error inserting scores:', scoresError);
-      // Don't fail the request for scoring errors
-    }
+      return {
+        attemptId,
+        overallScore
+      };
+    });
 
     return NextResponse.json({
       success: true,
-      attemptId: attempt.attempt_id,
+      attemptId: result.attemptId,
       message: 'Assessment submitted successfully',
-      score: Math.round(overallScore)
+      score: Math.round(result.overallScore)
     });
 
   } catch (error) {
     console.error('=== API SUBMISSION ERROR ===', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    
+    // Handle specific error cases
+    if (errorMessage.includes('already completed')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 409 }
+      );
+    }
+    
+    if (errorMessage.includes('Invalid course code') || errorMessage.includes('No active')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
