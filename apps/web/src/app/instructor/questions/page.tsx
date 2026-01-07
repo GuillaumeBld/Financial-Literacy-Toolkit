@@ -132,7 +132,18 @@ export default function InstructorQuestionsPage() {
     return result;
   };
 
-  const parseCsvQuestions = (fileText: string): Question[] => {
+  type CsvQuestion = {
+    question_text: string;
+    type: 'multiple-choice' | 'short-answer';
+    domain: string;
+    subdomain: string;
+    difficulty: number;
+    options?: string[];
+    key?: string;
+    explanation: string;
+  };
+
+  const parseCsvQuestions = (fileText: string): CsvQuestion[] => {
     const lines = fileText.trim().split(/\r?\n/).filter(Boolean);
     if (lines.length < 2) return [];
 
@@ -160,9 +171,17 @@ export default function InstructorQuestionsPage() {
               .filter(Boolean)
           : undefined;
 
+        // Normalize type: convert multiple_choice to multiple-choice
+        const rawType = (row.type || '').toLowerCase().trim();
+        const normalizedType = rawType === 'multiple_choice' || rawType === 'multiple-choice' 
+          ? 'multiple-choice' 
+          : (rawType === 'short_answer' || rawType === 'short-answer' 
+            ? 'short-answer' 
+            : 'multiple-choice');
+
         return {
           question_text: row.question_text || row.question || '',
-          type: (row.type as Question['type']) || 'multiple-choice',
+          type: normalizedType as CsvQuestion['type'],
           domain: row.domain || 'General',
           subdomain: row.subdomain || '',
           difficulty: Number(row.difficulty || 1),
@@ -174,7 +193,7 @@ export default function InstructorQuestionsPage() {
         console.error(`Error parsing CSV line ${lineIndex + 2}:`, error);
         return null;
       }
-    }).filter((q): q is Question => q !== null && q.question_text !== '' && q.domain !== '');
+    }).filter((q): q is CsvQuestion => q !== null && q.question_text !== '' && q.domain !== '');
   };
 
   const handleFileUpload = async (file: File) => {
@@ -487,6 +506,15 @@ export default function InstructorQuestionsPage() {
                   }`}>
                     {question.type === 'multiple-choice' ? 'MC' : 'SA'}
                   </span>
+                  {question.is_active !== undefined && (
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      question.is_active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {question.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-1">
                   <button
@@ -593,6 +621,18 @@ export default function InstructorQuestionsPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-loyola-gray-700 mb-2">Metadata</h3>
+                  {selectedQuestion.is_active !== undefined && (
+                    <p className="text-sm text-loyola-gray-600 mb-2">
+                      <span className="font-medium">Status:</span>{' '}
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        selectedQuestion.is_active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {selectedQuestion.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </p>
+                  )}
                   <p className="text-sm text-loyola-gray-600 mb-2">
                     <span className="font-medium">Created:</span> {new Date(selectedQuestion.created_at).toLocaleString()}
                   </p>
