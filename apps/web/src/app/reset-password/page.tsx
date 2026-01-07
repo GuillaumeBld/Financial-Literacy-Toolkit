@@ -3,85 +3,75 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Lock, Info, AlertCircle } from 'lucide-react';
+import { Key, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [studentId, setStudentId] = useState('');
-  const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
   const [courseCode, setCourseCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Pre-fill course code from URL if provided, otherwise default to QUINN 102
+  // Pre-fill from URL parameters
   useEffect(() => {
+    const urlToken = searchParams.get('token');
     const urlCourseCode = searchParams.get('courseCode');
-    if (urlCourseCode) {
-      setCourseCode(urlCourseCode);
-    } else {
-      setCourseCode('QUINN 102');
-    }
+    if (urlToken) setToken(urlToken);
+    if (urlCourseCode) setCourseCode(urlCourseCode);
   }, [searchParams]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!studentId.trim() || !password.trim() || !courseCode.trim()) {
+    setSuccess('');
+
+    if (!token.trim() || !courseCode.trim() || !newPassword.trim() || !confirmPassword.trim()) {
       setError('Please fill in all fields');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/student/login', {
+      const response = await fetch('/api/student/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           courseCode: courseCode.trim(),
-          studentId: studentId.trim(),
-          password: password.trim(),
+          token: token.trim(),
+          newPassword: newPassword.trim(),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Login failed. Please check your credentials.');
-        setIsLoading(false);
-        return;
+        throw new Error(data.error || 'Failed to reset password');
       }
 
-      // Store session data
-      const sessionData = {
-        courseCode: courseCode.trim(),
-        studentId: studentId.trim(),
-        userId: data.userId,
-        courseId: data.courseId,
-        hasCompletedOnboarding: data.hasCompletedOnboarding,
-        loginTime: new Date().toISOString(),
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('student-session', JSON.stringify(sessionData));
-      }
-
-      // Redirect based on onboarding status
-      if (!data.hasCompletedOnboarding) {
-        // First time - redirect to onboarding
-        router.push(`/onboarding?courseCode=${encodeURIComponent(courseCode.trim())}`);
-      } else {
-        // Already onboarded - check if pre or post assessment
-        // For now, default to pre-assessment selection
-        router.push('/assessment');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError('An error occurred. Please try again.');
+      setSuccess('Password reset successfully! Redirecting to login...');
+      setTimeout(() => {
+        router.push(`/login?courseCode=${encodeURIComponent(courseCode.trim())}`);
+      }, 2000);
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      setError(err.message || 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -99,8 +89,8 @@ export default function LoginPage() {
 
       <main className="container mx-auto px-4 py-12 max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Student Login</h1>
-          <p className="text-loyola-gray-600">Sign in to access your assessments</p>
+          <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Reset Your Password</h1>
+          <p className="text-loyola-gray-600">Enter your new password below</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8 border border-loyola-gray-200">
@@ -111,7 +101,14 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin}>
+          {success && (
+            <div className="mb-6 bg-green-50 border-2 border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start gap-2">
+              <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>{success}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleResetPassword}>
             <div className="mb-6">
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
                 Course Code <span className="text-red-500">*</span>
@@ -128,36 +125,32 @@ export default function LoginPage() {
                 placeholder="QUINN 102"
                 required
               />
-              {!searchParams.get('courseCode') && (
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  Default: QUINN 102 (Financial Literacy)
-                </p>
-              )}
             </div>
 
             <div className="mb-6">
-              <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
-                Student ID <span className="text-red-500">*</span>
+              <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-2">
+                Reset Token <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-loyola-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="student-id"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your student ID"
-                  required
-                />
-              </div>
+              <input
+                type="text"
+                id="token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                readOnly={!!searchParams.get('token')}
+                className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition font-mono text-sm ${
+                  searchParams.get('token') ? 'bg-loyola-gray-50 text-loyola-gray-600' : ''
+                }`}
+                placeholder="Paste your reset token from email"
+                required
+              />
+              <p className="mt-1 text-sm text-loyola-gray-500">
+                This token was sent to your email address
+              </p>
             </div>
 
             <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password <span className="text-red-500">*</span>
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">
+                New Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -165,11 +158,34 @@ export default function LoginPage() {
                 </div>
                 <input
                   type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your password"
+                  placeholder="Enter new password (min 8 characters)"
+                  required
+                />
+              </div>
+              <p className="mt-1 text-sm text-loyola-gray-500">
+                Password must be at least 8 characters long
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-loyola-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  id="confirm-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                  placeholder="Confirm new password"
                   required
                 />
               </div>
@@ -183,49 +199,28 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Signing in...
+                  Resetting...
                 </>
               ) : (
                 <>
-                  <Lock className="w-5 h-5" />
-                  Sign In
+                  <Key className="w-5 h-5" />
+                  Reset Password
                 </>
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              href={`/forgot-password?courseCode=${encodeURIComponent(courseCode || '')}`}
-              className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark font-medium"
-            >
-              Forgot your password?
-            </Link>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-loyola-gray-200">
-            <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-loyola-gray-700">
-                  <p className="font-semibold mb-1">First time here?</p>
-                  <p>If this is your first time accessing the assessment, you'll be asked to complete an onboarding form after logging in.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="mt-6 text-center">
-          <Link href="/" className="text-loyola-maroon hover:text-loyola-maroon-dark text-sm font-medium">
-            ← Back to Home
+          <Link href={`/login?courseCode=${encodeURIComponent(courseCode || '')}`} className="text-loyola-maroon hover:text-loyola-maroon-dark text-sm font-medium">
+            ← Back to Login
           </Link>
         </div>
       </main>
 
       <footer className="bg-white border-t border-loyola-gray-200 py-6 mt-12">
         <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+          <p>© 2025 L. University. All rights reserved.</p>
         </div>
       </footer>
     </div>

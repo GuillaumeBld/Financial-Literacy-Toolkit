@@ -1,5 +1,6 @@
 -- Migration: Add student_profiles table for demographic and socio-economic data
 -- FERPA Compliant: Linked to user_id (hashed), not raw student IDs
+-- Based on Independent Study Baseline Covariates (B1-B8) and additional socio-economic data
 
 -- Student profiles table for demographic and socio-economic data
 CREATE TABLE IF NOT EXISTS student_profiles (
@@ -7,15 +8,22 @@ CREATE TABLE IF NOT EXISTS student_profiles (
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   course_id UUID NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
   
-  -- Demographic data
-  age INTEGER CHECK (age >= 16 AND age <= 100),
-  gender TEXT CHECK (gender IN ('male', 'female', 'non-binary', 'prefer-not-to-say', 'other')),
-  race_ethnicity TEXT, -- e.g., 'White', 'Black or African American', 'Hispanic or Latino', 'Asian', 'Native American', 'Pacific Islander', 'Other', 'Prefer not to say'
+  -- Baseline Demographic Characteristics (B1-B5)
+  gender TEXT CHECK (gender IN ('female', 'male', 'prefer-not-to-say')), -- B1
+  race_ethnicity TEXT, -- B2: 'White or Caucasian', 'Asian', 'Black or African American', 'Hispanic or Latino', 'Native Hawaiian or Pacific Islander', 'Native American or Alaska Native', 'Two or more racial or ethnic backgrounds', 'Other', 'Prefer not to say'
+  age_range TEXT CHECK (age_range IN ('20-or-under', 'above-20')), -- B3
+  first_language TEXT CHECK (first_language IN ('english', 'spanish', 'chinese', 'french', 'russian', 'dutch', 'other')), -- B4
+  first_language_other TEXT, -- B4: Specification when 'other' is selected
+  work_experience TEXT CHECK (work_experience IN ('no-work-experience', 'part-time', 'full-time')), -- B5
   
-  -- Socio-economic data
+  -- Baseline Financial Background & Context (B6-B8)
+  prior_financial_products JSONB, -- B6: Array of selected products: ['credit-card', 'student-loan', 'auto-loan', 'investment-account', 'insurance', 'none']
+  self_rated_financial_knowledge TEXT CHECK (self_rated_financial_knowledge IN ('very-low', 'low', 'moderate', 'high', 'very-high')), -- B7
+  financial_stress_frequency TEXT CHECK (financial_stress_frequency IN ('never', 'rarely', 'sometimes', 'often', 'always')), -- B8
+  
+  -- Additional Socio-economic data (Optional)
   household_income TEXT CHECK (household_income IN ('under-25000', '25000-49999', '50000-74999', '75000-99999', '100000-149999', '150000-199999', '200000-plus', 'prefer-not-to-say')),
   parental_education TEXT CHECK (parental_education IN ('high-school-or-less', 'some-college', 'bachelors', 'masters', 'doctorate', 'prefer-not-to-say')),
-  employment_status TEXT CHECK (employment_status IN ('full-time', 'part-time', 'unemployed', 'student-only', 'prefer-not-to-say')),
   first_generation_college BOOLEAN, -- First generation college student
   financial_aid_recipient BOOLEAN, -- Receives financial aid
   

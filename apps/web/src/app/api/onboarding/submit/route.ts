@@ -8,14 +8,34 @@ export async function POST(request: NextRequest) {
     const {
       courseCode,
       studentId,
+      email,
+      password,
       demographic,
+      financial_background,
       socioeconomic,
     } = body;
 
     // Validate required fields
-    if (!courseCode || !studentId) {
+    if (!courseCode || !studentId || !email || !password) {
       return NextResponse.json(
-        { error: 'Course code and student ID are required' },
+        { error: 'Course code, student ID, email, and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return NextResponse.json(
+        { error: 'Please provide a valid email address' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long' },
         { status: 400 }
       );
     }
@@ -37,19 +57,31 @@ export async function POST(request: NextRequest) {
       // Create hashed student key (FERPA compliant)
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
 
+      // Hash password
+      const hashedPassword = AuthUtils.hashPassword(password);
+
       // Find or create user
       let user = await client.query(
-        'SELECT user_id FROM users WHERE hashed_student_key = $1',
+        'SELECT user_id, hashed_password FROM users WHERE hashed_student_key = $1',
         [hashedStudentKey]
       );
 
       if (!user.rows || user.rows.length === 0) {
-        // Create new user
+        // Create new user with password
         const newUser = await client.query(
-          'INSERT INTO users (hashed_student_key, sso_provider) VALUES ($1, $2) RETURNING user_id',
-          [hashedStudentKey, 'hashed']
+          'INSERT INTO users (hashed_student_key, hashed_password, sso_provider) VALUES ($1, $2, $3) RETURNING user_id',
+          [hashedStudentKey, hashedPassword, 'hashed']
         );
         user = newUser;
+      } else {
+        // Update existing user's password if not set, or if onboarding is being redone
+        if (!user.rows[0].hashed_password) {
+          await client.query(
+            'UPDATE users SET hashed_password = $1 WHERE user_id = $2',
+            [hashedPassword, user.rows[0].user_id]
+          );
+        }
+      }
 
         // Enroll user in course
         await client.query(
@@ -76,12 +108,23 @@ export async function POST(request: NextRequest) {
       const profileData = {
         user_id: userId,
         course_id: courseData.course_id,
-        age: demographic?.age || null,
-        gender: demographic?.gender || null,
-        race_ethnicity: demographic?.race_ethnicity || null,
+        email: email.trim().toLowerCase(), // Required email for password recovery
+        // Baseline B1-B5 (Demographics)
+        age_range: demographic?.age_range || null, // B3
+        gender: demographic?.gender || null, // B1
+        race_ethnicity: demographic?.race_ethnicity || null, // B2
+        first_language: demographic?.first_language || null, // B4
+        first_language_other: demographic?.first_language_other || null, // B4: Other
+        work_experience: demographic?.work_experience || null, // B5
+        // Baseline B6-B8 (Financial Background)
+        // Note: PostgreSQL node-postgres driver automatically handles JSONB conversion
+        // Pass array directly, driver will serialize to JSONB
+        prior_financial_products: financial_background?.prior_financial_products || null, // B6: JSONB array
+        self_rated_financial_knowledge: financial_background?.self_rated_financial_knowledge || null, // B7
+        financial_stress_frequency: financial_background?.financial_stress_frequency || null, // B8
+        // Additional socioeconomic data
         household_income: socioeconomic?.household_income || null,
         parental_education: socioeconomic?.parental_education || null,
-        employment_status: socioeconomic?.employment_status || null,
         first_generation_college: socioeconomic?.first_generation_college ?? null,
         financial_aid_recipient: socioeconomic?.financial_aid_recipient ?? null,
         living_situation: socioeconomic?.living_situation || null,
@@ -92,25 +135,37 @@ export async function POST(request: NextRequest) {
         // Update existing profile
         await client.query(
           `UPDATE student_profiles SET
-            age = $1,
-            gender = $2,
-            race_ethnicity = $3,
-            household_income = $4,
-            parental_education = $5,
-            employment_status = $6,
-            first_generation_college = $7,
-            financial_aid_recipient = $8,
-            living_situation = $9,
-            work_study = $10,
+            email = $1,
+            age_range = $2,
+            gender = $3,
+            race_ethnicity = $4,
+            first_language = $5,
+            first_language_other = $6,
+            work_experience = $7,
+            prior_financial_products = $8,
+            self_rated_financial_knowledge = $9,
+            financial_stress_frequency = $10,
+            household_income = $11,
+            parental_education = $12,
+            first_generation_college = $13,
+            financial_aid_recipient = $14,
+            living_situation = $15,
+            work_study = $16,
             updated_at = NOW()
-          WHERE user_id = $11 AND course_id = $12`,
+          WHERE user_id = $17 AND course_id = $18`,
           [
-            profileData.age,
+            profileData.email,
+            profileData.age_range,
             profileData.gender,
             profileData.race_ethnicity,
+            profileData.first_language,
+            profileData.first_language_other,
+            profileData.work_experience,
+            profileData.prior_financial_products,
+            profileData.self_rated_financial_knowledge,
+            profileData.financial_stress_frequency,
             profileData.household_income,
             profileData.parental_education,
-            profileData.employment_status,
             profileData.first_generation_college,
             profileData.financial_aid_recipient,
             profileData.living_situation,
@@ -123,20 +178,28 @@ export async function POST(request: NextRequest) {
         // Insert new profile
         await client.query(
           `INSERT INTO student_profiles (
-            user_id, course_id, age, gender, race_ethnicity,
-            household_income, parental_education, employment_status,
+            user_id, course_id, email, age_range, gender, race_ethnicity,
+            first_language, first_language_other, work_experience,
+            prior_financial_products, self_rated_financial_knowledge, financial_stress_frequency,
+            household_income, parental_education,
             first_generation_college, financial_aid_recipient,
             living_situation, work_study
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
           [
             profileData.user_id,
             profileData.course_id,
-            profileData.age,
+            profileData.email,
+            profileData.age_range,
             profileData.gender,
             profileData.race_ethnicity,
+            profileData.first_language,
+            profileData.first_language_other,
+            profileData.work_experience,
+            profileData.prior_financial_products,
+            profileData.self_rated_financial_knowledge,
+            profileData.financial_stress_frequency,
             profileData.household_income,
             profileData.parental_education,
-            profileData.employment_status,
             profileData.first_generation_college,
             profileData.financial_aid_recipient,
             profileData.living_situation,

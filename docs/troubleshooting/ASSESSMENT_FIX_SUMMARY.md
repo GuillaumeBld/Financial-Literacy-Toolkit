@@ -165,7 +165,7 @@ Assessment submissions were failing silently with "Failed to save responses" err
 - ✅ Service role used only for backend operations
 
 ### Branding:
-- ✅ Updated to "by Dr, Abol Jalilvand and Guillaume Bolivard"
+- ✅ Updated to "by Dr. Abol Jalilvand and Guillaume Bolivard"
 - ✅ All branding references updated
 
 ---

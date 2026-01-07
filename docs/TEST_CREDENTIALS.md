@@ -125,26 +125,44 @@ postgresql://finlit_user:PASSWORD@localhost:5432/financial_literacy
 
 ## Troubleshooting
 
+### "Internal server error" on Login
+
+This usually means the API cannot connect to the database. See [TROUBLESHOOTING_CREDENTIALS.md](./TROUBLESHOOTING_CREDENTIALS.md) for detailed solutions.
+
+**Quick Fix:**
+1. Verify `DATABASE_URL` is set in your environment
+2. Check database container is running
+3. Test database connectivity
+
+### "Invalid course code" Error
+
+Same root cause as above - API cannot connect to database. Follow the troubleshooting guide.
+
 ### Credentials not working?
 
 1. **Check database connection:**
    ```bash
-   docker exec finlit-postgres-db-<container-id> psql -U finlit_user -d financial_literacy -c "SELECT 1;"
+   docker exec finlit-postgres-db-g6ifwu.1.o506q34vjhilt1pqid8sd2ny8 psql -U finlit_user -d financial_literacy -c "SELECT 1;"
    ```
 
 2. **Verify credentials exist:**
    ```bash
-   docker exec finlit-postgres-db-<container-id> psql -U finlit_user -d financial_literacy -c "SELECT email FROM instructors WHERE email = 'test.instructor@university.edu';"
+   docker exec finlit-postgres-db-g6ifwu.1.o506q34vjhilt1pqid8sd2ny8 psql -U finlit_user -d financial_literacy -c "SELECT email FROM instructors WHERE email = 'test.instructor@university.edu';"
    ```
 
 3. **Check course exists:**
    ```bash
-   docker exec finlit-postgres-db-<container-id> psql -U finlit_user -d financial_literacy -c "SELECT name FROM courses WHERE name = 'Financial Literacy';"
+   docker exec finlit-postgres-db-g6ifwu.1.o506q34vjhilt1pqid8sd2ny8 psql -U finlit_user -d financial_literacy -c "SELECT name FROM courses WHERE name = 'Financial Literacy';"
    ```
 
 4. **Re-run setup:**
    ```bash
    ./scripts/setup-and-test-credentials.sh
+   ```
+
+5. **Run diagnostics:**
+   ```bash
+   ./scripts/diagnose-api-errors.sh
    ```
 
 ### API not responding?
@@ -157,7 +175,11 @@ postgresql://finlit_user:PASSWORD@localhost:5432/financial_literacy
 2. Check API logs:
    ```bash
    docker logs financial_literacy_app
+   # Or for Dokploy, check logs in the dashboard
    ```
 
-3. Verify DATABASE_URL is set correctly in the API environment
+3. Verify DATABASE_URL is set correctly:
+   - For Dokploy: Check environment variables in Dokploy dashboard
+   - For local: Check `.env.local` or docker-compose.yml
+   - Connection string format: `postgresql://user:password@host:port/database`
 
