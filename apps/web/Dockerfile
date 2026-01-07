@@ -66,11 +66,13 @@ COPY --from=builder /app/apps/web/public ./apps/web/public
 # Copying .next/standalone to root preserves the apps/web structure
 COPY --from=builder /app/apps/web/.next/standalone ./
 
-# Debug: Check standalone structure (remove in production)
-RUN echo "=== Standalone structure ===" && \
-    find . -name "server.js" -type f 2>/dev/null | head -5 && \
-    ls -la apps/web/ 2>/dev/null || echo "apps/web not found" && \
-    echo "=== End debug ==="
+# Debug: Check standalone structure and find server.js location
+RUN echo "=== Debug: Finding server.js ===" && \
+    find . -name "server.js" -type f 2>/dev/null && \
+    echo "=== Checking apps/web structure ===" && \
+    ls -la apps/web/ 2>/dev/null | head -20 || echo "apps/web directory not found" && \
+    echo "=== Checking root structure ===" && \
+    ls -la . 2>/dev/null | head -20
 
 # Copy static files - Next.js standalone server expects static files at .next/static
 # relative to where server.js runs. Since server.js is at apps/web/server.js,
