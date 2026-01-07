@@ -82,9 +82,9 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-# With standalone mode, server.js is at apps/web/server.js within the standalone structure
-# But Next.js standalone might put it at the root of standalone, so try both locations
-CMD ["sh", "-c", "if [ -f apps/web/server.js ]; then node apps/web/server.js; else node server.js; fi"]
+# With standalone mode, server.js location depends on app structure
+# Try to find and run server.js from the correct location
+CMD ["sh", "-c", "if [ -f apps/web/server.js ]; then cd apps/web && node server.js; elif [ -f server.js ]; then node server.js; else find . -name server.js -type f -exec sh -c 'cd $(dirname {}) && node $(basename {})' \\;; fi"]
 
 
 
