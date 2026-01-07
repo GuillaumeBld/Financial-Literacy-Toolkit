@@ -60,15 +60,14 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/apps/web/public ./public
 
 # Copy standalone server files - copy entire standalone directory
-# This preserves the directory structure that Next.js expects
 # With standalone mode, if app is at apps/web, standalone is at .next/standalone/apps/web
+# Copying .next/standalone to root preserves the apps/web structure
 COPY --from=builder /app/apps/web/.next/standalone ./
 
-# Copy static files - these must be accessible at .next/static relative to server.js
-# The standalone structure includes apps/web, so static files should be at apps/web/.next/static
-# But we also copy them to root .next/static for direct access
+# Copy static files - Next.js standalone server expects static files at .next/static
+# relative to where server.js runs. Since server.js is at apps/web/server.js,
+# static files should be at apps/web/.next/static
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -82,9 +81,10 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-# With standalone mode, server.js location depends on app structure
-# Try to find and run server.js from the correct location
-CMD ["sh", "-c", "if [ -f apps/web/server.js ]; then cd apps/web && node server.js; elif [ -f server.js ]; then node server.js; else find . -name server.js -type f -exec sh -c 'cd $(dirname {}) && node $(basename {})' \\;; fi"]
+# With standalone mode from apps/web, server.js is at apps/web/server.js
+# We need to run it from that directory so it can find .next/static relative to it
+WORKDIR /app/apps/web
+CMD ["node", "server.js"]
 
 
 
