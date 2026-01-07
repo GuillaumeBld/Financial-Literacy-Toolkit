@@ -1,25 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-
-// Verify instructor session token
-async function verifyInstructorToken(token: string) {
-  const { data: session, error } = await supabase
-    .from('instructor_sessions')
-    .select('instructor_id, expires_at')
-    .eq('token_hash', token)
-    .single();
-
-  if (error || !session) {
-    return null;
-  }
-
-  // Check if session expired
-  if (new Date(session.expires_at) < new Date()) {
-    return null;
-  }
-
-  return session.instructor_id;
-}
+import { queryOne } from '@/lib/db';
+import { verifyInstructorToken } from '@/lib/instructor-auth';
 
 export async function GET(
   request: NextRequest,
@@ -47,26 +28,23 @@ export async function GET(
     }
 
     // Get the specific question
-    const { data: question, error: questionError } = await supabase
-      .from('items')
-      .select(`
-        item_id,
-        type,
-        domain,
-        subdomain,
-        difficulty,
-        question_text,
-        options,
-        key,
-        explanation,
-        created_at,
-        updated_at
-      `)
-      .eq('item_id', params.id)
-      .single();
+    const question = await queryOne<{
+      item_id: string;
+      type: string;
+      domain: string;
+      subdomain: string;
+      difficulty: number;
+      stem: string;
+      options: any;
+      key: string | null;
+      rubric: any;
+      created_at: string;
+    }>(
+      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at FROM items WHERE item_id = $1',
+      [params.id]
+    );
 
-    if (questionError) {
-      console.error('Error fetching question:', questionError);
+    if (!question) {
       return NextResponse.json(
         { error: 'Question not found' },
         { status: 404 }
@@ -75,7 +53,19 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      question
+      question: {
+        item_id: question.item_id,
+        type: question.type,
+        domain: question.domain,
+        subdomain: question.subdomain,
+        difficulty: question.difficulty,
+        question_text: question.stem,
+        options: question.options,
+        key: question.key,
+        explanation: question.rubric,
+        created_at: question.created_at,
+        updated_at: question.created_at
+      }
     });
 
   } catch (error) {
@@ -125,25 +115,35 @@ export async function PUT(
     } = body;
 
     // Update the question
-    const { data: updatedQuestion, error: updateError } = await supabase
-      .from('items')
-      .update({
+    const updatedQuestion = await queryOne<{
+      item_id: string;
+      type: string;
+      domain: string;
+      subdomain: string;
+      difficulty: number;
+      stem: string;
+      options: any;
+      key: string | null;
+      rubric: any;
+    }>(
+      `UPDATE items 
+       SET type = $1, domain = $2, subdomain = $3, difficulty = $4, stem = $5, options = $6, key = $7, rubric = $8
+       WHERE item_id = $9
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric`,
+      [
         type,
         domain,
-        subdomain: subdomain || '',
-        difficulty: difficulty || 1,
+        subdomain || '',
+        difficulty || 1,
         question_text,
-        options: options || null,
-        key: key || null,
-        explanation: explanation || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('item_id', params.id)
-      .select()
-      .single();
+        options ? JSON.stringify(options) : null,
+        key || null,
+        explanation ? JSON.stringify(explanation) : null,
+        params.id
+      ]
+    );
 
-    if (updateError) {
-      console.error('Error updating question:', updateError);
+    if (!updatedQuestion) {
       return NextResponse.json(
         { error: 'Failed to update question' },
         { status: 500 }
@@ -192,18 +192,10 @@ export async function DELETE(
     }
 
     // Delete the question
-    const { error: deleteError } = await supabase
-      .from('items')
-      .delete()
-      .eq('item_id', params.id);
-
-    if (deleteError) {
-      console.error('Error deleting question:', deleteError);
-      return NextResponse.json(
-        { error: 'Failed to delete question' },
-        { status: 500 }
+    await queryOne(
+      'DELETE FROM items WHERE item_id = $1',
+      [params.id]
       );
-    }
 
     console.log('Question deleted:', params.id);
 

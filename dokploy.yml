@@ -1,0 +1,128 @@
+# Dokploy Configuration for Financial Literacy Assessment Platform
+# This file configures the deployment settings for Dokploy
+
+name: financial-literacy-assessment
+description: Financial Literacy Assessment Platform - Next.js Application
+
+# Build configuration
+build:
+  # Build command (runs in apps/web directory)
+  command: |
+    cd apps/web && \
+    npm ci && \
+    npm run build
+  
+  # Build context (root of repository)
+  context: .
+  
+  # Dockerfile path (if using custom Dockerfile)
+  dockerfile: apps/web/Dockerfile
+  
+  # Build arguments
+  args:
+    NODE_ENV: production
+
+# Application configuration
+app:
+  # Application type
+  type: dockerfile
+  
+  # Port configuration
+  port: 3000
+  
+  # Health check
+  healthcheck:
+    path: /api/test
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+  
+  # Resource limits
+  resources:
+    memory: 512M
+    cpu: 0.5
+  
+  # Restart policy
+  restart: unless-stopped
+
+# Environment variables
+# These should be set in Dokploy UI, but listed here for reference
+env:
+  - name: NODE_ENV
+    value: production
+  - name: DATABASE_URL
+    value: ${DATABASE_URL}
+    secret: true
+  - name: POSTGRES_USER
+    value: ${POSTGRES_USER}
+    secret: true
+  - name: POSTGRES_PASSWORD
+    value: ${POSTGRES_PASSWORD}
+    secret: true
+  - name: POSTGRES_DB
+    value: ${POSTGRES_DB}
+  - name: PORT
+    value: "3000"
+
+# Git configuration (set in Dokploy UI)
+git:
+  # Repository URL - Configure in Dokploy UI
+  url: https://github.com/GuillaumeBld/Financial-Literacy-Toolkit.git
+  
+  # Branch to deploy
+  branch: main
+  
+  # Auto-deploy on push - When code is pushed to GitHub, Dokploy will automatically rebuild and deploy
+  auto_deploy: true
+  
+  # Webhook secret (configure in Dokploy UI for GitHub webhook security)
+  # webhook_secret: your_webhook_secret_here
+
+# Domain configuration (set in Dokploy UI)
+domains:
+  # Primary domain - DNS configured via Hostinger API
+  - financial-literacy.qualiaai.fr
+  
+  # SSL configuration (automatic with Traefik)
+  ssl:
+    enabled: true
+    provider: letsencrypt
+
+# Volumes (if needed for persistent data)
+volumes: []
+
+# Networks
+networks:
+  - default
+  # Connect to PostgreSQL network if using docker-compose
+  # - postgres_network
+
+# Deployment strategy
+deployment:
+  # Strategy: rolling, recreate, or blue-green
+  strategy: rolling
+  
+  # Number of replicas
+  replicas: 1
+  
+  # Update configuration
+  update:
+    parallelism: 1
+    delay: 10s
+
+# Logging configuration
+logging:
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Monitoring
+monitoring:
+  enabled: true
+  
+# Backup configuration (if needed)
+backup:
+  enabled: false
+
