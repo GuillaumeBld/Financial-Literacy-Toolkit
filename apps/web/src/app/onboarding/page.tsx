@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Info, CheckCircle, ChevronRight, ArrowLeft } from 'lucide-react';
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseCode = searchParams.get('courseCode') || 'QUINN 102';
@@ -72,21 +72,22 @@ export default function OnboardingPage() {
         return;
       }
     } else if (currentStep === 2) {
-      // Validate step 2: Demographics (Baseline B1-B5)
-      if (!ageRange || !gender || !raceEthnicity || !firstLanguage || !workExperience) {
-        setError('Please complete all demographic fields');
-        return;
-      }
+      // Validate step 2: Demographics (Baseline B1-B5) - Sensitive fields now optional
+      // Note: ageRange, gender, raceEthnicity, firstLanguage, workExperience are optional
       if (firstLanguage === 'other' && !firstLanguageOther.trim()) {
         setError('Please specify your first language');
         return;
       }
     } else if (currentStep === 3) {
-      // Validate step 3: Financial Background (Baseline B6-B8)
-      if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge || !financialStressFrequency) {
+      // Validate step 3: Financial Background & Socio-economic (Baseline B6-B8)
+      // Financial background (lower sensitivity) - required
+      if (!priorFinancialProducts || !selfRatedFinancialKnowledge || !financialStressFrequency) {
         setError('Please complete all financial background fields');
         return;
       }
+      // Socio-economic fields (higher sensitivity) - optional
+      // Note: householdIncome, parentalEducation, financialAid, livingSituation, workStudy are optional
+      // Students can select "Prefer not to say" for any of these
     }
     setError('');
     setCurrentStep(currentStep + 1);
@@ -822,6 +823,14 @@ export default function OnboardingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <OnboardingContent />
+    </Suspense>
   );
 }
 

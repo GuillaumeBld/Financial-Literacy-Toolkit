@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, query } from '@/lib/db';
 import { randomBytes } from 'crypto';
-import { createHash } from 'crypto';
+import bcrypt from 'bcrypt';
 
-// Simple password verification (REPLACE WITH BCRYPT IN PRODUCTION)
+// Bcrypt password verification
 async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-  const hash = createHash('sha256').update(plainPassword).digest('hex');
-  return hash === hashedPassword;
+  return await bcrypt.compare(plainPassword, hashedPassword);
 }
 
 export async function POST(request: NextRequest) {
