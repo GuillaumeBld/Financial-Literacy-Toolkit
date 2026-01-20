@@ -27,6 +27,22 @@ export async function GET(
       );
     }
 
+    const columnsResult = await query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'items'"
+    );
+    const columnSet = new Set((columnsResult.rows || []).map((r: any) => r.column_name));
+    const hasIsSdm = columnSet.has('is_sdm');
+    const hasAnchorItemId = columnSet.has('anchor_item_id');
+    const hasVariantType = columnSet.has('variant_type');
+    const hasTriggerCondition = columnSet.has('trigger_condition');
+    const hasExternalId = columnSet.has('external_id');
+
+    const selectIsSdm = hasIsSdm ? 'is_sdm' : 'NULL::boolean as is_sdm';
+    const selectAnchorItemId = hasAnchorItemId ? 'anchor_item_id' : 'NULL::uuid as anchor_item_id';
+    const selectVariantType = hasVariantType ? 'variant_type' : 'NULL::text as variant_type';
+    const selectTriggerCondition = hasTriggerCondition ? 'trigger_condition' : 'NULL::text as trigger_condition';
+    const selectExternalId = hasExternalId ? 'external_id' : 'NULL::text as external_id';
+
     // Get the specific question
     const question = await queryOne<{
       item_id: string;
@@ -38,9 +54,26 @@ export async function GET(
       options: any;
       key: string | null;
       rubric: any;
+      is_active: boolean | null;
+      is_anchor: boolean | null;
+      is_sdm: boolean | null;
+      anchor_item_id: string | null;
+      variant_type: string | null;
+      trigger_condition: string | null;
+      external_id: string | null;
       created_at: string;
     }>(
-      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at FROM items WHERE item_id = $1',
+      `SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric,
+              COALESCE(is_active, false) as is_active,
+              is_anchor,
+              ${selectIsSdm},
+              ${selectAnchorItemId},
+              ${selectVariantType},
+              ${selectTriggerCondition},
+              ${selectExternalId},
+              created_at
+       FROM items
+       WHERE item_id = $1`,
       [params.id]
     );
 
@@ -63,6 +96,13 @@ export async function GET(
         options: question.options,
         key: question.key,
         explanation: question.rubric,
+        is_active: question.is_active,
+        is_anchor: question.is_anchor,
+        is_sdm: question.is_sdm,
+        anchor_item_id: question.anchor_item_id,
+        variant_type: question.variant_type,
+        trigger_condition: question.trigger_condition,
+        external_id: question.external_id,
         created_at: question.created_at,
         updated_at: question.created_at
       }
@@ -111,8 +151,61 @@ export async function PUT(
       question_text, 
       options, 
       key, 
-      explanation 
+      explanation,
+      is_active
     } = body;
+
+    // Build dynamic UPDATE query for partial updates
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
+    let paramIndex = 1;
+
+    if (type !== undefined) {
+      updateFields.push(`type = $${paramIndex++}`);
+      updateValues.push(type);
+    }
+    if (domain !== undefined) {
+      updateFields.push(`domain = $${paramIndex++}`);
+      updateValues.push(domain);
+    }
+    if (subdomain !== undefined) {
+      updateFields.push(`subdomain = $${paramIndex++}`);
+      updateValues.push(subdomain);
+    }
+    if (difficulty !== undefined) {
+      updateFields.push(`difficulty = $${paramIndex++}`);
+      updateValues.push(difficulty);
+    }
+    if (question_text !== undefined) {
+      updateFields.push(`stem = $${paramIndex++}`);
+      updateValues.push(question_text);
+    }
+    if (options !== undefined) {
+      updateFields.push(`options = $${paramIndex++}::jsonb`);
+      updateValues.push(options ? JSON.stringify(options) : null);
+    }
+    if (key !== undefined) {
+      updateFields.push(`key = $${paramIndex++}`);
+      updateValues.push(key);
+    }
+    if (explanation !== undefined) {
+      updateFields.push(`rubric = $${paramIndex++}::jsonb`);
+      updateValues.push(explanation ? JSON.stringify(explanation) : null);
+    }
+    if (is_active !== undefined) {
+      updateFields.push(`is_active = $${paramIndex++}`);
+      updateValues.push(is_active);
+    }
+
+    if (updateFields.length === 0) {
+      return NextResponse.json(
+        { error: 'No fields to update' },
+        { status: 400 }
+      );
+    }
+
+    // Add item_id as last parameter
+    updateValues.push(params.id);
 
     // Update the question
     const updatedQuestion = await queryOne<{
@@ -125,23 +218,20 @@ export async function PUT(
       options: any;
       key: string | null;
       rubric: any;
+      is_active: boolean;
+      is_anchor: boolean | null;
+      is_sdm: boolean | null;
+      anchor_item_id: string | null;
+      variant_type: string | null;
+      trigger_condition: string | null;
+      external_id: string | null;
       created_at: string;
     }>(
       `UPDATE items 
-       SET type = $1, domain = $2, subdomain = $3, difficulty = $4, stem = $5, options = $6, key = $7, rubric = $8
-       WHERE item_id = $9
-       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at`,
-      [
-        type,
-        domain,
-        subdomain || '',
-        difficulty ?? 1, // Use nullish coalescing to preserve 0 as valid difficulty value
-        question_text,
-        options || null, // pg driver automatically serializes objects/arrays to JSONB
-        key || null,
-        explanation || null, // pg driver automatically serializes objects/arrays to JSONB
-        params.id
-      ]
+       SET ${updateFields.join(', ')}
+       WHERE item_id = $${paramIndex}
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, COALESCE(is_active, false) as is_active, is_anchor, is_sdm, anchor_item_id, variant_type, trigger_condition, external_id, created_at`,
+      updateValues
     );
 
     if (!updatedQuestion) {
@@ -165,6 +255,13 @@ export async function PUT(
         options: updatedQuestion.options,
         key: updatedQuestion.key,
         explanation: updatedQuestion.rubric,
+        is_active: updatedQuestion.is_active,
+        is_anchor: updatedQuestion.is_anchor,
+        is_sdm: updatedQuestion.is_sdm,
+        anchor_item_id: updatedQuestion.anchor_item_id,
+        variant_type: updatedQuestion.variant_type,
+        trigger_condition: updatedQuestion.trigger_condition,
+        external_id: updatedQuestion.external_id,
         created_at: updatedQuestion.created_at,
         updated_at: updatedQuestion.created_at
       }

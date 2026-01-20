@@ -30,12 +30,19 @@ type Question = {
   created_at: string;
   updated_at: string;
   is_active?: boolean;
+  is_anchor?: boolean | null;
+  is_sdm?: boolean | null;
+  anchor_item_id?: string | null;
+  variant_type?: string | null;
+  trigger_condition?: string | null;
+  external_id?: string | null;
 };
 
 type FilterOptions = {
   domain: string;
   type: string;
   difficulty: string;
+  kind: string;
   searchTerm: string;
 };
 
@@ -486,12 +493,38 @@ export default function InstructorQuestionsPage() {
     domain: '',
     type: '',
     difficulty: '',
+    kind: '',
     searchTerm: ''
   });
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const router = useRouter();
+
+  const normalizeQuestion = (raw: any): Question => {
+    const rawType = (raw?.type || '').toString().toLowerCase().trim();
+    const type: Question['type'] =
+      rawType === 'multiple_choice' || rawType === 'multiple-choice'
+        ? 'multiple-choice'
+        : 'short-answer';
+
+    const rawOptions = raw?.options;
+    const options = Array.isArray(rawOptions)
+      ? rawOptions
+          .map((opt: any) => {
+            if (typeof opt === 'string') return opt;
+            if (opt && typeof opt === 'object' && typeof opt.text === 'string') return opt.text;
+            return '';
+          })
+          .filter((opt: string) => opt.trim())
+      : undefined;
+
+    return {
+      ...raw,
+      type,
+      options,
+    } as Question;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('instructor-token');
@@ -525,7 +558,8 @@ export default function InstructorQuestionsPage() {
       }
 
       const data = await response.json();
-      setQuestions(data.questions || []);
+      const incoming = Array.isArray(data.questions) ? data.questions : [];
+      setQuestions(incoming.map(normalizeQuestion));
     } catch (error) {
       console.error('Error loading questions:', error);
       alert('Failed to load questions data');
@@ -735,6 +769,11 @@ export default function InstructorQuestionsPage() {
     if (filters.domain && question.domain !== filters.domain) return false;
     if (filters.type && question.type !== filters.type) return false;
     if (filters.difficulty && question.difficulty.toString() !== filters.difficulty) return false;
+    if (filters.kind) {
+      if (filters.kind === 'anchor' && !question.is_anchor) return false;
+      if (filters.kind === 'sdm' && !question.is_sdm) return false;
+      if (filters.kind === 'regular' && (question.is_anchor || question.is_sdm)) return false;
+    }
     if (filters.searchTerm && !question.question_text.toLowerCase().includes(filters.searchTerm.toLowerCase())) return false;
     return true;
   });
@@ -854,7 +893,7 @@ export default function InstructorQuestionsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Domain Filter */}
             <div>
               <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
@@ -904,6 +943,23 @@ export default function InstructorQuestionsPage() {
                 <option value="1">Easy (1)</option>
                 <option value="2">Medium (2)</option>
                 <option value="3">Hard (3)</option>
+              </select>
+            </div>
+
+            {/* Kind Filter */}
+            <div>
+              <label className="block text-sm font-semibold text-loyola-gray-700 mb-2">
+                Kind
+              </label>
+              <select
+                value={filters.kind}
+                onChange={(e) => setFilters(prev => ({ ...prev, kind: e.target.value }))}
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              >
+                <option value="">All</option>
+                <option value="anchor">Anchor</option>
+                <option value="sdm">SDM Variant</option>
+                <option value="regular">Regular</option>
               </select>
             </div>
 
@@ -960,6 +1016,18 @@ export default function InstructorQuestionsPage() {
                       {question.is_active ? 'Active' : 'Inactive'}
                     </span>
                   )}
+
+                  {question.is_anchor ? (
+                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                      Anchor
+                    </span>
+                  ) : null}
+
+                  {question.is_sdm ? (
+                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                      SDM
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-1">
                   <button
@@ -1000,6 +1068,25 @@ export default function InstructorQuestionsPage() {
                     {question.difficulty}
                   </span>
                 </div>
+                {(question.is_sdm || question.is_anchor) && (
+                  <div className="mt-2 text-xs text-loyola-gray-600 space-y-1">
+                    {question.external_id ? (
+                      <div>
+                        <span className="font-medium">External ID:</span> {question.external_id}
+                      </div>
+                    ) : null}
+                    {question.is_sdm && question.variant_type ? (
+                      <div>
+                        <span className="font-medium">Variant type:</span> {question.variant_type}
+                      </div>
+                    ) : null}
+                    {question.is_sdm && question.trigger_condition ? (
+                      <div>
+                        <span className="font-medium">Trigger:</span> {question.trigger_condition}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
               </div>
 
               {question.type === 'multiple-choice' && question.options && (

@@ -348,6 +348,8 @@ export type Database = {
           parental_education: string | null;
           first_generation_college: boolean | null;
           financial_aid_recipient: boolean | null;
+          has_student_loan_debt: boolean | null;
+          student_loan_interest_rate: string | null;
           living_situation: string | null;
           work_study: boolean | null;
           email: string | null; // Optional email for password recovery
@@ -375,6 +377,8 @@ export type Database = {
           parental_education?: string | null;
           first_generation_college?: boolean | null;
           financial_aid_recipient?: boolean | null;
+          has_student_loan_debt?: boolean | null;
+          student_loan_interest_rate?: string | null;
           living_situation?: string | null;
           work_study?: boolean | null;
           email?: string | null; // Optional email for password recovery
@@ -402,6 +406,8 @@ export type Database = {
           parental_education?: string | null;
           first_generation_college?: boolean | null;
           financial_aid_recipient?: boolean | null;
+          has_student_loan_debt?: boolean | null;
+          student_loan_interest_rate?: string | null;
           living_situation?: string | null;
           work_study?: boolean | null;
           email?: string | null; // Optional email for password recovery

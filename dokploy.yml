@@ -30,7 +30,9 @@ app:
   # Port configuration
   port: 3000
   
-  # Health check - uses fast /api/healthz endpoint with database ping
+  # Health check - uses /api/healthz (liveness probe, no DB check)
+  # This checks if the web process is alive, NOT if dependencies are ready
+  # For dependency checks, use Uptime Kuma to monitor /api/readyz
   healthcheck:
     path: /api/healthz
     interval: 30s
