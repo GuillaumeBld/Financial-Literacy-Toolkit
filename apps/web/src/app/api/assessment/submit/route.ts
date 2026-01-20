@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
       studentId,
       attemptType, // 'pre' or 'post'
       responses, // Array of { itemId, answer, confidence }
-      timeSpent // in seconds
+      timeSpent, // in seconds
+      metadata // { tabSwitches: number, etc. }
     } = body;
 
     // Validate required fields
@@ -115,8 +116,8 @@ export async function POST(request: NextRequest) {
     console.log('Creating assessment attempt...');
     // Create assessment attempt
       const attempt = await client.query(
-        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
-        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null]
+        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING attempt_id',
+        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null, metadata || {}]
       );
 
       const attemptId = attempt.rows[0].attempt_id;

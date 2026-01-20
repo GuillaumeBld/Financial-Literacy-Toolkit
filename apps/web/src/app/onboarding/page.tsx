@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Info, CheckCircle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { supabaseBrowser } from '@/lib/supabase-browser';
 
 function OnboardingContent() {
   const router = useRouter();
@@ -16,9 +17,6 @@ function OnboardingContent() {
   
   // Form state
   const [studentId, setStudentId] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [ageRange, setAgeRange] = useState(''); // B3: 20 or under, Above 20
   const [gender, setGender] = useState(''); // B1: Female, Male, Prefer not to say
   const [raceEthnicity, setRaceEthnicity] = useState(''); // B2
@@ -32,43 +30,24 @@ function OnboardingContent() {
   const [parentalEducation, setParentalEducation] = useState('');
   const [firstGenerationCollege, setFirstGenerationCollege] = useState<boolean | null>(null);
   const [financialAidRecipient, setFinancialAidRecipient] = useState<boolean | null>(null);
+  const [hasStudentLoanDebt, setHasStudentLoanDebt] = useState<boolean | null>(null); // B11
+  const [studentLoanInterestRate, setStudentLoanInterestRate] = useState(''); // B12
   const [livingSituation, setLivingSituation] = useState('');
   const [workStudy, setWorkStudy] = useState<boolean | null>(null);
-  const [consent, setConsent] = useState(false);
+  const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
+  const [researchConsent, setResearchConsent] = useState<boolean | null>(null);
 
   const totalSteps = 3;
 
   const handleNext = () => {
     if (currentStep === 1) {
-      // Validate step 1: Student ID and Password
+      // Validate step 1: Student ID (passwordless)
       if (!studentId.trim()) {
         setError('Please enter your Student ID');
         return;
       }
       if (!courseCode.trim()) {
-        setError('Course code is required');
-        return;
-      }
-      if (!email.trim()) {
-        setError('Please enter your email address');
-        return;
-      }
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        setError('Please enter a valid email address');
-        return;
-      }
-      if (!password.trim()) {
-        setError('Please create a password');
-        return;
-      }
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters long');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
+        setError('Course ID is required');
         return;
       }
     } else if (currentStep === 2) {
@@ -83,6 +62,11 @@ function OnboardingContent() {
       // Financial background (lower sensitivity) - required
       if (!priorFinancialProducts || !selfRatedFinancialKnowledge || !financialStressFrequency) {
         setError('Please complete all financial background fields');
+        return;
+      }
+
+      if (hasStudentLoanDebt === true && !studentLoanInterestRate) {
+        setError('Please select an interest rate option for your student loan debt');
         return;
       }
       // Socio-economic fields (higher sensitivity) - optional
@@ -103,13 +87,13 @@ function OnboardingContent() {
     setError('');
 
     // Final validation
-    if (!consent) {
-      setError('Please provide consent to continue');
+    if (!courseRequirementAcknowledged) {
+      setError('Please acknowledge that completion of this assessment is required for the course to continue');
       return;
     }
 
     if (!studentId.trim() || !courseCode.trim()) {
-      setError('Student ID and Course Code are required');
+      setError('Student ID and Course ID are required');
       return;
     }
 
@@ -119,19 +103,36 @@ function OnboardingContent() {
       return;
     }
 
+    if (hasStudentLoanDebt === true && !studentLoanInterestRate) {
+      setError('Please select an interest rate option for your student loan debt');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabaseBrowser.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) {
+        throw new Error('Missing Microsoft session. Please sign in again.');
+      }
+
+      const consentTimestamp = researchConsent === true || researchConsent === false ? new Date().toISOString() : null;
       const response = await fetch('/api/onboarding/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           courseCode: courseCode.trim(),
           studentId: studentId.trim(),
-          email: email.trim(),
-          password: password.trim(),
+          research_consent: researchConsent,
+          research_consent_timestamp: consentTimestamp,
+          research_consent_version: consentTimestamp ? '1.0' : null,
           demographic: {
             age_range: ageRange || null, // B3
             gender: gender || null, // B1
@@ -150,6 +151,8 @@ function OnboardingContent() {
             parental_education: parentalEducation || null,
             first_generation_college: firstGenerationCollege,
             financial_aid_recipient: financialAidRecipient,
+            has_student_loan_debt: hasStudentLoanDebt,
+            student_loan_interest_rate: hasStudentLoanDebt === true ? (studentLoanInterestRate || null) : null,
             living_situation: livingSituation || null,
             work_study: workStudy,
           },
@@ -239,7 +242,7 @@ function OnboardingContent() {
 
               <div className="mb-6">
                 <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Course Code <span className="text-red-500">*</span>
+                  Course ID <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -266,57 +269,6 @@ function OnboardingContent() {
                 <p className="mt-1 text-sm text-loyola-gray-500">
                   Your student ID will be securely hashed and never stored in plain text.
                 </p>
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your email address"
-                  required
-                />
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  We'll use this email to send you password reset links if needed.
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Create Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Create a password (minimum 8 characters)"
-                  required
-                />
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  You'll use this password along with your Student ID to log in for both pre and post assessments.
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  id="confirm-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Confirm your password"
-                  required
-                />
               </div>
 
               <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4 mb-6">
@@ -357,14 +309,13 @@ function OnboardingContent() {
                 {/* B1: Gender */}
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your gender? <span className="text-red-500">*</span>
+                    What is your gender? <span className="text-gray-400">(Optional)</span>
                   </label>
                   <select
                     id="gender"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
                   >
                     <option value="">Select gender</option>
                     <option value="female">Female</option>
@@ -376,14 +327,13 @@ function OnboardingContent() {
                 {/* B2: Race/Ethnicity */}
                 <div>
                   <label htmlFor="race-ethnicity" className="block text-sm font-medium text-gray-700 mb-2">
-                    Which category best describes your racial or ethnic background? <span className="text-red-500">*</span>
+                    Which category best describes your racial or ethnic background? <span className="text-gray-400">(Optional)</span>
                   </label>
                   <select
                     id="race-ethnicity"
                     value={raceEthnicity}
                     onChange={(e) => setRaceEthnicity(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
                   >
                     <option value="">Select race/ethnicity</option>
                     <option value="White or Caucasian">White or Caucasian</option>
@@ -401,14 +351,13 @@ function OnboardingContent() {
                 {/* B3: Age Range */}
                 <div>
                   <label htmlFor="age-range" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your age range? <span className="text-red-500">*</span>
+                    What is your age range? <span className="text-gray-400">(Optional)</span>
                   </label>
                   <select
                     id="age-range"
                     value={ageRange}
                     onChange={(e) => setAgeRange(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
                   >
                     <option value="">Select age range</option>
                     <option value="20-or-under">20 or under</option>
@@ -419,14 +368,13 @@ function OnboardingContent() {
                 {/* B4: First Language */}
                 <div>
                   <label htmlFor="first-language" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your first language? <span className="text-red-500">*</span>
+                    What is your first language? <span className="text-gray-400">(Optional)</span>
                   </label>
                   <select
                     id="first-language"
                     value={firstLanguage}
                     onChange={(e) => setFirstLanguage(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
                   >
                     <option value="">Select first language</option>
                     <option value="english">English</option>
@@ -452,14 +400,13 @@ function OnboardingContent() {
                 {/* B5: Work Experience */}
                 <div>
                   <label htmlFor="work-experience" className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you have work experience? <span className="text-red-500">*</span>
+                    Do you have work experience? <span className="text-gray-400">(Optional)</span>
                   </label>
                   <select
                     id="work-experience"
                     value={workExperience}
                     onChange={(e) => setWorkExperience(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
                   >
                     <option value="">Select work experience</option>
                     <option value="no-work-experience">No work experience</option>
@@ -709,6 +656,74 @@ function OnboardingContent() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Do you currently have any student loan debt?
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="student-loan-debt"
+                        value="yes"
+                        checked={hasStudentLoanDebt === true}
+                        onChange={() => setHasStudentLoanDebt(true)}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      Yes
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="student-loan-debt"
+                        value="no"
+                        checked={hasStudentLoanDebt === false}
+                        onChange={() => {
+                          setHasStudentLoanDebt(false);
+                          setStudentLoanInterestRate('');
+                        }}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      No
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="student-loan-debt"
+                        value="prefer-not-to-say"
+                        checked={hasStudentLoanDebt === null}
+                        onChange={() => {
+                          setHasStudentLoanDebt(null);
+                          setStudentLoanInterestRate('');
+                        }}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      Prefer not to say
+                    </label>
+                  </div>
+                </div>
+
+                {hasStudentLoanDebt === true && (
+                  <div>
+                    <label htmlFor="student-loan-interest-rate" className="block text-sm font-medium text-gray-700 mb-2">
+                      If yes, what is the interest rate on your student loan debt (best estimate)?
+                    </label>
+                    <select
+                      id="student-loan-interest-rate"
+                      value={studentLoanInterestRate}
+                      onChange={(e) => setStudentLoanInterestRate(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    >
+                      <option value="">Select an option</option>
+                      <option value="less-than-5">Less than 5%</option>
+                      <option value="between-5-and-10">Between 5% and 10%</option>
+                      <option value="above-10">Above 10%</option>
+                      <option value="do-not-know">I do not know</option>
+                      <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                  </div>
+                )}
+
+                <div>
                   <label htmlFor="living-situation" className="block text-sm font-medium text-gray-700 mb-2">
                     Living Situation
                   </label>
@@ -771,23 +786,67 @@ function OnboardingContent() {
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input
-                        id="consent"
-                        name="consent"
+                        id="course-requirement"
+                        name="course-requirement"
                         type="checkbox"
-                        checked={consent}
-                        onChange={(e) => setConsent(e.target.checked)}
+                        checked={courseRequirementAcknowledged}
+                        onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
                         className="focus:ring-loyola-maroon h-5 w-5 text-loyola-maroon accent-loyola-maroon border-loyola-gray-300 rounded"
                         required
                       />
                     </div>
                     <div className="ml-3 text-sm">
-                      <label htmlFor="consent" className="font-medium text-gray-700">
-                        I consent to participate and understand how my data will be used <span className="text-red-500">*</span>
+                      <label htmlFor="course-requirement" className="font-medium text-gray-700">
+                        I understand that completing this assessment is a required course assignment <span className="text-red-500">*</span>
                       </label>
                       <p className="text-gray-500 mt-1">
-                        Your assessment data will be anonymized and used for learning improvement purposes. All information is confidential and protected under FERPA guidelines.
+                        This assessment is administered twice (pre-course and post-course). Your responses are linked using a coded identifier.
                       </p>
                     </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Research consent (optional)
+                  </label>
+                  <p className="text-sm text-gray-500 mb-3">
+                    You may choose whether a de-identified version of your responses may be used for an independent research study. Declining has no impact on grades or course standing.
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="research-consent"
+                        value="yes"
+                        checked={researchConsent === true}
+                        onChange={() => setResearchConsent(true)}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      Yes, I consent to research use of my de-identified responses
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="research-consent"
+                        value="no"
+                        checked={researchConsent === false}
+                        onChange={() => setResearchConsent(false)}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      No, I do not consent to research use of my responses
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="research-consent"
+                        value="skip"
+                        checked={researchConsent === null}
+                        onChange={() => setResearchConsent(null)}
+                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                      />
+                      Skip for now
+                    </label>
                   </div>
                 </div>
 

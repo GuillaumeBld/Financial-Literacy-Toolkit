@@ -25,6 +25,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const columns = await queryMany<{ column_name: string }>(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'items'"
+    );
+    const columnSet = new Set(columns.map((c) => c.column_name));
+    const hasIsSdm = columnSet.has('is_sdm');
+    const hasAnchorItemId = columnSet.has('anchor_item_id');
+    const hasVariantType = columnSet.has('variant_type');
+    const hasTriggerCondition = columnSet.has('trigger_condition');
+    const hasExternalId = columnSet.has('external_id');
+
+    const selectIsSdm = hasIsSdm ? 'is_sdm' : 'NULL::boolean as is_sdm';
+    const selectAnchorItemId = hasAnchorItemId ? 'anchor_item_id' : 'NULL::uuid as anchor_item_id';
+    const selectVariantType = hasVariantType ? 'variant_type' : 'NULL::text as variant_type';
+    const selectTriggerCondition = hasTriggerCondition ? 'trigger_condition' : 'NULL::text as trigger_condition';
+    const selectExternalId = hasExternalId ? 'external_id' : 'NULL::text as external_id';
+
     // Get all questions from the item bank
     const questions = await queryMany<{
       item_id: string;
@@ -37,9 +53,25 @@ export async function GET(request: NextRequest) {
       key: string | null;
       rubric: any;
       is_active: boolean;
+      is_anchor: boolean | null;
+      is_sdm: boolean | null;
+      anchor_item_id: string | null;
+      variant_type: string | null;
+      trigger_condition: string | null;
+      external_id: string | null;
       created_at: string;
     }>(
-      'SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, COALESCE(is_active, false) as is_active, created_at FROM items ORDER BY created_at DESC'
+      `SELECT item_id, type, domain, subdomain, difficulty, stem, options, key, rubric,
+              COALESCE(is_active, false) as is_active,
+              is_anchor,
+              ${selectIsSdm},
+              ${selectAnchorItemId},
+              ${selectVariantType},
+              ${selectTriggerCondition},
+              ${selectExternalId},
+              created_at
+       FROM items
+       ORDER BY created_at DESC`
     );
 
     console.log('Questions loaded:', questions.length);
@@ -57,6 +89,12 @@ export async function GET(request: NextRequest) {
         key: q.key,
         explanation: q.rubric,
         is_active: q.is_active,
+        is_anchor: q.is_anchor,
+        is_sdm: q.is_sdm,
+        anchor_item_id: q.anchor_item_id,
+        variant_type: q.variant_type,
+        trigger_condition: q.trigger_condition,
+        external_id: q.external_id,
         created_at: q.created_at,
         updated_at: q.created_at
       }))
@@ -114,6 +152,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the question
+    // The pg driver automatically handles JavaScript objects/arrays for JSONB fields
+    // If options/explanation are strings, parse them first; otherwise use as-is
+    const optionsValue = options 
+      ? (typeof options === 'string' ? JSON.parse(options) : options)
+      : null;
+    const explanationValue = explanation 
+      ? (typeof explanation === 'string' ? JSON.parse(explanation) : explanation)
+      : null;
+
     const newQuestion = await queryOne<{
       item_id: string;
       type: string;
@@ -124,20 +171,22 @@ export async function POST(request: NextRequest) {
       options: any;
       key: string | null;
       rubric: any;
+      is_active: boolean;
       created_at: string;
     }>(
-      `INSERT INTO items (type, domain, subdomain, difficulty, stem, options, key, rubric)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, created_at`,
+      `INSERT INTO items (type, domain, subdomain, difficulty, stem, options, key, rubric, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING item_id, type, domain, subdomain, difficulty, stem, options, key, rubric, COALESCE(is_active, false) as is_active, created_at`,
       [
         type,
         domain,
         subdomain || '',
         difficulty ?? 1, // Use nullish coalescing to preserve 0 as valid difficulty value
         question_text,
-        options || null, // pg driver automatically serializes objects/arrays to JSONB
+        optionsValue, // pg driver automatically serializes to JSONB
         key || null,
-        explanation || null // pg driver automatically serializes objects/arrays to JSONB
+        explanationValue, // pg driver automatically serializes to JSONB
+        false // Default to inactive for new questions
       ]
     );
 
@@ -162,6 +211,7 @@ export async function POST(request: NextRequest) {
         options: newQuestion.options,
         key: newQuestion.key,
         explanation: newQuestion.rubric,
+        is_active: newQuestion.is_active,
         created_at: newQuestion.created_at,
         updated_at: newQuestion.created_at
       }

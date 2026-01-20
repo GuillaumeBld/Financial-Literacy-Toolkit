@@ -1,7 +1,9 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Mail, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
@@ -12,7 +14,7 @@ type Course = {
   displayName: string;
 };
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordForm() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseCode, setCourseCode] = useState('');
@@ -273,6 +275,14 @@ export default function ForgotPasswordPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }
 

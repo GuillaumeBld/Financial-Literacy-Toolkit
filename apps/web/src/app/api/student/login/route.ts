@@ -5,6 +5,11 @@ import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    return NextResponse.json(
+      { error: 'Password login is disabled. Please sign in with Microsoft.' },
+      { status: 410 }
+    );
+
     const body = await request.json();
     const { courseCode, studentId, password } = body;
 

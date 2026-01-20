@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { queryMany } from '@/lib/db';
 import { getCourseDisplayName } from '@/lib/course-utils';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Get list of available courses for student selection
  * Returns active courses that students can enroll in

@@ -82,7 +82,7 @@ export default function StartPage() {
         return;
       }
 
-      // Redirect to login with course code
+      // Redirect to login (Microsoft-only authentication)
       router.push(`/login?courseCode=${encodeURIComponent(trimmedCode)}`);
     } catch (err) {
       console.error('Error validating course:', err);

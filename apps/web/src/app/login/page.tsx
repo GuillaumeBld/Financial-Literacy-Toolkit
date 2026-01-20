@@ -1,9 +1,12 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Lock, Info, AlertCircle } from 'lucide-react';
+import { User, Info, AlertCircle } from 'lucide-react';
+import { supabaseBrowser } from '@/lib/supabase-browser';
 
 type Course = {
   id: string;
@@ -12,12 +15,11 @@ type Course = {
   displayName: string;
 };
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [studentId, setStudentId] = useState('');
-  const [password, setPassword] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
@@ -61,7 +63,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     
-    if (!studentId.trim() || !password.trim() || !courseCode.trim()) {
+    if (!studentId.trim() || !courseCode.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -69,52 +71,21 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/student/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseCode: courseCode.trim(),
-          studentId: studentId.trim(),
-          password: password.trim(),
-        }),
+      sessionStorage.setItem('pendingCourseCode', courseCode.trim());
+      sessionStorage.setItem('pendingStudentId', studentId.trim());
+
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const { error: signInError } = await supabaseBrowser.auth.signInWithOAuth({
+        provider: 'azure',
+        options: { redirectTo },
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed. Please check your credentials.');
-        setIsLoading(false);
-        return;
+      if (signInError) {
+        throw signInError;
       }
-
-      // Store session data
-      const sessionData = {
-        courseCode: courseCode.trim(),
-        studentId: studentId.trim(),
-        userId: data.userId,
-        courseId: data.courseId,
-        hasCompletedOnboarding: data.hasCompletedOnboarding,
-        loginTime: new Date().toISOString(),
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('student-session', JSON.stringify(sessionData));
-      }
-
-      // Redirect based on onboarding status
-      if (!data.hasCompletedOnboarding) {
-        // First time - redirect to onboarding
-        router.push(`/onboarding?courseCode=${encodeURIComponent(courseCode.trim())}`);
-      } else {
-        // Already onboarded - check if pre or post assessment
-        // For now, default to pre-assessment selection
-        router.push('/assessment');
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
-      setError('An error occurred. Please try again.');
+      setError(err?.message || 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +118,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin}>
             <div className="mb-6">
               <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                Course Code <span className="text-red-500">*</span>
+                Course ID <span className="text-red-500">*</span>
               </label>
               <select
                 id="course-code"
@@ -198,26 +169,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-loyola-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={isLoading}
@@ -229,22 +180,10 @@ export default function LoginPage() {
                   Signing in...
                 </>
               ) : (
-                <>
-                  <Lock className="w-5 h-5" />
-                  Sign In
-                </>
+                <>Sign in with Microsoft</>
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              href={`/forgot-password?courseCode=${encodeURIComponent(courseCode || '')}`}
-              className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark font-medium"
-            >
-              Forgot your password?
-            </Link>
-          </div>
 
           <div className="mt-6 pt-6 border-t border-loyola-gray-200">
             <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4">
@@ -272,6 +211,14 @@ export default function LoginPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
 
