@@ -32,6 +32,8 @@ type Question = {
   is_active?: boolean;
   is_anchor?: boolean | null;
   is_sdm?: boolean | null;
+  is_scored?: boolean | null; // false for preference items Q15-Q28
+  external_item_id?: string | null; // Original question ID (1-40)
   anchor_item_id?: string | null;
   variant_type?: string | null;
   trigger_condition?: string | null;
@@ -772,6 +774,8 @@ export default function InstructorQuestionsPage() {
     if (filters.kind) {
       if (filters.kind === 'anchor' && !question.is_anchor) return false;
       if (filters.kind === 'sdm' && !question.is_sdm) return false;
+      if (filters.kind === 'preference' && question.is_scored !== false) return false;
+      if (filters.kind === 'scored' && (question.is_scored === false || question.is_sdm)) return false;
       if (filters.kind === 'regular' && (question.is_anchor || question.is_sdm)) return false;
     }
     if (filters.searchTerm && !question.question_text.toLowerCase().includes(filters.searchTerm.toLowerCase())) return false;
@@ -959,6 +963,8 @@ export default function InstructorQuestionsPage() {
                 <option value="">All</option>
                 <option value="anchor">Anchor</option>
                 <option value="sdm">SDM Variant</option>
+                <option value="preference">Preference (Q15-Q28)</option>
+                <option value="scored">Scored Knowledge</option>
                 <option value="regular">Regular</option>
               </select>
             </div>
@@ -1028,6 +1034,12 @@ export default function InstructorQuestionsPage() {
                       SDM
                     </span>
                   ) : null}
+
+                  {question.is_scored === false ? (
+                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      Preference
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-1">
                   <button
@@ -1068,9 +1080,13 @@ export default function InstructorQuestionsPage() {
                     {question.difficulty}
                   </span>
                 </div>
-                {(question.is_sdm || question.is_anchor) && (
+                {(question.is_sdm || question.is_anchor || question.external_item_id) && (
                   <div className="mt-2 text-xs text-loyola-gray-600 space-y-1">
-                    {question.external_id ? (
+                    {question.external_item_id ? (
+                      <div>
+                        <span className="font-medium">Question #:</span> Q{question.external_item_id}
+                      </div>
+                    ) : question.external_id ? (
                       <div>
                         <span className="font-medium">External ID:</span> {question.external_id}
                       </div>

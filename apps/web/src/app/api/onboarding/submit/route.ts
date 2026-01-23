@@ -2,55 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
-import { supabase } from '@/lib/supabase';
-
-function isAllowedEmail(email: string): boolean {
-  const allowed = process.env.ALLOWED_EMAIL_DOMAINS;
-  if (!allowed) return true;
-
-  const domains = allowed
-    .split(',')
-    .map((d) => d.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (domains.length === 0) return true;
-
-  const emailDomain = email.split('@')[1]?.toLowerCase() ?? '';
-  return domains.includes(emailDomain);
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization') || '';
-    const token = authHeader.toLowerCase().startsWith('bearer ')
-      ? authHeader.slice(7).trim()
-      : '';
-
-    if (!token) {
-      return NextResponse.json({ error: 'Missing Authorization token' }, { status: 401 });
-    }
-
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError) {
-      return NextResponse.json({ error: 'Invalid Microsoft session' }, { status: 401 });
-    }
-
-    const ssoUser = userData.user;
-    const verifiedEmail = (ssoUser?.email || '').trim().toLowerCase();
-    if (!verifiedEmail) {
-      return NextResponse.json(
-        { error: 'Microsoft account email is required' },
-        { status: 401 }
-      );
-    }
-
-    if (!isAllowedEmail(verifiedEmail)) {
-      return NextResponse.json(
-        { error: 'Email domain is not allowed for this school' },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json();
     const {
       courseCode,
@@ -60,7 +14,8 @@ export async function POST(request: NextRequest) {
       research_consent_version,
       demographic,
       financial_background,
-      socioeconomic,
+      financial_background_extended, // B9-B13: parental_education, first_generation_college, has_student_loan_debt, student_loan_interest_rate, student_loan_maturity
+      socioeconomic, // Additional optional fields: household_income, financial_aid_recipient, living_situation, work_study
     } = body;
 
     // Validate required fields (password removed - no longer collecting passwords)
@@ -76,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Use transaction for all database operations
     const result = await transaction(async (client) => {
       // Get course information (including pepper for hashing)
-      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
         courseCode as string
@@ -130,7 +85,7 @@ export async function POST(request: NextRequest) {
       const profileData = {
         user_id: userId,
         course_id: courseData.course_id,
-        email: verifiedEmail, // Email for authentication/support (not stored in research dataset)
+        email: null, // Email not collected (password-free authentication via hashed student key)
         // Research consent (Step 0)
         research_consent: research_consent || null,
         research_consent_timestamp: research_consent_timestamp || null,
@@ -143,18 +98,21 @@ export async function POST(request: NextRequest) {
         first_language_other: demographic?.first_language_other || null, // B4: Other
         work_experience: demographic?.work_experience || null, // B5
         // Baseline B6-B8 (Financial Background)
-        // Note: PostgreSQL node-postgres driver automatically handles JSONB conversion
-        // Pass array directly, driver will serialize to JSONB
-        prior_financial_products: financial_background?.prior_financial_products || null, // B6: JSONB array
+        // Explicitly stringify array for JSONB column
+        prior_financial_products: financial_background?.prior_financial_products
+          ? JSON.stringify(financial_background.prior_financial_products)
+          : null, // B6: JSONB array
         self_rated_financial_knowledge: financial_background?.self_rated_financial_knowledge || null, // B7
         financial_stress_frequency: financial_background?.financial_stress_frequency || null, // B8
-        // Additional socioeconomic data
+        // Baseline B9-B13 (Financial Background Extended)
+        parental_education: financial_background_extended?.parental_education || null, // B9
+        first_generation_college: financial_background_extended?.first_generation_college || null, // B10
+        has_student_loan_debt: financial_background_extended?.has_student_loan_debt || null, // B11
+        student_loan_interest_rate: financial_background_extended?.student_loan_interest_rate || null, // B12
+        student_loan_maturity: financial_background_extended?.student_loan_maturity || null, // B13
+        // Additional optional socioeconomic data
         household_income: socioeconomic?.household_income || null,
-        parental_education: socioeconomic?.parental_education || null,
-        first_generation_college: socioeconomic?.first_generation_college ?? null,
         financial_aid_recipient: socioeconomic?.financial_aid_recipient ?? null,
-        has_student_loan_debt: socioeconomic?.has_student_loan_debt ?? null,
-        student_loan_interest_rate: socioeconomic?.student_loan_interest_rate || null,
         living_situation: socioeconomic?.living_situation || null,
         work_study: socioeconomic?.work_study ?? null,
       };
@@ -182,10 +140,11 @@ export async function POST(request: NextRequest) {
             financial_aid_recipient = $17,
             has_student_loan_debt = $18,
             student_loan_interest_rate = $19,
-            living_situation = $20,
-            work_study = $21,
+            student_loan_maturity = $20,
+            living_situation = $21,
+            work_study = $22,
             updated_at = NOW()
-          WHERE user_id = $22 AND course_id = $23`,
+          WHERE user_id = $23 AND course_id = $24`,
           [
             profileData.email,
             profileData.research_consent,
@@ -206,6 +165,7 @@ export async function POST(request: NextRequest) {
             profileData.financial_aid_recipient,
             profileData.has_student_loan_debt,
             profileData.student_loan_interest_rate,
+            profileData.student_loan_maturity,
             profileData.living_situation,
             profileData.work_study,
             userId,
@@ -222,9 +182,9 @@ export async function POST(request: NextRequest) {
             prior_financial_products, self_rated_financial_knowledge, financial_stress_frequency,
             household_income, parental_education,
             first_generation_college, financial_aid_recipient,
-            has_student_loan_debt, student_loan_interest_rate,
+            has_student_loan_debt, student_loan_interest_rate, student_loan_maturity,
             living_situation, work_study
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
           [
             profileData.user_id,
             profileData.course_id,
@@ -247,6 +207,7 @@ export async function POST(request: NextRequest) {
             profileData.financial_aid_recipient,
             profileData.has_student_loan_debt,
             profileData.student_loan_interest_rate,
+            profileData.student_loan_maturity,
             profileData.living_situation,
             profileData.work_study,
           ]

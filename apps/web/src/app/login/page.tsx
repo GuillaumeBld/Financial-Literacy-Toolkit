@@ -1,12 +1,10 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-
 import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Info, AlertCircle } from 'lucide-react';
-import { supabaseBrowser } from '@/lib/supabase-browser';
+import { User, AlertCircle, Lock, UserPlus, LogIn, BookOpen, ArrowRight, ChevronRight } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -20,6 +18,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [studentId, setStudentId] = useState('');
+  const [password, setPassword] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
@@ -31,10 +30,9 @@ function LoginForm() {
       try {
         const response = await fetch('/api/courses/list');
         const data = await response.json();
-        
+
         if (data.success && data.courses && data.courses.length > 0) {
           setCourses(data.courses);
-          // Pre-fill course code from URL or default to first course
           const urlCourseCode = searchParams.get('courseCode');
           if (urlCourseCode) {
             setCourseCode(urlCourseCode);
@@ -42,15 +40,13 @@ function LoginForm() {
             setCourseCode(data.courses[0].name);
           }
         } else {
-          // No courses found or API returned empty - use fallback
-          setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
-          setCourseCode('QUINN 102');
+          setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
+          setCourseCode('QUIN 102');
         }
       } catch (err) {
         console.error('Error loading courses:', err);
-        // Fallback to QUINN 102 if API fails
-        setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
-        setCourseCode('QUINN 102');
+        setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
+        setCourseCode('QUIN 102');
       } finally {
         setIsLoadingCourses(false);
       }
@@ -62,8 +58,8 @@ function LoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!studentId.trim() || !courseCode.trim()) {
+
+    if (!studentId.trim() || !courseCode.trim() || !password.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -71,17 +67,53 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      sessionStorage.setItem('pendingCourseCode', courseCode.trim());
-      sessionStorage.setItem('pendingStudentId', studentId.trim());
-
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      const { error: signInError } = await supabaseBrowser.auth.signInWithOAuth({
-        provider: 'azure',
-        options: { redirectTo },
+      const response = await fetch('/api/student/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseCode: courseCode.trim(),
+          studentId: studentId.trim(),
+          password: password.trim(),
+        }),
       });
 
-      if (signInError) {
-        throw signInError;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store session data
+      const sessionData = {
+        userId: data.userId,
+        courseId: data.courseId,
+        studentId: studentId.trim(),
+        courseCode: courseCode.trim(),
+        isTestUser: data.isTestUser || false,
+        hasInProgressAttempt: data.hasInProgressAttempt || false,
+        attemptId: data.attemptId || null,
+        attemptType: data.attemptType || 'pre',
+      };
+
+      localStorage.setItem('student-session', JSON.stringify(sessionData));
+
+      // Also store assessment session for the assessment page
+      const assessmentSession = {
+        courseCode: courseCode.trim(),
+        studentId: studentId.trim(),
+        userId: data.userId,
+        courseId: data.courseId,
+        attemptType: data.attemptType || 'pre',
+        startedAt: new Date().toISOString(),
+        isTestUser: data.isTestUser || false,
+        attemptId: data.attemptId || null,
+      };
+      localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
+
+      if (data.hasCompletedOnboarding) {
+        router.push('/assessment');
+      } else {
+        router.push('/onboarding');
       }
     } catch (err: any) {
       console.error('Login error:', err);
@@ -92,122 +124,178 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <header className="bg-white shadow-sm border-b border-loyola-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-loyola-maroon" />
             <span className="text-xl font-bold gradient-text">Financial Literacy Toolkit</span>
           </Link>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Student Login</h1>
-          <p className="text-loyola-gray-600">Sign in to access your assessments</p>
-        </div>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 lg:py-16">
+        <div className="max-w-5xl mx-auto">
+          {/* Title */}
+          <div className="text-center mb-10">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Welcome Back</h1>
+            <p className="text-gray-600 text-lg">Sign in to continue your financial literacy journey</p>
+          </div>
 
-        <div className="bg-white rounded-xl shadow-md p-8 border border-loyola-gray-200">
-          {error && (
-            <div className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
+          {/* Two Column Layout */}
+          <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+            {/* Login Card */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 order-2 lg:order-2">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-loyola-maroon/10 rounded-xl flex items-center justify-center">
+                  <LogIn className="w-5 h-5 text-loyola-maroon" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Student Login</h2>
+                  <p className="text-sm text-gray-500">Access your assessments</p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm">{error}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div>
+                  <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
+                    Course
+                  </label>
+                  <select
+                    id="course-code"
+                    value={courseCode}
+                    onChange={(e) => setCourseCode(e.target.value)}
+                    disabled={isLoadingCourses || !!searchParams.get('courseCode')}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all ${
+                      searchParams.get('courseCode') || isLoadingCourses ? 'bg-gray-50 text-gray-500' : 'bg-white'
+                    }`}
+                    required
+                  >
+                    {isLoadingCourses ? (
+                      <option value="">Loading courses...</option>
+                    ) : courses.length > 0 ? (
+                      courses.map((course) => (
+                        <option key={course.id} value={course.name}>
+                          {course.displayName}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="QUIN 102">QUIN 102 (Financial Literacy)</option>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
+                    Student ID
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="student-id"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                      placeholder="Enter your student ID"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                      placeholder="Enter your password"
+                      required
+                    />
+                  </div>
+                  <div className="mt-2 text-right">
+                    <Link href="/forgot-password" className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-loyola-maroon/20 hover:shadow-xl hover:shadow-loyola-maroon/30"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign in
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
-          )}
 
-          <form onSubmit={handleLogin}>
-            <div className="mb-6">
-              <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                Course ID <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="course-code"
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                disabled={isLoadingCourses || !!searchParams.get('courseCode')}
-                className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
-                  searchParams.get('courseCode') || isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
-                }`}
-                required
-              >
-                {isLoadingCourses ? (
-                  <option value="">Loading courses...</option>
-                ) : courses.length > 0 ? (
-                  courses.map((course) => (
-                    <option key={course.id} value={course.name}>
-                      {course.displayName}
-                    </option>
-                  ))
-                ) : (
-                  <option value="QUINN 102">QUINN 102 (Financial Literacy)</option>
-                )}
-              </select>
-              {!searchParams.get('courseCode') && !isLoadingCourses && (
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  Select your course from the list
+            {/* Register Card */}
+            <div className="bg-gradient-to-br from-loyola-maroon to-loyola-maroon-dark rounded-2xl shadow-xl p-8 text-white order-1 lg:order-1 flex flex-col">
+              <div className="flex-1">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
+                  <UserPlus className="w-7 h-7 text-white" />
+                </div>
+                <h2 className="text-2xl lg:text-3xl font-bold mb-4">Register to Answer Questionnaire</h2>
+                <p className="text-white/90 text-lg leading-relaxed mb-8">
+                  Complete a quick onboarding survey to set up your profile and begin your financial literacy assessment.
                 </p>
-              )}
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
-                Student ID <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-loyola-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="student-id"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your student ID"
-                  required
-                />
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Signing in...
-                </>
-              ) : (
-                <>Sign in with Microsoft</>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-loyola-gray-200">
-            <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-loyola-gray-700">
-                  <p className="font-semibold mb-1">First time here?</p>
-                  <p>If this is your first time accessing the assessment, you'll be asked to complete an onboarding form after logging in.</p>
-                </div>
-              </div>
+              <Link
+                href="/onboarding"
+                className="inline-flex items-center justify-center gap-2 bg-white text-loyola-maroon font-semibold py-3.5 px-6 rounded-xl transition-all hover:bg-gray-100 shadow-lg hover:shadow-xl w-full"
+              >
+                <UserPlus className="w-5 h-5" />
+                Start Onboarding
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
-        </div>
 
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-loyola-maroon hover:text-loyola-maroon-dark text-sm font-medium">
-            ← Back to Home
-          </Link>
+          {/* Back to Home */}
+          <div className="mt-8 text-center">
+            <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-loyola-maroon text-sm font-medium transition-colors">
+              <ArrowRight className="w-4 h-4 rotate-180" />
+              Back to Home
+            </Link>
+          </div>
         </div>
       </main>
 
-      <footer className="bg-white border-t border-loyola-gray-200 py-6 mt-12">
-        <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
+        <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+          <p>&copy; 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -216,9 +304,12 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
       <LoginForm />
     </Suspense>
   );
 }
-

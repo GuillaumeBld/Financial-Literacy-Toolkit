@@ -6,24 +6,20 @@ const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
 export const hasSupabasePublicCredentials = Boolean(supabaseUrl) && Boolean(supabaseAnonKey)
 
+// Don't throw error - just log warning and allow password login fallback
 if (!hasSupabasePublicCredentials && !isBuildPhase) {
-  throw new Error('Missing Supabase public configuration environment variables')
-}
-
-if (!hasSupabasePublicCredentials) {
   console.warn(
-    'Supabase public credentials are missing. Using placeholder values for build-time steps.'
+    'Supabase public credentials are missing. Microsoft SSO will be disabled, password login will be used instead.'
   )
 }
 
-export const supabaseBrowser = createClient(
-  supabaseUrl || 'https://placeholder.supabase.local',
-  supabaseAnonKey || 'placeholder-key',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  }
-)
+// Create Supabase client only if credentials are available, otherwise null
+export const supabaseBrowser = hasSupabasePublicCredentials
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null

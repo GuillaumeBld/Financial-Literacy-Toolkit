@@ -43,14 +43,14 @@ function ForgotPasswordForm() {
           }
         } else {
           // No courses found or API returned empty - use fallback
-          setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
-          setCourseCode('QUINN 102');
+          setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
+          setCourseCode('QUIN 102');
         }
       } catch (err) {
         console.error('Error loading courses:', err);
-        // Fallback to QUINN 102 if API fails
-        setCourses([{ id: '', name: 'QUINN 102', term: '', displayName: 'QUINN 102 (Financial Literacy)' }]);
-        setCourseCode('QUINN 102');
+        // Fallback to QUIN 102 if API fails
+        setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
+        setCourseCode('QUIN 102');
       } finally {
         setIsLoadingCourses(false);
       }
@@ -164,7 +164,7 @@ function ForgotPasswordForm() {
                     </option>
                   ))
                 ) : (
-                  <option value="QUINN 102">QUINN 102 (Financial Literacy)</option>
+                  <option value="QUIN 102">QUIN 102 (Financial Literacy)</option>
                 )}
               </select>
               {!searchParams.get('courseCode') && !isLoadingCourses && (

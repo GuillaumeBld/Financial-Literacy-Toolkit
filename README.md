@@ -3,7 +3,7 @@
 AI-assisted pre and post financial literacy assessment for finance students by Dr. Abol Jalilvand and Guillaume Bolivard. Web-based, FERPA-compliant, production-ready MVP.
 
 ## Live Demo
-**Production**: https://financial-literacy.qualiaai.fr  
+**Production**: https://financial-literacy.qualiaai.fr
 **Previous (Vercel)**: https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app
 
 Test Credentials:

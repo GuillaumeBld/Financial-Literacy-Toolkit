@@ -5,11 +5,6 @@ import { findCourseByName } from '@/lib/course-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    return NextResponse.json(
-      { error: 'Password login is disabled. Please sign in with Microsoft.' },
-      { status: 410 }
-    );
-
     const body = await request.json();
     const { courseCode, studentId, password } = body;
 
@@ -24,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Use transaction for database operations
     const result = await transaction(async (client) => {
       // Get course information (including pepper for hashing)
-      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
         courseCode as string
@@ -86,11 +81,31 @@ export async function POST(request: NextRequest) {
 
       const hasCompletedOnboarding = profile.rows && profile.rows.length > 0;
 
+      // Check for in-progress assessment attempt
+      const inProgressAttempt = await client.query(
+        `SELECT attempt_id, attempt_type, started_at
+         FROM attempts
+         WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
+         ORDER BY started_at DESC LIMIT 1`,
+        [userData.user_id, courseData.course_id]
+      );
+
+      const hasInProgressAttempt = inProgressAttempt.rows && inProgressAttempt.rows.length > 0;
+      const attemptData = hasInProgressAttempt ? inProgressAttempt.rows[0] : null;
+
+      // Check if this is the test user (special permissions)
+      const normalizedStudentId = studentId.trim().toLowerCase();
+      const isTestUser = normalizedStudentId === '123456789';
+
       return {
         success: true,
         userId: userData.user_id,
         courseId: courseData.course_id,
         hasCompletedOnboarding,
+        hasInProgressAttempt,
+        attemptId: attemptData?.attempt_id || null,
+        attemptType: attemptData?.attempt_type || null,
+        isTestUser,
       };
     });
 
