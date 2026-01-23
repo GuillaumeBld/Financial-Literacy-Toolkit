@@ -10,6 +10,28 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ## 2026-01-23
 
+### FEAT: SDM-10 algorithm rewrite to match source of truth
+
+**Context**: SDM implementation needed to match the exact specification in sdm.md and SDM10_Implementation_Guide.md.
+
+**Changes**:
+- Rewrote Need score calculation (Table 4): absolute scores 0-5 per anchor, not deltas
+- Added format awareness: T/F anchors (Q2, Q3, Q11, Q30, Q35, Q36, Q39) get elevated Need for Correct+Mid (2 vs 1)
+- Implemented proper variant type assignment (Table 11): Need score determines variant type
+- Added fallback mechanism (Table 12): Open_Diagnose→Lower_MCQ, Open_Confirm→Same_MCQ when cap reached
+- Implemented 3-phase selection algorithm:
+  - Phase 1: Domain minimum enforcement (2 per domain)
+  - Phase 2: Need-based slot filling (remaining 4 slots)
+  - Phase 3: Fallback with mastery items
+- Added tiebreaker hierarchy (Section 8.1): domain deficit, T/F priority, subcategory spread, domain order, seeded random
+- Implemented presentation order (Section 11): Open_Diagnose first, Open_Confirm last
+- Added validation for all constraints (size=10, domain min=2, subcategory cap=2, open-ended cap=3)
+- Changed state from subcategory totals to individual anchor scores
+
+**Files Affected**: `apps/web/src/app/assessment/page.tsx`
+
+---
+
 ### FEAT: Pre-assessment screen UI updates
 
 **Context**: User requirements for cleaner pre-assessment UI without intimidating monitoring language.

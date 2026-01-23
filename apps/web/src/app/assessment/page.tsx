@@ -20,55 +20,154 @@ type Question = {
   trigger_condition?: string | null;
 };
 
-// SDM Selection Types
-type SubcategoryNeed = {
-  subcategory: string;
+// ============================================================================
+// SDM-10 IMPLEMENTATION - Based on Source of Truth (sdm.md)
+// ============================================================================
+
+// SDM Configuration Constants
+const SDM_SIZE = 10;           // Total items in SDM-10
+const DOMAIN_MINIMUM = 2;      // Minimum items per domain
+const SUBCATEGORY_CAP = 2;     // Maximum items per subcategory
+const OPEN_ENDED_CAP = 3;      // Maximum open-ended items
+
+// T/F anchors have 50% guess rate (from source of truth Section 3.1)
+// These get elevated Need score for Correct + Mid (2 instead of 1)
+const TF_ANCHORS = new Set(['Q2', 'Q3', 'Q11', 'Q30', 'Q35', 'Q36', 'Q39']);
+
+// Domain order for tiebreaking (from source of truth Section 8.1)
+const DOMAIN_ORDER = ['Borrowing & Credit', 'Risk Management', 'Investment & Risk'];
+
+// Response types
+type ResponseType = 'correct' | 'incorrect' | 'do_not_know';
+
+// Scored anchor data structure
+type ScoredAnchor = {
+  anchorId: string;
+  needScore: number;
+  responseType: ResponseType;
+  confidence: number | null;  // null for Do Not Know
+  primaryVariant: string;
   domain: string;
-  need: number;
-  mastery: number;
-  anchorIds: string[]; // anchor question IDs that contributed to this subcategory
+  subcategory: string;
+  anchorFormat: 'MCQ' | 'TF';
+  assignedVariant?: string;
+  isOpenEnded?: boolean;
 };
 
-// Mastery Δ and Need Δ update rules from source of truth (Table 3)
-// | Confidence | Correct: Mastery Δ | Correct: Need Δ | Incorrect: Mastery Δ | Incorrect: Need Δ |
-// | 1 (Low)    | 0                  | +2              | 0                    | +1                |
-// | 2 (Mid)    | +1                 | 0               | -1                   | +2                |
-// | 3 (High)   | +2                 | -1              | -2                   | +3                |
-const calculateDeltas = (isCorrect: boolean, confidence: number): { masteryDelta: number; needDelta: number } => {
-  if (confidence === 1) { // Low
-    return isCorrect
-      ? { masteryDelta: 0, needDelta: 2 }
-      : { masteryDelta: 0, needDelta: 1 };
-  } else if (confidence === 2) { // Mid
-    return isCorrect
-      ? { masteryDelta: 1, needDelta: 0 }
-      : { masteryDelta: -1, needDelta: 2 };
-  } else { // High (3)
-    return isCorrect
-      ? { masteryDelta: 2, needDelta: -1 }
-      : { masteryDelta: -2, needDelta: 3 };
-  }
+// Get anchor format based on external_item_id (Q1-Q40)
+const getAnchorFormat = (externalItemId: string | null | undefined): 'MCQ' | 'TF' => {
+  if (!externalItemId) return 'MCQ';
+  const normalized = externalItemId.toUpperCase().replace(/[^Q0-9]/g, '');
+  return TF_ANCHORS.has(normalized) ? 'TF' : 'MCQ';
 };
 
-// Get preferred variant type based on correctness and confidence (Table 4)
-// | Confidence | If Correct               | If Incorrect                    |
-// | 1 (Low)    | Open_Confirm             | Lower_TF or Lower_MCQ           |
-// | 2 (Mid)    | Same_MCQ                 | Lower_MCQ or Lower_TF           |
-// | 3 (High)   | Higher_MCQ (optional)    | Open_Diagnose                   |
-const getPreferredVariantTypes = (isCorrect: boolean, confidence: number): string[] => {
-  if (confidence === 1) { // Low
-    return isCorrect
-      ? ['open_confirm', 'same_mcq']
-      : ['lower_tf', 'lower_mcq'];
-  } else if (confidence === 2) { // Mid
-    return isCorrect
-      ? ['same_mcq']
-      : ['lower_mcq', 'lower_tf'];
-  } else { // High (3)
-    return isCorrect
-      ? ['higher_mcq', 'same_mcq'] // Higher is optional, fall back to same
-      : ['open_diagnose', 'lower_mcq', 'lower_tf'];
+// ============================================================================
+// NEED SCORE CALCULATION (Source of Truth Table 4)
+// ============================================================================
+// | Response    | Confidence | MCQ Need | T/F Need | Signal Status |
+// |-------------|------------|----------|----------|---------------|
+// | Incorrect   | High (3)   | 5        | 5        | Conflict      |
+// | Correct     | Low (1)    | 5        | 5        | Conflict      |
+// | Do Not Know | N/A        | 4        | 4        | Absent        |
+// | Incorrect   | Mid (2)    | 3        | 3        | Partial       |
+// | Correct     | Mid (2)    | 1        | 2        | T/F elevated  |
+// | Incorrect   | Low (1)    | 2        | 2        | Aligned       |
+// | Correct     | High (3)   | 0        | 0        | Aligned       |
+// ============================================================================
+const calculateNeedScore = (
+  responseType: ResponseType,
+  confidence: number | null,
+  anchorFormat: 'MCQ' | 'TF'
+): number => {
+  // DO NOT KNOW: Signal absent, no reasoning to elicit
+  if (responseType === 'do_not_know') {
+    return 4;
   }
+
+  // INCORRECT responses
+  if (responseType === 'incorrect') {
+    if (confidence === 3) return 5;  // Confident misconception (signal conflict)
+    if (confidence === 2) return 3;  // Uncertain error (partial)
+    return 2;                         // Acknowledged gap (aligned) - confidence === 1
+  }
+
+  // CORRECT responses
+  if (responseType === 'correct') {
+    if (confidence === 1) return 5;  // Possible guess (signal conflict)
+    if (confidence === 2) {
+      // FORMAT-AWARE: T/F gets elevated Need due to 50% guess rate
+      return anchorFormat === 'TF' ? 2 : 1;
+    }
+    return 0;                         // Demonstrated mastery (aligned) - confidence === 3
+  }
+
+  return 0;
+};
+
+// ============================================================================
+// VARIANT TYPE ASSIGNMENT (Source of Truth Table 11)
+// ============================================================================
+// | Need | Response Pattern            | Primary Variant | Fallback        |
+// |------|----------------------------|-----------------|-----------------|
+// | 5    | Incorrect + High           | Open_Diagnose   | Lower_MCQ       |
+// | 5    | Correct + Low              | Open_Confirm    | Same_MCQ        |
+// | 4    | Do Not Know                | Lower_MCQ       | -               |
+// | 3    | Incorrect + Mid            | Lower_MCQ       | -               |
+// | 2    | Incorrect + Low / TF C+Mid | Lower_TF        | -               |
+// | 1    | MCQ Correct + Mid          | Same_MCQ        | -               |
+// | 0    | Correct + High             | Higher_MCQ      | -               |
+// ============================================================================
+const getPrimaryVariant = (
+  responseType: ResponseType,
+  confidence: number | null,
+  needScore: number
+): string => {
+  // Need = 5: Two different variants based on pattern
+  if (needScore === 5) {
+    if (responseType === 'incorrect') {
+      return 'open_diagnose';  // Identify misconception
+    }
+    return 'open_confirm';      // Verify reasoning (correct + low)
+  }
+
+  // Need = 4: Do Not Know
+  if (needScore === 4) return 'lower_mcq';
+
+  // Need = 3: Incorrect + Mid
+  if (needScore === 3) return 'lower_mcq';
+
+  // Need = 2: Incorrect + Low OR T/F Correct + Mid
+  if (needScore === 2) return 'lower_tf';
+
+  // Need = 1: MCQ Correct + Mid
+  if (needScore === 1) return 'same_mcq';
+
+  // Need = 0: Correct + High
+  return 'higher_mcq';
+};
+
+// Fallback variants when open-ended cap is reached (Source of Truth Table 12)
+const FALLBACK_VARIANTS: Record<string, string> = {
+  'open_diagnose': 'lower_mcq',
+  'open_confirm': 'same_mcq',
+};
+
+// Check if variant is open-ended
+const isOpenEndedVariant = (variant: string): boolean => {
+  const v = variant.toLowerCase();
+  return v.includes('open_diagnose') || v.includes('open_confirm');
+};
+
+// Presentation order for SDM-10 (Source of Truth Section 11)
+// Open_Diagnose first (confident misconceptions need full attention)
+// Open_Confirm last (verification after reflection)
+const VARIANT_PRESENTATION_ORDER: Record<string, number> = {
+  'open_diagnose': 0,
+  'lower_mcq': 1,
+  'lower_tf': 2,
+  'same_mcq': 3,
+  'higher_mcq': 4,
+  'open_confirm': 5,
 };
 
 type SessionData = {
@@ -142,15 +241,10 @@ const getConfidenceBucket = (confidence: number): ConfidenceBucket => {
   return 'high'; // confidence === 3
 };
 
-const variantTypeWeight = (variantType: string | null | undefined): number => {
+// Presentation order weight for sorting
+const getVariantPresentationWeight = (variantType: string | null | undefined): number => {
   const vt = (variantType || '').toLowerCase();
-  if (vt.includes('same_mcq')) return 0;
-  if (vt.includes('same')) return 1;
-  if (vt.includes('lower_mcq')) return 2;
-  if (vt.includes('lower_tf')) return 3;
-  if (vt.includes('open_confirm')) return 4;
-  if (vt.includes('open_diagnose')) return 5;
-  return 10;
+  return VARIANT_PRESENTATION_ORDER[vt] ?? 99;
 };
 
 // Shuffle answer options for multiple choice questions (while preserving correct answer)
@@ -173,8 +267,8 @@ export default function AssessmentPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sdmBank, setSdmBank] = useState<Question[]>([]);
   const [sdmAppended, setSdmAppended] = useState(false);
-  // Track Need/Mastery per subcategory incrementally (updated as student answers)
-  const [subcategoryStats, setSubcategoryStats] = useState<Map<string, SubcategoryNeed>>(new Map());
+  // Track scored anchors for SDM-10 selection (updated as student answers each anchor)
+  const [scoredAnchors, setScoredAnchors] = useState<Map<string, ScoredAnchor>>(new Map());
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAcknowledgedHonorCode, setHasAcknowledgedHonorCode] = useState(false);
@@ -583,143 +677,248 @@ export default function AssessmentPage() {
     }));
   };
 
-  // Select 10 SDM questions based on Need ranking with constraints
-  // This implements the SDM-10 selection algorithm from the source of truth
-  // Uses pre-computed subcategoryStats from state (updated incrementally as student answers)
+  // ============================================================================
+  // SDM-10 SELECTION ALGORITHM (Source of Truth sdm.md Section 10)
+  // ============================================================================
+  // Phase 1: Domain Minimum Enforcement (2 items per domain)
+  // Phase 2: Need-Based Slot Filling (remaining 4 slots by Need priority)
+  // Phase 3: Fallback for Underfilled Slots (use mastery items if needed)
+  // ============================================================================
   const selectSdmQuestions = useCallback((): Question[] => {
     if (sdmBank.length === 0) return [];
 
-    // Use pre-computed subcategory stats from state (already calculated incrementally)
-    // This makes the Q40→Q41 transition nearly instant
+    // Use pre-computed scored anchors from state (updated incrementally)
+    const anchors = Array.from(scoredAnchors.values());
+
     if (isTestUser) {
-      console.log('SDM: Using pre-computed subcategory stats:', Array.from(subcategoryStats.values()));
+      console.log('SDM: Using pre-computed anchor scores:', anchors.map(a => ({
+        id: a.anchorId,
+        need: a.needScore,
+        variant: a.primaryVariant,
+        domain: a.domain
+      })));
     }
 
-    // Step 2: Rank subcategories by Need (descending)
-    const rankedSubcategories = Array.from(subcategoryStats.values())
-      .sort((a, b) => b.need - a.need);
+    // Generate seeded random values for reproducible tiebreaking
+    const seed = 42;
+    const randomValues: Record<string, number> = {};
+    let rngState = seed;
+    anchors.forEach(a => {
+      rngState = (rngState * 1103515245 + 12345) & 0x7fffffff;
+      randomValues[a.anchorId] = rngState / 0x7fffffff;
+    });
 
-    // Step 3: Select SDM items with constraints
-    const selectedSdm: Question[] = [];
-    const domainCount: Record<string, number> = {};
-    const subcategoryCount: Record<string, number> = {};
-    let openEndedCount = 0;
+    // Tiebreaker sort key (Source of Truth Section 8.1)
+    // 1. Domain deficit (below minimum first)
+    // 2. Format priority (T/F before MCQ)
+    // 3. Subcategory spread (fewer items selected first)
+    // 4. Domain order (B&C → RM → I&R)
+    // 5. Seeded random
+    const createSortKey = (
+      anchor: ScoredAnchor,
+      domainCounts: Record<string, number>,
+      subcategoryCounts: Record<string, number>
+    ): [number, number, number, number, number, number] => {
+      const domainDeficit = (domainCounts[anchor.domain] || 0) < DOMAIN_MINIMUM ? 0 : 1;
+      const formatPriority = anchor.anchorFormat === 'TF' ? 0 : 1;
+      const subcategoryCount = subcategoryCounts[anchor.subcategory] || 0;
+      const domainOrder = DOMAIN_ORDER.indexOf(anchor.domain);
+      const randomValue = randomValues[anchor.anchorId] || 0.5;
 
-    // Constraints from source of truth (Table 1)
-    const MAX_SDM = 10;
-    const MAX_PER_SUBCATEGORY = 2;
-    const MAX_OPEN_ENDED = 3;
-    const MIN_PER_DOMAIN = 2;
+      return [
+        -anchor.needScore,  // Higher Need first (negative for ascending sort)
+        domainDeficit,
+        formatPriority,
+        subcategoryCount,
+        domainOrder >= 0 ? domainOrder : 99,
+        randomValue
+      ];
+    };
 
-    // Helper to find best SDM variant for an anchor
-    const findBestVariant = (anchorId: string, subcategory: string): Question | null => {
-      const anchor = questions.find(q => q.id === anchorId);
-      if (!anchor) return null;
-
-      const isCorrect = answerCorrectness[anchorId] ?? false;
-      const confidence = confidenceRatings[anchorId] ?? 2;
-      const preferredTypes = getPreferredVariantTypes(isCorrect, confidence);
-
+    // Helper: Find SDM variant for an anchor with fallback logic
+    const findVariantForAnchor = (
+      anchor: ScoredAnchor,
+      openEndedCount: number
+    ): { variant: Question | null; variantType: string; isOpenEnded: boolean } => {
       // Find SDM variants for this anchor
-      const candidates = sdmBank.filter(q => q.anchor_item_id === anchorId);
-      if (candidates.length === 0) return null;
+      const candidates = sdmBank.filter(q => q.anchor_item_id === anchor.anchorId);
+      if (candidates.length === 0) {
+        return { variant: null, variantType: '', isOpenEnded: false };
+      }
 
-      // Try to find a variant matching preferred types
-      for (const preferredType of preferredTypes) {
-        const match = candidates.find(q =>
-          q.variant_type?.toLowerCase().includes(preferredType)
-        );
-        if (match) {
-          // Check open-ended cap
-          const isOpenEnded = match.type === 'short_answer' ||
-            match.variant_type?.toLowerCase().includes('open');
-          if (isOpenEnded && openEndedCount >= MAX_OPEN_ENDED) {
-            continue; // Skip this variant, try next preferred type
-          }
-          return match;
+      let variantType = anchor.primaryVariant;
+      let isOpenEnded = isOpenEndedVariant(variantType);
+
+      // Apply fallback if open-ended cap reached (Source of Truth Table 12)
+      if (isOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
+        const fallback = FALLBACK_VARIANTS[variantType];
+        if (fallback) {
+          variantType = fallback;
+          isOpenEnded = false;
         }
+      }
+
+      // Find matching variant
+      const match = candidates.find(q =>
+        q.variant_type?.toLowerCase().includes(variantType)
+      );
+
+      if (match) {
+        return { variant: match, variantType, isOpenEnded };
       }
 
       // Fallback: return any available variant (respecting open-ended cap)
       for (const candidate of candidates) {
-        const isOpenEnded = candidate.type === 'short_answer' ||
-          candidate.variant_type?.toLowerCase().includes('open');
-        if (isOpenEnded && openEndedCount >= MAX_OPEN_ENDED) {
+        const candidateIsOpenEnded = isOpenEndedVariant(candidate.variant_type || '');
+        if (candidateIsOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
           continue;
         }
-        return candidate;
+        return {
+          variant: candidate,
+          variantType: candidate.variant_type || '',
+          isOpenEnded: candidateIsOpenEnded
+        };
       }
 
-      return null;
+      return { variant: null, variantType: '', isOpenEnded: false };
     };
 
-    // First pass: ensure domain balance (at least 2 per domain)
-    const domains = ['Borrowing & Credit', 'Risk Management', 'Investment & Risk'];
+    // Selection state
+    const selectedItems: Array<{ anchor: ScoredAnchor; variant: Question; variantType: string; isOpenEnded: boolean }> = [];
+    const selectedAnchorIds = new Set<string>();
+    const domainCounts: Record<string, number> = {};
+    const subcategoryCounts: Record<string, number> = {};
+    let openEndedCount = 0;
 
-    for (const domain of domains) {
-      const domainSubcategories = rankedSubcategories.filter(s => s.domain === domain);
-
-      for (const subcat of domainSubcategories) {
-        if ((domainCount[domain] || 0) >= MIN_PER_DOMAIN) break;
-        if (selectedSdm.length >= MAX_SDM) break;
-        if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) continue;
-
-        for (const anchorId of subcat.anchorIds) {
-          if (selectedSdm.length >= MAX_SDM) break;
-          if ((domainCount[domain] || 0) >= MIN_PER_DOMAIN) break;
-          if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) break;
-
-          const variant = findBestVariant(anchorId, subcat.subcategory);
-          if (variant && !selectedSdm.find(q => q.id === variant.id)) {
-            selectedSdm.push(variant);
-            domainCount[domain] = (domainCount[domain] || 0) + 1;
-            subcategoryCount[subcat.subcategory] = (subcategoryCount[subcat.subcategory] || 0) + 1;
-
-            const isOpenEnded = variant.type === 'short_answer' ||
-              variant.variant_type?.toLowerCase().includes('open');
-            if (isOpenEnded) openEndedCount++;
+    // PHASE 1: Domain Minimum Enforcement (2 items per domain)
+    for (const domain of DOMAIN_ORDER) {
+      // Sort anchors in this domain by priority
+      const domainAnchors = anchors
+        .filter(a => a.domain === domain && !selectedAnchorIds.has(a.anchorId))
+        .sort((a, b) => {
+          const keyA = createSortKey(a, domainCounts, subcategoryCounts);
+          const keyB = createSortKey(b, domainCounts, subcategoryCounts);
+          for (let i = 0; i < keyA.length; i++) {
+            if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
           }
+          return 0;
+        });
+
+      let domainItemsSelected = 0;
+      for (const anchor of domainAnchors) {
+        if (domainItemsSelected >= DOMAIN_MINIMUM) break;
+        if (selectedItems.length >= SDM_SIZE) break;
+        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
+
+        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+        if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
+          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+          selectedAnchorIds.add(anchor.anchorId);
+          domainCounts[domain] = (domainCounts[domain] || 0) + 1;
+          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
+          if (isOpenEnded) openEndedCount++;
+          domainItemsSelected++;
         }
       }
     }
 
-    // Second pass: fill remaining slots by Need ranking
-    for (const subcat of rankedSubcategories) {
-      if (selectedSdm.length >= MAX_SDM) break;
-      if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) continue;
+    // PHASE 2: Need-Based Slot Filling (fill remaining slots by priority)
+    if (selectedItems.length < SDM_SIZE) {
+      // Re-sort all unselected anchors with updated counts
+      const remainingAnchors = anchors
+        .filter(a => !selectedAnchorIds.has(a.anchorId))
+        .sort((a, b) => {
+          const keyA = createSortKey(a, domainCounts, subcategoryCounts);
+          const keyB = createSortKey(b, domainCounts, subcategoryCounts);
+          for (let i = 0; i < keyA.length; i++) {
+            if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
+          }
+          return 0;
+        });
 
-      for (const anchorId of subcat.anchorIds) {
-        if (selectedSdm.length >= MAX_SDM) break;
-        if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) break;
+      for (const anchor of remainingAnchors) {
+        if (selectedItems.length >= SDM_SIZE) break;
+        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
 
-        const variant = findBestVariant(anchorId, subcat.subcategory);
-        if (variant && !selectedSdm.find(q => q.id === variant.id)) {
-          selectedSdm.push(variant);
-          domainCount[subcat.domain] = (domainCount[subcat.domain] || 0) + 1;
-          subcategoryCount[subcat.subcategory] = (subcategoryCount[subcat.subcategory] || 0) + 1;
-
-          const isOpenEnded = variant.type === 'short_answer' ||
-            variant.variant_type?.toLowerCase().includes('open');
+        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+        if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
+          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+          selectedAnchorIds.add(anchor.anchorId);
+          domainCounts[anchor.domain] = (domainCounts[anchor.domain] || 0) + 1;
+          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
           if (isOpenEnded) openEndedCount++;
         }
       }
     }
 
-    if (isTestUser) {
-      console.log('SDM: Selected questions:', selectedSdm.map(q => ({
-        id: q.id.substring(0, 8),
-        domain: q.domain,
-        subdomain: q.subdomain,
-        type: q.variant_type,
-        anchorId: q.anchor_item_id?.substring(0, 8)
-      })));
-      console.log('SDM: Domain counts:', domainCount);
-      console.log('SDM: Subcategory counts:', subcategoryCount);
-      console.log('SDM: Open-ended count:', openEndedCount);
+    // PHASE 3: Fallback for Underfilled Slots (use Need=0 mastery items)
+    if (selectedItems.length < SDM_SIZE) {
+      const masteryAnchors = anchors
+        .filter(a => a.needScore === 0 && !selectedAnchorIds.has(a.anchorId))
+        .sort(() => randomValues[anchors[0]?.anchorId] - 0.5); // Shuffle with seed
+
+      for (const anchor of masteryAnchors) {
+        if (selectedItems.length >= SDM_SIZE) break;
+        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
+
+        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+        if (variant) {
+          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+          selectedAnchorIds.add(anchor.anchorId);
+          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
+        }
+      }
     }
 
-    return selectedSdm;
-  }, [subcategoryStats, questions, confidenceRatings, answerCorrectness, sdmBank, isTestUser]);
+    // ORDER FOR PRESENTATION (Source of Truth Section 11)
+    // Open_Diagnose first, then Lower_MCQ, Lower_TF, Same_MCQ, Higher_MCQ, Open_Confirm last
+    const orderedItems = [...selectedItems].sort((a, b) => {
+      const orderA = getVariantPresentationWeight(a.variantType);
+      const orderB = getVariantPresentationWeight(b.variantType);
+      if (orderA !== orderB) return orderA - orderB;
+      // Within same variant type, sort by Need score (higher first)
+      return b.anchor.needScore - a.anchor.needScore;
+    });
+
+    if (isTestUser) {
+      console.log('SDM: Selected items (presentation order):', orderedItems.map(item => ({
+        anchorId: item.anchor.anchorId,
+        need: item.anchor.needScore,
+        variant: item.variantType,
+        domain: item.anchor.domain,
+        isOpenEnded: item.isOpenEnded
+      })));
+      console.log('SDM: Domain counts:', domainCounts);
+      console.log('SDM: Subcategory counts:', subcategoryCounts);
+      console.log('SDM: Open-ended count:', openEndedCount);
+
+      // Validation
+      const errors: string[] = [];
+      if (orderedItems.length !== SDM_SIZE && orderedItems.length > 0) {
+        errors.push(`Size is ${orderedItems.length}, expected ${SDM_SIZE}`);
+      }
+      for (const domain of DOMAIN_ORDER) {
+        if ((domainCounts[domain] || 0) < DOMAIN_MINIMUM) {
+          errors.push(`Domain '${domain}' has ${domainCounts[domain] || 0} items, minimum is ${DOMAIN_MINIMUM}`);
+        }
+      }
+      for (const [subcat, count] of Object.entries(subcategoryCounts)) {
+        if (count > SUBCATEGORY_CAP) {
+          errors.push(`Subcategory '${subcat}' has ${count} items, cap is ${SUBCATEGORY_CAP}`);
+        }
+      }
+      if (openEndedCount > OPEN_ENDED_CAP) {
+        errors.push(`Open-ended count is ${openEndedCount}, cap is ${OPEN_ENDED_CAP}`);
+      }
+      if (errors.length > 0) {
+        console.warn('SDM: Validation errors:', errors);
+      } else {
+        console.log('SDM: Validation passed');
+      }
+    }
+
+    return orderedItems.map(item => item.variant);
+  }, [scoredAnchors, sdmBank, isTestUser]);
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
@@ -728,31 +927,17 @@ export default function AssessmentPage() {
       const current = questions[currentIndex];
       const atEndOfAnchors = !sdmAppended && !current?.is_sdm;
       if (atEndOfAnchors) {
-        // Select SDM questions using the proper algorithm based on Need ranking
+        // Select SDM questions using the proper algorithm from source of truth
+        // Items are already ordered for presentation (Open_Diagnose first, Open_Confirm last)
         const selectedSdm = selectSdmQuestions();
 
         if (selectedSdm.length > 0) {
-          // Sort SDM questions by their anchor's order in the main questions array
-          const anchorOrderMap = new Map<string, number>();
-          questions.forEach((q, idx) => {
-            if (!q.is_sdm) {
-              anchorOrderMap.set(q.id, idx);
-            }
-          });
-
-          const sortedSdm = [...selectedSdm].sort((a, b) => {
-            const orderA = a.anchor_item_id ? (anchorOrderMap.get(a.anchor_item_id) ?? 999) : 999;
-            const orderB = b.anchor_item_id ? (anchorOrderMap.get(b.anchor_item_id) ?? 999) : 999;
-            if (orderA !== orderB) return orderA - orderB;
-            return variantTypeWeight(a.variant_type) - variantTypeWeight(b.variant_type);
-          });
-
           if (isTestUser) {
-            console.log(`SDM: Appending ${sortedSdm.length} SDM questions (Q41-Q${40 + sortedSdm.length})`);
+            console.log(`SDM: Appending ${selectedSdm.length} SDM questions (Q41-Q${40 + selectedSdm.length})`);
           }
 
           setSdmAppended(true);
-          setQuestions((prev) => [...prev, ...sortedSdm]);
+          setQuestions((prev) => [...prev, ...selectedSdm]);
           setCurrentIndex((prev) => prev + 1);
           return;
         }
@@ -778,41 +963,51 @@ export default function AssessmentPage() {
       [currentQuestion.id]: value,
     }));
 
-    // Update subcategory Need/Mastery incrementally for scored anchor questions
-    // This spreads computation across answers for smoother Q40→Q41 transition
+    // Update scored anchors incrementally for SDM-10 selection (Source of Truth Section 9)
+    // This spreads computation across answers for seamless Q40→Q41 transition
     const isAnchorQuestion = !currentQuestion.is_sdm;
     const isScoredItem = currentQuestion.is_scored !== false;
     const answer = answers[currentQuestion.id];
 
     if (isAnchorQuestion && isScoredItem && answer) {
       const isCorrect = checkAnswerCorrectness(currentQuestion.id, answer);
-      const { masteryDelta, needDelta } = calculateDeltas(isCorrect, value);
+
+      // Determine response type
+      let responseType: ResponseType = isCorrect ? 'correct' : 'incorrect';
+      // Note: "Do Not Know" would be detected from the answer value itself
+      // For now, we treat unanswered or explicit DNK selection as do_not_know
+
+      // Get anchor format (T/F vs MCQ) based on external_item_id
+      const anchorFormat = getAnchorFormat(currentQuestion.external_item_id);
+
+      // Calculate Need score using source of truth Table 4
+      const needScore = calculateNeedScore(responseType, value, anchorFormat);
+
+      // Get primary variant type using source of truth Table 11
+      const primaryVariant = getPrimaryVariant(responseType, value, needScore);
 
       const subcategory = currentQuestion.subdomain || currentQuestion.domain || 'General';
       const domain = currentQuestion.domain || 'General';
 
-      setSubcategoryStats((prev) => {
+      setScoredAnchors((prev) => {
         const newMap = new Map(prev);
-        const existing = newMap.get(subcategory) || {
-          subcategory,
+
+        // Create or update scored anchor
+        const scoredAnchor: ScoredAnchor = {
+          anchorId: currentQuestion.id,
+          needScore,
+          responseType,
+          confidence: value,
+          primaryVariant,
           domain,
-          need: 0,
-          mastery: 0,
-          anchorIds: [],
+          subcategory,
+          anchorFormat,
         };
 
-        // Only update if this anchor hasn't been counted yet
-        if (!existing.anchorIds.includes(currentQuestion.id)) {
-          newMap.set(subcategory, {
-            ...existing,
-            need: existing.need + needDelta,
-            mastery: existing.mastery + masteryDelta,
-            anchorIds: [...existing.anchorIds, currentQuestion.id],
-          });
+        newMap.set(currentQuestion.id, scoredAnchor);
 
-          if (isTestUser) {
-            console.log(`SDM: Updated ${subcategory} - Need: ${existing.need + needDelta}, Mastery: ${existing.mastery + masteryDelta} (${isCorrect ? 'correct' : 'incorrect'} + conf ${value})`);
-          }
+        if (isTestUser) {
+          console.log(`SDM: Scored anchor ${currentQuestion.external_item_id || currentQuestion.id} - Need: ${needScore}, Variant: ${primaryVariant}, Format: ${anchorFormat} (${isCorrect ? 'correct' : 'incorrect'} + conf ${value})`);
         }
 
         return newMap;
@@ -1296,7 +1491,7 @@ export default function AssessmentPage() {
               <p className="text-xs text-yellow-700 font-semibold">TEST MODE: Quick Navigation</p>
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-yellow-700">
-                  Tracked: <span className="font-bold">{subcategoryStats.size} subcategories</span>
+                  Tracked: <span className="font-bold">{scoredAnchors.size} anchors</span>
                 </span>
                 <span className="text-yellow-700">
                   SDM Bank: <span className="font-bold">{sdmBank.length}</span>
