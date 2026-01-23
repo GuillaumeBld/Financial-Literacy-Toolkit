@@ -10,6 +10,21 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ## 2026-01-23
 
+### FEAT: Pre-assessment screen UI updates
+
+**Context**: User requirements for cleaner pre-assessment UI without intimidating monitoring language.
+
+**Changes**:
+- Updated intro text to: "To assess your financial knowledge, you must answer these questions without assistance."
+- Changed "Time Limit" to "Time requirement:" with friendlier wording
+- Removed "Monitoring" section (suspicious behavior tracking language)
+- Removed "Recommended: Use Fullscreen Mode" section
+- Removed "Switching tabs or windows will be monitored" from start screen instructions
+
+**Files Affected**: `apps/web/src/app/assessment/page.tsx`
+
+---
+
 ### DOCS: Major documentation alignment with Source of Truth v2
 
 **Context**: Received new source of truth archive (Archive_v2.zip) with updated research methodology.

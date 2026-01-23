@@ -828,7 +828,7 @@ export default function AssessmentPage() {
           <div className="text-center mb-6">
             <Shield className="w-16 h-16 text-loyola-maroon mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-loyola-gray-900 mb-2">Academic Integrity Agreement</h2>
-            <p className="text-loyola-gray-600">Before starting your assessment, please read and acknowledge the following:</p>
+            <p className="text-loyola-gray-600">To assess your financial knowledge, you must answer these questions without assistance.</p>
           </div>
 
           <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-6 mb-6">
@@ -848,35 +848,9 @@ export default function AssessmentPage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold mb-2">Monitoring</p>
-                  <p>Your assessment activity is being monitored, including:</p>
-                  <ul className="list-disc list-inside mt-2 ml-2 space-y-1">
-                    <li>Time spent on each question</li>
-                    <li>Tab switches and window focus changes</li>
-                    <li>Completion patterns</li>
-                  </ul>
-                  <p className="mt-2 text-xs text-loyola-gray-600">
-                    Suspicious behavior may result in review of your assessment and potential academic consequences.
-                  </p>
-                </div>
-              </div>
-
               <div className="border-t border-loyola-gray-200 pt-4">
-                <p className="font-semibold mb-2">Time Limit</p>
-                <p>You have <strong>90 minutes</strong> to complete this assessment. The timer starts when you begin.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Maximize2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Recommended: Use Fullscreen Mode</p>
-                <p>For the best experience and to avoid accidental tab switches, we recommend using fullscreen mode. You can enter fullscreen after starting the assessment.</p>
+                <p className="font-semibold mb-2">Time requirement:</p>
+                <p>Normally, it should take you 90 minutes to complete this assessment. The timer starts when you begin.</p>
               </div>
             </div>
           </div>
@@ -988,10 +962,6 @@ export default function AssessmentPage() {
                 <li className="flex items-start gap-3">
                   <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
                   <span>For each question, select your answer and rate your confidence</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>Switching tabs or windows will be monitored</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
