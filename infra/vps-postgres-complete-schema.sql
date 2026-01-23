@@ -46,6 +46,7 @@ CREATE TABLE instruments (
 -- Assessment items/questions
 CREATE TABLE items (
   item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  external_item_id TEXT, -- Original question ID from source CSV (e.g., "1", "2", ..., "40")
   domain TEXT NOT NULL, -- e.g., "Financial Planning", "Budgeting"
   subdomain TEXT NOT NULL, -- e.g., "Inflation", "Credit Cards"
   difficulty DECIMAL(3,2) NOT NULL CHECK (difficulty >= 0 AND difficulty <= 1),
@@ -55,9 +56,13 @@ CREATE TABLE items (
   key TEXT, -- Correct answer (for auto-grading)
   rubric JSONB, -- Scoring rubric for short answers
   is_anchor BOOLEAN NOT NULL DEFAULT false, -- For linking pre/post scores
-  is_active BOOLEAN NOT NULL DEFAULT false, -- Whether question is active (migration-add-is-active-to-items.sql)
+  is_active BOOLEAN NOT NULL DEFAULT false, -- Whether question is active
+  is_scored BOOLEAN NOT NULL DEFAULT true, -- Whether item contributes to learning gain scores. Q15-Q28 are preference items (is_scored=false)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Index for external_item_id lookups
+CREATE INDEX idx_items_external_item_id ON items(external_item_id);
 
 -- Assessment attempts
 CREATE TABLE attempts (
@@ -69,6 +74,7 @@ CREATE TABLE attempts (
   started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   submitted_at TIMESTAMP WITH TIME ZONE,
   duration_s INTEGER, -- Total time spent
+  metadata JSONB DEFAULT '{}', -- Anti-cheating metadata: tabSwitches, isFullscreen, etc.
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -79,7 +85,7 @@ CREATE TABLE responses (
   item_id UUID NOT NULL REFERENCES items(item_id) ON DELETE CASCADE,
   raw_answer JSONB NOT NULL, -- Student's answer (text, selected option, etc.)
   score DECIMAL(5,2), -- Auto-calculated score (0-100)
-  confidence INTEGER CHECK (confidence >= 1 AND confidence <= 5), -- Student's confidence 1-5
+  confidence INTEGER CHECK (confidence >= 1 AND confidence <= 3), -- Student's confidence: 1=Low, 2=Mid, 3=High
   ai_confidence DECIMAL(3,2), -- AI model's confidence in scoring (0-1)
   ai_flags JSONB, -- Additional AI analysis flags
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -122,12 +128,19 @@ CREATE TABLE student_profiles (
   self_rated_financial_knowledge TEXT CHECK (self_rated_financial_knowledge IN ('very-low', 'low', 'moderate', 'high', 'very-high')), -- B7
   financial_stress_frequency TEXT CHECK (financial_stress_frequency IN ('never', 'rarely', 'sometimes', 'often', 'always')), -- B8
   
-  -- Additional Socio-economic data (Optional)
+  -- Baseline Socio-economic data (B9-B10)
+  parental_education TEXT CHECK (parental_education IN ('less-than-high-school', 'high-school-diploma-or-ged', 'some-college-no-degree', 'associate-degree', 'bachelors-degree', 'graduate-or-professional-degree', 'dont-know', 'prefer-not-to-answer')), -- B9
+  first_generation_college BOOLEAN, -- B10: First generation college student
+
+  -- Baseline Student Loan Debt Status (B11-B13)
+  has_student_loan_debt TEXT CHECK (has_student_loan_debt IN ('yes', 'no', 'prefer-not-to-say')), -- B11
+  student_loan_interest_rate TEXT CHECK (student_loan_interest_rate IN ('less-than-5', 'between-5-and-10', 'above-10', 'do-not-know', 'prefer-not-to-say')), -- B12 (conditional on B11=yes)
+  student_loan_maturity TEXT CHECK (student_loan_maturity IN ('less-or-equal-3-years', 'between-3-to-5-years', 'above-5-years', 'do-not-know', 'prefer-not-to-say')), -- B13 (conditional on B11=yes)
+
+  -- Additional optional data (not part of core baseline)
   household_income TEXT CHECK (household_income IN ('under-25000', '25000-49999', '50000-74999', '75000-99999', '100000-149999', '150000-199999', '200000-plus', 'prefer-not-to-say')),
-  parental_education TEXT CHECK (parental_education IN ('high-school-or-less', 'some-college', 'bachelors', 'masters', 'doctorate', 'prefer-not-to-say')),
-  first_generation_college BOOLEAN, -- First generation college student
   financial_aid_recipient BOOLEAN, -- Receives financial aid
-  
+
   -- Additional context
   living_situation TEXT CHECK (living_situation IN ('on-campus', 'off-campus', 'with-family', 'other')),
   work_study BOOLEAN, -- Participates in work-study program

@@ -89,7 +89,7 @@ git:
 # Domain configuration (set in Dokploy UI)
 domains:
   # Primary domain - DNS configured via Hostinger API
-  - financial-literacy.qualiaai.fr
+  - financial-literacy.your-domain.com
   
   # SSL configuration (automatic with Traefik)
   ssl:

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Use transaction for all database operations
     const result = await transaction(async (client) => {
     // Get course information (including pepper for hashing)
-      // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+      // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
         courseCode as string
@@ -114,11 +114,28 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Creating assessment attempt...');
-    // Create assessment attempt
-      const attempt = await client.query(
+
+    // Check if metadata column exists in attempts table
+    const metadataColumnCheck = await client.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'attempts' AND column_name = 'metadata'"
+    );
+    const hasMetadataColumn = metadataColumnCheck.rows && metadataColumnCheck.rows.length > 0;
+
+    // Create assessment attempt (conditionally include metadata if column exists)
+    let attempt;
+    if (hasMetadataColumn) {
+      attempt = await client.query(
         'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING attempt_id',
         [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null, metadata || {}]
       );
+    } else {
+      // Fallback: insert without metadata column
+      attempt = await client.query(
+        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
+        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null]
+      );
+      console.log('Note: metadata column not found in attempts table - anti-cheating data not stored');
+    }
 
       const attemptId = attempt.rows[0].attempt_id;
       console.log('Attempt created:', attemptId);
@@ -126,22 +143,11 @@ export async function POST(request: NextRequest) {
     console.log('Inserting responses...');
     // Insert responses
       for (const response of responses) {
-        // Ensure raw_answer is properly formatted for JSONB column
-        // The pg driver automatically serializes JavaScript objects/arrays to JSONB
-        // If answer is already an object/array, pass it directly (don't stringify)
-        // If answer is a string, check if it's JSON and parse it, otherwise use as-is
-        let rawAnswer = response.answer;
-        if (typeof rawAnswer === 'string') {
-          // Try to parse if it looks like JSON, otherwise store as string value
-          try {
-            const parsed = JSON.parse(rawAnswer);
-            rawAnswer = parsed;
-          } catch {
-            // Not valid JSON, store as string (pg will handle JSONB serialization)
-            rawAnswer = rawAnswer;
-          }
-        }
-        // pg driver handles JSONB serialization automatically - don't use JSON.stringify()
+        // JSONB column requires valid JSON - wrap the answer in a JSON structure
+        // Simple strings like "D" are NOT valid JSON, but {"answer": "D"} is
+        // We store as an object to preserve any answer type (string, number, array, etc.)
+        const rawAnswer = JSON.stringify({ answer: response.answer });
+
         await client.query(
           'INSERT INTO responses (attempt_id, item_id, raw_answer, confidence) VALUES ($1, $2, $3, $4)',
           [attemptId, response.itemId, rawAnswer, response.confidence || null]
@@ -151,19 +157,37 @@ export async function POST(request: NextRequest) {
     console.log('Responses inserted successfully');
 
       // Calculate basic scores
+    // Per source of truth: Only score knowledge items (Q1-Q14, Q29-Q40)
+    // Preference items (Q15-Q28) have is_scored=false and should NOT be scored
     let totalScore = 0;
     let scoredItems = 0; // Track only items that were actually scored
 
+    // Check if is_scored column exists (migration may not be applied yet)
+    const columnCheck = await client.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'items' AND column_name = 'is_scored'"
+    );
+    const hasIsScoredColumn = columnCheck.rows && columnCheck.rows.length > 0;
+
     for (const response of responses) {
-      // Get item details to check answer
-        const item = await client.query(
-          'SELECT key, type FROM items WHERE item_id = $1',
-          [response.itemId]
-        );
+      // Get item details to check answer and scoring eligibility
+      // Use dynamic query based on whether is_scored column exists
+      const itemQuery = hasIsScoredColumn
+        ? 'SELECT key, type, is_scored, external_item_id FROM items WHERE item_id = $1'
+        : 'SELECT key, type, NULL::boolean as is_scored, NULL::text as external_item_id FROM items WHERE item_id = $1';
+
+        const item = await client.query(itemQuery, [response.itemId]);
 
         if (item.rows && item.rows.length > 0) {
           const itemData = item.rows[0];
-          
+
+          // Skip scoring for preference items (Q15-Q28) where is_scored = false
+          // These are behavioral/attitude items used as covariates, not knowledge items
+          // If is_scored column doesn't exist, default to scoring all items (backward compatibility)
+          if (hasIsScoredColumn && itemData.is_scored === false) {
+            console.log(`Item ${response.itemId} is a preference item (is_scored=false) - skipping scoring`);
+            continue;
+          }
+
           if (itemData.type === 'multiple_choice') {
             if (itemData.key) {
               // Simple scoring for multiple choice with answer key

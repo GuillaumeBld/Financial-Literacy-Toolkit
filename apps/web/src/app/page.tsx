@@ -38,16 +38,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900">
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12 lg:mb-16">
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text leading-tight">Financial Literacy Toolkit</h1>
-            <p className="text-xs sm:text-sm text-loyola-gray-600 mt-1.5 sm:mt-2">by Dr. Abol Jalilvand and Guillaume Bolivard</p>
-          </div>
-          <nav className="w-full sm:w-auto">
-            <Link href="/start" className="bg-loyola-maroon text-white px-5 sm:px-6 py-3 sm:py-2.5 rounded-lg hover:bg-loyola-maroon-dark active:bg-loyola-maroon-dark transition flex items-center justify-center gap-2 text-sm sm:text-base font-medium min-h-[44px] touch-manipulation">
-              Get Started <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Link>
-          </nav>
+        <header className="mb-6 sm:mb-8 md:mb-12 lg:mb-16 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold gradient-text leading-tight">Financial Literacy Toolkit</h1>
+          <p className="text-xs sm:text-sm text-loyola-gray-600 mt-1.5 sm:mt-2">by Dr. Abol Jalilvand and Guillaume Bolivard</p>
         </header>
 
         <main className="mb-8 sm:mb-12 md:mb-16 lg:mb-20">
@@ -57,7 +50,7 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8 md:mb-12 px-4">
-              <Link href="/start" className="bg-loyola-maroon hover:bg-loyola-maroon-dark active:bg-loyola-maroon-dark text-white font-medium py-4 sm:py-3 px-8 sm:px-8 rounded-lg text-center transition flex items-center justify-center gap-2 text-base sm:text-lg min-h-[48px] touch-manipulation shadow-md hover:shadow-lg">
+              <Link href="/login?courseCode=QUIN%20102" className="bg-loyola-maroon hover:bg-loyola-maroon-dark active:bg-loyola-maroon-dark text-white font-medium py-4 sm:py-3 px-8 sm:px-8 rounded-lg text-center transition flex items-center justify-center gap-2 text-base sm:text-lg min-h-[48px] touch-manipulation shadow-md hover:shadow-lg">
                 Start Assessment <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
             </div>

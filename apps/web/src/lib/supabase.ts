@@ -1,3 +1,6 @@
+// Supabase has been deprecated - using direct PostgreSQL connection via @/lib/db
+// This file is kept for backward compatibility but exports null/placeholder values
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl =
@@ -8,25 +11,26 @@ const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 export const hasSupabaseCredentials =
   Boolean(supabaseUrl) && Boolean(supabaseServiceRoleKey)
 
+// Log warning instead of throwing error - Supabase is optional now
 if (!hasSupabaseCredentials && !isBuildPhase) {
-  throw new Error('Missing Supabase configuration environment variables')
+  console.warn('Supabase credentials are missing. SSO features are disabled, using password authentication.')
 }
 
-if (!hasSupabaseCredentials) {
-  console.warn('Supabase credentials are missing. Using placeholder values for build-time steps.')
-}
+// Create Supabase client only if credentials are available
+// Returns a placeholder client for build phase or null at runtime
+export const supabase = hasSupabaseCredentials
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+  : isBuildPhase
+    ? createClient('https://placeholder.supabase.local', 'placeholder-key', {
+        auth: { persistSession: false },
+      })
+    : null
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.local',
-  supabaseServiceRoleKey || 'placeholder-key',
-  {
-    auth: {
-      persistSession: false,
-    },
-  }
-)
-
-// Database types for TypeScript
+// Database types for TypeScript (kept for reference)
 export type Database = {
   public: {
     Tables: {

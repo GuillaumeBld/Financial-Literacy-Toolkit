@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Financial Literacy Toolkit - by Dr. Abol Jalilvand and Guillaume Bolivard',
+  title: 'Financial Literacy Toolkit',
   description: 'AI-assisted financial literacy assessment by Dr. Abol Jalilvand and Guillaume Bolivard',
 }
 

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if course exists in database
-    // Supports both "QUINN 102" and "Financial Literacy" for backward compatibility
+    // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
     const course = await findCourseByName(
       async (sql: string, params: any[]) => {
         const result = await queryOne<{

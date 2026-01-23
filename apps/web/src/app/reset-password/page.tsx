@@ -124,7 +124,7 @@ function ResetPasswordForm() {
                 className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
                   searchParams.get('courseCode') ? 'bg-loyola-gray-50 text-loyola-gray-600' : ''
                 }`}
-                placeholder="QUINN 102"
+                placeholder="QUIN 102"
                 required
               />
             </div>

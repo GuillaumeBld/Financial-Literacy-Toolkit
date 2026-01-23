@@ -10,11 +10,65 @@ type Question = {
   text: string;
   options?: Array<{ id: string; text: string }>;
   domain: string;
+  subdomain?: string | null; // Subcategory for SDM selection
   correct_answer?: string;
   is_sdm?: boolean | null;
+  is_scored?: boolean | null; // false for preference items Q15-Q28 (don't trigger SDM)
+  external_item_id?: string | null; // Original question ID (1-40)
   anchor_item_id?: string | null;
   variant_type?: string | null;
   trigger_condition?: string | null;
+};
+
+// SDM Selection Types
+type SubcategoryNeed = {
+  subcategory: string;
+  domain: string;
+  need: number;
+  mastery: number;
+  anchorIds: string[]; // anchor question IDs that contributed to this subcategory
+};
+
+// Mastery Δ and Need Δ update rules from source of truth (Table 3)
+// | Confidence | Correct: Mastery Δ | Correct: Need Δ | Incorrect: Mastery Δ | Incorrect: Need Δ |
+// | 1 (Low)    | 0                  | +2              | 0                    | +1                |
+// | 2 (Mid)    | +1                 | 0               | -1                   | +2                |
+// | 3 (High)   | +2                 | -1              | -2                   | +3                |
+const calculateDeltas = (isCorrect: boolean, confidence: number): { masteryDelta: number; needDelta: number } => {
+  if (confidence === 1) { // Low
+    return isCorrect
+      ? { masteryDelta: 0, needDelta: 2 }
+      : { masteryDelta: 0, needDelta: 1 };
+  } else if (confidence === 2) { // Mid
+    return isCorrect
+      ? { masteryDelta: 1, needDelta: 0 }
+      : { masteryDelta: -1, needDelta: 2 };
+  } else { // High (3)
+    return isCorrect
+      ? { masteryDelta: 2, needDelta: -1 }
+      : { masteryDelta: -2, needDelta: 3 };
+  }
+};
+
+// Get preferred variant type based on correctness and confidence (Table 4)
+// | Confidence | If Correct               | If Incorrect                    |
+// | 1 (Low)    | Open_Confirm             | Lower_TF or Lower_MCQ           |
+// | 2 (Mid)    | Same_MCQ                 | Lower_MCQ or Lower_TF           |
+// | 3 (High)   | Higher_MCQ (optional)    | Open_Diagnose                   |
+const getPreferredVariantTypes = (isCorrect: boolean, confidence: number): string[] => {
+  if (confidence === 1) { // Low
+    return isCorrect
+      ? ['open_confirm', 'same_mcq']
+      : ['lower_tf', 'lower_mcq'];
+  } else if (confidence === 2) { // Mid
+    return isCorrect
+      ? ['same_mcq']
+      : ['lower_mcq', 'lower_tf'];
+  } else { // High (3)
+    return isCorrect
+      ? ['higher_mcq', 'same_mcq'] // Higher is optional, fall back to same
+      : ['open_diagnose', 'lower_mcq', 'lower_tf'];
+  }
 };
 
 type SessionData = {
@@ -22,6 +76,10 @@ type SessionData = {
   studentId: string;
   attemptType: 'pre' | 'post';
   startedAt: string;
+  isTestUser?: boolean;
+  attemptId?: string | null;
+  userId?: string;
+  courseId?: string;
 };
 
 type SubmittedResponse = {
@@ -77,26 +135,11 @@ const shuffleQuestions = (questions: Question[]) => {
 
 type ConfidenceBucket = 'low' | 'mid' | 'high';
 
+// Confidence scale is 1-3: 1=Low, 2=Mid, 3=High
 const getConfidenceBucket = (confidence: number): ConfidenceBucket => {
-  if (confidence <= 2) return 'low';
-  if (confidence === 3) return 'mid';
-  return 'high';
-};
-
-const matchesTrigger = (trigger: string | null | undefined, isCorrect: boolean, bucket: ConfidenceBucket): boolean => {
-  if (!trigger) return false;
-  const normalized = trigger.toLowerCase().replace(/\s+/g, ' ').trim();
-
-  const expectedCorrectness = isCorrect ? 'correct' : 'incorrect';
-  if (!normalized.startsWith(expectedCorrectness)) return false;
-
-  if (normalized.includes('any')) return true;
-  if (normalized.includes('low/mid')) return bucket === 'low' || bucket === 'mid';
-  if (normalized.includes('low')) return bucket === 'low';
-  if (normalized.includes('mid')) return bucket === 'mid';
-  if (normalized.includes('high')) return bucket === 'high';
-
-  return false;
+  if (confidence === 1) return 'low';
+  if (confidence === 2) return 'mid';
+  return 'high'; // confidence === 3
 };
 
 const variantTypeWeight = (variantType: string | null | undefined): number => {
@@ -121,6 +164,7 @@ const shuffleOptions = (options: Array<{id: string, text: string}>): Array<{id: 
 };
 
 export default function AssessmentPage() {
+  const [hasStarted, setHasStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [confidenceRatings, setConfidenceRatings] = useState<Record<string, number>>({});
@@ -128,15 +172,59 @@ export default function AssessmentPage() {
   const [timeRemaining, setTimeRemaining] = useState(90 * 60); // 90 minutes for 30 questions (3 min/question)
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sdmBank, setSdmBank] = useState<Question[]>([]);
-  const [selectedSdmIds, setSelectedSdmIds] = useState<Record<string, boolean>>({});
   const [sdmAppended, setSdmAppended] = useState(false);
+  // Track Need/Mastery per subcategory incrementally (updated as student answers)
+  const [subcategoryStats, setSubcategoryStats] = useState<Map<string, SubcategoryNeed>>(new Map());
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAcknowledgedHonorCode, setHasAcknowledgedHonorCode] = useState(false);
   const [tabSwitches, setTabSwitches] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showTabWarning, setShowTabWarning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTestUser, setIsTestUser] = useState(false);
+  const [scores, setScores] = useState<Record<string, number>>({});
   const router = useRouter();
+
+  // Calculate real-time scores for test user
+  const calculateScores = useCallback(() => {
+    const domainScores: Record<string, { correct: number; total: number }> = {};
+
+    questions.forEach((q) => {
+      if (q.is_scored !== false && answers[q.id] && q.correct_answer) {
+        const domain = q.domain || 'General';
+        if (!domainScores[domain]) {
+          domainScores[domain] = { correct: 0, total: 0 };
+        }
+        domainScores[domain].total++;
+
+        const isCorrect = answers[q.id]?.toLowerCase() === q.correct_answer?.toLowerCase();
+        if (isCorrect) {
+          domainScores[domain].correct++;
+        }
+      }
+    });
+
+    const newScores: Record<string, number> = {};
+    Object.entries(domainScores).forEach(([domain, data]) => {
+      newScores[domain] = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+    });
+
+    // Calculate overall mastery
+    const totalCorrect = Object.values(domainScores).reduce((sum, d) => sum + d.correct, 0);
+    const totalAnswered = Object.values(domainScores).reduce((sum, d) => sum + d.total, 0);
+    newScores['Overall Mastery'] = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+    newScores['Needs Improvement'] = 100 - newScores['Overall Mastery'];
+
+    setScores(newScores);
+  }, [questions, answers]);
+
+  // Update scores when answers change (for test user)
+  useEffect(() => {
+    if (isTestUser && Object.keys(answers).length > 0) {
+      calculateScores();
+    }
+  }, [isTestUser, answers, calculateScores]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -162,18 +250,17 @@ export default function AssessmentPage() {
         const sdmData = await sdmResponse.json();
 
         const toQuestion = (item: any): Question => {
-          const shuffledOptions = item.type === 'multiple_choice' && item.options
-            ? shuffleOptions(item.options)
-            : item.options;
-
           return {
             id: item.item_id,
             type: item.type,
             text: item.stem,
-            options: shuffledOptions,
+            options: item.options, // Keep options in original order
             domain: item.domain,
+            subdomain: item.subdomain ?? null, // Subcategory for SDM selection
             correct_answer: item.key || item.correct_answer,
             is_sdm: item.is_sdm ?? null,
+            is_scored: item.is_scored ?? true, // Default true, false for preference items Q15-Q28
+            external_item_id: item.external_item_id ?? null,
             anchor_item_id: item.anchor_item_id ?? null,
             variant_type: item.variant_type ?? null,
             trigger_condition: item.trigger_condition ?? null,
@@ -188,26 +275,27 @@ export default function AssessmentPage() {
           ? sdmData.items.map(toQuestion)
           : [];
 
-        // If anchors endpoint returns nothing (e.g., is_anchor not set), fall back to all items.
+        // Keep questions in original order (source of truth order)
         if (anchors.length === 0) {
           const response = await fetch('/api/items');
           const data = await response.json();
           if (data.success && Array.isArray(data.items)) {
-            setQuestions(shuffleQuestions(data.items.map(toQuestion)));
+            setQuestions(data.items.map(toQuestion));
           } else {
-            setQuestions(shuffleQuestions(mockQuestions));
+            setQuestions(mockQuestions);
           }
         } else {
-          setQuestions(shuffleQuestions(anchors));
+          setQuestions(anchors);
         }
 
         setSdmBank(sdmItems);
-        setSelectedSdmIds({});
         setSdmAppended(false);
+        setIsLoading(false);
       } catch (error) {
         console.error('Failed to load questions:', error);
         // Fallback to mock questions
-        setQuestions(shuffleQuestions(mockQuestions));
+        setQuestions(mockQuestions);
+        setIsLoading(false);
       }
     };
 
@@ -221,8 +309,48 @@ export default function AssessmentPage() {
         parsedSession?.startedAt
       ) {
         setSessionData(parsedSession);
+        setIsTestUser(parsedSession.isTestUser || false);
         setTimeRemaining(90 * 60); // 90 minutes for 30 questions
-        void loadQuestions();
+
+        // Load questions first, then check for saved responses
+        const loadAndResume = async () => {
+          await loadQuestions();
+
+          // Check for saved responses to resume
+          if (parsedSession.attemptId || (parsedSession.userId && parsedSession.courseId)) {
+            try {
+              const params = new URLSearchParams();
+              if (parsedSession.attemptId) {
+                params.set('attemptId', parsedSession.attemptId);
+              } else {
+                params.set('userId', parsedSession.userId || '');
+                params.set('courseId', parsedSession.courseId || '');
+              }
+
+              const resumeResponse = await fetch(`/api/assessment/resume?${params}`);
+              const resumeData = await resumeResponse.json();
+
+              if (resumeData.success && resumeData.hasAttempt && resumeData.responses.length > 0) {
+                // Restore saved answers and confidence ratings
+                const savedAnswers: Record<string, string> = {};
+                const savedConfidence: Record<string, number> = {};
+
+                resumeData.responses.forEach((r: any) => {
+                  if (r.answer) savedAnswers[r.itemId] = r.answer;
+                  if (r.confidence) savedConfidence[r.itemId] = r.confidence;
+                });
+
+                setAnswers(savedAnswers);
+                setConfidenceRatings(savedConfidence);
+                setHasStarted(true); // Auto-start if resuming
+              }
+            } catch (resumeError) {
+              console.error('Error loading saved responses:', resumeError);
+            }
+          }
+        };
+
+        void loadAndResume();
       } else {
         throw new Error('Session data missing required fields');
       }
@@ -418,7 +546,8 @@ export default function AssessmentPage() {
 
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
-  const progress = !isLoadingQuestions ? ((currentIndex + 1) / questions.length) * 100 : 0;
+  const TOTAL_QUESTIONS = 50; // 40 anchor + 10 SDM
+  const progress = !isLoadingQuestions ? ((currentIndex + 1) / TOTAL_QUESTIONS) * 100 : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
   const hasSelectedConfidence = currentConfidence > 0;
 
@@ -454,34 +583,143 @@ export default function AssessmentPage() {
     }));
   };
 
-  const maybeSelectSdmVariant = (anchorId: string, isCorrect: boolean, confidence: number) => {
-    if (sdmBank.length === 0) return;
-    if (sdmAppended) return;
+  // Select 10 SDM questions based on Need ranking with constraints
+  // This implements the SDM-10 selection algorithm from the source of truth
+  // Uses pre-computed subcategoryStats from state (updated incrementally as student answers)
+  const selectSdmQuestions = useCallback((): Question[] => {
+    if (sdmBank.length === 0) return [];
 
-    const bucket = getConfidenceBucket(confidence);
-    const candidates = sdmBank
-      .filter((q) => q.anchor_item_id === anchorId)
-      .filter((q) => matchesTrigger(q.trigger_condition, isCorrect, bucket))
-      .sort((a, b) => variantTypeWeight(a.variant_type) - variantTypeWeight(b.variant_type));
+    // Use pre-computed subcategory stats from state (already calculated incrementally)
+    // This makes the Q40→Q41 transition nearly instant
+    if (isTestUser) {
+      console.log('SDM: Using pre-computed subcategory stats:', Array.from(subcategoryStats.values()));
+    }
 
-    if (candidates.length === 0) return;
+    // Step 2: Rank subcategories by Need (descending)
+    const rankedSubcategories = Array.from(subcategoryStats.values())
+      .sort((a, b) => b.need - a.need);
 
-    setSelectedSdmIds((prev) => {
-      const alreadySelectedCount = Object.keys(prev).length;
-      if (alreadySelectedCount >= 10) return prev;
+    // Step 3: Select SDM items with constraints
+    const selectedSdm: Question[] = [];
+    const domainCount: Record<string, number> = {};
+    const subcategoryCount: Record<string, number> = {};
+    let openEndedCount = 0;
 
-      for (const candidate of candidates) {
-        if (!prev[candidate.id]) {
-          return {
-            ...prev,
-            [candidate.id]: true,
-          };
+    // Constraints from source of truth (Table 1)
+    const MAX_SDM = 10;
+    const MAX_PER_SUBCATEGORY = 2;
+    const MAX_OPEN_ENDED = 3;
+    const MIN_PER_DOMAIN = 2;
+
+    // Helper to find best SDM variant for an anchor
+    const findBestVariant = (anchorId: string, subcategory: string): Question | null => {
+      const anchor = questions.find(q => q.id === anchorId);
+      if (!anchor) return null;
+
+      const isCorrect = answerCorrectness[anchorId] ?? false;
+      const confidence = confidenceRatings[anchorId] ?? 2;
+      const preferredTypes = getPreferredVariantTypes(isCorrect, confidence);
+
+      // Find SDM variants for this anchor
+      const candidates = sdmBank.filter(q => q.anchor_item_id === anchorId);
+      if (candidates.length === 0) return null;
+
+      // Try to find a variant matching preferred types
+      for (const preferredType of preferredTypes) {
+        const match = candidates.find(q =>
+          q.variant_type?.toLowerCase().includes(preferredType)
+        );
+        if (match) {
+          // Check open-ended cap
+          const isOpenEnded = match.type === 'short_answer' ||
+            match.variant_type?.toLowerCase().includes('open');
+          if (isOpenEnded && openEndedCount >= MAX_OPEN_ENDED) {
+            continue; // Skip this variant, try next preferred type
+          }
+          return match;
         }
       }
 
-      return prev;
-    });
-  };
+      // Fallback: return any available variant (respecting open-ended cap)
+      for (const candidate of candidates) {
+        const isOpenEnded = candidate.type === 'short_answer' ||
+          candidate.variant_type?.toLowerCase().includes('open');
+        if (isOpenEnded && openEndedCount >= MAX_OPEN_ENDED) {
+          continue;
+        }
+        return candidate;
+      }
+
+      return null;
+    };
+
+    // First pass: ensure domain balance (at least 2 per domain)
+    const domains = ['Borrowing & Credit', 'Risk Management', 'Investment & Risk'];
+
+    for (const domain of domains) {
+      const domainSubcategories = rankedSubcategories.filter(s => s.domain === domain);
+
+      for (const subcat of domainSubcategories) {
+        if ((domainCount[domain] || 0) >= MIN_PER_DOMAIN) break;
+        if (selectedSdm.length >= MAX_SDM) break;
+        if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) continue;
+
+        for (const anchorId of subcat.anchorIds) {
+          if (selectedSdm.length >= MAX_SDM) break;
+          if ((domainCount[domain] || 0) >= MIN_PER_DOMAIN) break;
+          if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) break;
+
+          const variant = findBestVariant(anchorId, subcat.subcategory);
+          if (variant && !selectedSdm.find(q => q.id === variant.id)) {
+            selectedSdm.push(variant);
+            domainCount[domain] = (domainCount[domain] || 0) + 1;
+            subcategoryCount[subcat.subcategory] = (subcategoryCount[subcat.subcategory] || 0) + 1;
+
+            const isOpenEnded = variant.type === 'short_answer' ||
+              variant.variant_type?.toLowerCase().includes('open');
+            if (isOpenEnded) openEndedCount++;
+          }
+        }
+      }
+    }
+
+    // Second pass: fill remaining slots by Need ranking
+    for (const subcat of rankedSubcategories) {
+      if (selectedSdm.length >= MAX_SDM) break;
+      if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) continue;
+
+      for (const anchorId of subcat.anchorIds) {
+        if (selectedSdm.length >= MAX_SDM) break;
+        if ((subcategoryCount[subcat.subcategory] || 0) >= MAX_PER_SUBCATEGORY) break;
+
+        const variant = findBestVariant(anchorId, subcat.subcategory);
+        if (variant && !selectedSdm.find(q => q.id === variant.id)) {
+          selectedSdm.push(variant);
+          domainCount[subcat.domain] = (domainCount[subcat.domain] || 0) + 1;
+          subcategoryCount[subcat.subcategory] = (subcategoryCount[subcat.subcategory] || 0) + 1;
+
+          const isOpenEnded = variant.type === 'short_answer' ||
+            variant.variant_type?.toLowerCase().includes('open');
+          if (isOpenEnded) openEndedCount++;
+        }
+      }
+    }
+
+    if (isTestUser) {
+      console.log('SDM: Selected questions:', selectedSdm.map(q => ({
+        id: q.id.substring(0, 8),
+        domain: q.domain,
+        subdomain: q.subdomain,
+        type: q.variant_type,
+        anchorId: q.anchor_item_id?.substring(0, 8)
+      })));
+      console.log('SDM: Domain counts:', domainCount);
+      console.log('SDM: Subcategory counts:', subcategoryCount);
+      console.log('SDM: Open-ended count:', openEndedCount);
+    }
+
+    return selectedSdm;
+  }, [subcategoryStats, questions, confidenceRatings, answerCorrectness, sdmBank, isTestUser]);
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
@@ -490,11 +728,31 @@ export default function AssessmentPage() {
       const current = questions[currentIndex];
       const atEndOfAnchors = !sdmAppended && !current?.is_sdm;
       if (atEndOfAnchors) {
-        const selectedIds = Object.keys(selectedSdmIds);
-        const selected = sdmBank.filter((q) => selectedSdmIds[q.id]);
-        if (selectedIds.length > 0 && selected.length > 0) {
+        // Select SDM questions using the proper algorithm based on Need ranking
+        const selectedSdm = selectSdmQuestions();
+
+        if (selectedSdm.length > 0) {
+          // Sort SDM questions by their anchor's order in the main questions array
+          const anchorOrderMap = new Map<string, number>();
+          questions.forEach((q, idx) => {
+            if (!q.is_sdm) {
+              anchorOrderMap.set(q.id, idx);
+            }
+          });
+
+          const sortedSdm = [...selectedSdm].sort((a, b) => {
+            const orderA = a.anchor_item_id ? (anchorOrderMap.get(a.anchor_item_id) ?? 999) : 999;
+            const orderB = b.anchor_item_id ? (anchorOrderMap.get(b.anchor_item_id) ?? 999) : 999;
+            if (orderA !== orderB) return orderA - orderB;
+            return variantTypeWeight(a.variant_type) - variantTypeWeight(b.variant_type);
+          });
+
+          if (isTestUser) {
+            console.log(`SDM: Appending ${sortedSdm.length} SDM questions (Q41-Q${40 + sortedSdm.length})`);
+          }
+
           setSdmAppended(true);
-          setQuestions((prev) => [...prev, ...shuffleQuestions(selected)]);
+          setQuestions((prev) => [...prev, ...sortedSdm]);
           setCurrentIndex((prev) => prev + 1);
           return;
         }
@@ -520,11 +778,45 @@ export default function AssessmentPage() {
       [currentQuestion.id]: value,
     }));
 
+    // Update subcategory Need/Mastery incrementally for scored anchor questions
+    // This spreads computation across answers for smoother Q40→Q41 transition
     const isAnchorQuestion = !currentQuestion.is_sdm;
+    const isScoredItem = currentQuestion.is_scored !== false;
     const answer = answers[currentQuestion.id];
-    if (isAnchorQuestion && answer) {
+
+    if (isAnchorQuestion && isScoredItem && answer) {
       const isCorrect = checkAnswerCorrectness(currentQuestion.id, answer);
-      maybeSelectSdmVariant(currentQuestion.id, isCorrect, value);
+      const { masteryDelta, needDelta } = calculateDeltas(isCorrect, value);
+
+      const subcategory = currentQuestion.subdomain || currentQuestion.domain || 'General';
+      const domain = currentQuestion.domain || 'General';
+
+      setSubcategoryStats((prev) => {
+        const newMap = new Map(prev);
+        const existing = newMap.get(subcategory) || {
+          subcategory,
+          domain,
+          need: 0,
+          mastery: 0,
+          anchorIds: [],
+        };
+
+        // Only update if this anchor hasn't been counted yet
+        if (!existing.anchorIds.includes(currentQuestion.id)) {
+          newMap.set(subcategory, {
+            ...existing,
+            need: existing.need + needDelta,
+            mastery: existing.mastery + masteryDelta,
+            anchorIds: [...existing.anchorIds, currentQuestion.id],
+          });
+
+          if (isTestUser) {
+            console.log(`SDM: Updated ${subcategory} - Need: ${existing.need + needDelta}, Mastery: ${existing.mastery + masteryDelta} (${isCorrect ? 'correct' : 'incorrect'} + conf ${value})`);
+          }
+        }
+
+        return newMap;
+      });
     }
   };
 
@@ -649,6 +941,83 @@ export default function AssessmentPage() {
     }
   };
 
+  // Show loading screen
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading assessment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show start screen before assessment begins
+  if (!hasStarted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+          <div className="container mx-auto px-4 py-4">
+            <h1 className="text-xl font-bold text-loyola-maroon">Financial Literacy Assessment</h1>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-12 max-w-2xl">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
+            <div className="w-20 h-20 bg-loyola-maroon/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-10 h-10 text-loyola-maroon" />
+            </div>
+
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Begin?</h2>
+            <p className="text-gray-600 text-lg mb-8">
+              You are about to start your Financial Literacy Assessment. Please read the instructions below before proceeding.
+            </p>
+
+            <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+              <h3 className="font-semibold text-gray-900 mb-4">Instructions:</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>You will have <strong>90 minutes</strong> to complete the assessment</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>There are <strong>50 questions</strong> in total</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>For each question, select your answer and rate your confidence</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>Switching tabs or windows will be monitored</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>Your responses are anonymous and securely stored</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => setHasStarted(true)}
+              className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-4 px-8 rounded-xl transition-all text-lg shadow-lg shadow-loyola-maroon/20 hover:shadow-xl"
+            >
+              Start the Assessment
+            </button>
+          </div>
+        </main>
+
+        <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
+          <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+            <p>&copy; 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Tab switch warning banner */}
@@ -706,11 +1075,11 @@ export default function AssessmentPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <main className={`container mx-auto px-4 py-8 max-w-3xl ${isTestUser ? 'pb-32' : ''}`}>
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>
-              Question {currentIndex + 1} of {questions.length}
+              Question {currentIndex + 1} of 50
             </span>
             <span>{currentQuestion.domain}</span>
           </div>
@@ -830,33 +1199,96 @@ export default function AssessmentPage() {
             <label className="block text-sm font-semibold text-loyola-gray-700 mb-3">
               How confident are you in your answer?
             </label>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-loyola-gray-500 font-medium">Not confident</span>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <button
-                    key={num}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
-                      currentConfidence === num
-                        ? 'bg-loyola-maroon text-white scale-110 shadow-lg'
-                        : 'bg-loyola-gray-100 text-loyola-gray-700 hover:bg-loyola-gray-200'
-                    }`}
-                    onClick={() => handleConfidenceSelect(num)}
-                    type="button"
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-              <span className="text-sm text-loyola-gray-500 font-medium">Very confident</span>
+            <div className="flex items-center justify-center gap-4">
+              {[
+                { value: 1, label: 'Low', description: 'Not confident' },
+                { value: 2, label: 'Medium', description: 'Somewhat confident' },
+                { value: 3, label: 'High', description: 'Very confident' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  className={`flex flex-col items-center px-6 py-4 rounded-lg border-2 transition-all ${
+                    currentConfidence === option.value
+                      ? 'border-loyola-maroon bg-loyola-maroon/10 scale-105 shadow-md'
+                      : 'border-loyola-gray-200 bg-white hover:border-loyola-maroon/30 hover:bg-loyola-gray-50'
+                  }`}
+                  onClick={() => handleConfidenceSelect(option.value)}
+                  type="button"
+                >
+                  <span className={`text-2xl font-bold ${
+                    currentConfidence === option.value ? 'text-loyola-maroon' : 'text-loyola-gray-700'
+                  }`}>
+                    {option.value}
+                  </span>
+                  <span className={`text-sm font-medium ${
+                    currentConfidence === option.value ? 'text-loyola-maroon' : 'text-loyola-gray-600'
+                  }`}>
+                    {option.label}
+                  </span>
+                  <span className="text-xs text-loyola-gray-500 mt-1">
+                    {option.description}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
+        {/* Test User: Question Debug Info */}
+        {isTestUser && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-xs">
+            <p className="font-semibold text-blue-700 mb-2">Debug Info (Test Mode Only)</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-blue-600">
+              <div>
+                <span className="font-medium">Type:</span>{' '}
+                {currentQuestion.is_sdm ? 'SDM Variant' : 'Anchor'}
+              </div>
+              <div>
+                <span className="font-medium">Scored:</span>{' '}
+                {currentQuestion.is_scored !== false ? 'Yes' : 'No (Preference)'}
+              </div>
+              <div>
+                <span className="font-medium">Correct:</span>{' '}
+                {currentQuestion.correct_answer || 'N/A'}
+              </div>
+              <div>
+                <span className="font-medium">Domain:</span>{' '}
+                {currentQuestion.domain}
+              </div>
+              {currentQuestion.is_sdm && (
+                <>
+                  <div>
+                    <span className="font-medium">Variant Type:</span>{' '}
+                    {currentQuestion.variant_type || 'N/A'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Trigger:</span>{' '}
+                    {currentQuestion.trigger_condition || 'N/A'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Anchor ID:</span>{' '}
+                    {currentQuestion.anchor_item_id?.substring(0, 8) || 'N/A'}...
+                  </div>
+                </>
+              )}
+              {!currentQuestion.is_sdm && answers[currentQuestion.id] && (
+                <div className="col-span-2">
+                  <span className="font-medium">SDM Trigger Status:</span>{' '}
+                  {currentQuestion.is_scored === false
+                    ? 'N/A (Preference item)'
+                    : answerCorrectness[currentQuestion.id]
+                    ? `Correct + ${getConfidenceBucket(confidenceRatings[currentQuestion.id] || 0)}`
+                    : `Incorrect + ${getConfidenceBucket(confidenceRatings[currentQuestion.id] || 0)}`}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <button
             onClick={handlePrevious}
-            disabled={currentIndex === 0}
+            disabled={!isTestUser && currentIndex === 0}
             className="px-6 py-3 border-2 border-loyola-gray-300 rounded-lg text-loyola-gray-700 hover:bg-loyola-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
             type="button"
           >
@@ -864,12 +1296,12 @@ export default function AssessmentPage() {
           </button>
 
           <div className="text-sm text-loyola-gray-600 font-medium">
-            {Object.keys(answers).length} of {questions.length} answered
+            {Object.keys(answers).length} of 50 answered
           </div>
 
           <button
             onClick={handleNext}
-            disabled={!answers[currentQuestion.id] || !hasSelectedConfidence || isSubmitting}
+            disabled={!isTestUser && (!answers[currentQuestion.id] || !hasSelectedConfidence || isSubmitting)}
             className="px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             type="button"
           >
@@ -886,7 +1318,96 @@ export default function AssessmentPage() {
             )}
           </button>
         </div>
+
+        {/* Test User: Question Navigation */}
+        {isTestUser && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-yellow-700 font-semibold">TEST MODE: Quick Navigation</p>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-yellow-700">
+                  Tracked: <span className="font-bold">{subcategoryStats.size} subcategories</span>
+                </span>
+                <span className="text-yellow-700">
+                  SDM Bank: <span className="font-bold">{sdmBank.length}</span>
+                </span>
+                {sdmAppended && (
+                  <span className="text-green-600 font-semibold">
+                    SDM Added: {questions.filter(q => q.is_sdm).length}/10
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {questions.map((q, idx) => (
+                <button
+                  key={q.id}
+                  onClick={() => setCurrentIndex(idx)}
+                  title={`${q.is_sdm ? 'SDM: ' : 'Q'}${idx + 1} - ${q.domain}${q.is_sdm ? ` (${q.variant_type})` : ''}`}
+                  className={`w-8 h-8 text-xs rounded-full transition-all ${
+                    idx === currentIndex
+                      ? 'bg-loyola-maroon text-white ring-2 ring-offset-1 ring-loyola-maroon'
+                      : answers[q.id]
+                      ? q.is_sdm
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-green-500 text-white'
+                      : q.is_sdm
+                      ? 'bg-purple-200 text-purple-700 hover:bg-purple-300'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  {q.is_sdm ? 'S' : idx + 1}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-2 text-xs text-yellow-700">
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 bg-gray-200 rounded-full"></span> Anchor
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 bg-purple-200 rounded-full"></span> SDM
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 bg-green-500 rounded-full"></span> Answered
+              </span>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Test User: Real-time Scores Panel */}
+      {isTestUser && Object.keys(scores).length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-loyola-maroon to-loyola-maroon-dark text-white p-4 shadow-lg z-50">
+          <div className="container mx-auto max-w-3xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                <span className="font-semibold text-sm">TEST MODE - Live Scores:</span>
+              </div>
+              <div className="flex items-center gap-6 flex-wrap">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-300">{scores['Overall Mastery'] || 0}%</div>
+                  <div className="text-xs text-white/80">Mastery</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-300">{scores['Needs Improvement'] || 0}%</div>
+                  <div className="text-xs text-white/80">Needs Work</div>
+                </div>
+                <div className="h-8 w-px bg-white/30"></div>
+                {Object.entries(scores)
+                  .filter(([key]) => key !== 'Overall Mastery' && key !== 'Needs Improvement')
+                  .slice(0, 4)
+                  .map(([domain, score]) => (
+                    <div key={domain} className="text-center">
+                      <div className="text-lg font-semibold">{score}%</div>
+                      <div className="text-xs text-white/80 truncate max-w-[80px]">{domain}</div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

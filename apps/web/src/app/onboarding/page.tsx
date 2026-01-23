@@ -3,75 +3,85 @@
 import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Info, CheckCircle, ChevronRight, ArrowLeft } from 'lucide-react';
-import { supabaseBrowser } from '@/lib/supabase-browser';
+import { User, Info, CheckCircle, ChevronRight, ArrowLeft, BookOpen } from 'lucide-react';
 
 function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const courseCode = searchParams.get('courseCode') || 'QUINN 102';
-  
-  const [currentStep, setCurrentStep] = useState(1);
+  const courseCode = searchParams.get('courseCode') || 'QUIN 102';
+
+  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Form state
   const [studentId, setStudentId] = useState('');
-  const [ageRange, setAgeRange] = useState(''); // B3: 20 or under, Above 20
-  const [gender, setGender] = useState(''); // B1: Female, Male, Prefer not to say
+  // B1-B5: Demographics
+  const [gender, setGender] = useState(''); // B1
   const [raceEthnicity, setRaceEthnicity] = useState(''); // B2
+  const [ageRange, setAgeRange] = useState(''); // B3
   const [firstLanguage, setFirstLanguage] = useState(''); // B4
-  const [firstLanguageOther, setFirstLanguageOther] = useState(''); // B4: Other specification
-  const [workExperience, setWorkExperience] = useState(''); // B5: No work experience, Part-time, Full-time
-  const [priorFinancialProducts, setPriorFinancialProducts] = useState<string[]>([]); // B6: Multi-select
+  const [firstLanguageOther, setFirstLanguageOther] = useState(''); // B4: Other
+  const [workExperience, setWorkExperience] = useState(''); // B5
+  // B6-B12: Financial Background
+  const [priorFinancialProducts, setPriorFinancialProducts] = useState<string[]>([]); // B6
   const [selfRatedFinancialKnowledge, setSelfRatedFinancialKnowledge] = useState(''); // B7
   const [financialStressFrequency, setFinancialStressFrequency] = useState(''); // B8
-  const [householdIncome, setHouseholdIncome] = useState('');
-  const [parentalEducation, setParentalEducation] = useState('');
-  const [firstGenerationCollege, setFirstGenerationCollege] = useState<boolean | null>(null);
-  const [financialAidRecipient, setFinancialAidRecipient] = useState<boolean | null>(null);
-  const [hasStudentLoanDebt, setHasStudentLoanDebt] = useState<boolean | null>(null); // B11
+  const [parentalEducation, setParentalEducation] = useState(''); // B9
+  const [firstGenerationCollege, setFirstGenerationCollege] = useState(''); // B10
+  const [hasStudentLoanDebt, setHasStudentLoanDebt] = useState(''); // B11
   const [studentLoanInterestRate, setStudentLoanInterestRate] = useState(''); // B12
-  const [livingSituation, setLivingSituation] = useState('');
-  const [workStudy, setWorkStudy] = useState<boolean | null>(null);
+  const [studentLoanMaturity, setStudentLoanMaturity] = useState(''); // B13
+  // Consent & acknowledgments
   const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
-  const [researchConsent, setResearchConsent] = useState<boolean | null>(null);
+  const [researchConsent, setResearchConsent] = useState(false);
+  // Socioeconomic (optional)
+  const [householdIncome, setHouseholdIncome] = useState('');
+  const [financialAidRecipient, setFinancialAidRecipient] = useState('');
+  const [livingSituation, setLivingSituation] = useState('');
+  const [workStudy, setWorkStudy] = useState('');
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const handleNext = () => {
-    if (currentStep === 1) {
-      // Validate step 1: Student ID (passwordless)
+    if (currentStep === 0) {
+      if (!courseRequirementAcknowledged) {
+        setError('Please acknowledge the course requirement to continue');
+        return;
+      }
+    } else if (currentStep === 1) {
       if (!studentId.trim()) {
         setError('Please enter your Student ID');
         return;
       }
-      if (!courseCode.trim()) {
-        setError('Course ID is required');
-        return;
-      }
     } else if (currentStep === 2) {
-      // Validate step 2: Demographics (Baseline B1-B5) - Sensitive fields now optional
-      // Note: ageRange, gender, raceEthnicity, firstLanguage, workExperience are optional
+      // Demographics (B1-B5) - optional, except "Other" requires text
       if (firstLanguage === 'other' && !firstLanguageOther.trim()) {
-        setError('Please specify your first language');
+        setError('Please specify your first language (B4)');
         return;
       }
     } else if (currentStep === 3) {
-      // Validate step 3: Financial Background & Socio-economic (Baseline B6-B8)
-      // Financial background (lower sensitivity) - required
-      if (!priorFinancialProducts || !selfRatedFinancialKnowledge || !financialStressFrequency) {
-        setError('Please complete all financial background fields');
+      // Financial Background (B6-B8) - only B6/B7 required
+      if (!priorFinancialProducts || priorFinancialProducts.length === 0) {
+        setError('Please select at least one option for prior financial products (B6)');
         return;
       }
-
-      if (hasStudentLoanDebt === true && !studentLoanInterestRate) {
-        setError('Please select an interest rate option for your student loan debt');
+      if (!selfRatedFinancialKnowledge) {
+        setError('Please rate your financial knowledge (B7)');
         return;
       }
-      // Socio-economic fields (higher sensitivity) - optional
-      // Note: householdIncome, parentalEducation, financialAid, livingSituation, workStudy are optional
-      // Students can select "Prefer not to say" for any of these
+      if (!courseRequirementAcknowledged) {
+        setError('Please confirm the course requirement to continue');
+        return;
+      }
+      if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
+        setError('Please select an interest rate option for your student loan debt (B12)');
+        return;
+      }
+      if (hasStudentLoanDebt === 'yes' && !studentLoanMaturity) {
+        setError('Please select the loan maturity for your student loan debt (B13)');
+        return;
+      }
     }
     setError('');
     setCurrentStep(currentStep + 1);
@@ -79,82 +89,77 @@ function OnboardingContent() {
 
   const handleBack = () => {
     setError('');
-    setCurrentStep(currentStep - 1);
+    setCurrentStep(Math.max(0, currentStep - 1));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // Final validation
-    if (!courseRequirementAcknowledged) {
-      setError('Please acknowledge that completion of this assessment is required for the course to continue');
-      return;
-    }
-
+    // Final validation (student ID and course requirement already validated)
     if (!studentId.trim() || !courseCode.trim()) {
       setError('Student ID and Course ID are required');
       return;
     }
 
-    // Validate financial background
-    if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge || !financialStressFrequency) {
-      setError('Please complete all financial background fields');
+    // Validate financial background (B6-B8) - only B6/B7 required
+    if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge) {
+      setError('Please complete the required financial background fields (B6-B7)');
       return;
     }
-
-    if (hasStudentLoanDebt === true && !studentLoanInterestRate) {
-      setError('Please select an interest rate option for your student loan debt');
+    if (!courseRequirementAcknowledged) {
+      setError('Please confirm the course requirement to continue');
+      return;
+    }
+    if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
+      setError('Please select an interest rate option for your student loan debt (B12)');
+      return;
+    }
+    if (hasStudentLoanDebt === 'yes' && !studentLoanMaturity) {
+      setError('Please select the loan maturity for your student loan debt (B13)');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabaseBrowser.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!session?.access_token) {
-        throw new Error('Missing Microsoft session. Please sign in again.');
-      }
-
-      const consentTimestamp = researchConsent === true || researchConsent === false ? new Date().toISOString() : null;
+      const consentTimestamp = new Date().toISOString();
       const response = await fetch('/api/onboarding/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           courseCode: courseCode.trim(),
           studentId: studentId.trim(),
           research_consent: researchConsent,
           research_consent_timestamp: consentTimestamp,
-          research_consent_version: consentTimestamp ? '1.0' : null,
+          research_consent_version: '1.0',
           demographic: {
-            age_range: ageRange || null, // B3
             gender: gender || null, // B1
             race_ethnicity: raceEthnicity || null, // B2
+            age_range: ageRange || null, // B3
             first_language: firstLanguage || null, // B4
             first_language_other: firstLanguage === 'other' ? firstLanguageOther : null, // B4
             work_experience: workExperience || null, // B5
           },
           financial_background: {
-            prior_financial_products: priorFinancialProducts, // B6: Array
+            prior_financial_products: priorFinancialProducts, // B6
             self_rated_financial_knowledge: selfRatedFinancialKnowledge || null, // B7
             financial_stress_frequency: financialStressFrequency || null, // B8
           },
+          financial_background_extended: {
+            parental_education: parentalEducation || null, // B9
+            first_generation_college: firstGenerationCollege || null, // B10
+            has_student_loan_debt: hasStudentLoanDebt || null, // B11
+            student_loan_interest_rate: hasStudentLoanDebt === 'yes' ? (studentLoanInterestRate || null) : null, // B12
+            student_loan_maturity: hasStudentLoanDebt === 'yes' ? (studentLoanMaturity || null) : null, // B13
+          },
           socioeconomic: {
             household_income: householdIncome || null,
-            parental_education: parentalEducation || null,
-            first_generation_college: firstGenerationCollege,
-            financial_aid_recipient: financialAidRecipient,
-            has_student_loan_debt: hasStudentLoanDebt,
-            student_loan_interest_rate: hasStudentLoanDebt === true ? (studentLoanInterestRate || null) : null,
+            financial_aid_recipient: financialAidRecipient || null,
             living_situation: livingSituation || null,
-            work_study: workStudy,
+            work_study: workStudy || null,
           },
         }),
       });
@@ -165,6 +170,10 @@ function OnboardingContent() {
         throw new Error(data.error || 'Failed to save onboarding data');
       }
 
+      // Check if this is the test user
+      const normalizedStudentId = studentId.trim().toLowerCase();
+      const isTestUser = normalizedStudentId === '123456789';
+
       // Store session data
       const sessionData = {
         courseCode: courseCode.trim(),
@@ -173,13 +182,26 @@ function OnboardingContent() {
         courseId: data.data.courseId,
         hasCompletedOnboarding: true,
         loginTime: new Date().toISOString(),
+        isTestUser,
+      };
+
+      // Also store assessment session for the assessment page
+      const assessmentSession = {
+        courseCode: courseCode.trim(),
+        studentId: studentId.trim(),
+        userId: data.data.userId,
+        courseId: data.data.courseId,
+        attemptType: 'pre' as const,
+        startedAt: new Date().toISOString(),
+        isTestUser,
+        attemptId: null,
       };
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('student-session', JSON.stringify(sessionData));
+        localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
       }
 
-      // Redirect to assessment (user can choose pre or post)
       router.push('/assessment');
     } catch (err: any) {
       console.error('Error submitting onboarding:', err);
@@ -190,10 +212,11 @@ function OnboardingContent() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <header className="bg-white shadow-sm border-b border-loyola-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-loyola-maroon" />
             <span className="text-xl font-bold gradient-text">Financial Literacy Toolkit</span>
           </Link>
           <div className="flex items-center space-x-4">
@@ -204,89 +227,185 @@ function OnboardingContent() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 lg:py-12 max-w-3xl">
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-loyola-gray-700">
-              Step {currentStep} of {totalSteps}
+            <span className="text-sm font-medium text-gray-700">
+              Step {currentStep + 1} of {totalSteps}
             </span>
-            <span className="text-sm text-loyola-gray-500">
-              {Math.round((currentStep / totalSteps) * 100)}% Complete
+            <span className="text-sm text-gray-500">
+              {Math.round(((currentStep + 1) / totalSteps) * 100)}% Complete
             </span>
           </div>
-          <div className="w-full bg-loyola-gray-200 rounded-full h-2.5">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2.5 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
             ></div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-8 border border-loyola-gray-200">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           {error && (
-            <div className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+              <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Step 1: Student ID */}
-          {currentStep === 1 && (
+          {/* Step 0: Consent and Data Use */}
+          {currentStep === 0 && (
             <div>
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Welcome!</h1>
-                <p className="text-loyola-gray-600">
-                  Let's get started by collecting some basic information. This will help us personalize your experience and ensure accurate assessment results.
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Consent and Data Use</h1>
+                <p className="text-gray-600">
+                  Please review the course requirement and choose whether to allow research use of your responses.
                 </p>
               </div>
 
-              <div className="mb-6">
-                <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Course ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="course-code"
-                  value={courseCode}
-                  readOnly
-                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg bg-loyola-gray-50 text-loyola-gray-600"
-                />
-              </div>
+              <div className="space-y-6">
+                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                  <p className="text-sm font-semibold text-gray-800 mb-2">Course requirement (no choice)</p>
+                  <p className="text-sm text-gray-700">
+                    This assessment is a required course assignment in {courseCode}. Completion affects course credit,
+                    but your answers are not graded for correctness.
+                  </p>
+                  <label className="flex items-start gap-3 mt-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={courseRequirementAcknowledged}
+                      onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
+                      className="h-4 w-4 mt-0.5 text-loyola-maroon accent-loyola-maroon border-gray-300 rounded focus:ring-loyola-maroon"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I understand this assessment is required for the course. <span className="text-red-500">*</span>
+                    </span>
+                  </label>
+                </div>
 
-              <div className="mb-6">
-                <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
-                  Student ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="student-id"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  placeholder="Enter your student ID"
-                  required
-                />
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  Your student ID will be securely hashed and never stored in plain text.
-                </p>
-              </div>
-
-              <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-loyola-gray-700">
-                      <strong>Privacy Notice:</strong> All information you provide is confidential and will be used only for research and educational purposes. Your student ID is hashed using industry-standard encryption.
-                    </p>
+                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                  <p className="text-sm font-semibold text-gray-800 mb-2">Research consent (choice)</p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    You may choose whether your responses are used for research evaluating course learning outcomes.
+                    Declining has no impact on grades.
+                  </p>
+                  <div className="flex gap-2 flex-shrink-0">
+                    {[
+                      { value: true, label: 'Yes, I consent' },
+                      { value: false, label: 'No, I do not consent' },
+                    ].map((option) => (
+                      <button
+                        key={String(option.value)}
+                        type="button"
+                        onClick={() => setResearchConsent(option.value)}
+                        className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                          researchConsent === option.value
+                            ? 'border-loyola-maroon bg-loyola-maroon text-white'
+                            : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between mt-6">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back
+                </button>
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex items-center gap-2"
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-loyola-maroon/20"
+                >
+                  Continue to assessment
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 1: Access and Identity */}
+          {currentStep === 1 && (
+            <div>
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Access and Identity</h1>
+                <p className="text-gray-600">
+                  We use your Student ID and course code to link your pre- and post-assessments. No password required.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
+                    Course Code
+                  </label>
+                  <input
+                    type="text"
+                    id="course-code"
+                    value={courseCode}
+                    readOnly
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="student-id" className="block text-sm font-medium text-gray-700 mb-2">
+                    Student ID <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="student-id"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                      placeholder="Enter your student ID"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Privacy notice</p>
+                  <p className="text-sm text-gray-600">
+                    Your Student ID is converted to a coded identifier before storage. Identifiable information, if
+                    collected for course administration, is stored separately from the research dataset and access is
+                    restricted. Research analysis uses de-identified data and is governed by your consent choice.
+                  </p>
+                </div>
+              </div>
+
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="flex justify-end mt-6">
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-loyola-maroon/20"
                 >
                   Continue
                   <ChevronRight className="w-5 h-5" />
@@ -295,13 +414,13 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 2: Demographics (Baseline B1-B5) */}
+          {/* Step 2: Demographics (B1-B5) */}
           {currentStep === 2 && (
             <div>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-loyola-gray-900 mb-2">Demographic Information</h2>
-                <p className="text-loyola-gray-600">
-                  This information helps us understand the diversity of our student population and ensures fair assessment practices.
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Demographic Information</h2>
+                <p className="text-gray-600">
+                  These questions help us understand our student population. All items are optional.
                 </p>
               </div>
 
@@ -309,31 +428,31 @@ function OnboardingContent() {
                 {/* B1: Gender */}
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your gender? <span className="text-gray-400">(Optional)</span>
+                    B1: What is your gender?
                   </label>
                   <select
                     id="gender"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select gender</option>
                     <option value="female">Female</option>
                     <option value="male">Male</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
+                    <option value="prefer-not-to-say">Prefer not to answer</option>
                   </select>
                 </div>
 
                 {/* B2: Race/Ethnicity */}
                 <div>
                   <label htmlFor="race-ethnicity" className="block text-sm font-medium text-gray-700 mb-2">
-                    Which category best describes your racial or ethnic background? <span className="text-gray-400">(Optional)</span>
+                    B2: Which category best describes your racial or ethnic background?
                   </label>
                   <select
                     id="race-ethnicity"
                     value={raceEthnicity}
                     onChange={(e) => setRaceEthnicity(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select race/ethnicity</option>
                     <option value="White or Caucasian">White or Caucasian</option>
@@ -344,37 +463,38 @@ function OnboardingContent() {
                     <option value="Native American or Alaska Native">Native American or Alaska Native</option>
                     <option value="Two or more racial or ethnic backgrounds">Two or more racial or ethnic backgrounds</option>
                     <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
+                    <option value="Prefer not to say">Prefer not to answer</option>
                   </select>
                 </div>
 
                 {/* B3: Age Range */}
                 <div>
                   <label htmlFor="age-range" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your age range? <span className="text-gray-400">(Optional)</span>
+                    B3: What is your age range?
                   </label>
                   <select
                     id="age-range"
                     value={ageRange}
                     onChange={(e) => setAgeRange(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select age range</option>
                     <option value="20-or-under">20 or under</option>
                     <option value="above-20">Above 20</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
 
                 {/* B4: First Language */}
                 <div>
                   <label htmlFor="first-language" className="block text-sm font-medium text-gray-700 mb-2">
-                    What is your first language? <span className="text-gray-400">(Optional)</span>
+                    B4: What is your first language?
                   </label>
                   <select
                     id="first-language"
                     value={firstLanguage}
                     onChange={(e) => setFirstLanguage(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select first language</option>
                     <option value="english">English</option>
@@ -384,13 +504,14 @@ function OnboardingContent() {
                     <option value="russian">Russian</option>
                     <option value="dutch">Dutch</option>
                     <option value="other">Other (please specify)</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                   {firstLanguage === 'other' && (
                     <input
                       type="text"
                       value={firstLanguageOther}
                       onChange={(e) => setFirstLanguageOther(e.target.value)}
-                      className="w-full mt-2 px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                      className="w-full mt-3 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                       placeholder="Please specify your first language"
                       required={firstLanguage === 'other'}
                     />
@@ -400,27 +521,35 @@ function OnboardingContent() {
                 {/* B5: Work Experience */}
                 <div>
                   <label htmlFor="work-experience" className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you have work experience? <span className="text-gray-400">(Optional)</span>
+                    B5: Do you have work experience?
                   </label>
                   <select
                     id="work-experience"
                     value={workExperience}
                     onChange={(e) => setWorkExperience(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select work experience</option>
                     <option value="no-work-experience">No work experience</option>
                     <option value="part-time">Part-time employment</option>
                     <option value="full-time">Full-time employment</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
               </div>
 
-              <div className="flex justify-between mt-8">
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between mt-6">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="border-2 border-loyola-gray-300 text-loyola-gray-700 hover:bg-loyola-gray-50 font-medium py-3 px-6 rounded-lg transition flex items-center gap-2"
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
                 >
                   <ArrowLeft className="w-5 h-5" />
                   Back
@@ -428,7 +557,7 @@ function OnboardingContent() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex items-center gap-2"
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-loyola-maroon/20"
                 >
                   Continue
                   <ChevronRight className="w-5 h-5" />
@@ -437,23 +566,26 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 3: Financial Background & Socio-economic */}
+          {/* Step 3: Financial Background (B6-B12) & Consent */}
           {currentStep === 3 && (
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-loyola-gray-900 mb-2">Financial Background & Context</h2>
-                <p className="text-loyola-gray-600">
-                  This information helps us understand your financial background and context for the assessment.
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Financial Background and Context</h2>
+                <p className="text-gray-600">
+                  Please complete the required financial background items. Socio-economic items are optional.
                 </p>
               </div>
 
               <div className="space-y-6">
+                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">A) Financial background</div>
+
                 {/* B6: Prior Financial Products */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prior to enrolling in this course, had you personally used any of the following financial products? (Select all that apply) <span className="text-red-500">*</span>
+                    B6: Prior to enrolling in this course, had you personally used any of the following financial products? <span className="text-red-500">*</span>
                   </label>
-                  <div className="space-y-2 border-2 border-loyola-gray-300 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
+                  <div className="space-y-2 border border-gray-200 rounded-xl p-4 bg-gray-50/50">
                     {[
                       { value: 'credit-card', label: 'Credit card' },
                       { value: 'student-loan', label: 'Student loan' },
@@ -462,7 +594,7 @@ function OnboardingContent() {
                       { value: 'insurance', label: 'Insurance policy in your own name' },
                       { value: 'none', label: 'None of the above' },
                     ].map((product) => (
-                      <label key={product.value} className="flex items-center">
+                      <label key={product.value} className="flex items-center p-2 hover:bg-white rounded-lg transition-colors cursor-pointer">
                         <input
                           type="checkbox"
                           checked={priorFinancialProducts.includes(product.value)}
@@ -473,27 +605,24 @@ function OnboardingContent() {
                               setPriorFinancialProducts(priorFinancialProducts.filter((p) => p !== product.value));
                             }
                           }}
-                          className="mr-2 text-loyola-maroon accent-loyola-maroon"
+                          className="mr-3 h-5 w-5 text-loyola-maroon accent-loyola-maroon rounded"
                         />
-                        <span>{product.label}</span>
+                        <span className="text-gray-700">{product.label}</span>
                       </label>
                     ))}
                   </div>
-                  {priorFinancialProducts.length === 0 && (
-                    <p className="mt-1 text-sm text-red-600">Please select at least one option</p>
-                  )}
                 </div>
 
                 {/* B7: Self-Rated Financial Knowledge */}
                 <div>
                   <label htmlFor="self-rated-knowledge" className="block text-sm font-medium text-gray-700 mb-2">
-                    Before enrolling in this course, how would you rate your overall financial knowledge? <span className="text-red-500">*</span>
+                    B7: Before enrolling in this course, how would you rate your overall financial knowledge? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="self-rated-knowledge"
                     value={selfRatedFinancialKnowledge}
                     onChange={(e) => setSelfRatedFinancialKnowledge(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                     required
                   >
                     <option value="">Select rating</option>
@@ -508,14 +637,13 @@ function OnboardingContent() {
                 {/* B8: Financial Stress Frequency */}
                 <div>
                   <label htmlFor="financial-stress" className="block text-sm font-medium text-gray-700 mb-2">
-                    How often do you feel financially stressed? <span className="text-red-500">*</span>
+                    B8: How often do you feel financially stressed? <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
                   <select
                     id="financial-stress"
                     value={financialStressFrequency}
                     onChange={(e) => setFinancialStressFrequency(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                    required
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select frequency</option>
                     <option value="never">Never</option>
@@ -526,192 +654,224 @@ function OnboardingContent() {
                   </select>
                 </div>
 
-                <div className="border-t border-loyola-gray-200 pt-6 mt-6">
-                  <h3 className="text-lg font-semibold text-loyola-gray-900 mb-4">Additional Socio-Economic Information (Optional)</h3>
-                </div>
+                <div className="pt-2 border-t border-gray-200"></div>
+                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">B) Socio-economic context (optional)</div>
 
+                {/* Household Income */}
                 <div>
                   <label htmlFor="household-income" className="block text-sm font-medium text-gray-700 mb-2">
-                    Household Income
+                    Household income (annual)
                   </label>
                   <select
                     id="household-income"
                     value={householdIncome}
                     onChange={(e) => setHouseholdIncome(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
-                    <option value="">Select household income</option>
-                    <option value="under-25000">Under $25,000</option>
-                    <option value="25000-49999">$25,000 - $49,999</option>
-                    <option value="50000-74999">$50,000 - $74,999</option>
-                    <option value="75000-99999">$75,000 - $99,999</option>
-                    <option value="100000-149999">$100,000 - $149,999</option>
-                    <option value="150000-199999">$150,000 - $199,999</option>
-                    <option value="200000-plus">$200,000 or more</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
+                    <option value="">Select income range</option>
+                    <option value="below-25000">Below $25,000</option>
+                    <option value="25000-49999">$25,000–$49,999</option>
+                    <option value="50000-74999">$50,000–$74,999</option>
+                    <option value="75000-99999">$75,000–$99,999</option>
+                    <option value="100000-149999">$100,000–$149,999</option>
+                    <option value="150000-plus">$150,000+</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
 
+                {/* B9: Highest Level of Parental Education */}
                 <div>
                   <label htmlFor="parental-education" className="block text-sm font-medium text-gray-700 mb-2">
-                    Highest Level of Parental Education
+                    B9: Highest level of parental education
                   </label>
                   <select
                     id="parental-education"
                     value={parentalEducation}
                     onChange={(e) => setParentalEducation(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
                   >
                     <option value="">Select education level</option>
-                    <option value="high-school-or-less">High school or less</option>
-                    <option value="some-college">Some college</option>
-                    <option value="bachelors">Bachelor's degree</option>
-                    <option value="masters">Master's degree</option>
-                    <option value="doctorate">Doctorate or professional degree</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
+                    <option value="less-than-high-school">Less than high school</option>
+                    <option value="high-school-diploma-or-ged">High school diploma or GED</option>
+                    <option value="some-college-no-degree">Some college, no degree</option>
+                    <option value="associate-degree">Associate degree (AA/AS)</option>
+                    <option value="bachelors-degree">Bachelor's degree (BA/BS)</option>
+                    <option value="graduate-or-professional-degree">Graduate or professional degree (MA/MS/MBA/PhD/MD/JD, etc.)</option>
+                    <option value="dont-know">Don't know</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
 
-
+                {/* Financial Aid */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Are you a first-generation college student?
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Financial aid recipient
                   </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="first-generation"
-                        value="yes"
-                        checked={firstGenerationCollege === true}
-                        onChange={() => setFirstGenerationCollege(true)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="first-generation"
-                        value="no"
-                        checked={firstGenerationCollege === false}
-                        onChange={() => setFirstGenerationCollege(false)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      No
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="first-generation"
-                        value="prefer-not-to-say"
-                        checked={firstGenerationCollege === null}
-                        onChange={() => setFirstGenerationCollege(null)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Prefer not to say
-                    </label>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' },
+                      { value: 'prefer-not-to-answer', label: 'Prefer not to answer' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
+                          financialAidRecipient === option.value
+                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="financial-aid"
+                          value={option.value}
+                          checked={financialAidRecipient === option.value}
+                          onChange={() => setFinancialAidRecipient(option.value)}
+                          className="sr-only"
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
+                {/* Living Situation */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you receive financial aid?
+                  <label htmlFor="living-situation" className="block text-sm font-medium text-gray-700 mb-2">
+                    Living situation
                   </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="financial-aid"
-                        value="yes"
-                        checked={financialAidRecipient === true}
-                        onChange={() => setFinancialAidRecipient(true)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="financial-aid"
-                        value="no"
-                        checked={financialAidRecipient === false}
-                        onChange={() => setFinancialAidRecipient(false)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      No
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="financial-aid"
-                        value="prefer-not-to-say"
-                        checked={financialAidRecipient === null}
-                        onChange={() => setFinancialAidRecipient(null)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Prefer not to say
-                    </label>
+                  <select
+                    id="living-situation"
+                    value={livingSituation}
+                    onChange={(e) => setLivingSituation(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                  >
+                    <option value="">Select living situation</option>
+                    <option value="on-campus">On-campus housing</option>
+                    <option value="off-campus">Off-campus housing</option>
+                    <option value="with-family">With family</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
+                  </select>
+                </div>
+
+                {/* Work-Study */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Work-study participation
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' },
+                      { value: 'prefer-not-to-answer', label: 'Prefer not to answer' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
+                          workStudy === option.value
+                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="work-study"
+                          value={option.value}
+                          checked={workStudy === option.value}
+                          onChange={() => setWorkStudy(option.value)}
+                          className="sr-only"
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
+                {/* B10: First-Generation College Student */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you currently have any student loan debt?
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    B10: Are you a first-generation college student?
                   </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="student-loan-debt"
-                        value="yes"
-                        checked={hasStudentLoanDebt === true}
-                        onChange={() => setHasStudentLoanDebt(true)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="student-loan-debt"
-                        value="no"
-                        checked={hasStudentLoanDebt === false}
-                        onChange={() => {
-                          setHasStudentLoanDebt(false);
-                          setStudentLoanInterestRate('');
-                        }}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      No
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="student-loan-debt"
-                        value="prefer-not-to-say"
-                        checked={hasStudentLoanDebt === null}
-                        onChange={() => {
-                          setHasStudentLoanDebt(null);
-                          setStudentLoanInterestRate('');
-                        }}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Prefer not to say
-                    </label>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' },
+                      { value: 'prefer-not-to-say', label: 'Prefer not to answer' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
+                          firstGenerationCollege === option.value
+                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="first-generation"
+                          value={option.value}
+                          checked={firstGenerationCollege === option.value}
+                          onChange={() => setFirstGenerationCollege(option.value)}
+                          className="sr-only"
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                {hasStudentLoanDebt === true && (
-                  <div>
+                {/* B11: Student Loan Debt */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    B11: Do you currently have any student loan debt?
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' },
+                      { value: 'prefer-not-to-say', label: 'Prefer not to answer' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
+                          hasStudentLoanDebt === option.value
+                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="student-loan-debt"
+                          value={option.value}
+                          checked={hasStudentLoanDebt === option.value}
+                          onChange={() => {
+                            setHasStudentLoanDebt(option.value);
+                            if (option.value !== 'yes') {
+                              setStudentLoanInterestRate('');
+                              setStudentLoanMaturity('');
+                            }
+                          }}
+                          className="sr-only"
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* B12: Student Loan Interest Rate (conditional) */}
+                {hasStudentLoanDebt === 'yes' && (
+                  <div className="ml-4 pl-4 border-l-2 border-loyola-maroon/20">
                     <label htmlFor="student-loan-interest-rate" className="block text-sm font-medium text-gray-700 mb-2">
-                      If yes, what is the interest rate on your student loan debt (best estimate)?
+                      B12: What is the interest rate on your student loan debt (best estimate)? <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="student-loan-interest-rate"
                       value={studentLoanInterestRate}
                       onChange={(e) => setStudentLoanInterestRate(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                      required
                     >
                       <option value="">Select an option</option>
                       <option value="less-than-5">Less than 5%</option>
@@ -723,141 +883,86 @@ function OnboardingContent() {
                   </div>
                 )}
 
-                <div>
-                  <label htmlFor="living-situation" className="block text-sm font-medium text-gray-700 mb-2">
-                    Living Situation
-                  </label>
-                  <select
-                    id="living-situation"
-                    value={livingSituation}
-                    onChange={(e) => setLivingSituation(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
-                  >
-                    <option value="">Select living situation</option>
-                    <option value="on-campus">On-campus housing</option>
-                    <option value="off-campus">Off-campus housing</option>
-                    <option value="with-family">Living with family</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you participate in a work-study program?
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="work-study"
-                        value="yes"
-                        checked={workStudy === true}
-                        onChange={() => setWorkStudy(true)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Yes
+                {/* B13: Student Loan Maturity (conditional) */}
+                {hasStudentLoanDebt === 'yes' && (
+                  <div className="ml-4 pl-4 border-l-2 border-loyola-maroon/20">
+                    <label htmlFor="student-loan-maturity" className="block text-sm font-medium text-gray-700 mb-2">
+                      B13: What is the current maturity (length of loan time)? <span className="text-red-500">*</span>
                     </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="work-study"
-                        value="no"
-                        checked={workStudy === false}
-                        onChange={() => setWorkStudy(false)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      No
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="work-study"
-                        value="prefer-not-to-say"
-                        checked={workStudy === null}
-                        onChange={() => setWorkStudy(null)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Prefer not to say
-                    </label>
+                    <select
+                      id="student-loan-maturity"
+                      value={studentLoanMaturity}
+                      onChange={(e) => setStudentLoanMaturity(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                      required
+                    >
+                      <option value="">Select an option</option>
+                      <option value="less-or-equal-3-years">Less or equal to 3 years</option>
+                      <option value="between-3-to-5-years">Between 3 to 5 years</option>
+                      <option value="above-5-years">Above 5 years</option>
+                      <option value="do-not-know">I do not know</option>
+                      <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
                   </div>
-                </div>
+                )}
 
-                <div className="mt-6">
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="course-requirement"
-                        name="course-requirement"
-                        type="checkbox"
-                        checked={courseRequirementAcknowledged}
-                        onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
-                        className="focus:ring-loyola-maroon h-5 w-5 text-loyola-maroon accent-loyola-maroon border-loyola-gray-300 rounded"
-                        required
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label htmlFor="course-requirement" className="font-medium text-gray-700">
-                        I understand that completing this assessment is a required course assignment <span className="text-red-500">*</span>
-                      </label>
-                      <p className="text-gray-500 mt-1">
-                        This assessment is administered twice (pre-course and post-course). Your responses are linked using a coded identifier.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Research consent (optional)
-                  </label>
-                  <p className="text-sm text-gray-500 mb-3">
-                    You may choose whether a de-identified version of your responses may be used for an independent research study. Declining has no impact on grades or course standing.
+                <div className="pt-2 border-t border-gray-200"></div>
+                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">C) Data use confirmation</div>
+                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Completion is required for course credit. Your answers are used for instructional improvement. If
+                    you consented to research use, a de-identified version of your responses will also be used for
+                    research analysis. Declining research consent does not affect your grade.
                   </p>
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="research-consent"
-                        value="yes"
-                        checked={researchConsent === true}
-                        onChange={() => setResearchConsent(true)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Yes, I consent to research use of my de-identified responses
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="research-consent"
-                        value="no"
-                        checked={researchConsent === false}
-                        onChange={() => setResearchConsent(false)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      No, I do not consent to research use of my responses
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="research-consent"
-                        value="skip"
-                        checked={researchConsent === null}
-                        onChange={() => setResearchConsent(null)}
-                        className="mr-2 text-loyola-maroon accent-loyola-maroon"
-                      />
-                      Skip for now
-                    </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={courseRequirementAcknowledged}
+                      onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
+                      className="h-4 w-4 mt-0.5 text-loyola-maroon accent-loyola-maroon border-gray-300 rounded focus:ring-loyola-maroon"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I understand this assessment is required for the course. <span className="text-red-500">*</span>
+                    </span>
+                  </label>
+
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">My research participation choice is:</p>
+                    <div className="flex gap-2">
+                      {[
+                        { value: true, label: 'Yes, I consent' },
+                        { value: false, label: 'No, I do not consent' },
+                      ].map((option) => (
+                        <button
+                          key={String(option.value)}
+                          type="button"
+                          onClick={() => setResearchConsent(option.value)}
+                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                            researchConsent === option.value
+                              ? 'border-loyola-maroon bg-loyola-maroon text-white'
+                              : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-
-                {/* Validation for B6 */}
               </div>
 
-              <div className="flex justify-between mt-8">
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between mt-6">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="border-2 border-loyola-gray-300 text-loyola-gray-700 hover:bg-loyola-gray-50 font-medium py-3 px-6 rounded-lg transition flex items-center gap-2"
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
                 >
                   <ArrowLeft className="w-5 h-5" />
                   Back
@@ -865,10 +970,19 @@ function OnboardingContent() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-loyola-maroon/20"
                 >
-                  <CheckCircle className="w-5 h-5" />
-                  {isSubmitting ? 'Saving...' : 'Complete & Start Assessment'}
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Complete & Start Assessment
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -876,9 +990,9 @@ function OnboardingContent() {
         </div>
       </main>
 
-      <footer className="bg-white border-t border-loyola-gray-200 py-6 mt-12">
-        <div className="container mx-auto px-4 text-center text-sm text-loyola-gray-600">
-          <p>© 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
+      <footer className="bg-white border-t border-gray-200 py-6 mt-12">
+        <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+          <p>&copy; 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -887,9 +1001,12 @@ function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
       <OnboardingContent />
     </Suspense>
   );
 }
-

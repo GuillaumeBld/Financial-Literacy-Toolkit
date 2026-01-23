@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
     );
 
     // Format courses for dropdown
-    // Map "Financial Literacy" to "QUINN 102" for display (backward compatibility)
+    // Map "Financial Literacy" to "QUIN 102" for display (backward compatibility)
     const courseList = courses.map(course => {
-      // Get display name (maps "Financial Literacy" to "QUINN 102")
+      // Get display name (maps "Financial Literacy" to "QUIN 102")
       const displayName = getCourseDisplayName(course.name);
       
       return {

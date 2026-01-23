@@ -30,12 +30,16 @@ export async function GET(request: NextRequest) {
     );
     const columnSet = new Set(columns.map((c) => c.column_name));
     const hasIsSdm = columnSet.has('is_sdm');
+    const hasIsScored = columnSet.has('is_scored');
+    const hasExternalItemId = columnSet.has('external_item_id');
     const hasAnchorItemId = columnSet.has('anchor_item_id');
     const hasVariantType = columnSet.has('variant_type');
     const hasTriggerCondition = columnSet.has('trigger_condition');
     const hasExternalId = columnSet.has('external_id');
 
     const selectIsSdm = hasIsSdm ? 'is_sdm' : 'NULL::boolean as is_sdm';
+    const selectIsScored = hasIsScored ? 'is_scored' : 'true::boolean as is_scored';
+    const selectExternalItemId = hasExternalItemId ? 'external_item_id' : 'NULL::text as external_item_id';
     const selectAnchorItemId = hasAnchorItemId ? 'anchor_item_id' : 'NULL::uuid as anchor_item_id';
     const selectVariantType = hasVariantType ? 'variant_type' : 'NULL::text as variant_type';
     const selectTriggerCondition = hasTriggerCondition ? 'trigger_condition' : 'NULL::text as trigger_condition';
@@ -55,6 +59,8 @@ export async function GET(request: NextRequest) {
       is_active: boolean;
       is_anchor: boolean | null;
       is_sdm: boolean | null;
+      is_scored: boolean | null;
+      external_item_id: string | null;
       anchor_item_id: string | null;
       variant_type: string | null;
       trigger_condition: string | null;
@@ -65,6 +71,8 @@ export async function GET(request: NextRequest) {
               COALESCE(is_active, false) as is_active,
               is_anchor,
               ${selectIsSdm},
+              ${selectIsScored},
+              ${selectExternalItemId},
               ${selectAnchorItemId},
               ${selectVariantType},
               ${selectTriggerCondition},
@@ -91,6 +99,8 @@ export async function GET(request: NextRequest) {
         is_active: q.is_active,
         is_anchor: q.is_anchor,
         is_sdm: q.is_sdm,
+        is_scored: q.is_scored, // false for preference items Q15-Q28
+        external_item_id: q.external_item_id, // Original question ID (1-40)
         anchor_item_id: q.anchor_item_id,
         variant_type: q.variant_type,
         trigger_condition: q.trigger_condition,
