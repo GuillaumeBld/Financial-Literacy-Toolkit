@@ -180,7 +180,8 @@ export default function InstructorQuestionsPage() {
         preferences.push(q);
       } else if (q.is_anchor) {
         anchors.push(q);
-      } else if (q.is_sdm && q.anchor_item_id) {
+      } else if (q.anchor_item_id) {
+        // SDM variant - identified by having anchor_item_id (or is_sdm=true)
         if (!variants[q.anchor_item_id]) {
           variants[q.anchor_item_id] = [];
         }
@@ -188,10 +189,12 @@ export default function InstructorQuestionsPage() {
       }
     });
 
-    // Sort anchors by external_item_id (Q1, Q2, ... Q40)
+    // Sort anchors by external_item_id or item_id (Q1, Q2, ... Q40)
     anchors.sort((a, b) => {
-      const numA = parseInt(a.external_item_id?.replace(/\D/g, '') || '0');
-      const numB = parseInt(b.external_item_id?.replace(/\D/g, '') || '0');
+      const idA = a.external_item_id || a.item_id || '';
+      const idB = b.external_item_id || b.item_id || '';
+      const numA = parseInt(idA.replace(/\D/g, '') || '0');
+      const numB = parseInt(idB.replace(/\D/g, '') || '0');
       return numA - numB;
     });
 
@@ -383,7 +386,7 @@ export default function InstructorQuestionsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
                       <span className="px-2 py-0.5 bg-loyola-maroon text-white text-xs font-bold rounded">
-                        Q{anchor.external_item_id}
+                        {(anchor.external_item_id || anchor.item_id || '').replace(/^Q?/, 'Q')}
                       </span>
                       <span className="text-xs text-gray-500">{anchor.domain}</span>
                       {anchor.subdomain && (
@@ -496,7 +499,7 @@ export default function InstructorQuestionsPage() {
                 <div key={q.item_id} className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded">
-                      Q{q.external_item_id}
+                      {(q.external_item_id || q.item_id || '').replace(/^Q?/, 'Q')}
                     </span>
                     <span className="text-xs text-amber-700">{q.domain}</span>
                   </div>

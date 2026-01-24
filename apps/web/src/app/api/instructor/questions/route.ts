@@ -98,9 +98,11 @@ export async function GET(request: NextRequest) {
         explanation: q.rubric,
         is_active: q.is_active,
         is_anchor: q.is_anchor,
-        is_sdm: q.is_sdm,
+        // Derive is_sdm from anchor_item_id presence when column doesn't exist
+        is_sdm: q.is_sdm ?? (q.anchor_item_id ? true : false),
         is_scored: q.is_scored, // false for preference items Q15-Q28
-        external_item_id: q.external_item_id, // Original question ID (1-40)
+        // Use item_id as external_item_id fallback (Q1, Q2, etc.)
+        external_item_id: q.external_item_id ?? q.item_id,
         anchor_item_id: q.anchor_item_id,
         variant_type: q.variant_type,
         trigger_condition: q.trigger_condition,
