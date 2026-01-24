@@ -995,8 +995,8 @@ export default function AssessmentPage() {
       // Note: "Do Not Know" would be detected from the answer value itself
       // For now, we treat unanswered or explicit DNK selection as do_not_know
 
-      // Get anchor format (T/F vs MCQ) based on external_item_id
-      const anchorFormat = getAnchorFormat(currentQuestion.external_item_id);
+      // Get anchor format (T/F vs MCQ) based on external_item_id or item id
+      const anchorFormat = getAnchorFormat(currentQuestion.external_item_id || currentQuestion.id);
 
       // Calculate Need score using source of truth Table 4
       const needScore = calculateNeedScore(responseType, value, anchorFormat);
