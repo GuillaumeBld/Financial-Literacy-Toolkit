@@ -52,6 +52,8 @@ type ScoredAnchor = {
   anchorFormat: 'MCQ' | 'TF';
   assignedVariant?: string;
   isOpenEnded?: boolean;
+  studentAnswer?: string;     // The answer text the student selected
+  studentAnswerId?: string;   // The answer option ID (a, b, c, d)
 };
 
 // Get anchor format based on external_item_id (Q1-Q40)
@@ -265,6 +267,35 @@ const getConfidenceBucket = (confidence: number): ConfidenceBucket => {
 const getVariantPresentationWeight = (variantType: string | null | undefined): number => {
   const vt = (variantType || '').toLowerCase();
   return VARIANT_PRESENTATION_ORDER[vt] ?? 99;
+};
+
+// Personalize SDM question text by replacing placeholder with student's actual answer
+const personalizeSDMQuestionText = (
+  questionText: string,
+  anchorId: string | null | undefined,
+  scoredAnchors: Map<string, ScoredAnchor>
+): string => {
+  if (!anchorId || !questionText.includes("[student's answer]")) {
+    return questionText;
+  }
+
+  // Find the parent anchor's scored data
+  const normalizedAnchorId = normalizeAnchorId(anchorId);
+  let scoredAnchor: ScoredAnchor | undefined;
+
+  // Try to find matching anchor (handles Q1, Q1#, 1 format differences)
+  for (const [key, value] of scoredAnchors.entries()) {
+    if (normalizeAnchorId(key) === normalizedAnchorId) {
+      scoredAnchor = value;
+      break;
+    }
+  }
+
+  if (scoredAnchor?.studentAnswer) {
+    return questionText.replace("[student's answer]", `"${scoredAnchor.studentAnswer}"`);
+  }
+
+  return questionText;
 };
 
 // Shuffle answer options for multiple choice questions (while preserving correct answer)
@@ -1009,6 +1040,11 @@ export default function AssessmentPage() {
       const subcategory = currentQuestion.subdomain || currentQuestion.domain || 'General';
       const domain = currentQuestion.domain || 'General';
 
+      // Get the student's answer text for SDM variant personalization
+      const answerId = answer;
+      const answerOption = currentQuestion.options?.find((opt: {id: string, text: string}) => opt.id === answerId);
+      const answerText = answerOption?.text || answer;
+
       setScoredAnchors((prev) => {
         const newMap = new Map(prev);
 
@@ -1022,6 +1058,8 @@ export default function AssessmentPage() {
           domain,
           subcategory,
           anchorFormat,
+          studentAnswer: answerText,
+          studentAnswerId: answerId,
         };
 
         newMap.set(currentQuestion.id, scoredAnchor);
@@ -1254,7 +1292,11 @@ export default function AssessmentPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8 mb-6">
-          <h2 className="text-2xl font-semibold mb-6">{currentQuestion.text}</h2>
+          <h2 className="text-2xl font-semibold mb-6">
+            {currentQuestion.is_sdm
+              ? personalizeSDMQuestionText(currentQuestion.text, currentQuestion.anchor_item_id, scoredAnchors)
+              : currentQuestion.text}
+          </h2>
 
           {currentQuestion.type === 'multiple_choice' && currentQuestion.options && (
             <div className="space-y-3 mb-8">
