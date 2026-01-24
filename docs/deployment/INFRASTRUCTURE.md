@@ -7,19 +7,20 @@ Last updated: 2026-01-24
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     PRODUCTION SETUP                         │
+│                   (Fully Dokploy-managed)                    │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  financial_literacy_app (docker-compose)            │    │
-│  │  - Image: financial-literacy-toolkit-app            │    │
-│  │  - Port: 3000 (exposed)                             │    │
-│  │  - Networks: app_network, traefik_proxy,            │    │
-│  │              dokploy-network                        │    │
+│  │  app-compress-digital-panel-bbswn2 (Dokploy)        │    │
+│  │  - Dokploy Name: financial-literacy-web             │    │
+│  │  - Auto-deploy: Enabled (on git push to main)       │    │
+│  │  - Port: 3000                                       │    │
+│  │  - Network: dokploy-network (swarm overlay)         │    │
 │  └─────────────────────┬───────────────────────────────┘    │
 │                        │                                     │
 │                        ▼                                     │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  finlit-postgres-db-g6ifwu (Dokploy-managed)        │    │
+│  │  finlit-postgres-db-g6ifwu (Dokploy)                │    │
 │  │  - Image: postgres:15                               │    │
 │  │  - Database: financial_literacy                     │    │
 │  │  - User: finlit_user                                │    │
@@ -30,6 +31,7 @@ Last updated: 2026-01-24
 │  │  Traefik (reverse proxy)                            │    │
 │  │  - SSL/TLS termination (Let's Encrypt)              │    │
 │  │  - Domain: financial-literacy.qualiaai.fr           │    │
+│  │  - Config: /opt/traefik/dynamic/                    │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
@@ -37,18 +39,19 @@ Last updated: 2026-01-24
 
 ## Containers
 
-### Active Containers
+### Active Containers (Dokploy-managed)
 
-| Container | Type | Image | Purpose |
-|-----------|------|-------|---------|
-| `financial_literacy_app` | docker-compose | financial-literacy-toolkit-app | Next.js web application |
-| `finlit-postgres-db-g6ifwu` | Dokploy (swarm) | postgres:15 | Production PostgreSQL database |
+| Service | Dokploy Name | Image | Purpose |
+|---------|--------------|-------|---------|
+| `app-compress-digital-panel-bbswn2` | financial-literacy-web | Next.js | Web application (auto-deploy enabled) |
+| `finlit-postgres-db-g6ifwu` | finlit-postgres-db | postgres:15 | Production PostgreSQL database |
 
-### Backup Containers (Stopped)
+### Auto-Deploy
 
-| Container | Type | Image | Purpose |
-|-----------|------|-------|---------|
-| `financial_literacy_postgres` | docker-compose | postgres:15-alpine | **BACKUP** - Old database, kept for recovery |
+Auto-deploy is configured via GitHub App integration:
+- **Trigger**: Push to `main` branch
+- **GitHub App**: `dokploy-2026-01-07-yn3zk8`
+- **Repository**: `GuillaumeBld/Financial-Literacy-Toolkit`
 
 ## Database
 
