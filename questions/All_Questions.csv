@@ -1,0 +1,332 @@
+﻿Global ID,Bank,#,Original Question,Simplified Question,Answer Options,Correct Answer,Classification,Why This Matters (Plain Language),Source,Source Details
+1,Financial Literacy (30),1,"Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow?","You put $100 in a savings account earning 2% interest per year. After 5 years, will you have: more than $102, exactly $102, or less than $102?","A) More than $102
+B) Exactly $102
+C) Less than $102
+D) Do not know",A) More than $102,Compound Interest,"Your money earns interest, then that interest earns MORE interest (compound interest). After 5 years at 2%, you'd have about $110. This is how savings grow over time - money makes money!",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+2,Financial Literacy (30),2,"Imagine that the interest rate on your savings account was 1% per year and inflation was 2% per year. After 1 year, how much would you be able to buy with the money in this account?","Your savings earn 1% interest, but prices rise 2% per year. After 1 year, can you buy MORE, the SAME, or LESS stuff with your savings?","A) More than today
+B) Exactly the same
+C) Less than today
+D) Do not know",C) Less than today,Inflation,"If prices rise faster than your savings grow, you can buy LESS even though you have more dollars. This is why inflation matters - your money loses 'buying power' if it's not keeping up.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+3,Financial Literacy (30),3,Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund.,Is it SAFER to own stock in ONE company or to own a fund with stocks from MANY companies?,"A) True
+B) False
+C) Do not know",B) False,Risk Diversification,"FALSE - a mutual fund is safer. If you own just one company and it fails, you lose everything. A fund owns hundreds of stocks, so one company failing barely hurts you. Don't put all eggs in one basket!",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+4,Financial Literacy (30),4,"If interest rates rise, what will typically happen to bond prices?","When interest rates GO UP, what happens to the price of bonds you already own?","A) They will rise
+B) They will fall
+C) They will stay the same
+D) There is no relationship
+E) Do not know",B) They will fall,Investing,"Bond prices FALL. When new bonds offer higher interest, your old bond with a lower rate is worth less. It's like trying to sell an old phone when better models come out.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+5,Financial Literacy (30),5,"A 15-year mortgage typically requires higher monthly payments than a 30-year mortgage, but the total interest paid over the life of the loan will be less. True or false?",A 15-year mortgage has HIGHER monthly payments but LOWER total interest than a 30-year mortgage. True or false?,"A) True
+B) False
+C) Do not know",A) True,Borrowing/Mortgages,TRUE. Paying faster means bigger monthly bills but WAY less interest overall. A 30-year mortgage might cost you twice as much in total interest! Time = money with loans.,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+6,Financial Literacy (30),6,High inflation means that the cost of living is increasing rapidly. True or false?,Does 'high inflation' mean that everyday things like food and rent are getting more expensive quickly?,"A) True
+B) False
+C) Do not know",A) True,Inflation,"TRUE. Inflation = rising prices. High inflation means your grocery bill, rent, and gas prices are climbing fast. Understanding this helps you plan your budget and savings.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+7,Financial Literacy (30),7,"If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false?","If someone promises you can make BIG money, is there usually also a big chance of LOSING money?","A) True
+B) False
+C) Do not know",A) True,Investing,"TRUE. High reward = high risk. There's no free lunch in investing. If it sounds too good to be true, it probably is. Scammers love to promise 'guaranteed' high returns.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+8,Financial Literacy (30),8,You lend $25 to a friend one evening and he gives you $25 back the next day. How much interest has he paid on this loan?,You lend a friend $25 tonight and they pay you back $25 tomorrow. How much interest did you earn?,"A) $25
+B) $0
+C) Do not know",B) $0,Borrowing/Interest,"ZERO. Interest is the EXTRA money paid for borrowing. If they paid back the same amount, there's no interest. Interest is like a rental fee for using someone else's money.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+9,Financial Literacy (30),9,"Imagine that five friends are given a gift of $1,000. If the friends have to share the money equally, how much does each one get?","Five friends split $1,000 equally. How much does each person get?","A) $100
+B) $150
+C) $200
+D) $250
+E) Do not know",$200,Numeracy,"$1,000 ÷ 5 = $200 each. Basic division is essential for budgeting - splitting bills, calculating tips, dividing expenses among roommates.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+10,Financial Literacy (30),10,An investment with a high return is likely to be high risk. True or false?,Do investments that promise HIGH returns usually come with HIGH risk?,"A) True
+B) False
+C) Do not know",A) True,Investing,TRUE. This is the golden rule of investing. Stocks return more than savings accounts because they're riskier. Anyone promising high returns with no risk is lying or scamming.,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+11,Financial Literacy (30),11,"Suppose you put $100 into a no-fee savings account with a guaranteed interest rate of 2% per year. You don't make any further payments into this account and you don't withdraw any money. How much would be in the account at the end of the first year, once the interest payment is made?","You put $100 in savings at 2% annual interest. After one year, how much do you have?","A) $52
+B) $102
+C) $128
+D) $152
+E) Do not know",$102,Compound Interest,"$102. Simple: $100 × 2% = $2 interest. Total = $102. This is year one - in future years, you'd earn interest on $102, then on that new total, and so on (compound growth).",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+12,Financial Literacy (30),12,"And how much would be in the account at the end of five years? Would it be more than $110, exactly $110, or less than $110?","After 5 years at 2% interest starting with $100, will you have: more than $110, exactly $110, or less than $110?","A) More than $110
+B) Exactly $110
+C) Less than $110
+D) Do not know",A) More than $110,Compound Interest,"MORE than $110. With compound interest, you earn 'interest on interest.' Each year's balance is bigger, so you earn more. After 5 years at 2%, you'd have about $110.41. Over decades, this adds up BIG.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+13,Financial Literacy (30),13,"Suppose you have $100 in a savings account earning 2% interest a year. After five years, how much would you have?","$100 at 2% interest for 5 years. Will you end up with: more than $110, exactly $110, less than $110, or exactly $102?","A) More than $110
+B) Exactly $110
+C) Less than $110
+D) Exactly $102",A) More than $110,Compound Interest,MORE than $110. Compound interest means your interest earns interest. It's not just 5 × $2 = $10. The real amount is about $110.41. This 'snowball effect' is how wealth builds over time.,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+14,Financial Literacy (30),14,Which of the following best describes what the stock market does?,What does the stock market DO?,"A) Results in a gain in wealth for investors
+B) Creates liquidity by__(cut for space)__
+C) Brings people who want to buy stocks together with those who want to sell stocks
+D) Do not know",C) Brings people who want to buy stocks together with those who want to sell stocks,Investing,The stock market is a MARKETPLACE - it connects buyers and sellers. It doesn't guarantee profits or predict the future. Think of it like eBay for company ownership.,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+15,Financial Literacy (30),15,"If a young person with a long-term investment horizon has money to invest, which will typically produce the best returns?","For a young person investing for 30+ years, which typically gives the BEST returns: savings account, bonds, or stocks?","A) Savings account
+B) Government bonds
+C) Stocks
+D) Do not know",C) Stocks,Investing,"STOCKS, typically. Over long periods (30+ years), stocks have historically returned about 10% per year vs. 5% for bonds vs. 1-2% for savings. The longer your time horizon, the more you can ride out short-term drops.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+16,Financial Literacy (30),16,"Lyle has a good job and earns enough to pay his bills comfortably each month. In terms of his emergency savings, how much should he have set aside?",How much emergency savings should someone have set aside?,"A) $200 or so
+B) Money equal to his share of one month's rent/mortgage
+C) The equivalent of three or more months of living expenses
+D) Do not know",C) The equivalent of three or more months of living expenses,Saving,"3+ MONTHS of expenses. If you lose your job or have an emergency, you need time to recover. $200 won't cover much. Most experts say 3-6 months of rent, food, and bills.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+17,Financial Literacy (30),17,A successful effort to lower inflation would likely be accompanied by which of the following?,"If the government successfully LOWERS inflation, what usually happens to prices?","A) A decrease in the general level of prices
+B) A slower increase in prices
+C) An increase in employment
+D) Do not know",B) A slower increase in prices,Inflation,"Prices SLOW DOWN, they don't usually DROP. 'Low inflation' means prices still rise, just more slowly. Going from 8% to 2% inflation means prices grow slower, not that things get cheaper.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+18,Financial Literacy (30),18,Inflation can cause difficulty in many ways. Which group would have the greatest problem during periods of high inflation?,Who is HURT MOST by high inflation?,"A) Young couples with no children who both work
+B) Older, working couples saving for retirement
+C) Retirees living on a fixed income
+D) Do not know",C) Retirees living on a fixed income,Inflation,"RETIREES on fixed income. If your pension pays $2,000/month forever but prices double, you can only buy half as much. Workers can ask for raises; retirees often can't increase their income.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+19,Financial Literacy (30),19,"A family member tells Wendy that her hourly wage will be cut 10% if she stays at her current job. In addition, her work hours would also be cut 10%. What best describes how her paycheck would change?","If both your hourly pay AND your hours are cut by 10%, does your total pay drop by: less than 20%, exactly 20%, or more than 20%?","A) It would decrease by less than 20%
+B) It would decrease by 20%
+C) It would decrease by more than 20%
+D) Do not know",A) It would decrease by less than 20%,Numeracy,"LESS than 20%. If you made $100, a 10% pay cut = $90. Then 10% fewer hours on $90 = $81. You lost $19 (19%), not $20. When you cut BOTH factors, the cuts overlap slightly.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+20,Financial Literacy (30),20,Which of the following best describes the PRIMARY function of health insurance?,What is the MAIN purpose of health insurance?,"A) Protect against the possibility of large unexpected medical bills
+B) Cover the cost of routine health care expenses
+C) Pay for elective medical procedures
+D) Do not know",A) Protect against the possibility of large unexpected medical bills,Insurance,"Protection from BIG bills. Insurance isn't really for small costs - it's for the $50,000 surgery or $100,000 hospital stay that would bankrupt most people. It protects against catastrophic costs.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+21,Financial Literacy (30),21,What does a home insurance deductible represent?,What is a 'deductible' in home insurance?,"A) Amount you pay before insurance covers damages
+B) Monthly premium for coverage
+C) Maximum amount insurance will pay
+D) Do not know",A) Amount you pay before insurance covers damages,Insurance,"YOUR share first. If you have a $1,000 deductible and $5,000 in damage, you pay the first $1,000, then insurance covers the rest ($4,000). Higher deductibles = lower premiums, but more out-of-pocket when claims happen.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+22,Financial Literacy (30),22,Jayden is shopping for an auto loan. Which of the following can he likely negotiate with the lender?,"When getting a car loan, what can you usually NEGOTIATE with the lender?","A) The interest rate
+B) The required down payment
+C) Both
+D) Neither
+E) Do not know",C) Both,Borrowing,BOTH are negotiable. Banks want your business. You can often get a lower rate or smaller down payment by shopping around or having good credit. Never accept the first offer without asking!,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+23,Financial Literacy (30),23,"Considering the strategy of allocating income, what is the PRIMARY advantage to your household of making a budget?",What is the MAIN benefit of making a budget for your household?,"A) Ensures funds are available for bill paying and saving
+B) Reduces your taxes
+C) Increases rate of return on your investments
+D) Do not know",A) Ensures funds are available for bill paying and saving,Earning,"Knowing where your money goes. A budget helps you make sure rent gets paid before fun spending, and that you save something each month. It's a plan so you don't run out before payday.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+24,Financial Literacy (30),24,Which of the following statements regarding credit reports is FALSE?,Which statement about credit reports is WRONG?,"A) Credit reports are used by employers to screen job applicants
+B) A credit report includes an assessment of your worthiness to receive credit
+C) Your credit report is provided by a single source
+D) Do not know",C) Your credit report is provided by a single source,Borrowing/Credit,"FALSE: There are THREE credit bureaus (Equifax, Experian, TransUnion), not one. They may have different info. Check all three annually at annualcreditreport.com - it's free and catches errors.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+25,Financial Literacy (30),25,"When an investor spreads money among different assets, the risk of losing money usually:","When you spread your investments across different types (stocks, bonds, real estate), does your risk of losing money go UP, DOWN, or STAY THE SAME?","A) Increases
+B) Decreases
+C) Stays the same
+D) Do not know",B) Decreases,Risk Diversification,"DECREASES. Different investments don't all crash at once. When stocks drop, bonds might rise. Spreading out reduces the chance of losing everything at the same time.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+26,Financial Literacy (30),26,"If interest rates go up, what will typically happen to bond prices? Will they rise, fall, stay the same, or is there no relationship?","When interest rates RISE, do bond prices go UP, DOWN, or STAY THE SAME?","A) Rise
+B) Fall
+C) Stay the same
+D) No relationship
+E) Do not know",B) Fall,Investing,They FALL. Old bonds paying low interest are worth less when new bonds pay more. This is called 'interest rate risk.' Bond funds lost money in 2022 when rates rose sharply.,Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+27,Financial Literacy (30),27,"Considering a long time period (e.g., 10-20 years), which asset normally gives the highest return?","Over 10-20 years, which typically gives the HIGHEST return: savings accounts, bonds, or stocks?","A) Savings accounts
+B) Bonds
+C) Stocks
+D) Do not know",C) Stocks,Investing,"STOCKS. Historically, stocks return ~10%/year, bonds ~5%, savings ~2%. Over 20 years, $10,000 becomes ~$67,000 in stocks vs. ~$27,000 in bonds. Time smooths out the bumps.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+28,Financial Literacy (30),28,At what age can you receive FULL Social Security retirement benefits?,At what age can you get your FULL Social Security retirement benefit (for people born 1960 or later)?,"A) 62
+B) 65
+C) 67
+D) 70
+E) Do not know",C) 67,Retirement/Social Security,"Age 67 (for those born 1960+). You CAN claim at 62, but you get about 30% less. Waiting until 70 gives you 24% more. Knowing this helps you plan when to retire.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+29,Financial Literacy (30),29,Medicare is the federal health insurance program for people:,Who does Medicare cover?,"A) Below a certain income level
+B) Age 65 and older
+C) Unemployed
+D) All of the above
+E) Do not know",B) Age 65 and older,Retirement/Medicare,"People 65+ (and some disabled). Medicare is NOT based on income - that's Medicaid. Everyone becomes eligible at 65. Important: Medicare doesn't cover everything, especially long-term care.",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+30,Financial Literacy (30),30,Which of the following statements about annuities is TRUE?,What does an annuity do?,"A) An annuity provides income in retirement that one cannot outlive
+B) An annuity lets you invest in stocks without risk
+C) An annuity is guaranteed by the FDIC
+D) Do not know",A) An annuity provides income in retirement that one cannot outlive,Retirement/Annuities,"Lifetime income you can't outlive. An annuity is like buying a personal pension - you give an insurance company money, and they pay you monthly for life. Protects against living 'too long.'",Financial_Literacy_Questions_30_Simplified_orignal.xlsx,"Item bank with original and simplified wording, answer options, and answer key."
+31,Risk Literacy (30),1,"Out of 1,000 people in a small town 500 are members of a choir. Out of these 500 members in the choir 100 are men. Out of the 500 inhabitants that are not in the choir 300 are men. What is the probability that a randomly drawn man is a member of the choir? Please indicate the probability in percent.","In a town of 1,000 people: 500 are in a choir (100 men, 400 women), and 500 are NOT in the choir (300 men, 200 women). If you pick a random MAN from the town, what's the chance he's in the choir?","A) 12.5%
+B) 15%
+C) 25%
+D) 35%
+E) Do not know",25%,Statistical Numeracy - Conditional Probability,"Count all the men: 100 + 300 = 400 men. How many are in the choir? 100. So 100 out of 400 = 25%. This skill helps you understand questions like 'Of all the people with this symptom, how many actually have the disease?'",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+32,Risk Literacy (30),2,"Imagine we are throwing a five-sided die 50 times. On average, out of these 50 throws how many times would this five-sided die show an odd number (1, 3 or 5)?","A special die has 5 sides numbered 1, 2, 3, 4, 5. Three of those numbers are odd (1, 3, 5). If you roll this die 50 times, about how many times will you get an odd number?","A) 24
+B) 25
+C) 30
+D) 35
+E) Do not know",30,Statistical Numeracy - Probability,"3 out of 5 sides are odd. So you expect odd numbers 3/5 of the time. 3/5 × 50 = 30 times. It's like saying: if a medicine works for 60% of people, out of 100 patients, about 60 will get better.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+33,Risk Literacy (30),3,"Imagine we are throwing a loaded die (6 sides). The probability that the die shows a 6 is twice as high as the probability of each of the other numbers. On average, out of these 70 throws, how many times would the die show the number 6?","A trick die is weighted so rolling a 6 is TWICE as likely as rolling any other number. If you roll it 70 times, about how many 6s will you get?","A) 15
+B) 16
+C) 20
+D) 24
+E) Do not know",20,Statistical Numeracy - Weighted Probability,"Think of 7 equal 'chances': numbers 1-5 each get 1 chance, but 6 gets 2 chances. So 6 appears 2 out of 7 times. 2/7 × 70 = 20. This helps understand when some outcomes are more likely than others, like certain risk factors.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+34,Risk Literacy (30),4,"In a forest 20% of mushrooms are red, 50% brown and 30% white. A red mushroom is poisonous with a probability of 20%. A mushroom that is not red is poisonous with a probability of 5%. What is the probability that a poisonous mushroom in the forest is red?","In a forest: 20% of mushrooms are red, the rest are other colors. Red mushrooms: 20% are poisonous. Non-red mushrooms: only 5% are poisonous. If you find a POISONOUS mushroom, what's the chance it's red?","A) 25%
+B) 40%
+C) 50%
+D) 60%
+E) Do not know",50%,Statistical Numeracy - Bayes' Theorem,"Imagine 100 mushrooms: 20 red (4 poisonous), 80 not red (4 poisonous). Total poisonous = 8. Of those 8, how many are red? 4. So 4/8 = 50%. This is crucial for medical tests: 'If you test positive, what's the real chance you're sick?'",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+35,Risk Literacy (30),5,"Imagine that we flip a fair coin 1,000 times. What is your best guess about how many times the coin would come up heads in 1,000 flips?","If you flip a normal coin 1,000 times, about how many times will it land on heads?","A) 400
+B) 495
+C) 500
+D) 505
+E) Do not know",500,Basic Probability - Chance,"A fair coin has a 50-50 chance. Half of 1,000 = 500. This basic idea is the foundation of all probability. When someone says '50% chance,' they mean about half the time.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+36,Risk Literacy (30),6,"In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket?","A lottery has a 1% chance of winning. If 1,000 people each buy one ticket, about how many winners will there be?","A) 5
+B) 8
+C) 10
+D) 12
+E) Do not know",10,Basic Probability - Percentage to Frequency,"1% means 1 out of every 100. So out of 1,000 people, that's 10 winners. This helps you understand real numbers: 'If a side effect happens to 2% of patients, that's 20 people out of 1,000.'",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+37,Risk Literacy (30),7,"In the ACME PUBLISHING SWEEPSTAKES, the chance of winning a car is 1 in 1,000. What percent of tickets for ACME PUBLISHING SWEEPSTAKES win a car?","If your chance of winning is 1 in 1,000, what is that as a percentage?","A) 0%
+B) 0.1%
+C) 0.2%
+D) 10.1%
+E) Do not know",0.1%,Basic Probability - Frequency to Percentage,"1 ÷ 1,000 = 0.001 = 0.1%. This is converting between different ways of showing the same risk. Whether someone says '1 in 1,000' or '0.1%,' it means the same thing.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+38,Risk Literacy (30),8,Which of the following numbers represents the biggest risk of getting a disease?,"Which is the BIGGEST risk: 1 in 10, 1 in 100, or 1 in 1,000?","A) 1 in 100
+B) 1 in 1,000
+C) 1 in 10
+D) Do not know",C) 1 in 10,Risk Comparison - Magnitude,"The smaller the second number, the higher the risk. 1 in 10 = 10%. 1 in 100 = 1%. 1 in 1,000 = 0.1%. Would you rather be 1 unlucky person out of 10 or out of 1,000? Being 1 in 10 is much more likely.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+39,Risk Literacy (30),9,Which of the following numbers represents the biggest risk of getting a disease?,"Which percentage is the highest risk: 1%, 5%, or 10%?","A) 1%
+B) 10%
+C) 5%
+D) Do not know",B) 10%,Risk Comparison - Percentages,"Simply: which is largest? 10% > 5% > 1%. While this seems easy, many people get confused when risks are shown in different formats or with distracting context.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+40,Risk Literacy (30),10,"If the chance of getting a disease is 10%, how many people would be expected to get the disease out of 100?","If 10% of people get sick, how many is that out of 100 people?","A) 5
+B) 8
+C) 10
+D) 12
+E) Do not know",10,Risk Calculation - Percentage Application,10% of 100 = 10. 'Percent' literally means 'per hundred.' So 10 percent of 100 is just 10. This turns abstract percentages into real numbers you can picture.,Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+41,Risk Literacy (30),11,"If the chance of getting a disease is 10%, how many people would be expected to get the disease out of 1,000?","If 10% of people get sick, how many is that out of 1,000 people?","A) 80
+B) 95
+C) 100
+D) 105
+E) Do not know",100,Risk Calculation - Scaling,"10% of 1,000 = 100. If 10 out of 100 get sick, then 100 out of 1,000 get sick (just multiply by 10). This helps you understand how risks affect larger populations.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+42,Risk Literacy (30),12,"If the chance of getting a disease is 20 out of 100, this would be the same as having a ___% chance of getting the disease.",20 out of 100 equals what percent?,"A) 10%
+B) 20%
+C) 30%
+D) 40%
+E) Do not know",20%,Risk Conversion - Frequency to Percentage,'Per cent' means 'per hundred.' So 20 out of 100 = 20%. Being able to convert between formats helps you compare risks that are presented differently.,Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+43,Risk Literacy (30),13,"There's a 50/50 chance that Malik's car will need engine repairs within the next six months which would cost $1,000. At the same time there is a 10% chance that he will need to replace the air conditioning unit in his house, which would cost $4,000. Which poses the greater financial risk for Malik?","Malik has two possible expenses: Car repair - 50% chance, costs $1,000. AC replacement - 10% chance, costs $4,000. Which one should he worry about MORE financially?","A) The car engine repairs
+B) The air conditioning replacement
+C) Both pose the same financial risk
+D) Do not know",A) The car engine repairs,Expected Value - Financial Risk Assessment,"Multiply probability × cost. Car: 50% × $1,000 = $500 'expected cost.' AC: 10% × $4,000 = $400. The car costs less if it breaks, but it's much more likely to happen, making it the bigger financial risk overall.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+44,Risk Literacy (30),14,Which of the following indicates the highest probability of getting a particular disease?,"Which shows the HIGHEST chance of getting sick: '1 in 20 chance,' '2% probability,' or 'small likelihood'?","A) 1 in 20 chance
+B) 2% probability
+C) There is a small likelihood
+D) Do not know",A) 1 in 20 chance,Probability Comparison - Multiple Formats,Convert to same format: 1 in 20 = 5%. 2% = 2%. 'Small likelihood' = vague. So 5% > 2% > 'small.' Always convert to the same format (percentages) before comparing risks.,Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+45,Risk Literacy (30),15,Consider a couple that has two children and are thinking about having a third child. The doctor tells them that boys and girls are equally likely to be born. What are the chances that the next child will be a girl?,"A couple already has two children. For their third child, what's the chance it will be a girl? (Boys and girls are equally likely.)","A) It depends on whether the first two children are boys or girls
+B) 50%
+C) 25%
+D) Do not know",B) 50%,Probability - Independence,Each birth is independent - what happened before doesn't change what happens next. It's always 50/50. This corrects the 'gambler's fallacy' - thinking past coin flips affect future ones.,Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+46,Risk Literacy (30),16,A friend recommends that you invest in a particular technology company. The expected return is 25% in the first year. Which of the following statements is true?,Someone tells you an investment could return 25% in one year. What does this tell you about the risk?,"A) The investment is likely to be very risky
+B) The investment is likely no riskier than investing in multiple technology companies
+C) Nothing can be inferred about the risk of the investment
+D) Do not know",A) The investment is likely to be very risky,Investment Risk - Risk-Return Tradeoff,"Higher expected returns = higher risk. The stock market averages about 10% per year. A 25% promise means high risk. There's no free lunch in investing - if it sounds too good, the risk is probably huge.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+47,Risk Literacy (30),17,Buying a single company's stock usually provides a safer return than a stock mutual fund. True or false?,Is owning stock in ONE company safer than owning a fund with MANY different company stocks?,"A) True
+B) False
+C) Do not know",B) False,Investment Risk - Diversification,"FALSE. A mutual fund owns many stocks, so if one company fails, you don't lose everything. With one stock, all your eggs are in one basket. Spreading out = less risk.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+48,Risk Literacy (30),18,"When an investor spreads money among different assets, does the risk of losing money usually increase, decrease, or stay the same?","If you spread your money across different types of investments, does your risk of losing money go UP, DOWN, or STAY THE SAME?","A) Increase
+B) Decrease
+C) Stay the same
+D) Do not know",B) Decrease,Investment Risk - Diversification Effect,"DECREASE. Different investments don't all go up or down together. When stocks fall, bonds might rise. Spreading out smooths your overall results. Don't put all your eggs in one basket.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+49,Risk Literacy (30),19,"If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false?","If an opportunity promises BIG profits, does it also usually come with BIG risks of losing money?","A) True
+B) False
+C) Do not know",A) True,Investment Risk - Risk-Return Relationship,"TRUE. High reward = high risk. This is true for investments, business ventures, everything financial. If someone promises high returns with no risk, it's likely a scam.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+50,Risk Literacy (30),20,True or false: It is less likely that you will lose all of your money if you save it in more than one place.,Are you SAFER keeping your savings in SEVERAL places instead of just ONE place?,"A) True
+B) False
+C) Do not know",A) True,Risk Management - Diversification Principle,"TRUE. If you keep all savings in one bank and it fails, you lose everything. Spread across multiple places, and one failure doesn't wipe you out. Classic 'eggs in baskets' wisdom.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+51,Risk Literacy (30),21,"If interest rates rise, what will typically happen to bond prices?","When interest rates GO UP, what happens to the prices of existing bonds?","A) They will rise
+B) They will fall
+C) They will stay the same
+D) There is no relationship between bond prices and the interest rate
+E) Do not know",B) They will fall,Investment Risk - Interest Rate Risk,"They FALL. When new bonds offer higher rates, your old bond with a lower rate becomes less attractive. Like selling a used car when better new models come out - your old one is worth less.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+52,Risk Literacy (30),22,Which of the following insurance policies is most likely to protect you if you cause an accident that injures someone?,Which insurance covers you if YOU cause an accident that hurts someone else?,"A) Health insurance
+B) Homeowner's or renter's insurance
+C) Auto insurance liability coverage
+D) Do not know",C) Auto insurance liability coverage,Risk Management - Insurance,Auto liability coverage. 'Liability' means covering damage YOU cause to OTHERS. Health insurance covers your own medical bills. Knowing which insurance covers what helps you avoid gaps in protection.,Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+53,Risk Literacy (30),23,"True or false: If you have employer-provided health insurance, you generally cannot be charged more because of a pre-existing health condition.",Can your employer's health insurance charge you MORE because you were sick before? (In the US),"A) True
+B) False
+C) Do not know",A) True,Risk Management - Health Insurance,"TRUE - they cannot charge more. Under US law (ACA), employer group plans can't charge more or deny coverage for pre-existing conditions. Knowing insurance rules helps you make smart job and coverage decisions.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+54,Risk Literacy (30),24,Suppose you have the choice between a sure payment of $50 or a lottery where you have a 50% chance of winning $100 and a 50% chance of winning nothing. Which option has the higher expected value?,Which is worth more on average: A guaranteed $50 OR a 50-50 chance at $100 or nothing?,"A) The sure payment of $50
+B) The lottery
+C) Both have the same expected value
+D) Do not know",C) Both have the same expected value,Expected Value - Lottery vs. Certain Outcome,SAME value. Lottery: 50% × $100 + 50% × $0 = $50 on average. Sure thing = $50. Mathematically equal. Your choice depends on how you feel about risk - neither is 'wrong.',Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+55,Risk Literacy (30),25,"You have two investment options. Investment A has a 60% chance of gaining $1,000 and a 40% chance of losing $500. Investment B has a guaranteed return of $400. Which investment has the higher expected value?","Which is worth more on average? Option A: 60% chance to win $1,000, 40% chance to lose $500. Option B: Guaranteed $400.","A) Investment A
+B) Investment B
+C) Both have the same expected value
+D) Do not know",C) Both have the same expected value,Expected Value - Investment Comparison,"SAME value. A: (60% × $1,000) + (40% × -$500) = $600 - $200 = $400. B: $400. Both average $400. The difference is A has uncertainty, B is certain. Choose based on your comfort with risk.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+56,Risk Literacy (30),26,Which of the following types of investment would best protect the purchasing power of a family's savings in the event of a sudden increase in inflation?,"If prices suddenly shoot up (inflation), which protects your money best: a fixed-rate bond, a bank CD, or a house with a fixed-rate mortgage?","A) A 10-year bond paying a fixed rate of interest
+B) A certificate of deposit at a bank
+C) A 25-year home mortgage at a fixed rate
+D) A house financed with a fixed-rate mortgage
+E) Do not know",D) A house financed with a fixed-rate mortgage,Investment Risk - Inflation Risk,"The HOUSE. Real assets (like houses) typically rise with inflation, while your fixed mortgage payment stays the same. Bonds and CDs pay fixed amounts that buy less when prices rise. You win when your asset grows but your debt doesn't.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+57,Risk Literacy (30),27,Which type of risk can be reduced through diversification?,"Which type of risk can you reduce by spreading your investments: the risk from ONE company's problems, or the risk from the WHOLE market crashing?","A) Market risk (systematic risk)
+B) Company-specific risk (unsystematic risk)
+C) Both types of risk equally
+D) Neither type of risk
+E) Do not know",B) Company-specific risk (unsystematic risk),Investment Risk - Risk Types,"Company-specific risk. If one company has problems, owning many stocks protects you. But market-wide events (recessions, wars) affect everything - you can't diversify away from those. That's why even diversified portfolios drop in crashes.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+58,Risk Literacy (30),28,True or false: Stocks are generally riskier than bonds.,Are stocks generally RISKIER than bonds?,"A) True
+B) False
+C) Do not know",A) True,Investment Risk - Asset Class Risk,"TRUE. Stocks = ownership, prices swing widely. Bonds = loans, more stable payments. Stocks offer higher long-term returns but with more ups and downs. Young investors often hold more stocks; retirees shift to bonds.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+59,Risk Literacy (30),29,"A disease affects 1 in 1,000 people. A test for the disease is 99% accurate (it correctly identifies 99% of people who have the disease and 99% of people who don't have it). If a person tests positive, what is the approximate probability they actually have the disease?","A rare disease affects 1 in 1,000 people. A test is 99% accurate. If you TEST POSITIVE, what's the chance you're actually sick?","A) About 99%
+B) About 50%
+C) About 10%
+D) About 1%
+E) Do not know",C) About 10%,Statistical Numeracy - Base Rate/Bayes,"Only about 10%! Out of 1,000 people: 1 is sick (tests positive), 999 aren't (but ~10 falsely test positive). So ~11 positives total, only 1 truly sick = ~9%. Rare diseases produce many false positives. That's why doctors order follow-up tests.",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+60,Risk Literacy (30),30,What is the approximate probability that at least one member of a 65-year-old couple today will live to age 90 or beyond?,"For a couple who are both 65 years old, what's the chance that AT LEAST ONE of them will live to 90?","A) Less than 25%
+B) About 25-40%
+C) About 50-60%
+D) More than 60%
+E) Do not know",C) About 50-60%,Longevity Risk - Retirement Planning,"About 50-60%! People underestimate how long they'll live. For a couple, you only need ONE to reach 90. Even if each has a 40% individual chance, the combined probability is much higher. Plan for 25-30+ years of retirement!",Risk_Literacy_Questions_30_Simplified.xlsx,Risk numeracy / risk literacy item bank.
+61,Behavioral Financial Literacy (docx),26,"You receive a $10,000 bonus. What would you most likely do with it?",,"A) Put it in a high-interest savings account for safety
+B) Invest it in mutual funds or ETFs for steady growth
+C) Buy individual stocks with potential for high return
+D) Spend most of it and save the rest later",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+62,Behavioral Financial Literacy (docx),27,Your retirement account drops 20% due to a market downturn. How do you react?,,"A) Sell everything ,I can’t risk losing more
+B) Do nothing ,markets recover over time
+C) Invest more ,buy while prices are low
+D) Move funds to safer options like bonds or cash",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+63,Behavioral Financial Literacy (docx),28,You’re choosing between two job offers. Which do you take?,,"A) A stable job with predictable pay and benefits
+B) A job with performance-based pay and higher upside
+C) Depends on what others in my network recommend
+D) Whichever feels right in the moment",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+64,Behavioral Financial Literacy (docx),29,What does “risk” mean to you when it comes to financial decisions?,,"A) The chance I could lose money
+B) The opportunity to earn a higher return
+C) Something unpredictable that needs to be managed
+D) I’m not sure",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+65,Behavioral Financial Literacy (docx),30,"You’re offered a 50/50 chance to either win $1,000 or lose $500. What do you choose?",,"A) Take the risk , the reward is worth it
+B) Decline , I don’t like the idea of losing money
+C) Only accept if I have money to spare
+D) Ask others what they would do",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+66,Behavioral Financial Literacy (docx),31,Which scenario worries you more?,,"A) Losing $5,000 on an investment
+B) Missing out on a $5,000 gain
+C) Both equally
+D) Neither really worries me",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+67,Behavioral Financial Literacy (docx),32,You hear that everyone is investing in a new crypto asset. What do you do?,,"A) Invest quickly, don’t miss out
+B) Put in a small amount just in case
+C) Research carefully before acting
+D) Stay out, I avoid hype",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+68,Behavioral Financial Literacy (docx),33,"When planning for retirement, how do you factor in risk?",,"A) I ignore it, retirement is far away
+B) I aim for high growth regardless
+C) I diversify and rebalance regularly
+D) I rely on my advisor to guide me",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+69,Behavioral Financial Literacy (docx),34,"You lose $1,000 in an investment. What’s your emotional reaction?",,"A) Angry and anxious
+B) Concerned but calm
+C) Indifferent
+D) Curious to understand why",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+70,Behavioral Financial Literacy (docx),35,What motivates your financial decisions most?,,"A) Fear of loss
+B) Desire for growth
+C) Long-term security
+D) Pressure from others",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+71,Behavioral Financial Literacy (docx),36,"When faced with a complex financial decision, how do you typically proceed?",,"A) Do extensive research and consider all outcomes
+B) Go with your intuition or gut feeling
+C) Rely on advice from friends or family
+D) Delay the decision until you feel more confident",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+72,Behavioral Financial Literacy (docx),37,How confident are you in recognizing when an investment is too risky for your situation?,,"A) Very confident , I understand my risk limits
+B) Somewhat confident , I can tell when it’s extreme
+C) Not very confident , I often second-guess
+D) I usually rely on others to decide for me",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+73,Behavioral Financial Literacy (docx),38,What best describes your attitude toward risk?,,"A) I avoid risk as much as possible
+B) I’m okay with small risks for modest gains
+C) I take calculated risks for higher rewards
+D) I actively seek out high-risk, high-reward opportunities",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+74,Behavioral Financial Literacy (docx),39,"You are given two investment choices: one guarantees a 4% return, the other has a 50/50 chance of either 0% or 8%. What do you choose?",,"A) The 4% guaranteed return
+B) The 50/50 option
+C) I’m indifferent
+D) I’d split my investment between the two",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+75,Behavioral Financial Literacy (docx),40,"If your long-term investment underperforms for a year, what would you most likely do?",,"A) Sell and look for a better option
+B) Reduce investment but stay in
+C) Stay the course
+D) Invest more to lower the average cost",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+76,Behavioral Financial Literacy (docx),41,How do you define a “successful” investment?,,"A) One that doesn’t lose money
+B) One that beats inflation
+C) One that aligns with my financial goals
+D) One that produces the highest return, regardless of risk",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+77,Behavioral Financial Literacy (docx),42,"When making financial decisions, how often do you consider the potential downside risk?",,"A) Never
+B) Rarely
+C) Sometimes
+D) Always",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+78,Behavioral Financial Literacy (docx),43,Imagine you’re offered two jobs. Job A pays more but has uncertain income and less security. Job B pays less but is stable. Which do you choose?,,"A) Definitely Job A
+B) Probably Job A
+C) Probably Job B
+D) Definitely Job B",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+79,Behavioral Financial Literacy (docx),44,"If an investment opportunity promises unusually high returns with little explanation of how, what do you do?",,"A) Invest a small amount just to test it
+B) Ask for more details and do research
+C) Avoid it ,it seems too good to be true
+D) Immediately take advantage before it’s gone",,Behavioral Financial Literacy,,Behavioral Financial Literacy questions.docx,Behavioral question set provided in DOCX (Professor Abol paper/compilation).
+80,Additional Item (Crisis),1,What was a key factor contributing to the 2007 to 2008 financial crisis?,,"A) Strong regulation of mortgage lending
+B) Widespread failure to properly assess and manage financial risk
+C) High household savings rates
+D) Low levels of borrowing by households",B) Widespread failure to properly assess and manage financial risk,Crisis/Systemic Risk,,Provided by user (crisis question screenshot),Extra crisis question to include alongside item banks.

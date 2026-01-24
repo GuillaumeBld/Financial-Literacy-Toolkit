@@ -2,24 +2,39 @@
   "name": "financial-literacy-toolkit",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "packageManager": "pnpm@8.15.8",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "cd apps/web && npm run lint",
+    "type-check": "cd apps/web && npm run type-check",
+    "check": "cd apps/web && npm run check",
+    "prepare": "husky install"
   },
-  "dependencies": {
-    "next": "14.2.3",
-    "next-auth": "4.24.6",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+  "engines": {
+    "node": ">=18.0.0"
   },
   "devDependencies": {
-    "@types/node": "20.11.30",
-    "@types/react": "18.2.66",
-    "@types/react-dom": "18.2.21",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.3",
+    "csv-parse": "^6.1.0",
+    "husky": "^9.0.11",
     "typescript": "5.4.5"
+  },
+  "pnpm": {
+    "packageExtensions": {
+      "next@*": {
+        "dependencies": {
+          "@swc/helpers": "0.5.2"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "pg": "^8.16.3"
   }
 }

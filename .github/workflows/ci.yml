@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  type-check-and-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: apps/web
+        run: npm ci --legacy-peer-deps
+      
+      - name: TypeScript type check
+        working-directory: apps/web
+        run: npx tsc --noEmit
+      
+      - name: ESLint check
+        working-directory: apps/web
+        run: npm run lint
+      
+      - name: Build check
+        working-directory: apps/web
+        run: npm run build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          NEXT_TELEMETRY_DISABLED: 1
+
