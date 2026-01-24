@@ -66,10 +66,6 @@ function OnboardingContent() {
         setError('Please rate your financial knowledge (B7)');
         return;
       }
-      if (!courseRequirementAcknowledged) {
-        setError('Please confirm the course requirement to continue');
-        return;
-      }
       if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
         setError('Please select an interest rate option for your student loan debt (B12)');
         return;
@@ -101,10 +97,6 @@ function OnboardingContent() {
     // Validate financial background (B6-B8) - only B6/B7 required
     if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge) {
       setError('Please complete the required financial background fields (B6-B7)');
-      return;
-    }
-    if (!courseRequirementAcknowledged) {
-      setError('Please confirm the course requirement to continue');
       return;
     }
     if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
@@ -788,49 +780,6 @@ function OnboardingContent() {
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-gray-200"></div>
-                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">C) Data use confirmation</div>
-                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Completion is required for course credit. Your answers are used for instructional improvement. If
-                    you consented to research use, a de-identified version of your responses will also be used for
-                    research analysis. Declining research consent does not affect your grade.
-                  </p>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={courseRequirementAcknowledged}
-                      onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
-                      className="h-4 w-4 mt-0.5 text-loyola-maroon accent-loyola-maroon border-gray-300 rounded focus:ring-loyola-maroon"
-                    />
-                    <span className="text-sm text-gray-700">
-                      I understand this assessment is required for the course. <span className="text-red-500">*</span>
-                    </span>
-                  </label>
-
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">My research participation choice is:</p>
-                    <div className="flex gap-2">
-                      {[
-                        { value: true, label: 'Yes, I consent' },
-                        { value: false, label: 'No, I do not consent' },
-                      ].map((option) => (
-                        <button
-                          key={String(option.value)}
-                          type="button"
-                          onClick={() => setResearchConsent(option.value)}
-                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
-                            researchConsent === option.value
-                              ? 'border-loyola-maroon bg-loyola-maroon text-white'
-                              : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
-                          }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {error && (
