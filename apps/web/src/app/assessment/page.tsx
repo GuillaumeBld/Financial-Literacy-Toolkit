@@ -35,7 +35,12 @@ const OPEN_ENDED_CAP = 3;      // Maximum open-ended items
 const TF_ANCHORS = new Set(['Q2', 'Q3', 'Q11', 'Q30', 'Q35', 'Q36', 'Q39']);
 
 // Domain order for tiebreaking (from source of truth Section 8.1)
-const DOMAIN_ORDER = ['Borrowing & Credit', 'Risk Management', 'Investment & Risk'];
+// Domain order matching database values (from source of truth Section 8.1)
+const DOMAIN_ORDER = [
+  'Borrowing, Interest Rates, and Financial Numeracy Knowledge',
+  'Behavioral and Risk Management Knowledge',
+  'Risk and Return Knowledge'
+];
 
 // Response types
 type ResponseType = 'correct' | 'incorrect' | 'do_not_know';

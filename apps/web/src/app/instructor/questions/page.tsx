@@ -90,11 +90,11 @@ const VARIANT_CONFIG: Record<string, { label: string; color: string; bgColor: st
   },
 };
 
-// Domain colors
+// Domain colors (matching database values)
 const DOMAIN_COLORS: Record<string, string> = {
-  'Borrowing & Credit': 'border-l-blue-500',
-  'Risk Management': 'border-l-amber-500',
-  'Investment & Risk': 'border-l-green-500',
+  'Borrowing, Interest Rates, and Financial Numeracy Knowledge': 'border-l-blue-500',
+  'Behavioral and Risk Management Knowledge': 'border-l-amber-500',
+  'Risk and Return Knowledge': 'border-l-green-500',
 };
 
 export default function InstructorQuestionsPage() {
