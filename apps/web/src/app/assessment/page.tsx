@@ -1033,68 +1033,105 @@ export default function AssessmentPage() {
     }
   };
 
-  // Honor code acknowledgment modal
+  // Combined intro screen: Honor code + Instructions
   if (!hasAcknowledgedHonorCode && sessionData && questions.length > 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg border-2 border-loyola-gray-200 max-w-2xl w-full p-8">
-          <div className="text-center mb-6">
-            <Shield className="w-16 h-16 text-loyola-maroon mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-loyola-gray-900 mb-2">Academic Integrity Agreement</h2>
-            <p className="text-loyola-gray-600">To assess your financial knowledge, you must answer these questions without assistance.</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+          <div className="container mx-auto px-4 py-4">
+            <h1 className="text-xl font-bold text-loyola-maroon">Financial Literacy Assessment</h1>
           </div>
+        </header>
 
-          <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-6 mb-6">
-            <div className="space-y-4 text-sm text-loyola-gray-700">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold mb-2">Independent Work Required</p>
-                  <p>You must complete this assessment independently, without assistance from:</p>
-                  <ul className="list-disc list-inside mt-2 ml-2 space-y-1">
-                    <li>External websites (Google, ChatGPT, Wikipedia, etc.)</li>
-                    <li>Other people (classmates, tutors, family members)</li>
-                    <li>AI tools or chatbots</li>
-                    <li>Study materials, notes, or textbooks</li>
-                    <li>Communication tools (messaging, phone calls, etc.)</li>
-                  </ul>
+        <main className="container mx-auto px-4 py-8 max-w-3xl">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-loyola-maroon/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-10 h-10 text-loyola-maroon" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Ready to Begin?</h2>
+              <p className="text-gray-600 text-lg">
+                Please review the instructions and academic integrity agreement before starting.
+              </p>
+            </div>
+
+            {/* Instructions */}
+            <div className="bg-gray-50 rounded-xl p-6 mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Instructions:</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>You will have <strong>90 minutes</strong> to complete the assessment</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>There are <strong>50 questions</strong> in total (40 core + 10 follow-up)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>For each question, select your answer and rate your confidence</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>Your responses are anonymous and securely stored</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Academic Integrity */}
+            <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-xl p-6 mb-8">
+              <div className="space-y-4 text-sm text-gray-700">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold mb-2">Academic Integrity - Independent Work Required</p>
+                    <p>You must complete this assessment independently, without assistance from:</p>
+                    <ul className="list-disc list-inside mt-2 ml-2 space-y-1">
+                      <li>External websites (Google, ChatGPT, Wikipedia, etc.)</li>
+                      <li>Other people (classmates, tutors, family members)</li>
+                      <li>AI tools or chatbots</li>
+                      <li>Study materials, notes, or textbooks</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="border-t border-loyola-gray-200 pt-4">
-                <p className="font-semibold mb-2">Time requirement:</p>
-                <p>Normally, it should take you 90 minutes to complete this assessment. The timer starts when you begin.</p>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => {
+                  localStorage.removeItem('assessment-session');
+                  router.push('/start');
+                }}
+                className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setHasAcknowledgedHonorCode(true);
+                  setHasStarted(true);
+                  // Try to enter fullscreen after starting
+                  if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {
+                      // User declined or browser doesn't support - continue anyway
+                    });
+                  }
+                }}
+                className="flex-1 bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-4 px-8 rounded-xl transition-all text-lg shadow-lg shadow-loyola-maroon/20 hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <Shield className="w-5 h-5" />
+                I Agree - Start Assessment
+              </button>
             </div>
           </div>
+        </main>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => {
-                localStorage.removeItem('assessment-session');
-                router.push('/start');
-              }}
-              className="flex-1 border-2 border-loyola-gray-300 text-loyola-gray-700 hover:bg-loyola-gray-50 font-medium py-3 px-6 rounded-lg transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setHasAcknowledgedHonorCode(true);
-                // Try to enter fullscreen (will fail if user doesn't allow, but that's OK)
-                if (document.documentElement.requestFullscreen) {
-                  document.documentElement.requestFullscreen().catch(() => {
-                    // User declined or browser doesn't support - continue anyway
-                  });
-                }
-              }}
-              className="flex-1 bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
-            >
-              <Shield className="w-5 h-5" />
-              I Acknowledge and Agree - Start Assessment
-            </button>
+        <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
+          <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+            <p>&copy; 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
           </div>
-        </div>
+        </footer>
       </div>
     );
   }
@@ -1140,66 +1177,6 @@ export default function AssessmentPage() {
     );
   }
 
-  // Show start screen before assessment begins
-  if (!hasStarted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
-          <div className="container mx-auto px-4 py-4">
-            <h1 className="text-xl font-bold text-loyola-maroon">Financial Literacy Assessment</h1>
-          </div>
-        </header>
-
-        <main className="container mx-auto px-4 py-12 max-w-2xl">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
-            <div className="w-20 h-20 bg-loyola-maroon/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Shield className="w-10 h-10 text-loyola-maroon" />
-            </div>
-
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Begin?</h2>
-            <p className="text-gray-600 text-lg mb-8">
-              You are about to start your Financial Literacy Assessment. Please read the instructions below before proceeding.
-            </p>
-
-            <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
-              <h3 className="font-semibold text-gray-900 mb-4">Instructions:</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>You will have <strong>90 minutes</strong> to complete the assessment</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>There are <strong>50 questions</strong> in total</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>For each question, select your answer and rate your confidence</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>Your responses are anonymous and securely stored</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              onClick={() => setHasStarted(true)}
-              className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-4 px-8 rounded-xl transition-all text-lg shadow-lg shadow-loyola-maroon/20 hover:shadow-xl"
-            >
-              Start the Assessment
-            </button>
-          </div>
-        </main>
-
-        <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
-          <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-            <p>&copy; 2025 by Dr. Abol Jalilvand and Guillaume Bolivard. All rights reserved.</p>
-          </div>
-        </footer>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
