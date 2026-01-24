@@ -8,6 +8,31 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ---
 
+## 2026-01-24
+
+### FEAT: Instructor question bank redesign with anchor-variant grouped view
+
+**Context**: User requested better visualization of anchor questions and their SDM variants in the instructor portal.
+
+**Changes**:
+- Redesigned question bank with accordion-style anchor list (Q1-Q40)
+- Each anchor expands to show all its SDM variants in a grid layout
+- Color-coded variant type cards:
+  - Lower_TF (blue): Basic recognition
+  - Lower_MCQ (indigo): Foundation check
+  - Same_MCQ (green): Parallel difficulty
+  - Higher_MCQ (amber): Transfer/application
+  - Open_Confirm (purple): Verify reasoning
+  - Open_Diagnose (red): Identify misconception
+- Click variant card opens detailed modal with question, options, correct answer
+- Domain filtering and search functionality
+- Legend explaining SDM-10 variant types
+- Separate collapsible section for preference items (Q15-Q28)
+
+**Files Affected**: `apps/web/src/app/instructor/questions/page.tsx`
+
+---
+
 ## 2026-01-23
 
 ### FEAT: SDM-10 anchor ID mapping fix

@@ -227,6 +227,231 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => b.improvement - a.improvement);
 
+    // ============================================
+    // BASELINE COVARIATES (B1-B13) AGGREGATION
+    // ============================================
+    const profilesQuery = `
+      SELECT
+        gender,
+        race_ethnicity,
+        age_range,
+        first_language,
+        work_experience,
+        prior_financial_products,
+        self_rated_financial_knowledge,
+        financial_stress_frequency,
+        parental_education,
+        first_generation_college,
+        has_student_loan_debt,
+        student_loan_interest_rate,
+        student_loan_maturity
+      FROM student_profiles
+      WHERE course_id = ANY($1::uuid[])
+    `;
+
+    const profiles = await queryMany<{
+      gender: string | null;
+      race_ethnicity: string | null;
+      age_range: string | null;
+      first_language: string | null;
+      work_experience: string | null;
+      prior_financial_products: string[] | null;
+      self_rated_financial_knowledge: string | null;
+      financial_stress_frequency: string | null;
+      parental_education: string | null;
+      first_generation_college: string | null;
+      has_student_loan_debt: string | null;
+      student_loan_interest_rate: string | null;
+      student_loan_maturity: string | null;
+    }>(profilesQuery, [filterCourseIds]);
+
+    // Helper to count distribution
+    const countDistribution = (values: (string | null)[]): Record<string, number> => {
+      const counts: Record<string, number> = {};
+      values.forEach(v => {
+        const key = v || 'Not specified';
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return counts;
+    };
+
+    // Helper to convert counts to percentage distribution
+    const toPercentageDistribution = (counts: Record<string, number>, total: number) => {
+      return Object.entries(counts).map(([label, count]) => ({
+        label,
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0
+      })).sort((a, b) => b.count - a.count);
+    };
+
+    const totalProfiles = profiles.length;
+
+    // B1: Gender distribution
+    const genderDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.gender)),
+      totalProfiles
+    );
+
+    // B2: Race/Ethnicity distribution
+    const ethnicityDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.race_ethnicity)),
+      totalProfiles
+    );
+
+    // B3: Age range distribution
+    const ageDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.age_range)),
+      totalProfiles
+    );
+
+    // B4: First language distribution
+    const languageDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.first_language)),
+      totalProfiles
+    );
+
+    // B5: Work experience distribution
+    const workExpDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.work_experience)),
+      totalProfiles
+    );
+
+    // B6: Prior financial products (multi-select, count each product)
+    const productCounts: Record<string, number> = {};
+    profiles.forEach(p => {
+      const products = p.prior_financial_products || [];
+      products.forEach(prod => {
+        productCounts[prod] = (productCounts[prod] || 0) + 1;
+      });
+    });
+    const financialProductsDist = toPercentageDistribution(productCounts, totalProfiles);
+
+    // B7: Self-rated financial knowledge distribution
+    const knowledgeDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.self_rated_financial_knowledge)),
+      totalProfiles
+    );
+
+    // B8: Financial stress frequency distribution
+    const stressDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.financial_stress_frequency)),
+      totalProfiles
+    );
+
+    // B9: Parental education distribution
+    const parentalEdDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.parental_education)),
+      totalProfiles
+    );
+
+    // B10: First generation college distribution
+    const firstGenDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.first_generation_college)),
+      totalProfiles
+    );
+
+    // B11: Student loan debt distribution
+    const loanDebtDist = toPercentageDistribution(
+      countDistribution(profiles.map(p => p.has_student_loan_debt)),
+      totalProfiles
+    );
+
+    // B12: Student loan interest rate (only for those with loans)
+    const withLoans = profiles.filter(p => p.has_student_loan_debt === 'yes');
+    const loanInterestDist = toPercentageDistribution(
+      countDistribution(withLoans.map(p => p.student_loan_interest_rate)),
+      withLoans.length
+    );
+
+    // B13: Student loan maturity (only for those with loans)
+    const loanMaturityDist = toPercentageDistribution(
+      countDistribution(withLoans.map(p => p.student_loan_maturity)),
+      withLoans.length
+    );
+
+    const baselineCovariates = {
+      totalProfiles,
+      demographics: {
+        gender: genderDist,
+        raceEthnicity: ethnicityDist,
+        ageRange: ageDist,
+        firstLanguage: languageDist,
+        workExperience: workExpDist
+      },
+      financialBackground: {
+        priorFinancialProducts: financialProductsDist,
+        selfRatedKnowledge: knowledgeDist,
+        financialStress: stressDist,
+        parentalEducation: parentalEdDist,
+        firstGenerationCollege: firstGenDist
+      },
+      studentLoans: {
+        hasDebt: loanDebtDist,
+        interestRate: loanInterestDist,
+        maturity: loanMaturityDist,
+        totalWithLoans: withLoans.length
+      }
+    };
+
+    // ============================================
+    // RISK PROFILES
+    // ============================================
+
+    // Calculate overconfidence from scores
+    const overconfidenceData = completedAttempts
+      .filter(a => a.overconfidence_index !== null)
+      .map(a => a.overconfidence_index as number);
+
+    const avgOverconfidence = overconfidenceData.length > 0
+      ? overconfidenceData.reduce((sum, v) => sum + v, 0) / overconfidenceData.length
+      : null;
+
+    // Categorize overconfidence levels
+    const overconfidenceLevels = {
+      low: overconfidenceData.filter(v => v < 0.1).length,
+      moderate: overconfidenceData.filter(v => v >= 0.1 && v < 0.3).length,
+      high: overconfidenceData.filter(v => v >= 0.3).length
+    };
+
+    // Financial stress risk (Often/Always = high risk)
+    const highStressCount = profiles.filter(p =>
+      p.financial_stress_frequency === 'often' || p.financial_stress_frequency === 'always'
+    ).length;
+
+    // Low knowledge + high stress = at-risk students
+    const lowKnowledgeHighStress = profiles.filter(p =>
+      (p.self_rated_financial_knowledge === 'very-low' || p.self_rated_financial_knowledge === 'low') &&
+      (p.financial_stress_frequency === 'often' || p.financial_stress_frequency === 'always')
+    ).length;
+
+    // First-gen with loans = potential risk
+    const firstGenWithLoans = profiles.filter(p =>
+      p.first_generation_college === 'yes' && p.has_student_loan_debt === 'yes'
+    ).length;
+
+    // High interest rate loans (above 10%)
+    const highInterestLoans = withLoans.filter(p =>
+      p.student_loan_interest_rate === 'above-10'
+    ).length;
+
+    const riskProfiles = {
+      overconfidence: {
+        average: avgOverconfidence !== null ? Math.round(avgOverconfidence * 100) : null,
+        distribution: overconfidenceLevels,
+        totalMeasured: overconfidenceData.length
+      },
+      financialStress: {
+        highStressCount,
+        highStressPercentage: totalProfiles > 0 ? Math.round((highStressCount / totalProfiles) * 100) : 0
+      },
+      atRiskIndicators: {
+        lowKnowledgeHighStress,
+        firstGenWithLoans,
+        highInterestLoans,
+        totalAtRisk: Math.max(lowKnowledgeHighStress, firstGenWithLoans, highInterestLoans)
+      }
+    };
+
     const analytics = {
       summary: {
         totalStudents: uniqueStudents,
@@ -238,7 +463,9 @@ export async function GET(request: NextRequest) {
       domainPerformance,
       scoreDistribution,
       timeAnalysis,
-      studentProgress
+      studentProgress,
+      baselineCovariates,
+      riskProfiles
     };
 
     console.log('Analytics calculated:', analytics);
