@@ -7,7 +7,8 @@ export async function POST(request: NextRequest) {
   console.log('=== CLEANUP API START ===');
   try {
     const body = await request.json();
-    const { studentId, courseCode } = body;
+    const { studentId, courseCode, resetOnly } = body;
+    // resetOnly: if true, only delete attempts/responses/scores (keep user, profile, enrollment)
 
     if (!studentId || !courseCode) {
       return NextResponse.json(
@@ -74,6 +75,17 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    // If resetOnly, stop here (keep user, profile, enrollment)
+    if (resetOnly) {
+      return { message: 'Assessment data reset successfully (user and profile preserved)', deletedUserId: userId, resetOnly: true };
+    }
+
+    console.log('Deleting student profile...');
+      await client.query(
+        'DELETE FROM student_profiles WHERE user_id = $1',
+        [userId]
+      );
+
     console.log('Deleting enrollments...');
       await client.query(
         'DELETE FROM enrollments WHERE user_id = $1',
@@ -86,13 +98,14 @@ export async function POST(request: NextRequest) {
         [userId]
       );
 
-      return { message: 'Student data cleaned up successfully', deletedUserId: userId };
+      return { message: 'Student data cleaned up successfully', deletedUserId: userId, resetOnly: false };
     });
 
     return NextResponse.json({
       success: true,
       message: result.message,
-      deletedUserId: result.deletedUserId
+      deletedUserId: result.deletedUserId,
+      resetOnly: result.resetOnly || false
     });
 
   } catch (error) {
