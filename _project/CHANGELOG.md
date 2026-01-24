@@ -10,6 +10,50 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ## 2026-01-24
 
+### CHORE: Close PR #2 - Authentication middleware (not needed)
+
+**Context**: PR #2 "Refine authentication fetch helpers and forbidden messaging" was open but incompatible with the project.
+
+**Reasons for closing:**
+- Project already has working authentication (FERPA-compliant hashed student keys, JWT for instructors)
+- PR files were at wrong location (root instead of `apps/web/`)
+- PR used NextAuth.js, different from existing custom JWT system
+- Critical middleware bug would break public routes
+- FERPA compliance risk from session storage
+
+**Files Affected**: PR closed with explanatory comment
+
+---
+
+### CHORE: Major repository cleanup - remove Supabase/Vercel artifacts
+
+**Context**: Repository contained outdated Supabase and Vercel files from before the migration to self-hosted PostgreSQL and Dokploy.
+
+**Deleted:**
+- Supabase client libraries (`apps/web/src/lib/supabase*.ts`)
+- Vercel configuration (`vercel.json`)
+- Migration scripts (completed migrations)
+- Test files for Supabase
+- Old `archive/` folder with Supabase setup docs
+- Old `migration/` folder
+- Old `export/` folder
+- Old `questions/` folder (superseded by `_project/source_of_truth/`)
+- 21 placeholder docs with minimal content
+
+**Archived to docs/archive/:**
+- Completed status docs
+- Resolved troubleshooting docs
+- Old deployment status docs
+
+**Repository structure now:**
+- `apps/web/` - Main Next.js application
+- `_project/` - Project control center + source of truth
+- `docs/` - Active documentation only
+- `scripts/` - Active utility scripts + SDM tests
+- `infra/` - Database migrations and SQL
+
+---
+
 ### FEAT: Instructor question bank redesign with anchor-variant grouped view
 
 **Context**: User requested better visualization of anchor questions and their SDM variants in the instructor portal.
