@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryMany } from '@/lib/db';
+import { cache, TTL } from '@/lib/cache';
 
 // Mark as dynamic to prevent build-time execution
 export const dynamic = 'force-dynamic';
@@ -9,10 +10,31 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const kind = (searchParams.get('kind') || 'all').toLowerCase();
 
-    const columns = await queryMany<{ column_name: string }>(
-      "SELECT column_name FROM information_schema.columns WHERE table_name = 'items'"
-    );
-    const columnSet = new Set(columns.map((c) => c.column_name));
+    // Check cache first - items don't change during assessment
+    const cacheKey = `items:${kind}`;
+    const cached = await cache.get<{ items: any[]; count: number }>(cacheKey);
+    if (cached) {
+      return NextResponse.json({
+        success: true,
+        ...cached,
+        cached: true
+      });
+    }
+
+    // Cache schema columns (rarely changes)
+    const schemaKey = 'schema:items:columns';
+    let columnSet: Set<string>;
+    const cachedSchema = await cache.get<string[]>(schemaKey);
+    if (cachedSchema) {
+      columnSet = new Set(cachedSchema);
+    } else {
+      const columns = await queryMany<{ column_name: string }>(
+        "SELECT column_name FROM information_schema.columns WHERE table_name = 'items'"
+      );
+      const columnNames = columns.map((c) => c.column_name);
+      columnSet = new Set(columnNames);
+      await cache.set(schemaKey, columnNames, TTL.INSTRUMENTS); // Cache schema for 1 hour
+    }
     const hasIsActive = columnSet.has('is_active');
     const hasIsSdm = columnSet.has('is_sdm');
     const hasIsScored = columnSet.has('is_scored');
@@ -82,10 +104,15 @@ export async function GET(request: NextRequest) {
        ORDER BY ${orderBy}`
     );
 
+    // Cache the result for future requests
+    const result = { items, count: items.length };
+    await cache.set(cacheKey, result, TTL.ITEMS);
+    console.log(`[Items API] Cached ${items.length} ${kind} items`);
+
     return NextResponse.json({
       success: true,
-      items,
-      count: items.length
+      ...result,
+      cached: false
     });
 
   } catch (error) {

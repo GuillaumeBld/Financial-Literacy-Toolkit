@@ -7,13 +7,23 @@ if (!databaseUrl) {
   console.warn('DATABASE_URL environment variable is not set. Database operations will fail.');
 }
 
-// Create connection pool
+// Create connection pool - connects through PgBouncer for 500+ user scaling
+// PgBouncer handles most pooling, so we keep app-side pool modest
 const pool = new Pool({
   connectionString: databaseUrl,
-  // Connection pool settings
-  max: 50, // Maximum number of clients in the pool (increased for 500 concurrent users)
+  // Connection pool settings (reduced since PgBouncer handles pooling)
+  max: 25, // PgBouncer handles 600 client connections
+  min: 2, // Keep minimum connections warm
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 5000, // Increased timeout to 5s for load spikes
+  connectionTimeoutMillis: 10000, // 10s timeout for connection acquisition
+  // Query timeout - prevents slow queries from blocking the pool
+  statement_timeout: 30000, // 30 second query timeout
+  query_timeout: 30000,
+});
+
+// Set statement timeout on each new connection
+pool.on('connect', (client) => {
+  client.query('SET statement_timeout = 30000');
 });
 
 // Handle pool errors
@@ -460,6 +470,21 @@ export default {
   transaction,
   closePool,
 };
+
+// Graceful shutdown - properly close database connections
+async function shutdown() {
+  console.log('Shutting down database connections gracefully...');
+  try {
+    await pool.end();
+    console.log('Database pool closed');
+  } catch (err) {
+    console.error('Error closing database pool:', err);
+  }
+  process.exit(0);
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 
 

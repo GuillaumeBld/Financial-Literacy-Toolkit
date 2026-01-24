@@ -36,14 +36,14 @@ app:
   healthcheck:
     path: /api/healthz
     interval: 30s
-    timeout: 3s
+    timeout: 5s
     retries: 3
-    start_period: 30s
-  
-  # Resource limits
+    start_period: 40s
+
+  # Resource limits - scaled for 500 concurrent users
   resources:
-    memory: 512M
-    cpu: 0.5
+    memory: 2G       # Up from 512M for 500 user scaling
+    cpu: 0.8         # Up from 0.5
   
   # Restart policy - automatic restart on failure
   restart: unless-stopped
@@ -58,6 +58,8 @@ app:
 env:
   - name: NODE_ENV
     value: production
+  - name: NODE_OPTIONS
+    value: "--max-old-space-size=2048"  # 2GB heap for 500 user scaling
   - name: DATABASE_URL
     value: ${DATABASE_URL}
     secret: true
@@ -71,6 +73,8 @@ env:
     value: ${POSTGRES_DB}
   - name: PORT
     value: "3000"
+  - name: REDIS_URL
+    value: "redis://finlit-redis:6379"  # Optional L2 cache
 
 # Git configuration (set in Dokploy UI)
 git:
@@ -105,18 +109,18 @@ networks:
   # Connect to PostgreSQL network if using docker-compose
   # - postgres_network
 
-# Deployment strategy
+# Deployment strategy - scaled for 500 concurrent users
 deployment:
   # Strategy: rolling, recreate, or blue-green
   strategy: rolling
-  
-  # Number of replicas
-  replicas: 1
-  
+
+  # Number of replicas - 2 for load balancing and redundancy
+  replicas: 2
+
   # Update configuration
   update:
     parallelism: 1
-    delay: 10s
+    delay: 15s
 
 # Logging configuration
 logging:

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, queryMany, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
+import { submissionBreaker } from '@/lib/circuit-breaker';
 
 export async function POST(request: NextRequest) {
   console.log('=== API SUBMISSION START ===');
@@ -40,8 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use transaction for all database operations
-    const result = await transaction(async (client) => {
+    // Use transaction for all database operations, wrapped with circuit breaker
+    const result = await submissionBreaker.execute(() => transaction(async (client) => {
     // Get course information (including pepper for hashing)
       // Look up course by name
       const courseData = await findCourseByName(
@@ -140,27 +141,24 @@ export async function POST(request: NextRequest) {
       const attemptId = attempt.rows[0].attempt_id;
       console.log('Attempt created:', attemptId);
 
-    console.log('Inserting responses...');
-    // Insert responses
-      for (const response of responses) {
-        // JSONB column requires valid JSON - wrap the answer in a JSON structure
-        // Simple strings like "D" are NOT valid JSON, but {"answer": "D"} is
-        // We store as an object to preserve any answer type (string, number, array, etc.)
-        const rawAnswer = JSON.stringify({ answer: response.answer });
+    console.log('Inserting responses (batch)...');
+    // === BULK INSERT RESPONSES ===
+    // Prepare arrays for PostgreSQL UNNEST - reduces 40 queries to 1
+    const itemIds = responses.map((r: any) => r.itemId);
+    const rawAnswers = responses.map((r: any) => JSON.stringify({ answer: r.answer }));
+    const confidences = responses.map((r: any) => r.confidence || null);
 
-        await client.query(
-          'INSERT INTO responses (attempt_id, item_id, raw_answer, confidence) VALUES ($1, $2, $3, $4)',
-          [attemptId, response.itemId, rawAnswer, response.confidence || null]
-        );
-      }
+    // Single bulk insert instead of 40 individual inserts
+    await client.query(
+      `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence)
+       SELECT $1, unnest($2::uuid[]), unnest($3::jsonb[]), unnest($4::int[])`,
+      [attemptId, itemIds, rawAnswers, confidences]
+    );
+    console.log(`Bulk inserted ${responses.length} responses`);
 
-    console.log('Responses inserted successfully');
-
-      // Calculate basic scores
+      // === BATCH SCORING ===
     // Per source of truth: Only score knowledge items (Q1-Q14, Q29-Q40)
     // Preference items (Q15-Q28) have is_scored=false and should NOT be scored
-    let totalScore = 0;
-    let scoredItems = 0; // Track only items that were actually scored
 
     // Check if is_scored column exists (migration may not be applied yet)
     const columnCheck = await client.query(
@@ -168,57 +166,69 @@ export async function POST(request: NextRequest) {
     );
     const hasIsScoredColumn = columnCheck.rows && columnCheck.rows.length > 0;
 
+    // Fetch all items in single query instead of 40 individual queries
+    const itemQuery = hasIsScoredColumn
+      ? `SELECT item_id, key, type, is_scored FROM items WHERE item_id = ANY($1::uuid[])`
+      : `SELECT item_id, key, type, NULL::boolean as is_scored FROM items WHERE item_id = ANY($1::uuid[])`;
+
+    interface ItemRow {
+      item_id: string;
+      key: string | null;
+      type: string;
+      is_scored: boolean | null;
+    }
+
+    const itemsResult = await client.query(itemQuery, [responses.map((r: any) => r.itemId)]);
+    const itemsMap = new Map<string, ItemRow>(
+      (itemsResult.rows as ItemRow[]).map((i: ItemRow) => [i.item_id, i])
+    );
+    console.log(`Fetched ${itemsResult.rows.length} items for scoring`);
+
+    // Calculate scores in memory
+    const scoreUpdates: { itemId: string; score: number }[] = [];
+    let totalScore = 0;
+    let scoredItems = 0;
+
     for (const response of responses) {
-      // Get item details to check answer and scoring eligibility
-      // Use dynamic query based on whether is_scored column exists
-      const itemQuery = hasIsScoredColumn
-        ? 'SELECT key, type, is_scored, external_item_id FROM items WHERE item_id = $1'
-        : 'SELECT key, type, NULL::boolean as is_scored, NULL::text as external_item_id FROM items WHERE item_id = $1';
+      const item = itemsMap.get(response.itemId);
+      if (!item) continue;
 
-        const item = await client.query(itemQuery, [response.itemId]);
+      // Skip preference items (Q15-Q28) where is_scored = false
+      if (hasIsScoredColumn && item.is_scored === false) {
+        continue;
+      }
 
-        if (item.rows && item.rows.length > 0) {
-          const itemData = item.rows[0];
+      if (item.type === 'multiple_choice' && item.key) {
+        const score = response.answer === item.key ? 100 : 0;
+        scoreUpdates.push({ itemId: response.itemId, score });
+        totalScore += score;
+        scoredItems++;
+      } else if (item.type !== 'multiple_choice') {
+        // For short answers and other types, placeholder score
+        scoreUpdates.push({ itemId: response.itemId, score: 50 });
+        totalScore += 50;
+        scoredItems++;
+      }
+      // MC items without key: score remains null (pending AI/manual review)
+    }
 
-          // Skip scoring for preference items (Q15-Q28) where is_scored = false
-          // These are behavioral/attitude items used as covariates, not knowledge items
-          // If is_scored column doesn't exist, default to scoring all items (backward compatibility)
-          if (hasIsScoredColumn && itemData.is_scored === false) {
-            console.log(`Item ${response.itemId} is a preference item (is_scored=false) - skipping scoring`);
-            continue;
-          }
+    // Single bulk update for all scores instead of 40 individual updates
+    if (scoreUpdates.length > 0) {
+      const updateItemIds = scoreUpdates.map(s => s.itemId);
+      const updateScores = scoreUpdates.map(s => s.score);
 
-          if (itemData.type === 'multiple_choice') {
-            if (itemData.key) {
-              // Simple scoring for multiple choice with answer key
-              const isCorrect = response.answer === itemData.key;
-              const score = isCorrect ? 100 : 0;
-
-              // Update response with score
-              await client.query(
-                'UPDATE responses SET score = $1 WHERE attempt_id = $2 AND item_id = $3',
-                [score, attemptId, response.itemId]
-              );
-
-              totalScore += score;
-              scoredItems += 1; // Increment scored items count
-            } else {
-              // Multiple choice item without answer key - misconfigured, mark as pending
-              // Don't assign placeholder score to prevent inflated assessment scores
-              console.warn(`Multiple choice item ${response.itemId} missing answer key - marking as pending`);
-              // Score remains null, will be handled by AI scoring or manual review
-              // Don't increment scoredItems to exclude from average calculation
-            }
-          } else {
-            // For short answers and other types, mark as pending AI scoring
-            totalScore += 50; // Placeholder score
-            scoredItems += 1; // Increment scored items count
-          }
-        }
-        // If item not found, skip scoring (don't increment scoredItems)
+      await client.query(
+        `UPDATE responses r
+         SET score = u.score
+         FROM (SELECT unnest($1::uuid[]) as item_id, unnest($2::int[]) as score) u
+         WHERE r.attempt_id = $3 AND r.item_id = u.item_id`,
+        [updateItemIds, updateScores, attemptId]
+      );
+      console.log(`Bulk updated ${scoreUpdates.length} scores`);
     }
 
     const overallScore = scoredItems > 0 ? totalScore / scoredItems : 0;
+    console.log(`Scored ${scoredItems} items, overall: ${overallScore.toFixed(1)}%`);
 
     // Insert overall scores
       await client.query(
@@ -230,7 +240,7 @@ export async function POST(request: NextRequest) {
         attemptId,
         overallScore
       };
-    });
+    }));
 
     return NextResponse.json({
       success: true,
@@ -250,11 +260,19 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
-    
+
     if (errorMessage.includes('Invalid course code') || errorMessage.includes('No active')) {
       return NextResponse.json(
         { error: errorMessage },
         { status: 404 }
+      );
+    }
+
+    // Circuit breaker is open - service temporarily unavailable
+    if (errorMessage.includes('Service temporarily unavailable')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 503 }
       );
     }
 
