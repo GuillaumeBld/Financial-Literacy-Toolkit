@@ -146,8 +146,8 @@ function LoginForm() {
 
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-2 gap-8 items-stretch">
-            {/* Login Card */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 order-2 lg:order-2">
+            {/* Login Card - LEFT side */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 order-2 lg:order-1">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-loyola-maroon/10 rounded-xl flex items-center justify-center">
                   <LogIn className="w-5 h-5 text-loyola-maroon" />
@@ -259,8 +259,8 @@ function LoginForm() {
               </form>
             </div>
 
-            {/* Register Card */}
-            <div className="bg-gradient-to-br from-loyola-maroon to-loyola-maroon-dark rounded-2xl shadow-xl p-8 text-white order-1 lg:order-1 flex flex-col">
+            {/* Register Card - RIGHT side */}
+            <div className="bg-gradient-to-br from-loyola-maroon to-loyola-maroon-dark rounded-2xl shadow-xl p-8 text-white order-1 lg:order-2 flex flex-col">
               <div className="flex-1">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
                   <UserPlus className="w-7 h-7 text-white" />
