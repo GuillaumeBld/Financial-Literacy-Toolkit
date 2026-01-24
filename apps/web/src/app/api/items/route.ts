@@ -22,13 +22,8 @@ export async function GET(request: NextRequest) {
     const hasTriggerCondition = columnSet.has('trigger_condition');
     const hasSubdomain = columnSet.has('subdomain');
 
-    if (kind === 'sdm' && !hasIsSdm) {
-      return NextResponse.json({
-        success: true,
-        items: [],
-        count: 0,
-      });
-    }
+    // SDM items can be identified by is_sdm=true OR anchor_item_id IS NOT NULL
+    // (variant items have anchor_item_id pointing to their parent anchor)
 
     const where: string[] = [];
     if (hasIsActive) {
@@ -37,7 +32,13 @@ export async function GET(request: NextRequest) {
     if (kind === 'anchor') {
       where.push('is_anchor = true');
     } else if (kind === 'sdm') {
-      where.push('is_sdm = true');
+      // SDM items identified by is_sdm=true OR anchor_item_id IS NOT NULL (fallback)
+      if (hasIsSdm) {
+        where.push('is_sdm = true');
+      } else if (hasAnchorItemId) {
+        // Fallback: variant items have anchor_item_id pointing to parent anchor
+        where.push('anchor_item_id IS NOT NULL');
+      }
     }
 
     const selectIsSdm = hasIsSdm ? 'is_sdm' : 'NULL::boolean as is_sdm';
