@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     // Single bulk insert instead of 40 individual inserts
     await client.query(
       `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence)
-       SELECT $1, unnest($2::uuid[]), unnest($3::jsonb[]), unnest($4::int[])`,
+       SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[])`,
       [attemptId, itemIds, rawAnswers, confidences]
     );
     console.log(`Bulk inserted ${responses.length} responses`);
@@ -168,8 +168,8 @@ export async function POST(request: NextRequest) {
 
     // Fetch all items in single query instead of 40 individual queries
     const itemQuery = hasIsScoredColumn
-      ? `SELECT item_id, key, type, is_scored FROM items WHERE item_id = ANY($1::uuid[])`
-      : `SELECT item_id, key, type, NULL::boolean as is_scored FROM items WHERE item_id = ANY($1::uuid[])`;
+      ? `SELECT item_id, key, type, is_scored FROM items WHERE item_id = ANY($1::text[])`
+      : `SELECT item_id, key, type, NULL::boolean as is_scored FROM items WHERE item_id = ANY($1::text[])`;
 
     interface ItemRow {
       item_id: string;
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
       await client.query(
         `UPDATE responses r
          SET score = u.score
-         FROM (SELECT unnest($1::uuid[]) as item_id, unnest($2::int[]) as score) u
+         FROM (SELECT unnest($1::text[]) as item_id, unnest($2::int[]) as score) u
          WHERE r.attempt_id = $3 AND r.item_id = u.item_id`,
         [updateItemIds, updateScores, attemptId]
       );
