@@ -35,11 +35,7 @@ function OnboardingContent() {
   // Consent & acknowledgments
   const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
   const [researchConsent, setResearchConsent] = useState(true);
-  // Socioeconomic (optional)
-  const [householdIncome, setHouseholdIncome] = useState('');
-  const [financialAidRecipient, setFinancialAidRecipient] = useState('');
-  const [livingSituation, setLivingSituation] = useState('');
-  const [workStudy, setWorkStudy] = useState('');
+  // Socioeconomic context (B9-B13 are in this section)
 
   const totalSteps = 4;
 
@@ -154,12 +150,6 @@ function OnboardingContent() {
             has_student_loan_debt: hasStudentLoanDebt || null, // B11
             student_loan_interest_rate: hasStudentLoanDebt === 'yes' ? (studentLoanInterestRate || null) : null, // B12
             student_loan_maturity: hasStudentLoanDebt === 'yes' ? (studentLoanMaturity || null) : null, // B13
-          },
-          socioeconomic: {
-            household_income: householdIncome || null,
-            financial_aid_recipient: financialAidRecipient || null,
-            living_situation: livingSituation || null,
-            work_study: workStudy || null,
           },
         }),
       });
@@ -655,29 +645,7 @@ function OnboardingContent() {
                 </div>
 
                 <div className="pt-2 border-t border-gray-200"></div>
-                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">B) Socio-economic context (optional)</div>
-
-                {/* Household Income */}
-                <div>
-                  <label htmlFor="household-income" className="block text-sm font-medium text-gray-700 mb-2">
-                    Household income (annual)
-                  </label>
-                  <select
-                    id="household-income"
-                    value={householdIncome}
-                    onChange={(e) => setHouseholdIncome(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
-                  >
-                    <option value="">Select income range</option>
-                    <option value="below-25000">Below $25,000</option>
-                    <option value="25000-49999">$25,000–$49,999</option>
-                    <option value="50000-74999">$50,000–$74,999</option>
-                    <option value="75000-99999">$75,000–$99,999</option>
-                    <option value="100000-149999">$100,000–$149,999</option>
-                    <option value="150000-plus">$150,000+</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </select>
-                </div>
+                <div className="text-sm font-semibold text-gray-700 uppercase tracking-wide">B) Socio-economic context</div>
 
                 {/* B9: Highest Level of Parental Education */}
                 <div>
@@ -700,92 +668,6 @@ function OnboardingContent() {
                     <option value="dont-know">Don't know</option>
                     <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
-                </div>
-
-                {/* Financial Aid */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Financial aid recipient
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {[
-                      { value: 'yes', label: 'Yes' },
-                      { value: 'no', label: 'No' },
-                      { value: 'prefer-not-to-answer', label: 'Prefer not to answer' },
-                    ].map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
-                          financialAidRecipient === option.value
-                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="financial-aid"
-                          value={option.value}
-                          checked={financialAidRecipient === option.value}
-                          onChange={() => setFinancialAidRecipient(option.value)}
-                          className="sr-only"
-                        />
-                        <span>{option.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Living Situation */}
-                <div>
-                  <label htmlFor="living-situation" className="block text-sm font-medium text-gray-700 mb-2">
-                    Living situation
-                  </label>
-                  <select
-                    id="living-situation"
-                    value={livingSituation}
-                    onChange={(e) => setLivingSituation(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
-                  >
-                    <option value="">Select living situation</option>
-                    <option value="on-campus">On-campus housing</option>
-                    <option value="off-campus">Off-campus housing</option>
-                    <option value="with-family">With family</option>
-                    <option value="other">Other</option>
-                    <option value="prefer-not-to-answer">Prefer not to answer</option>
-                  </select>
-                </div>
-
-                {/* Work-Study */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Work-study participation
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {[
-                      { value: 'yes', label: 'Yes' },
-                      { value: 'no', label: 'No' },
-                      { value: 'prefer-not-to-answer', label: 'Prefer not to answer' },
-                    ].map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center px-4 py-2.5 border rounded-xl cursor-pointer transition-all ${
-                          workStudy === option.value
-                            ? 'border-loyola-maroon bg-loyola-maroon/5 text-loyola-maroon'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="work-study"
-                          value={option.value}
-                          checked={workStudy === option.value}
-                          onChange={() => setWorkStudy(option.value)}
-                          className="sr-only"
-                        />
-                        <span>{option.label}</span>
-                      </label>
-                    ))}
-                  </div>
                 </div>
 
                 {/* B10: First-Generation College Student */}
