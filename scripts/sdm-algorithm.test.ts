@@ -86,6 +86,24 @@ const isOpenEndedVariant = (variant: string): boolean => {
   return v.includes('open_diagnose') || v.includes('open_confirm');
 };
 
+// Normalize anchor ID by removing "#" suffix and standardizing format
+// SDM item bank uses "Q1#" for anchors, but we need to match with "Q1" or "1"
+const normalizeAnchorId = (id: string | null | undefined): string => {
+  if (!id) return '';
+  // Remove "#" suffix, spaces, and normalize to uppercase
+  let normalized = id.trim().toUpperCase().replace(/#$/, '');
+  // If it's just a number, prefix with "Q"
+  if (/^\d+$/.test(normalized)) {
+    normalized = `Q${normalized}`;
+  }
+  return normalized;
+};
+
+// Check if two anchor IDs match (handles "Q1#", "Q1", "1" as equivalent)
+const anchorIdsMatch = (id1: string | null | undefined, id2: string | null | undefined): boolean => {
+  return normalizeAnchorId(id1) === normalizeAnchorId(id2);
+};
+
 // ============================================================================
 // TEST FRAMEWORK
 // ============================================================================
@@ -221,6 +239,38 @@ assert(!isOpenEndedVariant('lower_mcq'), 'lower_mcq is NOT open-ended');
 assert(!isOpenEndedVariant('lower_tf'), 'lower_tf is NOT open-ended');
 assert(!isOpenEndedVariant('same_mcq'), 'same_mcq is NOT open-ended');
 assert(!isOpenEndedVariant('higher_mcq'), 'higher_mcq is NOT open-ended');
+
+// --------------------------------------------------------------------------
+// Test 5b: Anchor ID Normalization
+// --------------------------------------------------------------------------
+console.log('\nTEST 5b: Anchor ID Normalization');
+console.log('---------------------------------');
+
+assertEqual(normalizeAnchorId('Q1'), 'Q1', 'Q1 stays Q1');
+assertEqual(normalizeAnchorId('Q1#'), 'Q1', 'Q1# strips # suffix');
+assertEqual(normalizeAnchorId('q1'), 'Q1', 'q1 normalizes to Q1');
+assertEqual(normalizeAnchorId('q1#'), 'Q1', 'q1# normalizes to Q1');
+assertEqual(normalizeAnchorId('1'), 'Q1', '1 prefixes with Q');
+assertEqual(normalizeAnchorId('10'), 'Q10', '10 prefixes with Q');
+assertEqual(normalizeAnchorId('  Q5  '), 'Q5', 'Trims whitespace');
+assertEqual(normalizeAnchorId(null), '', 'null returns empty string');
+assertEqual(normalizeAnchorId(undefined), '', 'undefined returns empty string');
+
+// --------------------------------------------------------------------------
+// Test 5c: Anchor ID Matching
+// --------------------------------------------------------------------------
+console.log('\nTEST 5c: Anchor ID Matching');
+console.log('----------------------------');
+
+assert(anchorIdsMatch('Q1', 'Q1'), 'Q1 matches Q1');
+assert(anchorIdsMatch('Q1', 'Q1#'), 'Q1 matches Q1#');
+assert(anchorIdsMatch('Q1#', 'Q1'), 'Q1# matches Q1');
+assert(anchorIdsMatch('q1', 'Q1'), 'q1 matches Q1 (case insensitive)');
+assert(anchorIdsMatch('1', 'Q1'), '1 matches Q1');
+assert(anchorIdsMatch('Q10#', '10'), 'Q10# matches 10');
+assert(!anchorIdsMatch('Q1', 'Q2'), 'Q1 does not match Q2');
+assert(!anchorIdsMatch('Q1', 'Q10'), 'Q1 does not match Q10');
+assert(!anchorIdsMatch(null, 'Q1'), 'null does not match Q1');
 
 // --------------------------------------------------------------------------
 // Test 6: Full Response Pattern Coverage
