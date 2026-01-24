@@ -120,7 +120,7 @@ INSERT INTO student_profiles (
 curl -X POST http://localhost:3001/api/onboarding/submit \
   -H "Content-Type: application/json" \
   -d '{
-    "courseCode": "Financial Literacy",
+    "courseCode": "QUIN 102",
     "studentId": "TEST002",
     "demographic": {
       "age_range": "20-or-under",

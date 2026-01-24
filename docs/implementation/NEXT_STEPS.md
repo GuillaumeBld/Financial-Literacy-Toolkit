@@ -151,7 +151,7 @@ This document outlines the immediate next steps to complete the baseline covaria
 curl -X POST http://localhost:3001/api/onboarding/submit \
   -H "Content-Type: application/json" \
   -d '{
-    "courseCode": "Financial Literacy",
+    "courseCode": "QUIN 102",
     "studentId": "TEST001",
     "demographic": {
       "age_range": "above-20",

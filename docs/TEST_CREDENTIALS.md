@@ -61,7 +61,7 @@ Submit an assessment via the student API endpoint:
 curl -X POST http://localhost:3000/api/assessment/submit \
   -H "Content-Type: application/json" \
   -d '{
-    "courseCode": "Financial Literacy",
+    "courseCode": "QUIN 102",
     "studentId": "123456789",
     "attemptType": "pre",
     "responses": [...]

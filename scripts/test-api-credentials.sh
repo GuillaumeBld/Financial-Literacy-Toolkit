@@ -38,7 +38,7 @@ echo "👤 Testing Student Authentication..."
 STUDENT_TEST=$(curl -s -X POST "$API_URL/api/assessment/submit" \
   -H "Content-Type: application/json" \
   -d '{
-    "courseCode": "Financial Literacy",
+    "courseCode": "QUIN 102",
     "studentId": "123456789",
     "attemptType": "pre",
     "responses": []

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Use transaction for all database operations
     const result = await transaction(async (client) => {
     // Get course information (including pepper for hashing)
-      // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
+      // Look up course by name
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
         courseCode as string

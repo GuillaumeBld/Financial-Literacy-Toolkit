@@ -28,7 +28,7 @@ const TEST_CREDENTIALS = {
     department: 'Finance'
   },
   student: {
-    courseCode: 'Financial Literacy',
+    courseCode: 'QUIN 102',
     studentId: '123456789',
     // The hashed key will be computed using: SHA256(course_pepper + student_id)
   }

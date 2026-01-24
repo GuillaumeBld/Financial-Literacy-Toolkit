@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const result = await transaction(async (client) => {
     // Get course
-      // Supports both "QUIN 102" and "Financial Literacy" for backward compatibility
+      // Look up course by name
       const courseData = await findCourseByName(
         (sql: string, params: any[]) => client.query(sql, params),
         courseCode as string

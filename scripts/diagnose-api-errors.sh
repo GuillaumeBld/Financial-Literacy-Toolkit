@@ -59,7 +59,7 @@ echo "4️⃣ Testing course validation endpoint..."
 COURSE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$API_URL/api/courses/validate" \
   -H "Content-Type: application/json" \
   -d '{
-    "courseCode": "Financial Literacy"
+    "courseCode": "QUIN 102"
   }')
 
 HTTP_CODE=$(echo "$COURSE_RESPONSE" | tail -n 1)

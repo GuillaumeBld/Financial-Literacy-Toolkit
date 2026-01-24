@@ -29,7 +29,7 @@ echo ""
 
 # Test data
 TEST_DATA='{
-  "courseCode": "Financial Literacy",
+  "courseCode": "QUIN 102",
   "studentId": "TEST'$(date +%s)'",
   "demographic": {
     "age_range": "above-20",
