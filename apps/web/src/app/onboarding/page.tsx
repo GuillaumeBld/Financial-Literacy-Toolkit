@@ -562,7 +562,7 @@ function OnboardingContent() {
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Financial Background and Context</h2>
                 <p className="text-gray-600">
-                  Please complete the required financial background items. Socio-economic items are optional.
+                  Please complete the financial background and socio-economic context items.
                 </p>
               </div>
 
