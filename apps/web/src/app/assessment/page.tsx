@@ -179,12 +179,14 @@ const isOpenEndedVariant = (variant: string): boolean => {
 // Presentation order for SDM-10 (Source of Truth Section 11)
 // Open_Diagnose first (confident misconceptions need full attention)
 // Open_Confirm last (verification after reflection)
+// Presentation order: closed-format first, open-ended last (max 3 open-ended)
+// This groups open questions at the end for better respondent experience
 const VARIANT_PRESENTATION_ORDER: Record<string, number> = {
-  'open_diagnose': 0,
+  'lower_tf': 0,        // Foundation checks first
   'lower_mcq': 1,
-  'lower_tf': 2,
-  'same_mcq': 3,
-  'higher_mcq': 4,
+  'same_mcq': 2,        // Parallel difficulty
+  'higher_mcq': 3,      // Transfer/application
+  'open_diagnose': 4,   // Open-ended last (up to 3 total)
   'open_confirm': 5,
 };
 
@@ -888,8 +890,8 @@ export default function AssessmentPage() {
       }
     }
 
-    // ORDER FOR PRESENTATION (Source of Truth Section 11)
-    // Open_Diagnose first, then Lower_MCQ, Lower_TF, Same_MCQ, Higher_MCQ, Open_Confirm last
+    // ORDER FOR PRESENTATION
+    // Closed-format first (Lower_TF, Lower_MCQ, Same_MCQ, Higher_MCQ), open-ended last (max 3)
     const orderedItems = [...selectedItems].sort((a, b) => {
       const orderA = getVariantPresentationWeight(a.variantType);
       const orderB = getVariantPresentationWeight(b.variantType);
