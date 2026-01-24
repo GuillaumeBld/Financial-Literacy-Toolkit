@@ -34,7 +34,7 @@ function OnboardingContent() {
   const [studentLoanMaturity, setStudentLoanMaturity] = useState(''); // B13
   // Consent & acknowledgments
   const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
-  const [researchConsent, setResearchConsent] = useState(false);
+  const [researchConsent, setResearchConsent] = useState(true);
   // Socioeconomic (optional)
   const [householdIncome, setHouseholdIncome] = useState('');
   const [financialAidRecipient, setFinancialAidRecipient] = useState('');
