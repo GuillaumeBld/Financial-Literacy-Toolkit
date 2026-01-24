@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, AlertCircle, Lock, UserPlus, LogIn, BookOpen, ArrowRight, ChevronRight } from 'lucide-react';
+import { User, AlertCircle, UserPlus, LogIn, BookOpen, ArrowRight } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -18,7 +18,6 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [studentId, setStudentId] = useState('');
-  const [password, setPassword] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
@@ -59,7 +58,7 @@ function LoginForm() {
     e.preventDefault();
     setError('');
 
-    if (!studentId.trim() || !courseCode.trim() || !password.trim()) {
+    if (!studentId.trim() || !courseCode.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -73,7 +72,6 @@ function LoginForm() {
         body: JSON.stringify({
           courseCode: courseCode.trim(),
           studentId: studentId.trim(),
-          password: password.trim(),
         }),
       });
 
@@ -127,7 +125,7 @@ function LoginForm() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-4 flex justify-center items-center">
           <Link href="/" className="flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-loyola-maroon" />
             <span className="text-xl font-bold gradient-text">Financial Literacy Toolkit</span>
@@ -138,16 +136,10 @@ function LoginForm() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 lg:py-16">
         <div className="max-w-5xl mx-auto">
-          {/* Title */}
-          <div className="text-center mb-10">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Welcome Back</h1>
-            <p className="text-gray-600 text-lg">Sign in to continue your financial literacy journey</p>
-          </div>
-
           {/* Two Column Layout */}
           <div className="grid lg:grid-cols-2 gap-8 items-stretch">
-            {/* Login Card - LEFT side */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 order-2 lg:order-1">
+            {/* Login Card - RIGHT side */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 order-2 lg:order-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-loyola-maroon/10 rounded-xl flex items-center justify-center">
                   <LogIn className="w-5 h-5 text-loyola-maroon" />
@@ -214,31 +206,6 @@ function LoginForm() {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
-                      placeholder="Enter your password"
-                      required
-                    />
-                  </div>
-                  <div className="mt-2 text-right">
-                    <Link href="/forgot-password" className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark transition-colors">
-                      Forgot password?
-                    </Link>
-                  </div>
-                </div>
-
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -259,8 +226,8 @@ function LoginForm() {
               </form>
             </div>
 
-            {/* Register Card - RIGHT side */}
-            <div className="bg-gradient-to-br from-loyola-maroon to-loyola-maroon-dark rounded-2xl shadow-xl p-8 text-white order-1 lg:order-2 flex flex-col">
+            {/* Register Card - LEFT side */}
+            <div className="bg-gradient-to-br from-loyola-maroon to-loyola-maroon-dark rounded-2xl shadow-xl p-8 text-white order-1 lg:order-1 flex flex-col">
               <div className="flex-1">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
                   <UserPlus className="w-7 h-7 text-white" />

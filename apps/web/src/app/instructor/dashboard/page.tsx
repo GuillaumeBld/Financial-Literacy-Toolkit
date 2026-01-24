@@ -270,11 +270,6 @@ export default function InstructorDashboardPage() {
                 description="Detailed statistical analysis"
                 href="/instructor/analytics"
               />
-              <ActionCard
-                title="Student Password Reset"
-                description="Reset student passwords (free, no email service needed)"
-                href="/instructor/students"
-              />
             </div>
           </>
         )}

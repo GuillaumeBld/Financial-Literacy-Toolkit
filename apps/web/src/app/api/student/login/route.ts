@@ -6,12 +6,12 @@ import { findCourseByName } from '@/lib/course-utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { courseCode, studentId, password } = body;
+    const { courseCode, studentId } = body;
 
     // Validate required fields
-    if (!courseCode || !studentId || !password) {
+    if (!courseCode || !studentId) {
       return NextResponse.json(
-        { error: 'Course code, student ID, and password are required' },
+        { error: 'Course code and student ID are required' },
         { status: 400 }
       );
     }
@@ -35,28 +35,22 @@ export async function POST(request: NextRequest) {
       }
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
 
-      // Find user
-      const user = await client.query(
-        'SELECT user_id, hashed_password FROM users WHERE hashed_student_key = $1',
+      // Find or create user
+      let user = await client.query(
+        'SELECT user_id FROM users WHERE hashed_student_key = $1',
         [hashedStudentKey]
       );
 
+      let userData;
       if (!user.rows || user.rows.length === 0) {
-        throw new Error('Invalid student ID or password');
-      }
-
-      const userData = user.rows[0];
-
-      // Check if password is set
-      if (!userData.hashed_password) {
-        throw new Error('Password not set. Please complete onboarding first.');
-      }
-
-      // Verify password
-      const isValidPassword = AuthUtils.verifyPassword(password, userData.hashed_password);
-
-      if (!isValidPassword) {
-        throw new Error('Invalid student ID or password');
+        // Create new user
+        const newUser = await client.query(
+          'INSERT INTO users (hashed_student_key) VALUES ($1) RETURNING user_id',
+          [hashedStudentKey]
+        );
+        userData = newUser.rows[0];
+      } else {
+        userData = user.rows[0];
       }
 
       // Check if user is enrolled in course
