@@ -111,18 +111,35 @@ export default function () {
 
     // Step 3: Submit assessment
     group('Submit Assessment', function () {
-      // Generate fake item IDs (in production, use real IDs from items response)
-      const fakeItemIds = [];
-      for (let i = 1; i <= 40; i++) {
-        // UUIDs would normally come from the items API response
-        fakeItemIds.push(`00000000-0000-0000-0000-${String(i).padStart(12, '0')}`);
+      // Get real item IDs from the items API response
+      let itemIds = [];
+      try {
+        const itemsRes = http.get(`${BASE_URL}/api/items?kind=anchor`, {
+          tags: { name: 'GetItemsForSubmit' },
+        });
+        if (itemsRes.status === 200) {
+          const body = JSON.parse(itemsRes.body);
+          itemIds = body.items.map(item => item.item_id);
+        }
+      } catch (e) {
+        // Fallback to Q1-Q40 format if API fails
+        for (let i = 1; i <= 40; i++) {
+          itemIds.push(`Q${i}`);
+        }
+      }
+
+      if (itemIds.length === 0) {
+        // Fallback
+        for (let i = 1; i <= 40; i++) {
+          itemIds.push(`Q${i}`);
+        }
       }
 
       const payload = JSON.stringify({
         courseCode: COURSE_CODE,
         studentId: studentId,
         attemptType: 'pre',
-        responses: generateResponses(fakeItemIds),
+        responses: generateResponses(itemIds),
         timeSpent: Math.floor(Math.random() * 1800) + 600, // 10-40 min in seconds
         metadata: {
           tabSwitches: Math.floor(Math.random() * 3),
