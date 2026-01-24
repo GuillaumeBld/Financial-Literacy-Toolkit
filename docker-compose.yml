@@ -23,8 +23,8 @@ services:
       timeout: 5s
       retries: 5
 
-  # Next.js Application (for local development)
-  # In production, this will be managed by Dokploy
+  # Next.js Application
+  # Using Dokploy-managed PostgreSQL database
   app:
     build:
       context: .
@@ -33,13 +33,15 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-finlit_user}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/${POSTGRES_DB:-financial_literacy}
+      # Connect to Dokploy-managed PostgreSQL
+      DATABASE_URL: postgresql://finlit_user:${POSTGRES_PASSWORD:-change_me_in_production}@finlit-postgres-db-g6ifwu:5432/financial_literacy
       PORT: 3000
     ports:
       - "3000:3000"
     networks:
       - app_network
       - traefik_proxy
+      - dokploy-network
     labels:
       - "traefik.enable=true"
       
@@ -84,4 +86,6 @@ networks:
     driver: bridge
     name: financial_literacy_network
   traefik_proxy:
+    external: true
+  dokploy-network:
     external: true

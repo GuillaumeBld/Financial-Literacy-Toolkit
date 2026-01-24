@@ -4,10 +4,9 @@ AI-assisted pre and post financial literacy assessment for finance students by D
 
 ## Live Demo
 **Production**: https://financial-literacy.qualiaai.fr
-**Previous (Vercel)**: https://web-ljvb4yai3-guillaume-bolivards-projects.vercel.app
 
 Test Credentials:
-- Course Code: `Financial Literacy`
+- Course Code: `QUIN 102`
 - Student ID: `123456789` (any 6-12 digits)
 
 ## Quick Update Workflow
@@ -35,12 +34,12 @@ See [docs/deployment/QUICK_DEPLOY.md](./docs/deployment/QUICK_DEPLOY.md) for det
 ## Current Status: MVP COMPLETE
 
 ### Delivered Features
-- Complete Assessment Flow: Start → Questions → Submit → Results
-- FERPA Compliance: Hashed student IDs, no raw data stored
-- Database: Supabase PostgreSQL with Row Level Security
-- Frontend: Next.js 14 with custom branding
-- Production Ready: Build tested, deployment guides ready
-- Zero Cost: Free Supabase + Vercel tiers
+- Complete Assessment Flow: Start → Onboarding → Questions → Submit → Results
+- FERPA Compliance: Hashed student IDs (no passwords required), no raw data stored
+- Database: Dokploy-managed PostgreSQL 15
+- Frontend: Next.js 14 with Loyola branding
+- Production Ready: Self-hosted on VPS with Dokploy + Traefik SSL
+- Instructor Dashboard: Analytics, question management, submissions review
 
 ### Roadmap (Next Phases)
 - AI Scoring: Modal workers for short answer evaluation
@@ -89,44 +88,49 @@ For detailed information about the study design, assessment structure, and resea
 
 ### Implemented
 - Frontend: Next.js 14, React 18, TypeScript
-- Styling: Tailwind CSS with custom branding
-- Database: Supabase PostgreSQL with Row Level Security
-- Authentication: FERPA-compliant hashed student IDs
-- Hosting: Vercel (production deployment ready)
+- Styling: Tailwind CSS with Loyola branding (maroon/gold)
+- Database: PostgreSQL 15 (Dokploy-managed)
+- Authentication: FERPA-compliant hashed student IDs (no passwords for students)
+- Hosting: Self-hosted VPS with Dokploy + Traefik SSL
 - Security: SHA256 hashing with per-course peppers
 
 ### Planned
 - AI Worker: Python 3.11 with Modal/AWS Lambda
 - LLM Integration: Together AI for scoring
-- Analytics: Advanced statistical analysis
-- LMS SSO: Canvas/Blackboard integration
+- LMS SSO: Canvas/Blackboard integration (LTI 1.3)
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Next.js Web   │────│   Supabase      │────│   Modal Worker  │
-│   Frontend      │    │   PostgreSQL    │    │   (Future)      │
-│                 │    │   + RLS         │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   Vercel        │
-                    │   Hosting       │
-                    └─────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                         VPS Server                           │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐    ┌─────────────────┐                 │
+│  │   Next.js App   │────│   PostgreSQL    │                 │
+│  │   (Docker)      │    │   (Dokploy)     │                 │
+│  └────────┬────────┘    └─────────────────┘                 │
+│           │                                                  │
+│  ┌────────▼────────┐                                        │
+│  │     Traefik     │ ◄── SSL/TLS (Let's Encrypt)            │
+│  │  (Reverse Proxy)│                                        │
+│  └────────┬────────┘                                        │
+└───────────┼─────────────────────────────────────────────────┘
+            │
+            ▼
+    https://financial-literacy.qualiaai.fr
 ```
 
 ### Data Flow
-1. Student → Enters course code + student ID
-2. System → Validates and hashes credentials
-3. Assessment → Serves randomized questions
-4. Submission → Saves responses to Supabase
-5. AI Scoring → Evaluates short answers (future)
+1. Student → Enters course code + student ID (no password)
+2. System → Hashes credentials (SHA256 with course pepper)
+3. Onboarding → Collects baseline demographics (B1-B13)
+4. Assessment → 40 anchor questions + SDM-10 adaptive follow-up
+5. Submission → Saves responses to PostgreSQL
 6. Results → Displays completion confirmation
+
+See [docs/deployment/INFRASTRUCTURE.md](./docs/deployment/INFRASTRUCTURE.md) for detailed infrastructure documentation.
 
 ---
 
@@ -382,4 +386,4 @@ This project is developed by Dr. Abol Jalilvand and Guillaume Bolivard for resea
 
 Ready for Q pilot deployment! Built with love by Dr. Abol Jalilvand and Guillaume Bolivard.
 
-_Last updated: 2026-01-07_
+_Last updated: 2026-01-24_
