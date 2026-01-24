@@ -10,9 +10,9 @@
     "type-check": "tsc --noEmit",
     "check": "npm run type-check && npm run lint",
     "prebuild": "npm run type-check",
-    "test:sdm": "npx tsx src/lib/sdm-algorithm.test.ts && npx tsx src/lib/sdm-selection.test.ts",
-    "test:sdm:unit": "npx tsx src/lib/sdm-algorithm.test.ts",
-    "test:sdm:integration": "npx tsx src/lib/sdm-selection.test.ts"
+    "test:sdm": "npx tsx ../../scripts/sdm-algorithm.test.ts && npx tsx ../../scripts/sdm-selection.test.ts",
+    "test:sdm:unit": "npx tsx ../../scripts/sdm-algorithm.test.ts",
+    "test:sdm:integration": "npx tsx ../../scripts/sdm-selection.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",

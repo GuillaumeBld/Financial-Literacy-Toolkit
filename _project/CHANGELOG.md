@@ -10,6 +10,20 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ## 2026-01-23
 
+### FEAT: SDM-10 anchor ID mapping fix
+
+**Context**: SDM item bank uses "Q1#" suffix for anchors, but responses use "Q1" or "1".
+
+**Changes**:
+- Added `normalizeAnchorId()` to handle "Q1#" vs "Q1" vs "1" format differences
+- Added `anchorIdsMatch()` for flexible anchor-variant matching
+- Updated `findVariantForAnchor()` to use flexible matching
+- Added 18 tests for anchor ID normalization and matching (82 total tests now)
+
+**Files Affected**: `apps/web/src/app/assessment/page.tsx`, `scripts/sdm-algorithm.test.ts`
+
+---
+
 ### FEAT: SDM-10 algorithm rewrite to match source of truth
 
 **Context**: SDM implementation needed to match the exact specification in sdm.md and SDM10_Implementation_Guide.md.

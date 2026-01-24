@@ -57,8 +57,26 @@ type ScoredAnchor = {
 // Get anchor format based on external_item_id (Q1-Q40)
 const getAnchorFormat = (externalItemId: string | null | undefined): 'MCQ' | 'TF' => {
   if (!externalItemId) return 'MCQ';
-  const normalized = externalItemId.toUpperCase().replace(/[^Q0-9]/g, '');
+  const normalized = normalizeAnchorId(externalItemId);
   return TF_ANCHORS.has(normalized) ? 'TF' : 'MCQ';
+};
+
+// Normalize anchor ID by removing "#" suffix and standardizing format
+// SDM item bank uses "Q1#" for anchors, but we need to match with "Q1" or "1"
+const normalizeAnchorId = (id: string | null | undefined): string => {
+  if (!id) return '';
+  // Remove "#" suffix, spaces, and normalize to uppercase
+  let normalized = id.trim().toUpperCase().replace(/#$/, '');
+  // If it's just a number, prefix with "Q"
+  if (/^\d+$/.test(normalized)) {
+    normalized = `Q${normalized}`;
+  }
+  return normalized;
+};
+
+// Check if two anchor IDs match (handles "Q1#", "Q1", "1" as equivalent)
+const anchorIdsMatch = (id1: string | null | undefined, id2: string | null | undefined): boolean => {
+  return normalizeAnchorId(id1) === normalizeAnchorId(id2);
 };
 
 // ============================================================================
@@ -740,8 +758,8 @@ export default function AssessmentPage() {
       anchor: ScoredAnchor,
       openEndedCount: number
     ): { variant: Question | null; variantType: string; isOpenEnded: boolean } => {
-      // Find SDM variants for this anchor
-      const candidates = sdmBank.filter(q => q.anchor_item_id === anchor.anchorId);
+      // Find SDM variants for this anchor (handles Q1# vs Q1 vs 1 format differences)
+      const candidates = sdmBank.filter(q => anchorIdsMatch(q.anchor_item_id, anchor.anchorId));
       if (candidates.length === 0) {
         return { variant: null, variantType: '', isOpenEnded: false };
       }
