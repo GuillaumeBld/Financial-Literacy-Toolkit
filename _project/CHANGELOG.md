@@ -8,6 +8,84 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ---
 
+## 2026-01-25
+
+### FEAT: Application Hardening for 500 Users (Phase 1.5)
+
+**Context**: Completing application-level hardening before load testing.
+
+**Redis L2 Cache Integration**:
+- Added `ioredis` package to dependencies
+- Implemented full Redis L2 cache in `apps/web/src/lib/cache.ts`
+- L1 (in-memory) + L2 (Redis) hybrid caching with graceful fallback
+- Cache sharing across app replicas via Redis
+- Automatic reconnection with exponential backoff
+- Graceful shutdown handling
+
+**Rate Limiting**:
+- Created `apps/web/src/lib/rate-limiter.ts` - distributed rate limiting
+- Uses Redis for shared state across replicas (falls back to memory)
+- Applied to `/api/assessment/submit` (5 req/min per student)
+- Applied to `/api/items` (200 req/min per IP)
+- Returns 429 with `Retry-After` header when exceeded
+
+**Load Test Preparation**:
+- Created `docs/deployment/PRE_LOAD_TEST_CHECKLIST.md` - comprehensive checklist
+- Created `scripts/load-test-cleanup.sql` - SQL cleanup script
+- Created `scripts/cleanup-loadtest-data.sh` - Bash cleanup helper
+- Documented rollback procedures
+
+**Files Changed**:
+- `apps/web/src/lib/cache.ts` (rewrote with Redis integration)
+- `apps/web/src/lib/rate-limiter.ts` (new)
+- `apps/web/src/app/api/assessment/submit/route.ts` (added rate limiting)
+- `apps/web/src/app/api/items/route.ts` (added rate limiting)
+- `apps/web/package.json` (added ioredis dependency)
+- `docs/deployment/PRE_LOAD_TEST_CHECKLIST.md` (new)
+- `scripts/load-test-cleanup.sql` (new)
+- `scripts/cleanup-loadtest-data.sh` (new)
+- `_project/TODO.md` (updated Phase 1.5 as complete)
+
+**Status**: Phase 1.5 complete. Ready for Phase 2 (load testing).
+
+---
+
+### FEAT: 500 Concurrent User Scaling Implementation
+
+**Context**: Preparing system for 500 students taking assessments simultaneously.
+
+**Infrastructure Deployed**:
+- PgBouncer container (`finlit-pgbouncer`) - connection pooling for 600 clients → 50 DB connections
+- Redis container (`finlit-redis`) - L2 cache with 256MB, volatile-lru eviction
+- Performance indexes verified (all 6 indexes already applied)
+
+**Configuration Created**:
+- `infra/pgbouncer/pgbouncer.ini` - Transaction pooling, 600 max clients
+- `infra/pgbouncer/userlist.txt` - Authentication credentials
+- `infra/docker-compose.pgbouncer.yml` - PgBouncer Docker service
+- `infra/docker-compose.redis.yml` - Redis Docker service
+
+**Documentation**:
+- Created `docs/deployment/SCALING_500_USERS.md` - Complete scaling guide
+- Updated `_project/TODO.md` - Added scaling section with status
+
+**Completed**:
+- Updated DATABASE_URL to use PgBouncer (port 6432)
+- Added REDIS_URL environment variable
+- Fixed `apps/web/src/lib/db.ts` - removed `statement_timeout` from pool options (incompatible with PgBouncer transaction mode)
+- Rebuilt and redeployed Docker image
+- Verified PgBouncer connection pooling working (4 server connections active)
+- Smoke test passed: 0% errors, 100% checks, avg 40ms submission time
+
+**Files Affected**:
+- `docker-compose.yml` (updated DATABASE_URL and REDIS_URL)
+- `apps/web/src/lib/db.ts` (removed statement_timeout from pool config)
+- `docs/deployment/SCALING_500_USERS.md` (new)
+- `_project/TODO.md` (updated)
+- `_project/CHANGELOG.md` (this file)
+
+---
+
 ## 2026-01-24
 
 ### CHORE: Close PR #2 - Authentication middleware (not needed)

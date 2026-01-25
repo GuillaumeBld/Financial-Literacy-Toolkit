@@ -3,10 +3,18 @@ import { queryOne, queryMany, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
 import { submissionBreaker } from '@/lib/circuit-breaker';
+import { checkStudentRateLimit, checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   console.log('=== API SUBMISSION START ===');
   try {
+    // Apply IP-based rate limiting first (before parsing body)
+    const ipRateLimit = await checkRateLimit(request, RATE_LIMITS.SUBMIT, 'submit-ip');
+    if (!ipRateLimit.allowed) {
+      console.warn('Rate limit exceeded for IP');
+      return ipRateLimit.response;
+    }
+
     const body = await request.json();
     console.log('Request body received:', {
       courseCode: body.courseCode,
@@ -24,6 +32,15 @@ export async function POST(request: NextRequest) {
       timeSpent, // in seconds
       metadata // { tabSwitches: number, etc. }
     } = body;
+
+    // Apply student-specific rate limiting (after we have studentId)
+    if (studentId && courseCode) {
+      const studentRateLimit = await checkStudentRateLimit(studentId, courseCode);
+      if (!studentRateLimit.allowed) {
+        console.warn(`Rate limit exceeded for student ${studentId} in course ${courseCode}`);
+        return studentRateLimit.response;
+      }
+    }
 
     // Validate required fields
     console.log('Validating required fields...');

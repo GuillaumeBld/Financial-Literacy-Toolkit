@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryMany } from '@/lib/db';
 import { cache, TTL } from '@/lib/cache';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 // Mark as dynamic to prevent build-time execution
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting - higher limit since items are cached
+    const rateLimit = await checkRateLimit(request, RATE_LIMITS.ITEMS, 'items');
+    if (!rateLimit.allowed) {
+      return rateLimit.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const kind = (searchParams.get('kind') || 'all').toLowerCase();
 

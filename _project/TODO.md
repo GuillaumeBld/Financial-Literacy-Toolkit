@@ -1,6 +1,6 @@
 # TODO - Financial Literacy Toolkit
 
-Last updated: 2026-01-23
+Last updated: 2026-01-25
 
 ## Legend
 
@@ -9,6 +9,103 @@ Last updated: 2026-01-23
 - `[x]` Complete
 - `[!]` Blocked
 - `[?]` Needs clarification
+
+---
+
+## CRITICAL: 500 Concurrent User Scaling
+
+### Infrastructure (Phase 1) - COMPLETE
+
+- [x] Deploy PgBouncer container
+  - Container: `finlit-pgbouncer` running on port 6432
+  - Config: `infra/pgbouncer/pgbouncer.ini`
+  - Tested: Successfully routes to PostgreSQL
+
+- [x] Deploy Redis container
+  - Container: `finlit-redis` running on port 6379
+  - Config: `infra/docker-compose.redis.yml`
+
+- [x] Apply performance indexes
+  - File: `infra/migration-performance-indexes.sql`
+  - All 6 indexes verified in production
+
+- [x] Update app DATABASE_URL to use PgBouncer
+  - Changed: `@finlit-postgres-db-g6ifwu:5432` → `@finlit-pgbouncer:6432`
+  - Updated via Dokploy database + Docker service update
+  - Fixed: Removed `statement_timeout` from pool options (PgBouncer incompatible)
+
+- [x] Add REDIS_URL to app environment
+  - Added: `REDIS_URL=redis://finlit-redis:6379`
+
+### Application Hardening (Phase 1.5) - COMPLETE
+
+- [x] Complete Redis L2 cache integration
+  - Added `ioredis` package to dependencies
+  - Implemented `initRedis()` in `apps/web/src/lib/cache.ts`
+  - Wired L2 get/set operations with graceful fallback
+  - Cache sharing across replicas via Redis
+  - File: `apps/web/src/lib/cache.ts`
+
+- [x] Add rate limiting middleware
+  - Created `apps/web/src/lib/rate-limiter.ts`
+  - Submit endpoint: 5 requests/minute per student (prevent spam)
+  - Items endpoint: 200 requests/minute per IP
+  - Uses Redis for distributed rate limiting across replicas
+  - Returns 429 Too Many Requests when exceeded
+  - Applied to `/api/assessment/submit` and `/api/items`
+
+- [x] Pre-load test checklist
+  - [x] Created `docs/deployment/PRE_LOAD_TEST_CHECKLIST.md`
+  - [x] Documented rollback procedure
+  - [x] Created `scripts/load-test-cleanup.sql`
+  - [x] Created `scripts/cleanup-loadtest-data.sh`
+
+### Validation (Phase 2) - READY TO START
+
+- [ ] Install k6 load testing tool
+- [ ] Execute load test (`scripts/load-test.js`)
+- [ ] Run soak test (sustained 200 users for 30 min)
+- [ ] Monitor during test:
+  - [ ] PgBouncer pool stats (`SHOW POOLS`)
+  - [ ] Redis hit rate and memory
+  - [ ] App response times and error rates
+- [ ] Verify thresholds:
+  - 95% requests < 3s
+  - Error rate < 2%
+  - 95% submissions < 5s
+  - Redis L2 hit rate > 80% for items
+
+### Post-Validation Analysis (Phase 2.5)
+
+- [ ] Document load test results
+  - p50, p95, p99 latencies
+  - Error rate and error types
+  - Connection pool utilization
+  - Cache hit rates
+- [ ] Identify bottlenecks if thresholds not met
+- [ ] Create tuning recommendations
+
+### Optimization (Phase 3) - If needed after load test
+
+- [ ] Tune based on bottlenecks identified
+- [ ] Consider increasing replicas if needed
+- [ ] Consider read replicas if DB is bottleneck
+- [ ] Optimize slow queries if identified
+
+### Monitoring - ONGOING
+
+- [~] Set up production monitoring
+  - Uptime Kuma already running
+  - [ ] Add PgBouncer monitoring
+    - Track `cl_active`, `cl_waiting`, `sv_active`
+    - Alert if `cl_waiting > 10` sustained
+  - [ ] Add Redis monitoring
+    - Track hit rate, memory usage, connections
+    - Alert if memory > 200MB
+  - [ ] Add app error rate alerts
+    - Alert if error rate > 1% for 5 min
+  - [ ] Add response time alerts
+    - Alert if p95 > 2s for 5 min
 
 ---
 
