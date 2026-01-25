@@ -313,6 +313,9 @@ const shuffleOptions = (options: Array<{id: string, text: string}>): Array<{id: 
   return shuffled;
 };
 
+// localStorage key for auto-saving progress
+const PROGRESS_STORAGE_KEY = 'assessment-progress';
+
 export default function AssessmentPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -466,7 +469,36 @@ export default function AssessmentPage() {
         const loadAndResume = async () => {
           await loadQuestions();
 
-          // Check for saved responses to resume
+          // First, try to recover from localStorage (browser crash recovery)
+          try {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+              const progress = JSON.parse(savedProgress);
+              // Only restore if saved within last 2 hours (session still valid)
+              const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+              if (progress.savedAt && progress.savedAt > twoHoursAgo) {
+                if (progress.answers && Object.keys(progress.answers).length > 0) {
+                  setAnswers(progress.answers);
+                  setConfidenceRatings(progress.confidenceRatings || {});
+                  setCurrentIndex(progress.currentIndex || 0);
+                  if (progress.timeRemaining && progress.timeRemaining > 0) {
+                    setTimeRemaining(progress.timeRemaining);
+                  }
+                  setHasStarted(true);
+                  setHasAcknowledgedHonorCode(true);
+                  console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
+                  return; // Skip API resume if localStorage has data
+                }
+              } else {
+                // Clear stale progress
+                localStorage.removeItem(PROGRESS_STORAGE_KEY);
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to restore progress from localStorage:', e);
+          }
+
+          // Fallback: Check for saved responses from API
           if (parsedSession.attemptId || (parsedSession.userId && parsedSession.courseId)) {
             try {
               const params = new URLSearchParams();
@@ -586,6 +618,32 @@ export default function AssessmentPage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Auto-save progress to localStorage (recovery for browser crash/close)
+  useEffect(() => {
+    if (!sessionData || !hasStarted) {
+      return;
+    }
+
+    // Only save if there's actual progress
+    if (Object.keys(answers).length === 0) {
+      return;
+    }
+
+    const progress = {
+      answers,
+      confidenceRatings,
+      currentIndex,
+      timeRemaining,
+      savedAt: Date.now(),
+    };
+
+    try {
+      localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+    } catch (e) {
+      console.warn('Failed to auto-save progress:', e);
+    }
+  }, [answers, confidenceRatings, currentIndex, timeRemaining, sessionData, hasStarted]);
+
   // Timer
   useEffect(() => {
     if (!sessionData || !hasAcknowledgedHonorCode) {
@@ -672,6 +730,7 @@ export default function AssessmentPage() {
 
       if (typeof window !== 'undefined') {
         localStorage.removeItem('assessment-session');
+        localStorage.removeItem(PROGRESS_STORAGE_KEY); // Clear auto-saved progress
       }
 
       router.push('/results');
