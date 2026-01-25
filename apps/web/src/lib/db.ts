@@ -16,9 +16,8 @@ const pool = new Pool({
   min: 2, // Keep minimum connections warm
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
   connectionTimeoutMillis: 10000, // 10s timeout for connection acquisition
-  // Query timeout - prevents slow queries from blocking the pool
-  statement_timeout: 30000, // 30 second query timeout
-  query_timeout: 30000,
+  // Note: statement_timeout removed from pool options - not supported by PgBouncer
+  // Statement timeout is set via pool.on('connect') callback instead
 });
 
 // Set statement timeout on each new connection
