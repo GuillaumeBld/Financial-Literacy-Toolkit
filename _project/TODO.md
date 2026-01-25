@@ -89,6 +89,25 @@ Last updated: 2026-01-25
   - Infrastructure handles load well when requests pass rate limits
   - No optimization needed for 500 user target
 
+### SDM Validation (Phase 2.6) - COMPLETE
+
+- [x] Unit tests for SDM algorithm (82/82 passed)
+  - Need score calculation
+  - Variant type assignment
+  - Domain minimum enforcement
+  - Subcategory cap enforcement
+  - Open-ended cap enforcement
+- [x] Integration tests for SDM selection (17/17 passed)
+  - Full selection pipeline
+  - Constraint validation
+  - Presentation ordering
+- [x] SDM load test under pressure (100 VUs)
+  - SDM bank load p95: 48ms
+  - Full 50-question submit p95: 181ms
+  - 0% business logic errors
+  - 156 SDM items available (6 variants × 26 anchors)
+- [x] Test script created: `scripts/load-test-sdm.js`
+
 ### Optimization (Phase 3) - NOT NEEDED
 
 - [x] Analysis complete: No bottlenecks identified

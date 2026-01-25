@@ -10,6 +10,42 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 ## 2026-01-25
 
+### TEST: SDM Load Test Results - Adaptive Testing Under Pressure
+
+**Test Configuration**:
+- Tool: k6 load testing
+- Duration: 4 minutes
+- Peak VUs: 100 concurrent
+- Total iterations: 9,880
+- Scenarios: SDM bank retrieval + Full 50-question submissions
+
+**Results Summary**:
+
+| Metric | p95 | Threshold | Status |
+|--------|-----|-----------|--------|
+| SDM Bank Load | **48ms** | <1000ms | ✅ PASS |
+| Anchor Items Load | **53ms** | <1000ms | ✅ PASS |
+| Full 50Q Submit | **181ms** | <10000ms | ✅ PASS |
+| Error Rate | **0%** | <5% | ✅ PASS |
+
+**SDM-Specific Validation**:
+- SDM item bank available: 156 items (6 variants × 26 anchors)
+- Cache hits working: 4,028 during test
+- All business logic checks passed: 100% (25,688/25,688)
+- Full 50-question submissions (40 anchors + 10 SDM items) working correctly
+
+**Test Scripts Created**:
+- `scripts/load-test-sdm.js` - Dedicated SDM load test with two scenarios:
+  - `sdm_bank`: High-frequency SDM bank retrieval testing
+  - `full_assessment`: Complete 50-question assessment simulation
+
+**Conclusion**: SDM-10 adaptive testing algorithm validated under load. The system correctly:
+1. Serves the SDM item bank efficiently (p95: 48ms)
+2. Handles concurrent full assessments with SDM items (p95: 181ms)
+3. Maintains rate limiting protection without affecting legitimate requests
+
+---
+
 ### TEST: Load Test Results - 500 Concurrent Users (Phase 2)
 
 **Test Configuration**:

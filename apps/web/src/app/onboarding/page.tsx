@@ -655,9 +655,9 @@ function OnboardingContent() {
                     <option value="high-school-diploma-or-ged">High school diploma or GED</option>
                     <option value="some-college-no-degree">Some college, no degree</option>
                     <option value="associate-degree">Associate degree (AA/AS)</option>
-                    <option value="bachelors-degree">Bachelor's degree (BA/BS)</option>
+                    <option value="bachelors-degree">Bachelor&apos;s degree (BA/BS)</option>
                     <option value="graduate-or-professional-degree">Graduate or professional degree (MA/MS/MBA/PhD/MD/JD, etc.)</option>
-                    <option value="dont-know">Don't know</option>
+                    <option value="dont-know">Don&apos;t know</option>
                     <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>

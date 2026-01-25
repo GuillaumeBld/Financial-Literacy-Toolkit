@@ -33,8 +33,10 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      # Connect to Dokploy-managed PostgreSQL
-      DATABASE_URL: postgresql://finlit_user:${POSTGRES_PASSWORD:-change_me_in_production}@finlit-postgres-db-g6ifwu:5432/financial_literacy
+      # Connect through PgBouncer for 500 concurrent user scaling
+      DATABASE_URL: postgresql://finlit_user:${POSTGRES_PASSWORD:-change_me_in_production}@finlit-pgbouncer:6432/financial_literacy
+      # Redis L2 cache for shared caching across replicas
+      REDIS_URL: redis://finlit-redis:6379
       PORT: 3000
     ports:
       - "3000:3000"
