@@ -24,17 +24,22 @@ interface RateLimitResult {
 
 // Rate limit configurations for different endpoints
 export const RATE_LIMITS = {
-  // Assessment submission - prevent spam (5 per minute per student)
-  SUBMIT: { windowMs: 60 * 1000, maxRequests: 5 },
+  // Assessment submission IP-based (1000 per minute per IP)
+  // High limit because many students may be behind same IP (campus NAT)
+  // Student-specific limiting handles actual abuse prevention
+  SUBMIT: { windowMs: 60 * 1000, maxRequests: 1000 },
 
-  // General read endpoints (100 per minute per IP)
-  READ: { windowMs: 60 * 1000, maxRequests: 100 },
+  // Per-student submission limit (5 per minute per unique student)
+  SUBMIT_STUDENT: { windowMs: 60 * 1000, maxRequests: 5 },
 
-  // Auth attempts (10 per minute per IP)
-  AUTH: { windowMs: 60 * 1000, maxRequests: 10 },
+  // General read endpoints (500 per minute per IP)
+  READ: { windowMs: 60 * 1000, maxRequests: 500 },
 
-  // Items API - higher limit since it's cached (200 per minute)
-  ITEMS: { windowMs: 60 * 1000, maxRequests: 200 },
+  // Auth attempts (20 per minute per IP)
+  AUTH: { windowMs: 60 * 1000, maxRequests: 20 },
+
+  // Items API - higher limit since it's cached (1000 per minute)
+  ITEMS: { windowMs: 60 * 1000, maxRequests: 1000 },
 } as const;
 
 /**
@@ -256,8 +261,8 @@ export async function checkStudentRateLimit(
   studentId: string,
   courseCode: string
 ): Promise<{ allowed: boolean; response?: NextResponse }> {
-  const key = RateLimiter.getKey('submit', `${courseCode}:${studentId}`);
-  const result = await rateLimiter.check(key, RATE_LIMITS.SUBMIT);
+  const key = RateLimiter.getKey('submit-student', `${courseCode}:${studentId}`);
+  const result = await rateLimiter.check(key, RATE_LIMITS.SUBMIT_STUDENT);
 
   if (!result.allowed) {
     return { allowed: false, response: rateLimitResponse(result) };
