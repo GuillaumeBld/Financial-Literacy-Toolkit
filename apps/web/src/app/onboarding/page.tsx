@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Info, CheckCircle, ChevronRight, ArrowLeft, BookOpen } from 'lucide-react';
+import { User, Info, CheckCircle, ChevronRight, ArrowLeft, BookOpen, Check } from 'lucide-react';
 
 function OnboardingContent() {
   const router = useRouter();
@@ -11,6 +11,25 @@ function OnboardingContent() {
   const courseCode = searchParams.get('courseCode') || 'QUIN 102';
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [isCheckingIntro, setIsCheckingIntro] = useState(true);
+
+  // Check if user has seen the intro video
+  useEffect(() => {
+    const session = localStorage.getItem('student-session');
+    if (session) {
+      const parsed = JSON.parse(session);
+      if (!parsed.hasSeenIntroVideo) {
+        // Redirect to intro if they haven't seen it
+        router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode)}`);
+        return;
+      }
+    } else {
+      // No session at all, redirect to intro
+      router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode)}`);
+      return;
+    }
+    setIsCheckingIntro(false);
+  }, [router, courseCode]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -193,6 +212,15 @@ function OnboardingContent() {
     }
   };
 
+  // Show loading while checking intro status
+  if (isCheckingIntro) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
@@ -253,17 +281,21 @@ function OnboardingContent() {
                     This assessment is a required course assignment in {courseCode}. Completion affects course credit,
                     but your answers are not graded for correctness.
                   </p>
-                  <label className="flex items-start gap-3 mt-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={courseRequirementAcknowledged}
-                      onChange={(e) => setCourseRequirementAcknowledged(e.target.checked)}
-                      className="h-4 w-4 mt-0.5 text-loyola-maroon accent-loyola-maroon border-gray-300 rounded focus:ring-loyola-maroon"
-                    />
+                  <div
+                    onClick={() => setCourseRequirementAcknowledged(!courseRequirementAcknowledged)}
+                    className="flex items-start gap-3 mt-3 cursor-pointer"
+                  >
+                    <div className={`h-5 w-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      courseRequirementAcknowledged
+                        ? 'bg-loyola-maroon border-loyola-maroon'
+                        : 'border-gray-300 bg-white'
+                    }`}>
+                      {courseRequirementAcknowledged && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                    </div>
                     <span className="text-sm text-gray-700">
                       I understand this assessment is required for the course. <span className="text-red-500">*</span>
                     </span>
-                  </label>
+                  </div>
                 </div>
 
                 <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
@@ -575,23 +607,31 @@ function OnboardingContent() {
                       { value: 'investment-account', label: 'Investment account (stocks, ETFs, mutual funds)' },
                       { value: 'insurance', label: 'Insurance policy in your own name' },
                       { value: 'none', label: 'None of the above' },
-                    ].map((product) => (
-                      <label key={product.value} className="flex items-center p-2 hover:bg-white rounded-lg transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={priorFinancialProducts.includes(product.value)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setPriorFinancialProducts([...priorFinancialProducts, product.value]);
-                            } else {
+                    ].map((product) => {
+                      const isChecked = priorFinancialProducts.includes(product.value);
+                      return (
+                        <div
+                          key={product.value}
+                          onClick={() => {
+                            if (isChecked) {
                               setPriorFinancialProducts(priorFinancialProducts.filter((p) => p !== product.value));
+                            } else {
+                              setPriorFinancialProducts([...priorFinancialProducts, product.value]);
                             }
                           }}
-                          className="mr-3 h-5 w-5 text-loyola-maroon accent-loyola-maroon rounded"
-                        />
-                        <span className="text-gray-700">{product.label}</span>
-                      </label>
-                    ))}
+                          className="flex items-center p-2 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                        >
+                          <div className={`mr-3 h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                            isChecked
+                              ? 'bg-loyola-maroon border-loyola-maroon'
+                              : 'border-gray-300 bg-white'
+                          }`}>
+                            {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                          </div>
+                          <span className="text-gray-700">{product.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
