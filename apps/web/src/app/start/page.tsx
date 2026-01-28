@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, User, Clock, Info, CheckCircle } from 'lucide-react';
+import { Settings, User, Info, CheckCircle } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -195,9 +195,8 @@ export default function StartPage() {
                 <h3 className="font-bold text-lg text-loyola-gray-900">Pre-Course Knowledge Check</h3>
                 <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Active</span>
               </div>
-              <p className="text-loyola-gray-600 mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                36 items • 20 minutes
+              <p className="text-loyola-gray-600 mb-4">
+                50 questions
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-loyola-gray-500">
@@ -212,9 +211,8 @@ export default function StartPage() {
                 <h3 className="font-bold text-lg text-loyola-gray-900">Post-Course Evaluation</h3>
                 <span className="bg-loyola-gold/30 text-loyola-maroon text-xs px-3 py-1 rounded-full font-medium">Upcoming</span>
               </div>
-              <p className="text-loyola-gray-600 mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                36 items • 20 minutes
+              <p className="text-loyola-gray-600 mb-4">
+                50 questions
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-loyola-gray-500">
@@ -236,7 +234,6 @@ export default function StartPage() {
               <div className="space-y-1 text-sm text-loyola-gray-700">
                 <p>• No back navigation on scored items</p>
                 <p>• Your student ID is hashed for privacy</p>
-                <p>• Timer will be visible during the assessment</p>
                 <p>• Internet connection required for submission</p>
               </div>
             </div>

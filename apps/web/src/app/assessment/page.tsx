@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2 } from 'lucide-react';
 
 type Question = {
   id: string;
@@ -322,7 +322,6 @@ export default function AssessmentPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [confidenceRatings, setConfidenceRatings] = useState<Record<string, number>>({});
   const [answerCorrectness, setAnswerCorrectness] = useState<Record<string, boolean>>({});
-  const [timeRemaining, setTimeRemaining] = useState(90 * 60); // 90 minutes for 30 questions (3 min/question)
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sdmBank, setSdmBank] = useState<Question[]>([]);
   const [sdmAppended, setSdmAppended] = useState(false);
@@ -463,7 +462,6 @@ export default function AssessmentPage() {
       ) {
         setSessionData(parsedSession);
         setIsTestUser(parsedSession.isTestUser || false);
-        setTimeRemaining(90 * 60); // 90 minutes for 30 questions
 
         // Load questions first, then check for saved responses
         const loadAndResume = async () => {
@@ -481,9 +479,6 @@ export default function AssessmentPage() {
                   setAnswers(progress.answers);
                   setConfidenceRatings(progress.confidenceRatings || {});
                   setCurrentIndex(progress.currentIndex || 0);
-                  if (progress.timeRemaining && progress.timeRemaining > 0) {
-                    setTimeRemaining(progress.timeRemaining);
-                  }
                   setHasStarted(true);
                   setHasAcknowledgedHonorCode(true);
                   console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
@@ -633,7 +628,6 @@ export default function AssessmentPage() {
       answers,
       confidenceRatings,
       currentIndex,
-      timeRemaining,
       savedAt: Date.now(),
     };
 
@@ -642,27 +636,7 @@ export default function AssessmentPage() {
     } catch (e) {
       console.warn('Failed to auto-save progress:', e);
     }
-  }, [answers, confidenceRatings, currentIndex, timeRemaining, sessionData, hasStarted]);
-
-  // Timer
-  useEffect(() => {
-    if (!sessionData || !hasAcknowledgedHonorCode) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [sessionData, hasAcknowledgedHonorCode]);
+  }, [answers, confidenceRatings, currentIndex, sessionData, hasStarted]);
 
   const handleSubmit = useCallback(async () => {
     if (!sessionData || isSubmitting) {
@@ -745,26 +719,12 @@ export default function AssessmentPage() {
     }
   }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData]);
 
-  useEffect(() => {
-    if (!sessionData || timeRemaining > 0) {
-      return;
-    }
-
-    void handleSubmit();
-  }, [handleSubmit, sessionData, timeRemaining]);
-
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
   const TOTAL_QUESTIONS = 50; // 40 anchor + 10 SDM
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / TOTAL_QUESTIONS) * 100 : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
   const hasSelectedConfidence = currentConfidence > 0;
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const checkAnswerCorrectness = (questionId: string, answer: string): boolean => {
     const question = questions.find(q => q.id === questionId);
@@ -1164,10 +1124,6 @@ export default function AssessmentPage() {
               <h3 className="font-semibold text-gray-900 mb-4">Instructions:</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>You will have <strong>90 minutes</strong> to complete the assessment</span>
-                </li>
-                <li className="flex items-start gap-3">
                   <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
                   <span>There are <strong>50 questions</strong> in total (40 core + 10 follow-up)</span>
                 </li>
@@ -1313,10 +1269,6 @@ export default function AssessmentPage() {
                   <span>Tab switches: {tabSwitches}</span>
                 </div>
               )}
-              <div className="flex items-center text-sm bg-loyola-gold/20 text-loyola-maroon px-3 py-2 rounded-full gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span className="font-medium">{formatTime(timeRemaining)}</span>
-              </div>
               <button
                 onClick={handleFullscreenToggle}
                 className="text-loyola-gray-600 hover:text-loyola-maroon transition"

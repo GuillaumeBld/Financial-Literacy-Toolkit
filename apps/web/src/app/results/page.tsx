@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle, Home, RotateCcw, Award, Clock } from 'lucide-react';
+import { CheckCircle, Home, RotateCcw, Award } from 'lucide-react';
 
 export default function ResultsPage() {
   // Mock completion data - in production this would come from API/database
   const completionData = {
-    totalQuestions: 3,
-    answeredQuestions: 3,
-    timeTaken: "8:45", // Mock time
+    totalQuestions: 50,
+    answeredQuestions: 50,
     completedAt: new Date().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -61,7 +60,7 @@ export default function ResultsPage() {
             Completion Summary
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-loyola-gold/10 rounded-lg p-6 border border-loyola-gold/30">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircle className="w-5 h-5 text-loyola-maroon" />
@@ -69,16 +68,6 @@ export default function ResultsPage() {
               </div>
               <p className="text-3xl font-bold text-loyola-maroon">
                 {completionData.answeredQuestions}/{completionData.totalQuestions}
-              </p>
-            </div>
-
-            <div className="bg-loyola-maroon/10 rounded-lg p-6 border border-loyola-maroon/30">
-              <div className="flex items-center gap-3 mb-2">
-                <Clock className="w-5 h-5 text-loyola-maroon" />
-                <span className="font-semibold text-loyola-gray-900">Time Taken</span>
-              </div>
-              <p className="text-3xl font-bold text-loyola-maroon">
-                {completionData.timeTaken}
               </p>
             </div>
 
