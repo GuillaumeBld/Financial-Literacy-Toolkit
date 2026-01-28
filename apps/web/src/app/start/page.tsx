@@ -66,8 +66,7 @@ export default function StartPage() {
 
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-loyola-gray-900 mb-2">Start Your Assessment</h1>
-          <p className="text-loyola-gray-600">Enter your course code to begin the onboarding process</p>
+          <h1 className="text-3xl font-bold text-loyola-gray-900">Start Your Assessment</h1>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
