@@ -156,19 +156,7 @@ export default function StartPage() {
               )}
             </div>
 
-            <div className="bg-loyola-gold/10 border-2 border-loyola-gold/30 rounded-lg p-4 mb-6">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-sm font-semibold text-loyola-maroon mb-2">What&apos;s Next?</h3>
-                  <p className="text-sm text-loyola-gray-700">
-                    After validating your course code, you&apos;ll complete a brief onboarding form that collects demographic and socio-economic information. This helps us ensure fair and equitable assessment practices.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <button
                 type="submit"
                 disabled={isValidating}
