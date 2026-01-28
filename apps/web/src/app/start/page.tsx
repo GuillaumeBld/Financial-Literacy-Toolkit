@@ -121,8 +121,14 @@ export default function StartPage() {
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
                 <span>Available: <strong>February 2 - February 8, 2026</strong></span>
               </p>
-              <div className="text-sm text-loyola-gray-500">
-                Not started
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-loyola-gray-500">Not started</span>
+                <button
+                  onClick={() => router.push(`/login?courseCode=${encodeURIComponent(courseCode)}`)}
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-2 px-6 rounded-lg transition"
+                >
+                  Start
+                </button>
               </div>
             </div>
 
@@ -138,8 +144,14 @@ export default function StartPage() {
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
                 <span>Available: <strong>TBD</strong></span>
               </p>
-              <div className="text-sm text-loyola-gray-500">
-                Not available yet
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-loyola-gray-500">Not available yet</span>
+                <button
+                  disabled
+                  className="bg-gray-300 text-gray-500 font-medium py-2 px-6 rounded-lg cursor-not-allowed"
+                >
+                  Start
+                </button>
               </div>
             </div>
           </div>

@@ -111,7 +111,8 @@ function LoginForm() {
       if (data.hasCompletedOnboarding) {
         router.push('/assessment');
       } else {
-        router.push('/onboarding');
+        // New users go to intro video first
+        router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode.trim())}`);
       }
     } catch (err: any) {
       console.error('Login error:', err);
@@ -239,7 +240,7 @@ function LoginForm() {
               </div>
 
               <Link
-                href="/onboarding"
+                href="/onboarding/intro"
                 className="inline-flex items-center justify-center gap-2 bg-white text-loyola-maroon font-semibold py-3.5 px-6 rounded-xl transition-all hover:bg-gray-100 shadow-lg hover:shadow-xl w-full"
               >
                 <UserPlus className="w-5 h-5" />
