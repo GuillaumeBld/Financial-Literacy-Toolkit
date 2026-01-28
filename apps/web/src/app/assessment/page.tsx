@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2, Calendar } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2, Calendar, Check, Save } from 'lucide-react';
 
 type Question = {
   id: string;
@@ -1267,6 +1267,11 @@ export default function AssessmentPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold text-loyola-maroon">Financial Literacy Assessment</h1>
             <div className="flex items-center gap-4">
+              {/* Saved Status Indicator */}
+              <div className="flex items-center text-sm bg-green-100 text-green-700 px-3 py-1.5 rounded-full gap-1.5">
+                <Check className="w-4 h-4" />
+                <span className="font-medium">Saved</span>
+              </div>
               {tabSwitches > 0 && (
                 <div className="flex items-center text-xs bg-red-100 text-red-700 px-2 py-1 rounded gap-1">
                   <AlertTriangle className="w-3 h-3" />
@@ -1280,15 +1285,17 @@ export default function AssessmentPage() {
               >
                 <Maximize2 className="w-5 h-5" />
               </button>
+              {/* Save & Exit Button */}
               <button
                 onClick={() => {
-                  if (confirm('Are you sure you want to exit? Your progress will be saved.')) {
+                  if (confirm('Your progress has been saved. Are you sure you want to exit?')) {
                     router.push('/start');
                   }
                 }}
-                className="text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 px-3 py-1.5 bg-loyola-gray-100 hover:bg-loyola-gray-200 text-loyola-gray-700 rounded-lg transition text-sm font-medium"
               >
-                <X className="w-5 h-5" />
+                <Save className="w-4 h-4" />
+                Save & Exit
               </button>
             </div>
           </div>
@@ -1322,21 +1329,12 @@ export default function AssessmentPage() {
             <div className="space-y-3 mb-8">
               {currentQuestion.options.map((option) => {
                 const isSelected = answers[currentQuestion.id] === option.id;
-                const isCorrect = currentQuestion.correct_answer === option.id;
-                const isIncorrect = isSelected && !isCorrect;
-                const showFeedback = isSelected && currentQuestion.correct_answer && hasSelectedConfidence;
-                
+
                 return (
                   <div
                     key={option.id}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      showFeedback
-                        ? isCorrect
-                          ? 'border-green-500 bg-green-50'
-                          : isIncorrect
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-loyola-gray-200'
-                        : isSelected
+                      isSelected
                         ? 'border-loyola-maroon bg-loyola-maroon/5'
                         : 'border-loyola-gray-200 hover:border-loyola-maroon/30 hover:bg-loyola-gray-50'
                     }`}
@@ -1347,32 +1345,10 @@ export default function AssessmentPage() {
                         type="radio"
                         checked={isSelected}
                         onChange={() => handleAnswer(currentQuestion.id, option.id)}
-                        className={`h-5 w-5 ${
-                          showFeedback
-                            ? isCorrect
-                              ? 'text-green-600 accent-green-600'
-                              : isIncorrect
-                              ? 'text-red-600 accent-red-600'
-                              : 'text-loyola-maroon accent-loyola-maroon'
-                            : 'text-loyola-maroon accent-loyola-maroon'
-                        }`}
+                        className="h-5 w-5 text-loyola-maroon accent-loyola-maroon"
                       />
-                      <label className={`ml-3 text-lg cursor-pointer ${
-                        showFeedback
-                          ? isCorrect
-                            ? 'text-green-800 font-semibold'
-                            : isIncorrect
-                            ? 'text-red-800 font-semibold'
-                            : 'text-loyola-gray-800'
-                          : 'text-loyola-gray-800'
-                      }`}>
+                      <label className="ml-3 text-lg cursor-pointer text-loyola-gray-800">
                         {option.text}
-                        {showFeedback && isCorrect && (
-                          <span className="ml-2 text-green-600 font-bold">✓ Correct!</span>
-                        )}
-                        {showFeedback && isIncorrect && (
-                          <span className="ml-2 text-red-600 font-bold">✗ Incorrect</span>
-                        )}
                       </label>
                     </div>
                   </div>
@@ -1384,38 +1360,12 @@ export default function AssessmentPage() {
           {currentQuestion.type === 'short_answer' && (
             <div className="mb-8">
               <textarea
-                className={`w-full p-4 border-2 rounded-lg focus:ring-2 focus:ring-loyola-maroon transition ${
-                  answers[currentQuestion.id] && currentQuestion.correct_answer
-                    ? answerCorrectness[currentQuestion.id]
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-red-500 bg-red-50'
-                    : 'border-loyola-gray-300 focus:border-loyola-maroon'
-                }`}
+                className="w-full p-4 border-2 rounded-lg focus:ring-2 focus:ring-loyola-maroon transition border-loyola-gray-300 focus:border-loyola-maroon"
                 rows={6}
                 value={answers[currentQuestion.id] || ''}
                 onChange={(event) => handleAnswer(currentQuestion.id, event.target.value)}
                 placeholder="Type your answer here..."
               />
-              {answers[currentQuestion.id] && currentQuestion.correct_answer && hasSelectedConfidence && (
-                <div className={`mt-2 p-3 rounded-lg ${
-                  answerCorrectness[currentQuestion.id]
-                    ? 'bg-green-50 border border-green-200'
-                    : 'bg-red-50 border border-red-200'
-                }`}>
-                  <div className={`font-semibold ${
-                    answerCorrectness[currentQuestion.id]
-                      ? 'text-green-800'
-                      : 'text-red-800'
-                  }`}>
-                    {answerCorrectness[currentQuestion.id] ? '✓ Correct!' : '✗ Incorrect'}
-                  </div>
-                  {!answerCorrectness[currentQuestion.id] && (
-                    <div className="text-sm text-gray-600 mt-1">
-                      <strong>Correct answer:</strong> {currentQuestion.correct_answer}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
@@ -1510,14 +1460,20 @@ export default function AssessmentPage() {
         )}
 
         <div className="flex justify-between items-center">
-          <button
-            onClick={handlePrevious}
-            disabled={!isTestUser && currentIndex === 0}
-            className="px-6 py-3 border-2 border-loyola-gray-300 rounded-lg text-loyola-gray-700 hover:bg-loyola-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
-            type="button"
-          >
-            <ChevronLeft className="w-4 h-4" /> Previous
-          </button>
+          {isTestUser ? (
+            <button
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="px-6 py-3 border-2 border-loyola-gray-300 rounded-lg text-loyola-gray-700 hover:bg-loyola-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+              type="button"
+            >
+              <ChevronLeft className="w-4 h-4" /> Previous
+            </button>
+          ) : (
+            <div className="px-6 py-3">
+              {/* Empty spacer - students cannot go back */}
+            </div>
+          )}
 
           <div className="text-sm text-loyola-gray-600 font-medium">
             {Object.keys(answers).length} of 50 answered
