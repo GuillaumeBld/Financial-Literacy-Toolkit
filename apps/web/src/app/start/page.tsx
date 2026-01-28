@@ -121,11 +121,8 @@ export default function StartPage() {
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
                 <span>Available: <strong>February 2 - February 8, 2026</strong></span>
               </p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-sm text-loyola-gray-500">
-                  <span>Not started</span>
-                </div>
-                <button className="text-loyola-maroon hover:text-loyola-maroon-dark font-medium">View Details</button>
+              <div className="text-sm text-loyola-gray-500">
+                Not started
               </div>
             </div>
 
@@ -141,11 +138,8 @@ export default function StartPage() {
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
                 <span>Available: <strong>TBD</strong></span>
               </p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-sm text-loyola-gray-500">
-                  <span>Not available yet</span>
-                </div>
-                <button className="text-loyola-maroon hover:text-loyola-maroon-dark font-medium">View Details</button>
+              <div className="text-sm text-loyola-gray-500">
+                Not available yet
               </div>
             </div>
           </div>
