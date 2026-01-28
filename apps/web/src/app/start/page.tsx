@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, User, Info, CheckCircle, Calendar } from 'lucide-react';
+import { Settings, User, Info, Calendar } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -15,8 +15,6 @@ type Course = {
 export default function StartPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseCode, setCourseCode] = useState('QUIN 102');
-  const [error, setError] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const router = useRouter();
 
@@ -48,50 +46,6 @@ export default function StartPage() {
     loadCourses();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!courseCode) {
-      setError('Please enter a course code.');
-      return;
-    }
-
-    // Validate course code
-    setIsValidating(true);
-    try {
-      const trimmedCode = courseCode.trim();
-      console.log('Validating course code:', trimmedCode);
-      
-      const response = await fetch('/api/courses/validate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseCode: trimmedCode
-        }),
-      });
-
-      const data = await response.json();
-      console.log('Validation response:', data);
-
-      if (!response.ok || !data.valid) {
-        setError(data.error || 'Invalid course code. Please check your course code and try again.');
-        setIsValidating(false);
-        return;
-      }
-
-      // Redirect to login (Microsoft-only authentication)
-      router.push(`/login?courseCode=${encodeURIComponent(trimmedCode)}`);
-    } catch (err) {
-      console.error('Error validating course:', err);
-      setError('Unable to validate course code. Please try again.');
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <header className="bg-white shadow-sm border-b border-loyola-gray-200">
@@ -117,62 +71,39 @@ export default function StartPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
-          <form onSubmit={handleSubmit}>
-            {error && (
-              <div className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-            <div className="mb-6">
-              <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-                Course Code <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="course-code"
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                disabled={isLoadingCourses}
-                className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
-                  isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
-                }`}
-                required
-              >
-                {isLoadingCourses ? (
-                  <option value="">Loading courses...</option>
-                ) : courses.length > 0 ? (
-                  courses.map((course) => (
-                    <option key={course.id} value={course.name}>
-                      {course.displayName}
-                    </option>
-                  ))
-                ) : (
-                  <option value="QUIN 102">QUIN 102 (Financial Literacy)</option>
-                )}
-              </select>
-              {!isLoadingCourses && (
-                <p className="mt-1 text-sm text-loyola-gray-500">
-                  Select your course from the list
-                </p>
+          <div>
+            <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
+              Course Code <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="course-code"
+              value={courseCode}
+              onChange={(e) => {
+                const selectedCode = e.target.value;
+                setCourseCode(selectedCode);
+                // Auto-navigate to login when course is selected
+                if (selectedCode) {
+                  router.push(`/login?courseCode=${encodeURIComponent(selectedCode)}`);
+                }
+              }}
+              disabled={isLoadingCourses}
+              className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
+                isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
+              }`}
+            >
+              {isLoadingCourses ? (
+                <option value="">Loading courses...</option>
+              ) : courses.length > 0 ? (
+                courses.map((course) => (
+                  <option key={course.id} value={course.name}>
+                    {course.displayName}
+                  </option>
+                ))
+              ) : (
+                <option value="QUIN 102">QUIN 102 (Financial Literacy)</option>
               )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
-              <button
-                type="submit"
-                disabled={isValidating}
-                className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-3 px-6 rounded-lg transition flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <CheckCircle className="w-5 h-5" />
-                {isValidating ? 'Validating...' : 'Continue to Onboarding'}
-              </button>
-              <a
-                href="#"
-                className="border-2 border-loyola-gray-300 text-loyola-gray-700 hover:bg-loyola-gray-50 font-medium py-3 px-6 rounded-lg transition flex-1 text-center"
-              >
-                Resume Previous
-              </a>
-            </div>
-          </form>
+            </select>
+          </div>
         </div>
 
         <div className="mb-8">
