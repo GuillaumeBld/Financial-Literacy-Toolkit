@@ -106,7 +106,7 @@ export default function ResultsPage() {
                 </h3>
                 <p className="text-loyola-gray-600">
                   Your assessment is being scored. Multiple choice questions are automatically graded,
-                  while short answer responses are being evaluated by our AI system.
+                  while short answer responses are being evaluated.
                 </p>
               </div>
             </div>
