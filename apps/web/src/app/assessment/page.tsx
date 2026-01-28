@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Shield, AlertTriangle, Maximize2, Calendar } from 'lucide-react';
 
 type Question = {
   id: string;
@@ -1123,6 +1123,10 @@ export default function AssessmentPage() {
             <div className="bg-gray-50 rounded-xl p-6 mb-6">
               <h3 className="font-semibold text-gray-900 mb-4">Instructions:</h3>
               <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-3">
+                  <Calendar className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
+                  <span>Complete the assessment between <strong>Monday, February 2nd</strong> and <strong>Sunday, February 8th, 2026</strong></span>
+                </li>
                 <li className="flex items-start gap-3">
                   <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
                   <span>There are <strong>50 questions</strong> in total (40 core + 10 follow-up)</span>

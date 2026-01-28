@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, User, Info, CheckCircle } from 'lucide-react';
+import { Settings, User, Info, CheckCircle, Calendar } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -195,8 +195,12 @@ export default function StartPage() {
                 <h3 className="font-bold text-lg text-loyola-gray-900">Pre-Course Knowledge Check</h3>
                 <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Active</span>
               </div>
-              <p className="text-loyola-gray-600 mb-4">
+              <p className="text-loyola-gray-600 mb-2">
                 50 questions
+              </p>
+              <p className="text-loyola-gray-600 mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-loyola-maroon" />
+                <span>Available: <strong>February 2 - February 8, 2026</strong></span>
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-loyola-gray-500">
@@ -211,8 +215,12 @@ export default function StartPage() {
                 <h3 className="font-bold text-lg text-loyola-gray-900">Post-Course Evaluation</h3>
                 <span className="bg-loyola-gold/30 text-loyola-maroon text-xs px-3 py-1 rounded-full font-medium">Upcoming</span>
               </div>
-              <p className="text-loyola-gray-600 mb-4">
+              <p className="text-loyola-gray-600 mb-2">
                 50 questions
+              </p>
+              <p className="text-loyola-gray-600 mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-loyola-maroon" />
+                <span>Available: <strong>TBD</strong></span>
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-loyola-gray-500">
