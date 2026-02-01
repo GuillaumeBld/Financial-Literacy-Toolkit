@@ -386,7 +386,7 @@ export default function AssessmentPage() {
     const session = localStorage.getItem('assessment-session');
 
     if (!session) {
-      router.replace('/start');
+      router.replace('/login');
       return;
     }
 
@@ -519,7 +519,11 @@ export default function AssessmentPage() {
 
                 setAnswers(savedAnswers);
                 setConfidenceRatings(savedConfidence);
-                setHasStarted(true); // Auto-start if resuming
+                // Resume at the next unanswered question
+                setCurrentIndex(resumeData.responses.length);
+                setHasStarted(true);
+                setHasAcknowledgedHonorCode(true);
+                console.log('Resumed from database:', resumeData.responses.length, 'answers');
               }
             } catch (resumeError) {
               console.error('Error loading saved responses:', resumeError);
@@ -534,7 +538,7 @@ export default function AssessmentPage() {
     } catch (error) {
       console.error('Error parsing session data:', error);
       localStorage.removeItem('assessment-session');
-      router.replace('/start');
+      router.replace('/login');
     }
   }, [router]);
 
@@ -613,6 +617,55 @@ export default function AssessmentPage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Auto-save progress to database periodically
+  useEffect(() => {
+    if (!sessionData || !hasStarted || Object.keys(answers).length === 0) return;
+
+    const saveToDatabase = async () => {
+      try {
+        const responsesToSave = Object.entries(answers).map(([itemId, answer]) => ({
+          itemId,
+          answer,
+          confidence: confidenceRatings[itemId] || null,
+        }));
+
+        if (responsesToSave.length === 0) return;
+
+        const response = await fetch('/api/assessment/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: sessionData.userId,
+            courseId: sessionData.courseId,
+            attemptId: sessionData.attemptId,
+            responses: responsesToSave,
+            currentIndex,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Update attemptId if it was created
+          if (data.attemptId && !sessionData.attemptId) {
+            const updatedSession = { ...sessionData, attemptId: data.attemptId };
+            localStorage.setItem('assessment-session', JSON.stringify(updatedSession));
+          }
+        }
+      } catch (error) {
+        console.warn('Auto-save to database failed:', error);
+      }
+    };
+
+    // Save immediately on first answer, then every 30 seconds
+    const timeoutId = setTimeout(saveToDatabase, 1000);
+    const intervalId = setInterval(saveToDatabase, 30000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [sessionData, hasStarted, answers, confidenceRatings, currentIndex]);
+
   // Auto-save progress to localStorage (recovery for browser crash/close)
   useEffect(() => {
     if (!sessionData || !hasStarted) {
@@ -672,42 +725,75 @@ export default function AssessmentPage() {
         return acc;
       }, []);
 
-      const response = await fetch('/api/assessment/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseCode: sessionData.courseCode,
-          studentId: sessionData.studentId,
-          attemptType: sessionData.attemptType,
-          responses: formattedResponses,
-          timeSpent,
-          metadata: {
-            tabSwitches,
-            isFullscreen
-          }
-        }),
+      // Safety net: verify all questions have responses before submitting
+      if (formattedResponses.length < questions.length) {
+        const missing = questions.length - formattedResponses.length;
+        console.error(`Response count mismatch: ${formattedResponses.length}/${questions.length}`);
+        alert(`Something went wrong — ${missing} response(s) were not recorded. Please try refreshing the page. Your progress has been auto-saved.`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Retry submission up to 3 times on network/server errors
+      const MAX_RETRIES = 3;
+      const payload = JSON.stringify({
+        courseCode: sessionData.courseCode,
+        studentId: sessionData.studentId,
+        attemptType: sessionData.attemptType,
+        responses: formattedResponses,
+        timeSpent,
+        metadata: {
+          tabSwitches,
+          isFullscreen
+        }
       });
 
-      console.log('API response status:', response.status);
-      console.log('API response ok:', response.ok);
+      let lastError: Error | null = null;
 
-      if (!response.ok) {
-        const result = await response.json();
-        console.error('API returned error:', result);
-        throw new Error(result?.error ?? 'Submission failed');
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const response = await fetch('/api/assessment/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('Submission successful:', result);
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('assessment-session');
+              localStorage.removeItem(PROGRESS_STORAGE_KEY);
+            }
+            router.push('/results');
+            return;
+          }
+
+          if (response.status >= 400 && response.status < 500) {
+            const result = await response.json();
+            throw new Error(result?.error ?? 'Submission failed');
+          }
+
+          // 5xx — will retry
+          lastError = new Error(`Server error (${response.status})`);
+          console.warn(`Submission attempt ${attempt}/${MAX_RETRIES} failed: ${response.status}`);
+        } catch (err) {
+          if (err instanceof TypeError) {
+            // Network error (fetch throws TypeError) — will retry
+            lastError = new Error('Network error — please check your connection');
+            console.warn(`Submission attempt ${attempt}/${MAX_RETRIES} failed: network error`);
+          } else {
+            // Client error or other — don't retry
+            throw err;
+          }
+        }
+
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+        }
       }
 
-      const result = await response.json();
-      console.log('API success response:', result);
-
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('assessment-session');
-        localStorage.removeItem(PROGRESS_STORAGE_KEY); // Clear auto-saved progress
-      }
-
-      router.push('/results');
+      throw lastError ?? new Error('Submission failed after multiple attempts. Your progress has been saved — please try again.');
     } catch (error) {
       console.error('Submission error:', error);
       const message =
@@ -1287,7 +1373,32 @@ export default function AssessmentPage() {
               </button>
               {/* Save & Exit Button */}
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // Save progress to database before exiting
+                  try {
+                    const responsesToSave = Object.entries(answers).map(([itemId, answer]) => ({
+                      itemId,
+                      answer,
+                      confidence: confidenceRatings[itemId] || null,
+                    }));
+
+                    if (responsesToSave.length > 0 && sessionData) {
+                      await fetch('/api/assessment/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          userId: sessionData.userId,
+                          courseId: sessionData.courseId,
+                          attemptId: sessionData.attemptId,
+                          responses: responsesToSave,
+                          currentIndex,
+                        }),
+                      });
+                    }
+                  } catch (error) {
+                    console.warn('Save before exit failed:', error);
+                  }
+
                   if (confirm('Your progress has been saved. Are you sure you want to exit?')) {
                     router.push('/start');
                   }

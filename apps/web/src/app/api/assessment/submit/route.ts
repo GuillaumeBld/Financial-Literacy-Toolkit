@@ -58,6 +58,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate responses array
+    if (!Array.isArray(responses) || responses.length === 0) {
+      return NextResponse.json(
+        { error: 'No responses provided' },
+        { status: 400 }
+      );
+    }
+
+    // Filter out blank/empty answers as a safety net
+    const validResponses = responses.filter(
+      (r: any) => r.itemId && r.answer !== undefined && r.answer !== null && String(r.answer).trim() !== ''
+    );
+
+    if (validResponses.length < responses.length) {
+      console.warn(`Filtered ${responses.length - validResponses.length} blank responses from submission`);
+    }
+
+    if (validResponses.length === 0) {
+      return NextResponse.json(
+        { error: 'All responses are blank' },
+        { status: 400 }
+      );
+    }
+
     // Use transaction for all database operations, wrapped with circuit breaker
     const result = await submissionBreaker.execute(() => transaction(async (client) => {
     // Get course information (including pepper for hashing)
@@ -161,17 +185,17 @@ export async function POST(request: NextRequest) {
     console.log('Inserting responses (batch)...');
     // === BULK INSERT RESPONSES ===
     // Prepare arrays for PostgreSQL UNNEST - reduces 40 queries to 1
-    const itemIds = responses.map((r: any) => r.itemId);
-    const rawAnswers = responses.map((r: any) => JSON.stringify({ answer: r.answer }));
-    const confidences = responses.map((r: any) => r.confidence || null);
+    const itemIds = validResponses.map((r: any) => r.itemId);
+    const rawAnswers = validResponses.map((r: any) => JSON.stringify({ answer: r.answer }));
+    const confidences = validResponses.map((r: any) => r.confidence || null);
 
     // Single bulk insert instead of 40 individual inserts
     await client.query(
       `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence)
-       SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[])`,
+       SELECT $1, unnest($2::uuid[]), unnest($3::jsonb[]), unnest($4::int[])`,
       [attemptId, itemIds, rawAnswers, confidences]
     );
-    console.log(`Bulk inserted ${responses.length} responses`);
+    console.log(`Bulk inserted ${validResponses.length} responses`);
 
       // === BATCH SCORING ===
     // Per source of truth: Only score knowledge items (Q1-Q14, Q29-Q40)
@@ -195,7 +219,7 @@ export async function POST(request: NextRequest) {
       is_scored: boolean | null;
     }
 
-    const itemsResult = await client.query(itemQuery, [responses.map((r: any) => r.itemId)]);
+    const itemsResult = await client.query(itemQuery, [validResponses.map((r: any) => r.itemId)]);
     const itemsMap = new Map<string, ItemRow>(
       (itemsResult.rows as ItemRow[]).map((i: ItemRow) => [i.item_id, i])
     );
@@ -206,7 +230,7 @@ export async function POST(request: NextRequest) {
     let totalScore = 0;
     let scoredItems = 0;
 
-    for (const response of responses) {
+    for (const response of validResponses) {
       const item = itemsMap.get(response.itemId);
       if (!item) continue;
 
@@ -237,15 +261,23 @@ export async function POST(request: NextRequest) {
       await client.query(
         `UPDATE responses r
          SET score = u.score
-         FROM (SELECT unnest($1::text[]) as item_id, unnest($2::int[]) as score) u
+         FROM (SELECT unnest($1::uuid[]) as item_id, unnest($2::int[]) as score) u
          WHERE r.attempt_id = $3 AND r.item_id = u.item_id`,
         [updateItemIds, updateScores, attemptId]
       );
       console.log(`Bulk updated ${scoreUpdates.length} scores`);
     }
 
-    const overallScore = scoredItems > 0 ? totalScore / scoredItems : 0;
-    console.log(`Scored ${scoredItems} items, overall: ${overallScore.toFixed(1)}%`);
+    // Get total scoreable items for this instrument to use as denominator
+    // This ensures unanswered scored items count as 0, not excluded from the average
+    const totalScoreableQuery = hasIsScoredColumn
+      ? `SELECT COUNT(*) as total FROM items WHERE instrument_id = $1 AND is_active = true AND is_scored = true`
+      : `SELECT COUNT(*) as total FROM items WHERE instrument_id = $1 AND is_active = true`;
+    const totalScoreableResult = await client.query(totalScoreableQuery, [instrumentId]);
+    const totalScoreableItems = parseInt(totalScoreableResult.rows[0]?.total || '0');
+    const denominator = Math.max(totalScoreableItems, scoredItems);
+    const overallScore = denominator > 0 ? totalScore / denominator : 0;
+    console.log(`Scored ${scoredItems}/${totalScoreableItems} scoreable items, overall: ${overallScore.toFixed(1)}%`);
 
     // Insert overall scores
       await client.query(
