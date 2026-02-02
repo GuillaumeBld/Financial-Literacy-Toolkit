@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryOne, query } from '@/lib/db';
-import { randomBytes } from 'crypto';
-import bcrypt from 'bcrypt';
+import { randomBytes, pbkdf2Sync } from 'crypto';
+import { AuthUtils } from '@/lib/auth';
 
-// Bcrypt password verification
-async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-  return await bcrypt.compare(plainPassword, hashedPassword);
+// PBKDF2 password verification (compatible with AuthUtils.hashPassword format: "salt:hash")
+function verifyPassword(plainPassword: string, hashedPassword: string): boolean {
+  return AuthUtils.verifyPassword(plainPassword, hashedPassword);
 }
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await verifyPassword(password, instructor.hashed_password);
+    const isValidPassword = verifyPassword(password, instructor.hashed_password);
     
     if (!isValidPassword) {
       console.log('Invalid password for:', email);

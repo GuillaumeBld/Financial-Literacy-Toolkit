@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit login attempts
+    const rateLimit = await checkRateLimit(request, RATE_LIMITS.AUTH, 'login');
+    if (!rateLimit.allowed) {
+      return rateLimit.response;
+    }
+
     const body = await request.json();
     const { courseCode, studentId } = body;
 
@@ -35,37 +42,18 @@ export async function POST(request: NextRequest) {
       }
       const hashedStudentKey = AuthUtils.createHashedStudentKey(courseData.pepper, studentId);
 
-      // Find or create user
-      let user = await client.query(
+      // Find existing user - DO NOT create new users here (they must go through onboarding)
+      const user = await client.query(
         'SELECT user_id FROM users WHERE hashed_student_key = $1',
         [hashedStudentKey]
       );
 
-      let userData;
       if (!user.rows || user.rows.length === 0) {
-        // Create new user
-        const newUser = await client.query(
-          'INSERT INTO users (hashed_student_key) VALUES ($1) RETURNING user_id',
-          [hashedStudentKey]
-        );
-        userData = newUser.rows[0];
-      } else {
-        userData = user.rows[0];
+        // User doesn't exist - they need to go through onboarding first
+        throw new Error('NOT_REGISTERED');
       }
 
-      // Check if user is enrolled in course
-      const enrollment = await client.query(
-        'SELECT role FROM enrollments WHERE user_id = $1 AND course_id = $2',
-        [userData.user_id, courseData.course_id]
-      );
-
-      if (!enrollment.rows || enrollment.rows.length === 0) {
-        // Auto-enroll user if not enrolled
-        await client.query(
-          'INSERT INTO enrollments (user_id, course_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-          [userData.user_id, courseData.course_id, 'student']
-        );
-      }
+      const userData = user.rows[0];
 
       // Check if onboarding (profile) is completed
       const profile = await client.query(
@@ -74,6 +62,11 @@ export async function POST(request: NextRequest) {
       );
 
       const hasCompletedOnboarding = profile.rows && profile.rows.length > 0;
+
+      if (!hasCompletedOnboarding) {
+        // User exists but hasn't completed onboarding
+        throw new Error('NOT_REGISTERED');
+      }
 
       // Check for in-progress assessment attempt
       const inProgressAttempt = await client.query(
@@ -109,9 +102,36 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Login error:', error);
+
+    // Provide user-friendly error messages instead of exposing internal errors
+    let userMessage = 'Login failed';
+    let statusCode = 401;
+
+    if (error.message === 'Invalid course code') {
+      userMessage = 'Invalid course code. Please check and try again.';
+      statusCode = 400;
+    } else if (error.message === 'Student ID is required') {
+      userMessage = 'Student ID is required.';
+      statusCode = 400;
+    } else if (error.message === 'NOT_REGISTERED') {
+      userMessage = 'Account not found. Please complete onboarding first using the "Start Onboarding" button.';
+      statusCode = 404;
+    } else if (
+      error.code === 'ECONNREFUSED' ||
+      error.code === 'ENOTFOUND' ||
+      error.message?.includes('SASL') ||
+      error.message?.includes('authentication') ||
+      error.message?.includes('connect') ||
+      error.message?.includes('timeout')
+    ) {
+      // Database connection errors - don't expose details
+      userMessage = 'Service temporarily unavailable. Please try again in a few moments.';
+      statusCode = 503;
+    }
+
     return NextResponse.json(
-      { error: error.message || 'Login failed' },
-      { status: 401 }
+      { error: userMessage },
+      { status: statusCode }
     );
   }
 }

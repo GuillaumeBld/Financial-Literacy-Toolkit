@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit onboarding submissions
+    const rateLimit = await checkRateLimit(request, RATE_LIMITS.AUTH, 'onboarding');
+    if (!rateLimit.allowed) {
+      return rateLimit.response;
+    }
+
     const body = await request.json();
     const {
       courseCode,
@@ -50,6 +57,18 @@ export async function POST(request: NextRequest) {
       // Password removed - no longer collecting passwords
       // Users are linked via hashed_student_key (Student ID + Course Code hash)
 
+      // Check if this student ID is already registered and has completed onboarding
+      const existingUser = await client.query(
+        `SELECT u.user_id FROM users u
+         JOIN student_profiles sp ON u.user_id = sp.user_id AND sp.course_id = $2
+         WHERE u.hashed_student_key = $1`,
+        [hashedStudentKey, courseData.course_id]
+      );
+
+      if (existingUser.rows && existingUser.rows.length > 0) {
+        throw new Error('This Student ID is already registered for this course. If this is your ID, please use the Login page instead.');
+      }
+
       // Find or create user (NO PASSWORD)
       let user = await client.query(
         'SELECT user_id FROM users WHERE hashed_student_key = $1',
@@ -60,11 +79,10 @@ export async function POST(request: NextRequest) {
         // Create new user WITHOUT password (password-free authentication)
         const newUser = await client.query(
           'INSERT INTO users (hashed_student_key, sso_provider) VALUES ($1, $2) RETURNING user_id',
-          [hashedStudentKey, 'hashed'] // sso_provider = 'hashed' indicates hashed_student_key linking
+          [hashedStudentKey, 'hashed']
         );
         user = newUser;
       }
-      // No password update logic - passwords are not used
 
       // Enroll user in course (regardless of whether user was created or updated)
       await client.query(

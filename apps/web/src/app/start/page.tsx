@@ -12,39 +12,213 @@ type Course = {
   displayName: string;
 };
 
+type SessionData = {
+  userId?: string;
+  courseId?: string;
+  studentId?: string;
+  courseCode?: string;
+  hasCompletedOnboarding?: boolean;
+  isTestUser?: boolean;
+};
+
+type AttemptStatus = {
+  hasAttempt: boolean;
+  answeredCount: number;
+  totalQuestions: number;
+  isSubmitted: boolean;
+};
+
+// Assessment window configuration
+// Monday 12:01 AM through Sunday 11:59 PM
+const ASSESSMENT_WINDOW = {
+  start: new Date('2026-02-01T00:01:00'), // Saturday, February 1, 2026 at 12:01 AM (opened early for early access)
+  end: new Date('2026-02-08T23:59:59'),   // Sunday, February 8, 2026 at 11:59 PM
+};
+
+function isWithinAssessmentWindow(): { isOpen: boolean; message: string } {
+  const now = new Date();
+
+  if (now < ASSESSMENT_WINDOW.start) {
+    const diff = ASSESSMENT_WINDOW.start.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return {
+      isOpen: false,
+      message: `Assessment opens in ${days > 0 ? `${days} day${days > 1 ? 's' : ''} and ` : ''}${hours} hour${hours !== 1 ? 's' : ''}`,
+    };
+  }
+
+  if (now > ASSESSMENT_WINDOW.end) {
+    return {
+      isOpen: false,
+      message: 'Assessment window has closed',
+    };
+  }
+
+  return {
+    isOpen: true,
+    message: 'Assessment is open',
+  };
+}
+
 export default function StartPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseCode, setCourseCode] = useState('QUIN 102');
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [attemptStatus, setAttemptStatus] = useState<AttemptStatus | null>(null);
+  const [isLoadingAttempt, setIsLoadingAttempt] = useState(true);
+  const [windowStatus, setWindowStatus] = useState(isWithinAssessmentWindow());
+  const [planBRedirect, setPlanBRedirect] = useState<string | null>(null);
   const router = useRouter();
+
+  // Update window status every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWindowStatus(isWithinAssessmentWindow());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check for authentication
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const session = localStorage.getItem('student-session');
+    if (!session) {
+      // No session - redirect to login
+      router.replace('/login');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(session) as SessionData;
+      // Verify session has required data (user has completed onboarding)
+      if (!parsed.hasCompletedOnboarding) {
+        // User hasn't completed onboarding, redirect to login
+        router.replace('/login');
+        return;
+      }
+      setSessionData(parsed);
+      setIsCheckingAuth(false);
+    } catch {
+      // Invalid session data
+      router.replace('/login');
+    }
+  }, [router]);
 
   // Load available courses
   useEffect(() => {
+    if (isCheckingAuth) return; // Don't load courses until auth is verified
+
     const loadCourses = async () => {
       try {
         const response = await fetch('/api/courses/list');
         const data = await response.json();
-        
+
         if (data.success && data.courses && data.courses.length > 0) {
           setCourses(data.courses);
-          setCourseCode(data.courses[0].name);
+          // Use the course from session if available
+          if (sessionData?.courseCode) {
+            setCourseCode(sessionData.courseCode);
+          } else {
+            setCourseCode(data.courses[0].name);
+          }
         } else {
           // No courses found or API returned empty - use fallback
           setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
-          setCourseCode('QUIN 102');
+          setCourseCode(sessionData?.courseCode || 'QUIN 102');
         }
       } catch (err) {
         console.error('Error loading courses:', err);
         // Fallback to QUIN 102 if API fails
         setCourses([{ id: '', name: 'QUIN 102', term: '', displayName: 'QUIN 102 (Financial Literacy)' }]);
-        setCourseCode('QUIN 102');
+        setCourseCode(sessionData?.courseCode || 'QUIN 102');
       } finally {
         setIsLoadingCourses(false);
       }
     };
 
     loadCourses();
-  }, []);
+  }, [isCheckingAuth, sessionData?.courseCode]);
+
+  // Check Plan B status when course code changes
+  useEffect(() => {
+    if (!courseCode) return;
+    setPlanBRedirect(null);
+    fetch(`/api/plan-b/status?courseCode=${encodeURIComponent(courseCode)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.active && data.redirectUrl) {
+          setPlanBRedirect(data.redirectUrl);
+        }
+      })
+      .catch(() => {});
+  }, [courseCode]);
+
+  // Check for in-progress attempt
+  useEffect(() => {
+    if (isCheckingAuth || !sessionData?.userId || !sessionData?.courseId) {
+      setIsLoadingAttempt(false);
+      return;
+    }
+
+    const checkAttemptStatus = async () => {
+      try {
+        const params = new URLSearchParams({
+          userId: sessionData.userId!,
+          courseId: sessionData.courseId!,
+        });
+        const response = await fetch(`/api/assessment/resume?${params}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setAttemptStatus({
+            hasAttempt: data.hasAttempt,
+            answeredCount: data.responses?.length || 0,
+            totalQuestions: 50, // Total questions in assessment
+            isSubmitted: data.attempt?.isSubmitted || false,
+          });
+        }
+      } catch (err) {
+        console.error('Error checking attempt status:', err);
+      } finally {
+        setIsLoadingAttempt(false);
+      }
+    };
+
+    checkAttemptStatus();
+  }, [isCheckingAuth, sessionData?.userId, sessionData?.courseId]);
+
+  // Handler to start assessment
+  const handleStartAssessment = () => {
+    // Ensure assessment-session exists for the assessment page
+    const existingAssessmentSession = localStorage.getItem('assessment-session');
+    if (!existingAssessmentSession && sessionData) {
+      const assessmentSession = {
+        courseCode: sessionData.courseCode,
+        studentId: sessionData.studentId,
+        userId: sessionData.userId,
+        courseId: sessionData.courseId,
+        attemptType: 'pre' as const,
+        startedAt: new Date().toISOString(),
+        isTestUser: sessionData.isTestUser || false,
+        attemptId: null,
+      };
+      localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
+    }
+    router.push('/assessment');
+  };
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -65,6 +239,18 @@ export default function StartPage() {
       </header>
 
       <main className="container mx-auto px-4 py-12 max-w-3xl">
+        {planBRedirect && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl">
+            <p className="text-sm font-medium mb-2">Your instructor has enabled an alternative assessment.</p>
+            <a
+              href={planBRedirect}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition"
+            >
+              Go to Google Form
+            </a>
+          </div>
+        )}
+
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-loyola-gray-900">Select Assessment</h1>
         </div>
@@ -72,22 +258,15 @@ export default function StartPage() {
         <div className="bg-white rounded-xl shadow-md p-8 mb-8 border border-loyola-gray-200">
           <div>
             <label htmlFor="course-code" className="block text-sm font-medium text-gray-700 mb-2">
-              Course Code <span className="text-red-500">*</span>
+              Course Code
             </label>
             <select
               id="course-code"
               value={courseCode}
-              onChange={(e) => {
-                const selectedCode = e.target.value;
-                setCourseCode(selectedCode);
-                // Auto-navigate to login when course is selected
-                if (selectedCode) {
-                  router.push(`/login?courseCode=${encodeURIComponent(selectedCode)}`);
-                }
-              }}
-              disabled={isLoadingCourses}
+              onChange={(e) => setCourseCode(e.target.value)}
+              disabled={isLoadingCourses || !!sessionData?.courseCode}
               className={`w-full px-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition ${
-                isLoadingCourses ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
+                isLoadingCourses || sessionData?.courseCode ? 'bg-loyola-gray-50 text-loyola-gray-600' : 'bg-white'
               }`}
             >
               {isLoadingCourses ? (
@@ -108,10 +287,24 @@ export default function StartPage() {
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-loyola-gray-900 mb-4">Available Assessments</h2>
           <div className="grid gap-4">
-            <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-loyola-gray-200 transition duration-300 hover:shadow-md hover:border-loyola-maroon/30">
+            <div className={`bg-white rounded-lg shadow-sm p-6 border-2 transition duration-300 ${
+              windowStatus.isOpen && !attemptStatus?.isSubmitted
+                ? 'border-loyola-gray-200 hover:shadow-md hover:border-loyola-maroon/30'
+                : 'border-loyola-gray-200 opacity-75'
+            }`}>
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-bold text-lg text-loyola-gray-900">Pre-Course Knowledge Check</h3>
-                <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Active</span>
+                <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                  attemptStatus?.isSubmitted
+                    ? 'bg-green-100 text-green-800'
+                    : windowStatus.isOpen
+                      ? 'bg-green-100 text-green-800'
+                      : new Date() < ASSESSMENT_WINDOW.start
+                        ? 'bg-loyola-gold/30 text-loyola-maroon'
+                        : 'bg-red-100 text-red-800'
+                }`}>
+                  {attemptStatus?.isSubmitted ? 'Completed' : windowStatus.isOpen ? 'Active' : new Date() < ASSESSMENT_WINDOW.start ? 'Upcoming' : 'Closed'}
+                </span>
               </div>
               <p className="text-loyola-gray-600 mb-2">
                 50 questions
@@ -120,13 +313,37 @@ export default function StartPage() {
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
                 <span>Available: <strong>February 2 - February 8, 2026</strong></span>
               </p>
+              {!windowStatus.isOpen && !attemptStatus?.isSubmitted && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">{windowStatus.message}</p>
+                </div>
+              )}
               <div className="flex justify-between items-center">
-                <span className="text-sm text-loyola-gray-500">Not started</span>
+                <span className="text-sm text-loyola-gray-500">
+                  {isLoadingAttempt ? (
+                    'Loading...'
+                  ) : attemptStatus?.isSubmitted ? (
+                    <span className="text-green-600 font-medium">Completed</span>
+                  ) : attemptStatus?.hasAttempt ? (
+                    <span className="text-amber-600 font-medium">
+                      In progress ({attemptStatus.answeredCount}/{attemptStatus.totalQuestions} answered)
+                    </span>
+                  ) : !windowStatus.isOpen && new Date() < ASSESSMENT_WINDOW.start ? (
+                    'Not available yet'
+                  ) : (
+                    'Not started'
+                  )}
+                </span>
                 <button
-                  onClick={() => router.push(`/login?courseCode=${encodeURIComponent(courseCode)}`)}
-                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-medium py-2 px-6 rounded-lg transition"
+                  onClick={handleStartAssessment}
+                  disabled={attemptStatus?.isSubmitted || (!windowStatus.isOpen && !sessionData?.isTestUser)}
+                  className={`font-medium py-2 px-6 rounded-lg transition ${
+                    attemptStatus?.isSubmitted || (!windowStatus.isOpen && !sessionData?.isTestUser)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-loyola-maroon hover:bg-loyola-maroon-dark text-white'
+                  }`}
                 >
-                  Start
+                  {attemptStatus?.isSubmitted ? 'Completed' : attemptStatus?.hasAttempt ? 'Resume' : 'Start'}
                 </button>
               </div>
             </div>

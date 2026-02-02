@@ -131,28 +131,6 @@ function IntroVideoContent() {
           </p>
         </div>
 
-        {/* Info Box */}
-        <div className="mt-12 bg-loyola-gold/10 border border-loyola-gold/30 rounded-xl p-6">
-          <h3 className="font-semibold text-loyola-maroon mb-3">What to expect:</h3>
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-              <span>A brief onboarding survey to set up your profile</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-              <span>40 questions assessing your financial literacy</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-              <span>Approximately 20-25 minutes to complete</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-              <span>Your responses help measure learning outcomes</span>
-            </li>
-          </ul>
-        </div>
       </main>
 
       {/* Footer */}

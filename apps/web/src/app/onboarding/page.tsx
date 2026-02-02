@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Info, CheckCircle, ChevronRight, ArrowLeft, BookOpen, Check } from 'lucide-react';
+import { User, Info, CheckCircle, ChevronRight, ArrowLeft, BookOpen, Check, Play } from 'lucide-react';
 
 function OnboardingContent() {
   const router = useRouter();
@@ -11,30 +11,18 @@ function OnboardingContent() {
   const courseCode = searchParams.get('courseCode') || 'QUIN 102';
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [isCheckingIntro, setIsCheckingIntro] = useState(true);
-
-  // Check if user has seen the intro video
-  useEffect(() => {
-    const session = localStorage.getItem('student-session');
-    if (session) {
-      const parsed = JSON.parse(session);
-      if (!parsed.hasSeenIntroVideo) {
-        // Redirect to intro if they haven't seen it
-        router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode)}`);
-        return;
-      }
-    } else {
-      // No session at all, redirect to intro
-      router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode)}`);
-      return;
-    }
-    setIsCheckingIntro(false);
-  }, [router, courseCode]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Video state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [videoConfirmed, setVideoConfirmed] = useState(false);
+
   // Form state
   const [studentId, setStudentId] = useState('');
+  const [confirmStudentId, setConfirmStudentId] = useState('');
   // B1-B5: Demographics
   const [gender, setGender] = useState(''); // B1
   const [raceEthnicity, setRaceEthnicity] = useState(''); // B2
@@ -54,35 +42,96 @@ function OnboardingContent() {
   // Consent & acknowledgments
   const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
   const [researchConsent, setResearchConsent] = useState(true);
-  // Socioeconomic context (B9-B13 are in this section)
+  // Plan B fallback
+  const [planBRedirect, setPlanBRedirect] = useState<string | null>(null);
 
-  const totalSteps = 4;
+  // Check Plan B status
+  useEffect(() => {
+    if (!courseCode) return;
+    fetch(`/api/plan-b/status?courseCode=${encodeURIComponent(courseCode)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.active && data.redirectUrl) {
+          setPlanBRedirect(data.redirectUrl);
+        }
+      })
+      .catch(() => {});
+  }, [courseCode]);
+
+  const totalSteps = 5;
 
   const handleNext = () => {
-    if (currentStep === 0) {
+    // Step 0: Intro Video - no validation needed
+    if (currentStep === 1) {
+      // Step 1: Consent and Data Use
       if (!courseRequirementAcknowledged) {
         setError('Please acknowledge the course requirement to continue');
         return;
       }
-    } else if (currentStep === 1) {
+    } else if (currentStep === 2) {
+      // Step 2: Access and Identity
       if (!studentId.trim()) {
         setError('Please enter your Student ID');
         return;
       }
-    } else if (currentStep === 2) {
-      // Demographics (B1-B5) - optional, except "Other" requires text
+      if (!/^\d+$/.test(studentId.trim())) {
+        setError('Student ID must contain only numbers');
+        return;
+      }
+      if (studentId.trim() !== confirmStudentId.trim()) {
+        setError('Student IDs do not match. Please re-enter your Student ID.');
+        return;
+      }
+    } else if (currentStep === 3) {
+      // Step 3: Demographics (B1-B5) - all required
+      if (!gender) {
+        setError('Please select your gender (B1)');
+        return;
+      }
+      if (!raceEthnicity) {
+        setError('Please select your racial or ethnic background (B2)');
+        return;
+      }
+      if (!ageRange) {
+        setError('Please select your age range (B3)');
+        return;
+      }
+      if (!firstLanguage) {
+        setError('Please select your first language (B4)');
+        return;
+      }
       if (firstLanguage === 'other' && !firstLanguageOther.trim()) {
         setError('Please specify your first language (B4)');
         return;
       }
-    } else if (currentStep === 3) {
-      // Financial Background (B6-B8) - only B6/B7 required
+      if (!workExperience) {
+        setError('Please select your work experience (B5)');
+        return;
+      }
+    } else if (currentStep === 4) {
+      // Step 4: Financial Background (B6-B13) - all required
       if (!priorFinancialProducts || priorFinancialProducts.length === 0) {
         setError('Please select at least one option for prior financial products (B6)');
         return;
       }
       if (!selfRatedFinancialKnowledge) {
         setError('Please rate your financial knowledge (B7)');
+        return;
+      }
+      if (!financialStressFrequency) {
+        setError('Please select how often you feel financially stressed (B8)');
+        return;
+      }
+      if (!parentalEducation) {
+        setError('Please select the highest level of parental education (B9)');
+        return;
+      }
+      if (!firstGenerationCollege) {
+        setError('Please indicate if you are a first-generation college student (B10)');
+        return;
+      }
+      if (!hasStudentLoanDebt) {
+        setError('Please indicate if you have student loan debt (B11)');
         return;
       }
       if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
@@ -100,7 +149,12 @@ function OnboardingContent() {
 
   const handleBack = () => {
     setError('');
-    setCurrentStep(Math.max(0, currentStep - 1));
+    if (currentStep === 0) {
+      // Go back to login page
+      router.push('/login');
+    } else {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,9 +167,9 @@ function OnboardingContent() {
       return;
     }
 
-    // Validate financial background (B6-B8) - only B6/B7 required
-    if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge) {
-      setError('Please complete the required financial background fields (B6-B7)');
+    // Validate all financial background fields are required
+    if (priorFinancialProducts.length === 0 || !selfRatedFinancialKnowledge || !financialStressFrequency || !parentalEducation || !firstGenerationCollege || !hasStudentLoanDebt) {
+      setError('Please complete all required fields');
       return;
     }
     if (hasStudentLoanDebt === 'yes' && !studentLoanInterestRate) {
@@ -203,7 +257,8 @@ function OnboardingContent() {
         localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
       }
 
-      router.push('/assessment');
+      // After completing onboarding, go to start page to select assessment
+      router.push('/start');
     } catch (err: any) {
       console.error('Error submitting onboarding:', err);
       setError(err.message || 'Unable to save your information. Please try again.');
@@ -211,15 +266,6 @@ function OnboardingContent() {
       setIsSubmitting(false);
     }
   };
-
-  // Show loading while checking intro status
-  if (isCheckingIntro) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-loyola-maroon border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -257,6 +303,19 @@ function OnboardingContent() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          {planBRedirect && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl">
+              <p className="text-sm font-medium mb-2">Your instructor has enabled an alternative assessment.</p>
+              <a
+                href={planBRedirect}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition"
+              >
+                Go to Google Form
+                <ChevronRight className="w-4 h-4" />
+              </a>
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
               <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -264,8 +323,122 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 0: Consent and Data Use */}
+          {/* Step 0: Intro Video */}
           {currentStep === 0 && (
+            <div>
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to the Financial Literacy Assessment</h1>
+                <p className="text-gray-600">
+                  Please watch this short video to learn about the assessment before you begin.
+                </p>
+              </div>
+
+              {/* Video Container */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6">
+                <div className="relative aspect-video bg-gray-900">
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    controls
+                    onPlay={() => setIsVideoPlaying(true)}
+                    onPause={() => setIsVideoPlaying(false)}
+                    onEnded={() => { setHasWatchedVideo(true); setIsVideoPlaying(false); }}
+                  >
+                    <source src="/intro-video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+
+                  {/* Play overlay */}
+                  {!isVideoPlaying && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer"
+                      onClick={() => {
+                        const video = videoRef.current;
+                        if (video) {
+                          video.play();
+                          if (video.requestFullscreen) {
+                            video.requestFullscreen();
+                          } else if ((video as any).webkitEnterFullscreen) {
+                            (video as any).webkitEnterFullscreen();
+                          }
+                        }
+                      }}
+                    >
+                      <div className="text-center text-white">
+                        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-3 hover:bg-white/30 transition-colors">
+                          <Play className="w-8 h-8 text-white ml-1" />
+                        </div>
+                        <p className="text-base font-medium">Click to play introduction video</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Video info bar */}
+                <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+                  <div className="flex items-center gap-3">
+                    {hasWatchedVideo ? (
+                      <>
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">Video completed</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-5 h-5 text-gray-500" />
+                        <span className="text-sm text-gray-600">Watch the video to continue</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Confirmation checkbox */}
+              <div
+                onClick={() => hasWatchedVideo && setVideoConfirmed(!videoConfirmed)}
+                className={`flex items-start gap-3 mb-6 p-4 border rounded-xl transition-all ${
+                  hasWatchedVideo ? 'cursor-pointer border-gray-200 bg-gray-50/50' : 'cursor-not-allowed border-gray-100 bg-gray-50/30 opacity-50'
+                }`}
+              >
+                <div className={`h-5 w-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                  videoConfirmed
+                    ? 'bg-loyola-maroon border-loyola-maroon'
+                    : 'border-gray-300 bg-white'
+                }`}>
+                  {videoConfirmed && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                </div>
+                <span className="text-sm text-gray-700">
+                  I have watched the introduction video and I am ready to proceed.
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!hasWatchedVideo || !videoConfirmed}
+                  className={`font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 ${
+                    hasWatchedVideo && videoConfirmed
+                      ? 'bg-loyola-maroon hover:bg-loyola-maroon-dark text-white shadow-lg shadow-loyola-maroon/20'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Continue
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 1: Consent and Data Use */}
+          {currentStep === 1 && (
             <div>
               <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Consent and Data Use</h1>
@@ -354,8 +527,8 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 1: Access and Identity */}
-          {currentStep === 1 && (
+          {/* Step 2: Access and Identity */}
+          {currentStep === 2 && (
             <div>
               <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Access and Identity</h1>
@@ -388,14 +561,56 @@ function OnboardingContent() {
                     </div>
                     <input
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       id="student-id"
                       value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setStudentId(val);
+                      }}
                       className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
-                      placeholder="Enter your student ID"
+                      placeholder="Enter your student ID (numbers only)"
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="confirm-student-id" className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Student ID <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      id="confirm-student-id"
+                      value={confirmStudentId}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setConfirmStudentId(val);
+                      }}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all ${
+                        confirmStudentId && confirmStudentId !== studentId
+                          ? 'border-red-300 bg-red-50/50'
+                          : confirmStudentId && confirmStudentId === studentId
+                            ? 'border-green-300 bg-green-50/50'
+                            : 'border-gray-200'
+                      }`}
+                      placeholder="Re-enter your student ID"
+                      required
+                    />
+                  </div>
+                  {confirmStudentId && confirmStudentId !== studentId && (
+                    <p className="mt-1.5 text-sm text-red-600">Student IDs do not match</p>
+                  )}
+                  {confirmStudentId && confirmStudentId === studentId && (
+                    <p className="mt-1.5 text-sm text-green-600">Student IDs match</p>
+                  )}
                 </div>
 
                 <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
@@ -415,7 +630,15 @@ function OnboardingContent() {
                 </div>
               )}
 
-              <div className="flex justify-end mt-6">
+              <div className="flex justify-between mt-6">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back
+                </button>
                 <button
                   type="button"
                   onClick={handleNext}
@@ -428,13 +651,13 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 2: Demographics (B1-B5) */}
-          {currentStep === 2 && (
+          {/* Step 3: Demographics (B1-B5) */}
+          {currentStep === 3 && (
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Demographic Information</h2>
                 <p className="text-gray-600">
-                  These questions help us understand our student population. All items are optional.
+                  These questions help us understand our student population. All items are required. You may select &quot;Prefer not to answer&quot; for any question.
                 </p>
               </div>
 
@@ -442,7 +665,7 @@ function OnboardingContent() {
                 {/* B1: Gender */}
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                    B1: What is your gender?
+                    B1: What is your gender? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="gender"
@@ -460,7 +683,7 @@ function OnboardingContent() {
                 {/* B2: Race/Ethnicity */}
                 <div>
                   <label htmlFor="race-ethnicity" className="block text-sm font-medium text-gray-700 mb-2">
-                    B2: Which category best describes your racial or ethnic background?
+                    B2: Which category best describes your racial or ethnic background? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="race-ethnicity"
@@ -484,7 +707,7 @@ function OnboardingContent() {
                 {/* B3: Age Range */}
                 <div>
                   <label htmlFor="age-range" className="block text-sm font-medium text-gray-700 mb-2">
-                    B3: What is your age range?
+                    B3: What is your age range? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="age-range"
@@ -502,7 +725,7 @@ function OnboardingContent() {
                 {/* B4: First Language */}
                 <div>
                   <label htmlFor="first-language" className="block text-sm font-medium text-gray-700 mb-2">
-                    B4: What is your first language?
+                    B4: What is your first language? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="first-language"
@@ -535,7 +758,7 @@ function OnboardingContent() {
                 {/* B5: Work Experience */}
                 <div>
                   <label htmlFor="work-experience" className="block text-sm font-medium text-gray-700 mb-2">
-                    B5: Do you have work experience?
+                    B5: Do you have work experience? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="work-experience"
@@ -580,13 +803,13 @@ function OnboardingContent() {
             </div>
           )}
 
-          {/* Step 3: Financial Background (B6-B12) & Consent */}
-          {currentStep === 3 && (
+          {/* Step 4: Financial Background (B6-B12) & Consent */}
+          {currentStep === 4 && (
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Financial Background and Context</h2>
                 <p className="text-gray-600">
-                  Please complete the financial background and socio-economic context items.
+                  Please complete the financial background and socio-economic context items. All items are required. You may select &quot;Prefer not to answer&quot; for any question.
                 </p>
               </div>
 
@@ -607,6 +830,7 @@ function OnboardingContent() {
                       { value: 'investment-account', label: 'Investment account (stocks, ETFs, mutual funds)' },
                       { value: 'insurance', label: 'Insurance policy in your own name' },
                       { value: 'none', label: 'None of the above' },
+                      { value: 'prefer-not-to-answer', label: 'Prefer not to answer' },
                     ].map((product) => {
                       const isChecked = priorFinancialProducts.includes(product.value);
                       return (
@@ -653,13 +877,14 @@ function OnboardingContent() {
                     <option value="moderate">Moderate</option>
                     <option value="high">High</option>
                     <option value="very-high">Very high</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
 
                 {/* B8: Financial Stress Frequency */}
                 <div>
                   <label htmlFor="financial-stress" className="block text-sm font-medium text-gray-700 mb-2">
-                    B8: How often do you feel financially stressed? <span className="text-gray-400 font-normal">(Optional)</span>
+                    B8: How often do you feel financially stressed? <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="financial-stress"
@@ -673,6 +898,7 @@ function OnboardingContent() {
                     <option value="sometimes">Sometimes</option>
                     <option value="often">Often</option>
                     <option value="always">Always</option>
+                    <option value="prefer-not-to-answer">Prefer not to answer</option>
                   </select>
                 </div>
 
@@ -682,7 +908,7 @@ function OnboardingContent() {
                 {/* B9: Highest Level of Parental Education */}
                 <div>
                   <label htmlFor="parental-education" className="block text-sm font-medium text-gray-700 mb-2">
-                    B9: Highest level of parental education
+                    B9: Highest level of parental education <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="parental-education"
@@ -705,7 +931,7 @@ function OnboardingContent() {
                 {/* B10: First-Generation College Student */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    B10: Are you a first-generation college student?
+                    B10: Are you a first-generation college student? <span className="text-red-500">*</span>
                   </label>
                   <div className="flex flex-wrap gap-3">
                     {[
@@ -738,7 +964,7 @@ function OnboardingContent() {
                 {/* B11: Student Loan Debt */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    B11: Do you currently have any student loan debt?
+                    B11: Do you currently have any student loan debt? <span className="text-red-500">*</span>
                   </label>
                   <div className="flex flex-wrap gap-3">
                     {[

@@ -4,8 +4,8 @@
 
 -- Add new columns to student_profiles table
 ALTER TABLE student_profiles
-  ADD COLUMN IF NOT EXISTS age_range TEXT CHECK (age_range IN ('20-or-under', 'above-20')),
-  ADD COLUMN IF NOT EXISTS first_language TEXT CHECK (first_language IN ('english', 'spanish', 'chinese', 'french', 'russian', 'dutch', 'other')),
+  ADD COLUMN IF NOT EXISTS age_range TEXT CHECK (age_range IN ('20-or-under', 'above-20', 'prefer-not-to-answer')),
+  ADD COLUMN IF NOT EXISTS first_language TEXT CHECK (first_language IN ('english', 'spanish', 'chinese', 'french', 'russian', 'dutch', 'other', 'prefer-not-to-answer')),
   ADD COLUMN IF NOT EXISTS first_language_other TEXT, -- For "Other" option
   ADD COLUMN IF NOT EXISTS prior_financial_products JSONB, -- Array of selected products: ['credit-card', 'student-loan', 'auto-loan', 'investment-account', 'insurance', 'none']
   ADD COLUMN IF NOT EXISTS self_rated_financial_knowledge TEXT CHECK (self_rated_financial_knowledge IN ('very-low', 'low', 'moderate', 'high', 'very-high')),

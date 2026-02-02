@@ -22,6 +22,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [error, setError] = useState('');
+  const [planBRedirect, setPlanBRedirect] = useState<string | null>(null);
 
   // Load available courses
   useEffect(() => {
@@ -54,6 +55,20 @@ function LoginForm() {
     loadCourses();
   }, [searchParams]);
 
+  // Check Plan B status when course code changes
+  useEffect(() => {
+    if (!courseCode) return;
+    setPlanBRedirect(null);
+    fetch(`/api/plan-b/status?courseCode=${encodeURIComponent(courseCode)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.active && data.redirectUrl) {
+          setPlanBRedirect(data.redirectUrl);
+        }
+      })
+      .catch(() => {});
+  }, [courseCode]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -81,7 +96,13 @@ function LoginForm() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store session data
+      // Check if user has completed onboarding BEFORE storing session
+      if (!data.hasCompletedOnboarding) {
+        // User hasn't completed onboarding - they should use the Register flow
+        throw new Error('You have not completed onboarding yet. Please use the "Start Onboarding" button to register first.');
+      }
+
+      // Only store session data for users who have completed onboarding
       const sessionData = {
         userId: data.userId,
         courseId: data.courseId,
@@ -91,6 +112,7 @@ function LoginForm() {
         hasInProgressAttempt: data.hasInProgressAttempt || false,
         attemptId: data.attemptId || null,
         attemptType: data.attemptType || 'pre',
+        hasCompletedOnboarding: true,
       };
 
       localStorage.setItem('student-session', JSON.stringify(sessionData));
@@ -108,12 +130,8 @@ function LoginForm() {
       };
       localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
 
-      if (data.hasCompletedOnboarding) {
-        router.push('/assessment');
-      } else {
-        // New users go to intro video first
-        router.push(`/onboarding/intro?courseCode=${encodeURIComponent(courseCode.trim())}`);
-      }
+      // Returning users go to start page to select assessment
+      router.push('/start');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.message || 'An error occurred. Please try again.');
@@ -150,6 +168,19 @@ function LoginForm() {
                   <p className="text-sm text-gray-500">Access your assessments</p>
                 </div>
               </div>
+
+              {planBRedirect && (
+                <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl">
+                  <p className="text-sm font-medium mb-2">Your instructor has enabled an alternative assessment.</p>
+                  <a
+                    href={planBRedirect}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition"
+                  >
+                    Go to Google Form
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              )}
 
               {error && (
                 <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
@@ -240,7 +271,7 @@ function LoginForm() {
               </div>
 
               <Link
-                href="/onboarding/intro"
+                href="/onboarding"
                 className="inline-flex items-center justify-center gap-2 bg-white text-loyola-maroon font-semibold py-3.5 px-6 rounded-xl transition-all hover:bg-gray-100 shadow-lg hover:shadow-xl w-full"
               >
                 <UserPlus className="w-5 h-5" />

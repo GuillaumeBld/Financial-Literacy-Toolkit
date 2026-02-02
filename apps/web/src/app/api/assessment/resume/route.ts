@@ -77,8 +77,22 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error getting resume data:', error);
+
+    // User-friendly error messages
+    let userMessage = 'Failed to get resume data';
+    if (
+      error.code === 'ECONNREFUSED' ||
+      error.message?.includes('SASL') ||
+      error.message?.includes('connect') ||
+      error.message?.includes('timeout')
+    ) {
+      userMessage = 'Service temporarily unavailable';
+    } else if (error.message?.includes('invalid input syntax')) {
+      userMessage = 'Invalid request parameters';
+    }
+
     return NextResponse.json(
-      { error: error.message || 'Failed to get resume data' },
+      { error: userMessage },
       { status: 500 }
     );
   }

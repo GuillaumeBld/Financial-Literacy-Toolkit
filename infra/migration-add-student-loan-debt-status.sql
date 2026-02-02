@@ -2,7 +2,7 @@
 -- Adds: has_student_loan_debt, student_loan_interest_rate
 
 ALTER TABLE student_profiles
-  ADD COLUMN IF NOT EXISTS has_student_loan_debt BOOLEAN,
+  ADD COLUMN IF NOT EXISTS has_student_loan_debt TEXT CHECK (has_student_loan_debt IN ('yes', 'no', 'prefer-not-to-say')),
   ADD COLUMN IF NOT EXISTS student_loan_interest_rate TEXT CHECK (
     student_loan_interest_rate IN (
       'less-than-5',

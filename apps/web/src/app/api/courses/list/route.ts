@@ -38,13 +38,27 @@ export async function GET(request: NextRequest) {
       success: true,
       courses: courseList,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching courses:', error);
+
+    // Provide user-friendly error message, don't expose database internals
+    let userMessage = 'Unable to load courses';
+    if (
+      error.code === 'ECONNREFUSED' ||
+      error.code === 'ENOTFOUND' ||
+      error.message?.includes('SASL') ||
+      error.message?.includes('authentication') ||
+      error.message?.includes('connect') ||
+      error.message?.includes('timeout')
+    ) {
+      userMessage = 'Service temporarily unavailable';
+    }
+
     // Return empty array on error - frontend will use fallback
     return NextResponse.json({
       success: false,
       courses: [],
-      error: error instanceof Error ? error.message : 'Failed to fetch courses',
+      error: userMessage,
     });
   }
 }

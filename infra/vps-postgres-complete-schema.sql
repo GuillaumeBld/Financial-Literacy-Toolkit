@@ -118,10 +118,10 @@ CREATE TABLE student_profiles (
   -- Baseline Demographic Characteristics (B1-B5)
   gender TEXT CHECK (gender IN ('female', 'male', 'prefer-not-to-say')), -- B1
   race_ethnicity TEXT, -- B2: 'White or Caucasian', 'Asian', 'Black or African American', 'Hispanic or Latino', 'Native Hawaiian or Pacific Islander', 'Native American or Alaska Native', 'Two or more racial or ethnic backgrounds', 'Other', 'Prefer not to say'
-  age_range TEXT CHECK (age_range IN ('20-or-under', 'above-20')), -- B3 (migration-add-baseline-covariates.sql)
-  first_language TEXT CHECK (first_language IN ('english', 'spanish', 'chinese', 'french', 'russian', 'dutch', 'other')), -- B4
+  age_range TEXT CHECK (age_range IN ('20-or-under', 'above-20', 'prefer-not-to-answer')), -- B3 (migration-add-baseline-covariates.sql)
+  first_language TEXT CHECK (first_language IN ('english', 'spanish', 'chinese', 'french', 'russian', 'dutch', 'other', 'prefer-not-to-answer')), -- B4
   first_language_other TEXT, -- B4: Specification when 'other' is selected
-  work_experience TEXT CHECK (work_experience IN ('no-work-experience', 'part-time', 'full-time')), -- B5
+  work_experience TEXT CHECK (work_experience IN ('no-work-experience', 'part-time', 'full-time', 'prefer-not-to-answer')), -- B5
   
   -- Baseline Financial Background & Context (B6-B8)
   prior_financial_products JSONB, -- B6: Array of selected products: ['credit-card', 'student-loan', 'auto-loan', 'investment-account', 'insurance', 'none']
@@ -130,7 +130,7 @@ CREATE TABLE student_profiles (
   
   -- Baseline Socio-economic data (B9-B10)
   parental_education TEXT CHECK (parental_education IN ('less-than-high-school', 'high-school-diploma-or-ged', 'some-college-no-degree', 'associate-degree', 'bachelors-degree', 'graduate-or-professional-degree', 'dont-know', 'prefer-not-to-answer')), -- B9
-  first_generation_college BOOLEAN, -- B10: First generation college student
+  first_generation_college TEXT CHECK (first_generation_college IN ('yes', 'no', 'prefer-not-to-say')), -- B10: First generation college student
 
   -- Baseline Student Loan Debt Status (B11-B13)
   has_student_loan_debt TEXT CHECK (has_student_loan_debt IN ('yes', 'no', 'prefer-not-to-say')), -- B11
@@ -291,3 +291,20 @@ COMMENT ON COLUMN items.is_active IS 'Whether this question is active and availa
 COMMENT ON TABLE instructors IS 'Instructor accounts with password-based authentication';
 COMMENT ON TABLE instructor_courses IS 'Links instructors to courses they can manage';
 COMMENT ON TABLE instructor_sessions IS 'Session tokens for instructor dashboard authentication';
+
+-- Plan B: Google Forms fallback settings per course
+CREATE TABLE IF NOT EXISTS plan_b_settings (
+  setting_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  course_id UUID NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+  is_active BOOLEAN NOT NULL DEFAULT false,
+  active_level TEXT CHECK (active_level IN ('full', 'assessment_only', 'minimal')),
+  url_full TEXT,
+  url_assessment_only TEXT,
+  url_minimal TEXT,
+  updated_by UUID REFERENCES instructors(instructor_id),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(course_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_plan_b_settings_course_id ON plan_b_settings(course_id);
+COMMENT ON TABLE plan_b_settings IS 'Google Forms fallback settings per course, managed by instructors';

@@ -355,9 +355,9 @@ export type Database = {
           // Additional Socio-economic data (Optional)
           household_income: string | null;
           parental_education: string | null;
-          first_generation_college: boolean | null;
+          first_generation_college: string | null; // B10: 'yes', 'no', 'prefer-not-to-say'
           financial_aid_recipient: boolean | null;
-          has_student_loan_debt: boolean | null;
+          has_student_loan_debt: string | null; // B11: 'yes', 'no', 'prefer-not-to-say'
           student_loan_interest_rate: string | null;
           living_situation: string | null;
           work_study: boolean | null;
@@ -384,9 +384,9 @@ export type Database = {
           // Additional Socio-economic data (Optional)
           household_income?: string | null;
           parental_education?: string | null;
-          first_generation_college?: boolean | null;
+          first_generation_college?: string | null; // B10: 'yes', 'no', 'prefer-not-to-say'
           financial_aid_recipient?: boolean | null;
-          has_student_loan_debt?: boolean | null;
+          has_student_loan_debt?: string | null; // B11: 'yes', 'no', 'prefer-not-to-say'
           student_loan_interest_rate?: string | null;
           living_situation?: string | null;
           work_study?: boolean | null;
@@ -413,9 +413,9 @@ export type Database = {
           // Additional Socio-economic data (Optional)
           household_income?: string | null;
           parental_education?: string | null;
-          first_generation_college?: boolean | null;
+          first_generation_college?: string | null; // B10: 'yes', 'no', 'prefer-not-to-say'
           financial_aid_recipient?: boolean | null;
-          has_student_loan_debt?: boolean | null;
+          has_student_loan_debt?: string | null; // B11: 'yes', 'no', 'prefer-not-to-say'
           student_loan_interest_rate?: string | null;
           living_situation?: string | null;
           work_study?: boolean | null;

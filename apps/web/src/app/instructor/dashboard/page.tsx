@@ -270,6 +270,11 @@ export default function InstructorDashboardPage() {
                 description="Detailed statistical analysis"
                 href="/instructor/analytics"
               />
+              <ActionCard
+                title="Plan B Settings"
+                description="Configure Google Forms fallback"
+                href="/instructor/plan-b"
+              />
             </div>
           </>
         )}
