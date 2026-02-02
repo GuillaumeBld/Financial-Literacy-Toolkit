@@ -781,13 +781,25 @@ export default function AssessmentPage() {
               const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
               if (progress.savedAt && progress.savedAt > twoHoursAgo) {
                 if (progress.answers && Object.keys(progress.answers).length > 0) {
-                  restoreWithSdm(
-                    progress.answers,
-                    progress.confidenceRatings || {},
-                    progress.currentIndex || 0
-                  );
-                  console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
-                  return; // Skip API resume if localStorage has data
+                  // Validate: check if all answer keys are either anchors or in SDM bank
+                  const anchorIds = new Set(loadedQuestions.map(q => q.id));
+                  const sdmBankIds = new Set(loadedSdmBank.map(q => q.id));
+                  const answerKeys = Object.keys(progress.answers);
+                  const orphanedAnswers = answerKeys.filter(k => !anchorIds.has(k) && !sdmBankIds.has(k));
+
+                  if (orphanedAnswers.length > 0) {
+                    // Stale localStorage with answer IDs not in current item banks — discard
+                    console.warn('localStorage has orphaned answer IDs, falling through to DB resume:', orphanedAnswers);
+                    localStorage.removeItem(PROGRESS_STORAGE_KEY);
+                  } else {
+                    restoreWithSdm(
+                      progress.answers,
+                      progress.confidenceRatings || {},
+                      progress.currentIndex || 0
+                    );
+                    console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
+                    return; // Skip API resume if localStorage has data
+                  }
                 }
               } else {
                 // Clear stale progress
