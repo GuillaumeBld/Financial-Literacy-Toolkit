@@ -743,14 +743,27 @@ export default function AssessmentPage() {
             let totalQuestionCount = loadedQuestions.length;
 
             if (answeredAnchors >= anchorCount && loadedSdmBank.length > 0) {
-              // All anchors answered — run SDM selection and append
-              const sdmQuestions = selectSdmFromAnchors(rebuilt, loadedSdmBank, parsedSession.isTestUser || false);
+              // Check if student already has SDM answers (legacy resume)
+              const answeredSdmIds = new Set(
+                Object.keys(restoredAnswers).filter(id => !loadedQuestions.some(q => q.id === id))
+              );
+
+              let sdmQuestions: Question[];
+              if (answeredSdmIds.size > 0) {
+                // Legacy student: preserve only SDM items they already answered
+                sdmQuestions = loadedSdmBank.filter(q => answeredSdmIds.has(q.id));
+                console.log(`Resume: Preserving ${sdmQuestions.length} previously-answered SDM questions`);
+              } else {
+                // Fresh SDM selection (just finished anchors, no SDM answers yet)
+                sdmQuestions = selectSdmFromAnchors(rebuilt, loadedSdmBank, parsedSession.isTestUser || false);
+                console.log(`Resume: Selected ${sdmQuestions.length} new SDM questions`);
+              }
+
               if (sdmQuestions.length > 0) {
                 const expandedQuestions = [...loadedQuestions, ...sdmQuestions];
                 setQuestions(expandedQuestions);
                 setSdmAppended(true);
                 totalQuestionCount = expandedQuestions.length;
-                console.log(`Resume: Appended ${sdmQuestions.length} SDM questions`);
               }
             }
 
@@ -1098,7 +1111,7 @@ export default function AssessmentPage() {
 
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
-  const TOTAL_QUESTIONS = 50; // 40 anchor + 10 SDM
+  const TOTAL_QUESTIONS = questions.length || 50; // Use actual question count (40 anchor + SDM)
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / TOTAL_QUESTIONS) * 100 : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
   const hasSelectedConfidence = currentConfidence > 0;

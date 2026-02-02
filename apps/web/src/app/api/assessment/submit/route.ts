@@ -163,18 +163,18 @@ export async function POST(request: NextRequest) {
     );
     const hasMetadataColumn = metadataColumnCheck.rows && metadataColumnCheck.rows.length > 0;
 
-    // Create assessment attempt (conditionally include metadata if column exists)
+    // Create assessment attempt WITHOUT submitted_at (set after all data is saved)
     let attempt;
     if (hasMetadataColumn) {
       attempt = await client.query(
-        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING attempt_id',
-        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null, metadata || {}]
+        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
+        [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, metadata || {}]
       );
     } else {
       // Fallback: insert without metadata column
       attempt = await client.query(
-        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, submitted_at, duration_s) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
-        [userId, courseData.course_id, instrumentId, attemptType, new Date().toISOString(), timeSpent || null]
+        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s) VALUES ($1, $2, $3, $4, $5) RETURNING attempt_id',
+        [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null]
       );
       console.log('Note: metadata column not found in attempts table - anti-cheating data not stored');
     }
@@ -284,6 +284,12 @@ export async function POST(request: NextRequest) {
         'INSERT INTO scores (attempt_id, overall, by_domain, se_overall, overconfidence_index) VALUES ($1, $2, $3, $4, $5)',
         [attemptId, overallScore, {}, 5.0, 0]
       );
+
+    // Mark attempt as submitted ONLY after all data is saved successfully
+    await client.query(
+      'UPDATE attempts SET submitted_at = $1 WHERE attempt_id = $2',
+      [new Date().toISOString(), attemptId]
+    );
 
       return {
         attemptId,
