@@ -32,14 +32,17 @@ export const RATE_LIMITS = {
   // Per-student submission limit (5 per minute per unique student)
   SUBMIT_STUDENT: { windowMs: 60 * 1000, maxRequests: 5 },
 
-  // General read endpoints (500 per minute per IP)
-  READ: { windowMs: 60 * 1000, maxRequests: 500 },
+  // General read endpoints (2000 per minute per IP)
+  // High because campus NAT may funnel 500+ students through one IP
+  READ: { windowMs: 60 * 1000, maxRequests: 2000 },
 
-  // Auth attempts (20 per minute per IP)
-  AUTH: { windowMs: 60 * 1000, maxRequests: 20 },
+  // Auth attempts (30 per minute per IP)
+  // Higher for campus NAT where many students authenticate from one IP
+  AUTH: { windowMs: 60 * 1000, maxRequests: 30 },
 
-  // Items API - higher limit since it's cached (1000 per minute)
-  ITEMS: { windowMs: 60 * 1000, maxRequests: 1000 },
+  // Items API - very high limit since responses are cached and read-only
+  // 500+ students behind campus NAT each loading items = thousands of requests
+  ITEMS: { windowMs: 60 * 1000, maxRequests: 5000 },
 } as const;
 
 /**
