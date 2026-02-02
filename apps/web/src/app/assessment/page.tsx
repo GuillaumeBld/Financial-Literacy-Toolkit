@@ -727,8 +727,6 @@ export default function AssessmentPage() {
             restoredConfidence: Record<string, number>,
             desiredIndex: number
           ) => {
-            setAnswers(restoredAnswers);
-            setConfidenceRatings(restoredConfidence);
             setHasStarted(true);
             setHasAcknowledgedHonorCode(true);
 
@@ -741,6 +739,7 @@ export default function AssessmentPage() {
             const answeredAnchors = loadedQuestions.filter(q => !q.is_sdm && restoredAnswers[q.id]).length;
 
             let totalQuestionCount = loadedQuestions.length;
+            let finalQuestionSet = loadedQuestions;
 
             if (answeredAnchors >= anchorCount && loadedSdmBank.length > 0) {
               // Check if student already has SDM answers (legacy resume)
@@ -764,8 +763,28 @@ export default function AssessmentPage() {
                 setQuestions(expandedQuestions);
                 setSdmAppended(true);
                 totalQuestionCount = expandedQuestions.length;
+                finalQuestionSet = expandedQuestions;
               }
             }
+
+            // Clean orphaned answers: only keep answers/confidence for questions in the final set
+            const validIds = new Set(finalQuestionSet.map(q => q.id));
+            const cleanedAnswers: Record<string, string> = {};
+            const cleanedConfidence: Record<string, number> = {};
+            for (const [id, val] of Object.entries(restoredAnswers)) {
+              if (validIds.has(id)) cleanedAnswers[id] = val;
+            }
+            for (const [id, val] of Object.entries(restoredConfidence)) {
+              if (validIds.has(id)) cleanedConfidence[id] = val;
+            }
+
+            const orphanCount = Object.keys(restoredAnswers).length - Object.keys(cleanedAnswers).length;
+            if (orphanCount > 0) {
+              console.warn(`Resume: Cleaned ${orphanCount} orphaned answer(s) not matching any question`);
+            }
+
+            setAnswers(cleanedAnswers);
+            setConfidenceRatings(cleanedConfidence);
 
             // Cap currentIndex to valid range
             const safeIndex = Math.min(desiredIndex, totalQuestionCount - 1);
@@ -830,8 +849,12 @@ export default function AssessmentPage() {
                 const savedConfidence: Record<string, number> = {};
 
                 resumeData.responses.forEach((r: any) => {
-                  if (r.answer) savedAnswers[r.itemId] = r.answer;
-                  if (r.confidence) savedConfidence[r.itemId] = r.confidence;
+                  if (r.answer) {
+                    savedAnswers[r.itemId] = r.answer;
+                    // Default confidence to 1 (lowest) if answer exists but confidence was not saved
+                    // This prevents students from being stuck on questions they already answered
+                    savedConfidence[r.itemId] = r.confidence || 1;
+                  }
                 });
 
                 restoreWithSdm(
@@ -1125,6 +1148,8 @@ export default function AssessmentPage() {
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
   const TOTAL_QUESTIONS = questions.length || 50; // Use actual question count (40 anchor + SDM)
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / TOTAL_QUESTIONS) * 100 : 0;
+  // Count only answers that match actual questions (not orphaned SDM answers from old selections)
+  const answeredCount = !isLoadingQuestions ? questions.filter(q => answers[q.id]).length : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
   const hasSelectedConfidence = currentConfidence > 0;
 
@@ -1665,7 +1690,7 @@ export default function AssessmentPage() {
           )}
 
           <div className="text-sm text-loyola-gray-600 font-medium">
-            {Object.keys(answers).length} of {TOTAL_QUESTIONS} answered
+            {answeredCount} of {TOTAL_QUESTIONS} answered
           </div>
 
           <button
