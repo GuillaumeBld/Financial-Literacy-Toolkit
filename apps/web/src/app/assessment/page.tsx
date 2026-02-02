@@ -1281,7 +1281,7 @@ export default function AssessmentPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
-                  <span>There are <strong>50 questions</strong> in total (40 core + 10 follow-up)</span>
+                  <span>There are <strong>{questions.length || 50} questions</strong> in total</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <ChevronRight className="w-5 h-5 text-loyola-maroon flex-shrink-0 mt-0.5" />
@@ -1483,7 +1483,7 @@ export default function AssessmentPage() {
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
             <span>
-              Question {currentIndex + 1} of 50
+              Question {currentIndex + 1} of {TOTAL_QUESTIONS}
             </span>
             <span>{currentQuestion.domain}</span>
           </div>
@@ -1653,7 +1653,7 @@ export default function AssessmentPage() {
           )}
 
           <div className="text-sm text-loyola-gray-600 font-medium">
-            {Object.keys(answers).length} of 50 answered
+            {Object.keys(answers).length} of {TOTAL_QUESTIONS} answered
           </div>
 
           <button
