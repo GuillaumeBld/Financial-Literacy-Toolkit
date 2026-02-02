@@ -268,12 +268,12 @@ export async function POST(request: NextRequest) {
       console.log(`Bulk updated ${scoreUpdates.length} scores`);
     }
 
-    // Get total scoreable items for this instrument to use as denominator
+    // Get total scoreable items to use as denominator
     // This ensures unanswered scored items count as 0, not excluded from the average
     const totalScoreableQuery = hasIsScoredColumn
-      ? `SELECT COUNT(*) as total FROM items WHERE instrument_id = $1 AND is_active = true AND is_scored = true`
-      : `SELECT COUNT(*) as total FROM items WHERE instrument_id = $1 AND is_active = true`;
-    const totalScoreableResult = await client.query(totalScoreableQuery, [instrumentId]);
+      ? `SELECT COUNT(*) as total FROM items WHERE is_anchor = true AND is_active = true AND is_scored = true`
+      : `SELECT COUNT(*) as total FROM items WHERE is_anchor = true AND is_active = true`;
+    const totalScoreableResult = await client.query(totalScoreableQuery);
     const totalScoreableItems = parseInt(totalScoreableResult.rows[0]?.total || '0');
     const denominator = Math.max(totalScoreableItems, scoredItems);
     const overallScore = denominator > 0 ? totalScore / denominator : 0;

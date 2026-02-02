@@ -316,6 +316,253 @@ const shuffleOptions = (options: Array<{id: string, text: string}>): Array<{id: 
 // localStorage key for auto-saving progress
 const PROGRESS_STORAGE_KEY = 'assessment-progress';
 
+// ============================================================================
+// PURE FUNCTIONS FOR RESUME SUPPORT
+// ============================================================================
+
+// Rebuild scoredAnchors map from restored answers and confidence ratings.
+// Replicates the scoring logic from handleConfidenceSelect for batch use.
+const rebuildScoredAnchorsFromData = (
+  restoredAnswers: Record<string, string>,
+  restoredConfidence: Record<string, number>,
+  questionsList: Question[]
+): Map<string, ScoredAnchor> => {
+  const rebuilt = new Map<string, ScoredAnchor>();
+
+  for (const question of questionsList) {
+    if (question.is_sdm || question.is_scored === false) continue;
+    const answer = restoredAnswers[question.id];
+    if (!answer) continue;
+
+    const confidence = restoredConfidence[question.id] || null;
+
+    // Determine correctness
+    let isCorrect = false;
+    if (question.correct_answer) {
+      if (question.type === 'multiple_choice') {
+        isCorrect = answer === question.correct_answer;
+      } else {
+        isCorrect = answer.toLowerCase().trim() === question.correct_answer.toLowerCase().trim();
+      }
+    }
+
+    const responseType: ResponseType = isCorrect ? 'correct' : 'incorrect';
+    const anchorFormat = getAnchorFormat(question.external_item_id || question.id);
+    const needScore = calculateNeedScore(responseType, confidence, anchorFormat);
+    const primaryVariant = getPrimaryVariant(responseType, confidence, needScore);
+
+    const answerOption = question.options?.find((opt: { id: string; text: string }) => opt.id === answer);
+    const answerText = answerOption?.text || answer;
+
+    rebuilt.set(question.id, {
+      anchorId: question.id,
+      needScore,
+      responseType,
+      confidence,
+      primaryVariant,
+      domain: question.domain || 'General',
+      subcategory: question.subdomain || question.domain || 'General',
+      anchorFormat,
+      studentAnswer: answerText,
+      studentAnswerId: answer,
+    });
+  }
+
+  return rebuilt;
+};
+
+// Pure SDM selection function that accepts explicit parameters instead of reading React state.
+// Extracted from the selectSdmQuestions useCallback for use during resume restore.
+const selectSdmFromAnchors = (
+  anchorsMap: Map<string, ScoredAnchor>,
+  sdmBankList: Question[],
+  isTest: boolean
+): Question[] => {
+  if (sdmBankList.length === 0) return [];
+
+  const anchors = Array.from(anchorsMap.values());
+  if (anchors.length === 0) return [];
+
+  // Generate seeded random values for reproducible tiebreaking
+  const seed = 42;
+  const randomValues: Record<string, number> = {};
+  let rngState = seed;
+  anchors.forEach(a => {
+    rngState = (rngState * 1103515245 + 12345) & 0x7fffffff;
+    randomValues[a.anchorId] = rngState / 0x7fffffff;
+  });
+
+  const createSortKey = (
+    anchor: ScoredAnchor,
+    domainCounts: Record<string, number>,
+    subcategoryCounts: Record<string, number>
+  ): [number, number, number, number, number, number] => {
+    const domainDeficit = (domainCounts[anchor.domain] || 0) < DOMAIN_MINIMUM ? 0 : 1;
+    const formatPriority = anchor.anchorFormat === 'TF' ? 0 : 1;
+    const subcategoryCount = subcategoryCounts[anchor.subcategory] || 0;
+    const domainOrder = DOMAIN_ORDER.indexOf(anchor.domain);
+    const randomValue = randomValues[anchor.anchorId] || 0.5;
+    return [
+      -anchor.needScore,
+      domainDeficit,
+      formatPriority,
+      subcategoryCount,
+      domainOrder >= 0 ? domainOrder : 99,
+      randomValue
+    ];
+  };
+
+  const findVariantForAnchor = (
+    anchor: ScoredAnchor,
+    openEndedCount: number
+  ): { variant: Question | null; variantType: string; isOpenEnded: boolean } => {
+    const candidates = sdmBankList.filter(q => anchorIdsMatch(q.anchor_item_id, anchor.anchorId));
+    if (candidates.length === 0) {
+      return { variant: null, variantType: '', isOpenEnded: false };
+    }
+
+    let variantType = anchor.primaryVariant;
+    let isOpenEnded = isOpenEndedVariant(variantType);
+
+    if (isOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
+      const fallback = FALLBACK_VARIANTS[variantType];
+      if (fallback) {
+        variantType = fallback;
+        isOpenEnded = false;
+      }
+    }
+
+    const match = candidates.find(q =>
+      q.variant_type?.toLowerCase().includes(variantType)
+    );
+
+    if (match) {
+      return { variant: match, variantType, isOpenEnded };
+    }
+
+    for (const candidate of candidates) {
+      const candidateIsOpenEnded = isOpenEndedVariant(candidate.variant_type || '');
+      if (candidateIsOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
+        continue;
+      }
+      return {
+        variant: candidate,
+        variantType: candidate.variant_type || '',
+        isOpenEnded: candidateIsOpenEnded
+      };
+    }
+
+    return { variant: null, variantType: '', isOpenEnded: false };
+  };
+
+  // Selection state
+  const selectedItems: Array<{ anchor: ScoredAnchor; variant: Question; variantType: string; isOpenEnded: boolean }> = [];
+  const selectedAnchorIds = new Set<string>();
+  const domainCounts: Record<string, number> = {};
+  const subcategoryCounts: Record<string, number> = {};
+  let openEndedCount = 0;
+
+  // PHASE 1: Domain Minimum Enforcement
+  for (const domain of DOMAIN_ORDER) {
+    const domainAnchors = anchors
+      .filter(a => a.domain === domain && !selectedAnchorIds.has(a.anchorId))
+      .sort((a, b) => {
+        const keyA = createSortKey(a, domainCounts, subcategoryCounts);
+        const keyB = createSortKey(b, domainCounts, subcategoryCounts);
+        for (let i = 0; i < keyA.length; i++) {
+          if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
+        }
+        return 0;
+      });
+
+    let domainItemsSelected = 0;
+    for (const anchor of domainAnchors) {
+      if (domainItemsSelected >= DOMAIN_MINIMUM) break;
+      if (selectedItems.length >= SDM_SIZE) break;
+      if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
+
+      const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+      if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
+        selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+        selectedAnchorIds.add(anchor.anchorId);
+        domainCounts[domain] = (domainCounts[domain] || 0) + 1;
+        subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
+        if (isOpenEnded) openEndedCount++;
+        domainItemsSelected++;
+      }
+    }
+  }
+
+  // PHASE 2: Need-Based Slot Filling
+  if (selectedItems.length < SDM_SIZE) {
+    const remainingAnchors = anchors
+      .filter(a => !selectedAnchorIds.has(a.anchorId))
+      .sort((a, b) => {
+        const keyA = createSortKey(a, domainCounts, subcategoryCounts);
+        const keyB = createSortKey(b, domainCounts, subcategoryCounts);
+        for (let i = 0; i < keyA.length; i++) {
+          if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
+        }
+        return 0;
+      });
+
+    for (const anchor of remainingAnchors) {
+      if (selectedItems.length >= SDM_SIZE) break;
+      if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
+
+      const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+      if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
+        selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+        selectedAnchorIds.add(anchor.anchorId);
+        domainCounts[anchor.domain] = (domainCounts[anchor.domain] || 0) + 1;
+        subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
+        if (isOpenEnded) openEndedCount++;
+      }
+    }
+  }
+
+  // PHASE 3: Fallback for Underfilled Slots
+  if (selectedItems.length < SDM_SIZE) {
+    const masteryAnchors = anchors
+      .filter(a => a.needScore === 0 && !selectedAnchorIds.has(a.anchorId))
+      .sort(() => randomValues[anchors[0]?.anchorId] - 0.5);
+
+    for (const anchor of masteryAnchors) {
+      if (selectedItems.length >= SDM_SIZE) break;
+      if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
+
+      const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
+      if (variant) {
+        selectedItems.push({ anchor, variant, variantType, isOpenEnded });
+        selectedAnchorIds.add(anchor.anchorId);
+        subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
+      }
+    }
+  }
+
+  // ORDER FOR PRESENTATION
+  const orderedItems = [...selectedItems].sort((a, b) => {
+    const orderA = getVariantPresentationWeight(a.variantType);
+    const orderB = getVariantPresentationWeight(b.variantType);
+    if (orderA !== orderB) return orderA - orderB;
+    return b.anchor.needScore - a.anchor.needScore;
+  });
+
+  if (isTest) {
+    console.log('SDM: Selected items (presentation order):', orderedItems.map(item => ({
+      anchorId: item.anchor.anchorId,
+      need: item.anchor.needScore,
+      variant: item.variantType,
+      domain: item.anchor.domain,
+      isOpenEnded: item.isOpenEnded
+    })));
+    console.log('SDM: Domain counts:', domainCounts);
+    console.log('SDM: Open-ended count:', openEndedCount);
+  }
+
+  return orderedItems.map(item => item.variant);
+};
+
 export default function AssessmentPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -391,7 +638,7 @@ export default function AssessmentPage() {
     }
 
     // Fetch real questions from API
-    const loadQuestions = async () => {
+    const loadQuestions = async (): Promise<{ loadedQuestions: Question[]; loadedSdmBank: Question[] }> => {
       try {
         const [anchorResponse, sdmResponse] = await Promise.all([
           fetch('/api/items?kind=anchor'),
@@ -428,26 +675,31 @@ export default function AssessmentPage() {
           : [];
 
         // Keep questions in original order (source of truth order)
+        let finalQuestions: Question[];
         if (anchors.length === 0) {
           const response = await fetch('/api/items');
           const data = await response.json();
           if (data.success && Array.isArray(data.items)) {
-            setQuestions(data.items.map(toQuestion));
+            finalQuestions = data.items.map(toQuestion);
           } else {
-            setQuestions(mockQuestions);
+            finalQuestions = mockQuestions;
           }
         } else {
-          setQuestions(anchors);
+          finalQuestions = anchors;
         }
 
+        setQuestions(finalQuestions);
         setSdmBank(sdmItems);
         setSdmAppended(false);
         setIsLoading(false);
+
+        return { loadedQuestions: finalQuestions, loadedSdmBank: sdmItems };
       } catch (error) {
         console.error('Failed to load questions:', error);
         // Fallback to mock questions
         setQuestions(mockQuestions);
         setIsLoading(false);
+        return { loadedQuestions: mockQuestions, loadedSdmBank: [] };
       }
     };
 
@@ -465,7 +717,47 @@ export default function AssessmentPage() {
 
         // Load questions first, then check for saved responses
         const loadAndResume = async () => {
-          await loadQuestions();
+          const { loadedQuestions, loadedSdmBank } = await loadQuestions();
+
+          // Helper: after restoring answers, rebuild scoredAnchors and append SDM
+          // questions if all anchors have been answered (fixes resume for students
+          // who were partway through SDM questions when the site crashed).
+          const restoreWithSdm = (
+            restoredAnswers: Record<string, string>,
+            restoredConfidence: Record<string, number>,
+            desiredIndex: number
+          ) => {
+            setAnswers(restoredAnswers);
+            setConfidenceRatings(restoredConfidence);
+            setHasStarted(true);
+            setHasAcknowledgedHonorCode(true);
+
+            // Rebuild scoredAnchors from restored data
+            const rebuilt = rebuildScoredAnchorsFromData(restoredAnswers, restoredConfidence, loadedQuestions);
+            setScoredAnchors(rebuilt);
+
+            // Check if all anchor questions have been answered
+            const anchorCount = loadedQuestions.filter(q => !q.is_sdm).length;
+            const answeredAnchors = loadedQuestions.filter(q => !q.is_sdm && restoredAnswers[q.id]).length;
+
+            let totalQuestionCount = loadedQuestions.length;
+
+            if (answeredAnchors >= anchorCount && loadedSdmBank.length > 0) {
+              // All anchors answered — run SDM selection and append
+              const sdmQuestions = selectSdmFromAnchors(rebuilt, loadedSdmBank, parsedSession.isTestUser || false);
+              if (sdmQuestions.length > 0) {
+                const expandedQuestions = [...loadedQuestions, ...sdmQuestions];
+                setQuestions(expandedQuestions);
+                setSdmAppended(true);
+                totalQuestionCount = expandedQuestions.length;
+                console.log(`Resume: Appended ${sdmQuestions.length} SDM questions`);
+              }
+            }
+
+            // Cap currentIndex to valid range
+            const safeIndex = Math.min(desiredIndex, totalQuestionCount - 1);
+            setCurrentIndex(Math.max(0, safeIndex));
+          };
 
           // First, try to recover from localStorage (browser crash recovery)
           try {
@@ -476,11 +768,11 @@ export default function AssessmentPage() {
               const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
               if (progress.savedAt && progress.savedAt > twoHoursAgo) {
                 if (progress.answers && Object.keys(progress.answers).length > 0) {
-                  setAnswers(progress.answers);
-                  setConfidenceRatings(progress.confidenceRatings || {});
-                  setCurrentIndex(progress.currentIndex || 0);
-                  setHasStarted(true);
-                  setHasAcknowledgedHonorCode(true);
+                  restoreWithSdm(
+                    progress.answers,
+                    progress.confidenceRatings || {},
+                    progress.currentIndex || 0
+                  );
                   console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
                   return; // Skip API resume if localStorage has data
                 }
@@ -517,12 +809,11 @@ export default function AssessmentPage() {
                   if (r.confidence) savedConfidence[r.itemId] = r.confidence;
                 });
 
-                setAnswers(savedAnswers);
-                setConfidenceRatings(savedConfidence);
-                // Resume at the next unanswered question
-                setCurrentIndex(resumeData.responses.length);
-                setHasStarted(true);
-                setHasAcknowledgedHonorCode(true);
+                restoreWithSdm(
+                  savedAnswers,
+                  savedConfidence,
+                  resumeData.responses.length
+                );
                 console.log('Resumed from database:', resumeData.responses.length, 'answers');
               }
             } catch (resumeError) {
@@ -838,247 +1129,9 @@ export default function AssessmentPage() {
     }));
   };
 
-  // ============================================================================
-  // SDM-10 SELECTION ALGORITHM (Source of Truth sdm.md Section 10)
-  // ============================================================================
-  // Phase 1: Domain Minimum Enforcement (2 items per domain)
-  // Phase 2: Need-Based Slot Filling (remaining 4 slots by Need priority)
-  // Phase 3: Fallback for Underfilled Slots (use mastery items if needed)
-  // ============================================================================
+  // SDM-10 selection delegating to the extracted pure function
   const selectSdmQuestions = useCallback((): Question[] => {
-    if (sdmBank.length === 0) return [];
-
-    // Use pre-computed scored anchors from state (updated incrementally)
-    const anchors = Array.from(scoredAnchors.values());
-
-    if (isTestUser) {
-      console.log('SDM: Using pre-computed anchor scores:', anchors.map(a => ({
-        id: a.anchorId,
-        need: a.needScore,
-        variant: a.primaryVariant,
-        domain: a.domain
-      })));
-    }
-
-    // Generate seeded random values for reproducible tiebreaking
-    const seed = 42;
-    const randomValues: Record<string, number> = {};
-    let rngState = seed;
-    anchors.forEach(a => {
-      rngState = (rngState * 1103515245 + 12345) & 0x7fffffff;
-      randomValues[a.anchorId] = rngState / 0x7fffffff;
-    });
-
-    // Tiebreaker sort key (Source of Truth Section 8.1)
-    // 1. Domain deficit (below minimum first)
-    // 2. Format priority (T/F before MCQ)
-    // 3. Subcategory spread (fewer items selected first)
-    // 4. Domain order (B&C → RM → I&R)
-    // 5. Seeded random
-    const createSortKey = (
-      anchor: ScoredAnchor,
-      domainCounts: Record<string, number>,
-      subcategoryCounts: Record<string, number>
-    ): [number, number, number, number, number, number] => {
-      const domainDeficit = (domainCounts[anchor.domain] || 0) < DOMAIN_MINIMUM ? 0 : 1;
-      const formatPriority = anchor.anchorFormat === 'TF' ? 0 : 1;
-      const subcategoryCount = subcategoryCounts[anchor.subcategory] || 0;
-      const domainOrder = DOMAIN_ORDER.indexOf(anchor.domain);
-      const randomValue = randomValues[anchor.anchorId] || 0.5;
-
-      return [
-        -anchor.needScore,  // Higher Need first (negative for ascending sort)
-        domainDeficit,
-        formatPriority,
-        subcategoryCount,
-        domainOrder >= 0 ? domainOrder : 99,
-        randomValue
-      ];
-    };
-
-    // Helper: Find SDM variant for an anchor with fallback logic
-    const findVariantForAnchor = (
-      anchor: ScoredAnchor,
-      openEndedCount: number
-    ): { variant: Question | null; variantType: string; isOpenEnded: boolean } => {
-      // Find SDM variants for this anchor (handles Q1# vs Q1 vs 1 format differences)
-      const candidates = sdmBank.filter(q => anchorIdsMatch(q.anchor_item_id, anchor.anchorId));
-      if (candidates.length === 0) {
-        return { variant: null, variantType: '', isOpenEnded: false };
-      }
-
-      let variantType = anchor.primaryVariant;
-      let isOpenEnded = isOpenEndedVariant(variantType);
-
-      // Apply fallback if open-ended cap reached (Source of Truth Table 12)
-      if (isOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
-        const fallback = FALLBACK_VARIANTS[variantType];
-        if (fallback) {
-          variantType = fallback;
-          isOpenEnded = false;
-        }
-      }
-
-      // Find matching variant
-      const match = candidates.find(q =>
-        q.variant_type?.toLowerCase().includes(variantType)
-      );
-
-      if (match) {
-        return { variant: match, variantType, isOpenEnded };
-      }
-
-      // Fallback: return any available variant (respecting open-ended cap)
-      for (const candidate of candidates) {
-        const candidateIsOpenEnded = isOpenEndedVariant(candidate.variant_type || '');
-        if (candidateIsOpenEnded && openEndedCount >= OPEN_ENDED_CAP) {
-          continue;
-        }
-        return {
-          variant: candidate,
-          variantType: candidate.variant_type || '',
-          isOpenEnded: candidateIsOpenEnded
-        };
-      }
-
-      return { variant: null, variantType: '', isOpenEnded: false };
-    };
-
-    // Selection state
-    const selectedItems: Array<{ anchor: ScoredAnchor; variant: Question; variantType: string; isOpenEnded: boolean }> = [];
-    const selectedAnchorIds = new Set<string>();
-    const domainCounts: Record<string, number> = {};
-    const subcategoryCounts: Record<string, number> = {};
-    let openEndedCount = 0;
-
-    // PHASE 1: Domain Minimum Enforcement (2 items per domain)
-    for (const domain of DOMAIN_ORDER) {
-      // Sort anchors in this domain by priority
-      const domainAnchors = anchors
-        .filter(a => a.domain === domain && !selectedAnchorIds.has(a.anchorId))
-        .sort((a, b) => {
-          const keyA = createSortKey(a, domainCounts, subcategoryCounts);
-          const keyB = createSortKey(b, domainCounts, subcategoryCounts);
-          for (let i = 0; i < keyA.length; i++) {
-            if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
-          }
-          return 0;
-        });
-
-      let domainItemsSelected = 0;
-      for (const anchor of domainAnchors) {
-        if (domainItemsSelected >= DOMAIN_MINIMUM) break;
-        if (selectedItems.length >= SDM_SIZE) break;
-        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
-
-        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
-        if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
-          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
-          selectedAnchorIds.add(anchor.anchorId);
-          domainCounts[domain] = (domainCounts[domain] || 0) + 1;
-          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
-          if (isOpenEnded) openEndedCount++;
-          domainItemsSelected++;
-        }
-      }
-    }
-
-    // PHASE 2: Need-Based Slot Filling (fill remaining slots by priority)
-    if (selectedItems.length < SDM_SIZE) {
-      // Re-sort all unselected anchors with updated counts
-      const remainingAnchors = anchors
-        .filter(a => !selectedAnchorIds.has(a.anchorId))
-        .sort((a, b) => {
-          const keyA = createSortKey(a, domainCounts, subcategoryCounts);
-          const keyB = createSortKey(b, domainCounts, subcategoryCounts);
-          for (let i = 0; i < keyA.length; i++) {
-            if (keyA[i] !== keyB[i]) return keyA[i] - keyB[i];
-          }
-          return 0;
-        });
-
-      for (const anchor of remainingAnchors) {
-        if (selectedItems.length >= SDM_SIZE) break;
-        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
-
-        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
-        if (variant && !selectedAnchorIds.has(anchor.anchorId)) {
-          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
-          selectedAnchorIds.add(anchor.anchorId);
-          domainCounts[anchor.domain] = (domainCounts[anchor.domain] || 0) + 1;
-          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
-          if (isOpenEnded) openEndedCount++;
-        }
-      }
-    }
-
-    // PHASE 3: Fallback for Underfilled Slots (use Need=0 mastery items)
-    if (selectedItems.length < SDM_SIZE) {
-      const masteryAnchors = anchors
-        .filter(a => a.needScore === 0 && !selectedAnchorIds.has(a.anchorId))
-        .sort(() => randomValues[anchors[0]?.anchorId] - 0.5); // Shuffle with seed
-
-      for (const anchor of masteryAnchors) {
-        if (selectedItems.length >= SDM_SIZE) break;
-        if ((subcategoryCounts[anchor.subcategory] || 0) >= SUBCATEGORY_CAP) continue;
-
-        const { variant, variantType, isOpenEnded } = findVariantForAnchor(anchor, openEndedCount);
-        if (variant) {
-          selectedItems.push({ anchor, variant, variantType, isOpenEnded });
-          selectedAnchorIds.add(anchor.anchorId);
-          subcategoryCounts[anchor.subcategory] = (subcategoryCounts[anchor.subcategory] || 0) + 1;
-        }
-      }
-    }
-
-    // ORDER FOR PRESENTATION
-    // Closed-format first (Lower_TF, Lower_MCQ, Same_MCQ, Higher_MCQ), open-ended last (max 3)
-    const orderedItems = [...selectedItems].sort((a, b) => {
-      const orderA = getVariantPresentationWeight(a.variantType);
-      const orderB = getVariantPresentationWeight(b.variantType);
-      if (orderA !== orderB) return orderA - orderB;
-      // Within same variant type, sort by Need score (higher first)
-      return b.anchor.needScore - a.anchor.needScore;
-    });
-
-    if (isTestUser) {
-      console.log('SDM: Selected items (presentation order):', orderedItems.map(item => ({
-        anchorId: item.anchor.anchorId,
-        need: item.anchor.needScore,
-        variant: item.variantType,
-        domain: item.anchor.domain,
-        isOpenEnded: item.isOpenEnded
-      })));
-      console.log('SDM: Domain counts:', domainCounts);
-      console.log('SDM: Subcategory counts:', subcategoryCounts);
-      console.log('SDM: Open-ended count:', openEndedCount);
-
-      // Validation
-      const errors: string[] = [];
-      if (orderedItems.length !== SDM_SIZE && orderedItems.length > 0) {
-        errors.push(`Size is ${orderedItems.length}, expected ${SDM_SIZE}`);
-      }
-      for (const domain of DOMAIN_ORDER) {
-        if ((domainCounts[domain] || 0) < DOMAIN_MINIMUM) {
-          errors.push(`Domain '${domain}' has ${domainCounts[domain] || 0} items, minimum is ${DOMAIN_MINIMUM}`);
-        }
-      }
-      for (const [subcat, count] of Object.entries(subcategoryCounts)) {
-        if (count > SUBCATEGORY_CAP) {
-          errors.push(`Subcategory '${subcat}' has ${count} items, cap is ${SUBCATEGORY_CAP}`);
-        }
-      }
-      if (openEndedCount > OPEN_ENDED_CAP) {
-        errors.push(`Open-ended count is ${openEndedCount}, cap is ${OPEN_ENDED_CAP}`);
-      }
-      if (errors.length > 0) {
-        console.warn('SDM: Validation errors:', errors);
-      } else {
-        console.log('SDM: Validation passed');
-      }
-    }
-
-    return orderedItems.map(item => item.variant);
+    return selectSdmFromAnchors(scoredAnchors, sdmBank, isTestUser);
   }, [scoredAnchors, sdmBank, isTestUser]);
 
   const handleNext = () => {
