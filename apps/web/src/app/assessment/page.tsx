@@ -641,6 +641,7 @@ export default function AssessmentPage() {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitAttempts, setSubmitAttempts] = useState(0);
+  const [isBlockedByMultiTab, setIsBlockedByMultiTab] = useState(false);
   const router = useRouter();
 
   // Calculate real-time scores for test user
@@ -1017,6 +1018,41 @@ export default function AssessmentPage() {
       document.removeEventListener('contextmenu', handleContextMenu);
     };
   }, [sessionData, hasAcknowledgedHonorCode]);
+
+  // Multi-tab detection - prevent concurrent assessment access in same browser
+  useEffect(() => {
+    if (!hasAcknowledgedHonorCode || !sessionData) return;
+
+    // BroadcastChannel only works in same browser (not cross-browser/device)
+    const channel = new BroadcastChannel('finlit-assessment');
+    const tabId = crypto.randomUUID();
+    const attemptKey = `${sessionData.userId}-${sessionData.courseId}`;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.attemptKey !== attemptKey) return; // Different assessment, ignore
+
+      if (event.data.type === 'PING' && event.data.tabId !== tabId) {
+        // Another tab is checking - respond to let them know we exist
+        channel.postMessage({ type: 'PONG', tabId, attemptKey });
+      }
+
+      if (event.data.type === 'PONG' && event.data.tabId !== tabId) {
+        // Another tab already has this assessment open - block this one
+        setIsBlockedByMultiTab(true);
+        setSubmitError('This assessment is already open in another browser tab. Please close this tab and continue in the original tab to avoid losing your progress.');
+      }
+    };
+
+    channel.addEventListener('message', handleMessage);
+
+    // Announce our presence to detect existing tabs
+    channel.postMessage({ type: 'PING', tabId, attemptKey });
+
+    return () => {
+      channel.removeEventListener('message', handleMessage);
+      channel.close();
+    };
+  }, [hasAcknowledgedHonorCode, sessionData]);
 
   // Fullscreen detection
   useEffect(() => {
@@ -1552,6 +1588,21 @@ export default function AssessmentPage() {
         </div>
       )}
 
+      {/* Multi-tab blocked banner - cannot be dismissed */}
+      {isBlockedByMultiTab && (
+        <div className="bg-amber-600 text-white px-4 py-4 text-center sticky top-0 z-50">
+          <div className="container mx-auto flex items-center justify-center gap-3">
+            <AlertTriangle className="w-6 h-6 flex-shrink-0" />
+            <div className="text-left">
+              <p className="font-bold">Assessment Already Open</p>
+              <p className="text-sm">
+                This assessment is open in another browser tab. Please close this tab and continue in the original tab to avoid losing your progress.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
@@ -1809,7 +1860,7 @@ export default function AssessmentPage() {
 
           <button
             onClick={handleNext}
-            disabled={!isTestUser && (answers[currentQuestion.id] === undefined || !hasSelectedConfidence || isSubmitting)}
+            disabled={!isTestUser && (answers[currentQuestion.id] === undefined || !hasSelectedConfidence || isSubmitting || isBlockedByMultiTab)}
             className="px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             type="button"
           >
