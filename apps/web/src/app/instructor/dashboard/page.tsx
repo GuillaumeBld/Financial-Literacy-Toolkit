@@ -27,6 +27,12 @@ type DashboardStats = {
     average: number;
     count: number;
   }>;
+  studentStatus: Array<{
+    status: string;
+    count: number;
+    avg_score: number | null;
+    avg_responses: number;
+  }>;
 };
 
 type Course = {
@@ -216,6 +222,11 @@ export default function InstructorDashboardPage() {
               />
             </div>
 
+            {/* Student Status Table */}
+            {stats.studentStatus && stats.studentStatus.length > 0 && (
+              <StatusTable data={stats.studentStatus} />
+            )}
+
             {/* Domain Breakdown */}
             <div className="bg-white rounded-xl shadow-md p-6 mb-8">
               <div className="flex justify-between items-center mb-6">
@@ -329,7 +340,7 @@ function ActionCard({
   href: Route;
 }) {
   const router = useRouter();
-  
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     router.push(href);
@@ -343,5 +354,57 @@ function ActionCard({
       <h3 className="text-lg font-bold text-loyola-gray-800 mb-2">{title}</h3>
       <p className="text-sm text-loyola-gray-600">{description}</p>
     </button>
+  );
+}
+
+// Status Table Component
+function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
+  const submittedRows = data.filter(r => r.status.startsWith('Submitted'));
+  const inProgressRows = data.filter(r => r.status.startsWith('In Progress'));
+  const totalSubmitted = submittedRows.reduce((sum, r) => sum + r.count, 0);
+  const totalInProgress = inProgressRows.reduce((sum, r) => sum + r.count, 0);
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+      <h2 className="text-xl font-bold text-loyola-gray-800 flex items-center gap-2 mb-6">
+        <Users className="w-6 h-6 text-loyola-maroon" />
+        Student Progress Status
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b-2 border-loyola-gray-200">
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700">Status</th>
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Students</th>
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Score</th>
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Responses</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, idx) => (
+              <tr key={idx} className={`border-b border-loyola-gray-100 ${
+                row.status.startsWith('Submitted') ? 'bg-green-50' : 'bg-amber-50'
+              }`}>
+                <td className="py-3 px-4 font-medium">{row.status}</td>
+                <td className="py-3 px-4 text-right">{row.count}</td>
+                <td className="py-3 px-4 text-right">
+                  {row.avg_score ? `${row.avg_score}%` : '—'}
+                </td>
+                <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+              </tr>
+            ))}
+            <tr className="border-t-2 border-loyola-gray-300 font-bold bg-loyola-gray-50">
+              <td className="py-3 px-4">Total</td>
+              <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress}</td>
+              <td className="py-3 px-4 text-right" colSpan={2}>
+                <span className="text-green-600">{totalSubmitted} submitted</span>
+                {' / '}
+                <span className="text-amber-600">{totalInProgress} in progress</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

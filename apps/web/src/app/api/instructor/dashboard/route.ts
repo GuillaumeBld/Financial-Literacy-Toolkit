@@ -130,6 +130,48 @@ export async function GET(request: NextRequest) {
     // Get unique students
     const uniqueStudents = new Set(attempts.map(a => a.user_id)).size;
 
+    // Get student status breakdown
+    const studentStatus = await queryMany<{
+      status: string;
+      count: number;
+      avg_score: number | null;
+      avg_responses: number;
+    }>(`
+      WITH attempt_data AS (
+        SELECT
+          a.attempt_id,
+          a.submitted_at,
+          a.metadata->>'submission_type' as sub_type,
+          s.overall,
+          COALESCE(r.resp_count, 0) as resp_count
+        FROM attempts a
+        LEFT JOIN scores s ON s.attempt_id = a.attempt_id
+        LEFT JOIN (SELECT attempt_id, COUNT(*) as resp_count FROM responses GROUP BY attempt_id) r
+          ON r.attempt_id = a.attempt_id
+        WHERE a.course_id = $1
+      )
+      SELECT
+        CASE
+          WHEN submitted_at IS NOT NULL AND sub_type = 'partial_legacy' THEN 'Submitted (Legacy 46)'
+          WHEN submitted_at IS NOT NULL AND sub_type = 'complete_legacy' THEN 'Submitted (Legacy 50)'
+          WHEN submitted_at IS NOT NULL AND sub_type = 'incomplete_sdm_legacy' THEN 'Submitted (Partial SDM)'
+          WHEN submitted_at IS NOT NULL THEN 'Submitted (Normal)'
+          WHEN resp_count < 10 THEN 'In Progress: Early (1-9)'
+          WHEN resp_count < 20 THEN 'In Progress: Mid (10-19)'
+          WHEN resp_count < 40 THEN 'In Progress: Anchor (20-39)'
+          WHEN resp_count = 40 THEN 'In Progress: Anchors Done'
+          ELSE 'In Progress: SDM (41-49)'
+        END as status,
+        COUNT(*)::int as count,
+        ROUND(AVG(overall)::numeric, 1) as avg_score,
+        ROUND(AVG(resp_count))::int as avg_responses
+      FROM attempt_data
+      GROUP BY 1
+      ORDER BY
+        CASE WHEN submitted_at IS NOT NULL THEN 0 ELSE 1 END,
+        AVG(resp_count) DESC
+    `, [targetCourseId]);
+
     const stats = {
       totalAttempts,
       preAttempts: preAttempts.length,
@@ -138,7 +180,8 @@ export async function GET(request: NextRequest) {
       uniqueStudents,
       avgScore: Math.round(avgScore * 100) / 100,
       avgDuration: Math.round(avgDuration),
-      domainAverages
+      domainAverages,
+      studentStatus
     };
 
     console.log('Dashboard stats calculated:', stats);
