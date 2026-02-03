@@ -583,6 +583,8 @@ export default function AssessmentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isTestUser, setIsTestUser] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitAttempts, setSubmitAttempts] = useState(0);
   const router = useRouter();
 
   // Calculate real-time scores for test user
@@ -849,7 +851,7 @@ export default function AssessmentPage() {
                 const savedConfidence: Record<string, number> = {};
 
                 resumeData.responses.forEach((r: any) => {
-                  if (r.answer) {
+                  if (r.answer !== undefined && r.answer !== null) {
                     savedAnswers[r.itemId] = r.answer;
                     // Default confidence to 1 (lowest) if answer exists but confidence was not saved
                     // This prevents students from being stuck on questions they already answered
@@ -1067,10 +1069,34 @@ export default function AssessmentPage() {
       // Safety net: verify all questions have responses before submitting
       if (formattedResponses.length < questions.length) {
         const missing = questions.length - formattedResponses.length;
-        console.error(`Response count mismatch: ${formattedResponses.length}/${questions.length}`);
-        alert(`Something went wrong — ${missing} response(s) were not recorded. Please try refreshing the page. Your progress has been auto-saved.`);
-        setIsSubmitting(false);
-        return;
+        const answeredIds = new Set(Object.keys(answers));
+        const missingQuestions = questions.filter(q => !answeredIds.has(q.id));
+        console.error(`Response count mismatch: ${formattedResponses.length}/${questions.length}. Missing:`,
+          missingQuestions.map(q => ({ id: q.id, domain: q.domain, is_sdm: q.is_sdm, external_item_id: q.external_item_id })));
+
+        setSubmitAttempts(prev => prev + 1);
+
+        // Check if all anchor questions are answered (allow partial SDM submission as fallback)
+        const anchorQuestions = questions.filter(q => !q.is_sdm);
+        const allAnchorsAnswered = anchorQuestions.every(q => answeredIds.has(q.id));
+
+        if (allAnchorsAnswered && submitAttempts >= 1) {
+          // After a previous failed attempt, allow partial submission with just the responses we have
+          console.warn(`Partial submission: all ${anchorQuestions.length} anchors answered, ${missing} SDM missing. Proceeding.`);
+          // Fall through to submit with what we have
+        } else {
+          // Navigate to first unanswered question
+          const firstMissingIndex = questions.findIndex(q => !answeredIds.has(q.id));
+          if (firstMissingIndex >= 0) {
+            setCurrentIndex(firstMissingIndex);
+          }
+          setSubmitError(
+            `${missing} question(s) still need an answer. We've navigated you to the first unanswered question.` +
+            (allAnchorsAnswered ? ' You can try submitting again after answering, or click Submit once more to submit with your current answers.' : '')
+          );
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // Retry submission up to 3 times on network/server errors
@@ -1142,7 +1168,7 @@ export default function AssessmentPage() {
       alert(message);
       setIsSubmitting(false);
     }
-  }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData]);
+  }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData, submitAttempts]);
 
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
@@ -1170,7 +1196,8 @@ export default function AssessmentPage() {
       ...prev,
       [questionId]: answer,
     }));
-    
+    if (submitError) setSubmitError(null);
+
     // Check if the answer is correct and update correctness state
     const isCorrect = checkAnswerCorrectness(questionId, answer);
     setAnswerCorrectness((prev) => ({
@@ -1670,6 +1697,16 @@ export default function AssessmentPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {submitError && (
+          <div className="mb-3 p-3 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm text-amber-800">{submitError}</div>
+            <button onClick={() => setSubmitError(null)} className="text-amber-600 hover:text-amber-800" type="button">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
