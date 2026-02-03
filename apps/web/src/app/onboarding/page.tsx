@@ -101,11 +101,8 @@ function OnboardingContent() {
         const data = await response.json();
 
         if (data.exists) {
-          // Student already registered - redirect to login
-          setError('You have already completed onboarding for this course. Redirecting to login...');
-          setTimeout(() => {
-            router.push(`/login?courseCode=${encodeURIComponent(courseCode)}`);
-          }, 2000);
+          // Student already registered - show error with link to login
+          setError(`DUPLICATE_STUDENT:${encodeURIComponent(courseCode)}`);
           setIsCheckingStudent(false);
           return;
         }
@@ -356,7 +353,19 @@ function OnboardingContent() {
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3">
               <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
+              {error.startsWith('DUPLICATE_STUDENT:') ? (
+                <span>
+                  You have already completed onboarding for this course.{' '}
+                  <Link
+                    href={`/login?courseCode=${error.replace('DUPLICATE_STUDENT:', '')}`}
+                    className="font-semibold underline hover:text-red-800"
+                  >
+                    Click here to go to the login page
+                  </Link>
+                </span>
+              ) : (
+                <span>{error}</span>
+              )}
             </div>
           )}
 
