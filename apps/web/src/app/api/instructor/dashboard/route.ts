@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
     // Get unique students
     const uniqueStudents = new Set(attempts.map(a => a.user_id)).size;
 
-    // Get student status breakdown
+    // Get student status breakdown (including onboarded students with no attempts)
     const studentStatus = await queryMany<{
       status: string;
       count: number;
@@ -138,6 +138,7 @@ export async function GET(request: NextRequest) {
       avg_responses: number;
     }>(`
       SELECT * FROM (
+        -- Attempt-based statuses
         WITH attempt_data AS (
           SELECT
             a.attempt_id,
@@ -161,17 +162,37 @@ export async function GET(request: NextRequest) {
             WHEN resp_count < 20 THEN 'In Progress: Mid (10-19)'
             WHEN resp_count < 40 THEN 'In Progress: Anchor (20-39)'
             WHEN resp_count = 40 THEN 'In Progress: Anchors Done'
-            ELSE 'In Progress: SDM (41-49)'
+            ELSE 'In Progress: SDM (41-50)'
           END as status,
           COUNT(*)::int as count,
           ROUND(AVG(overall)::numeric, 1) as avg_score,
           ROUND(AVG(resp_count))::int as avg_responses
         FROM attempt_data
         GROUP BY 1
+
+        UNION ALL
+
+        -- Onboarded students with no attempts
+        SELECT
+          'Onboarded (No Attempt)' as status,
+          COUNT(*)::int as count,
+          NULL::numeric as avg_score,
+          0 as avg_responses
+        FROM student_profiles sp
+        WHERE sp.course_id = $1
+          AND NOT EXISTS (
+            SELECT 1 FROM attempts a
+            WHERE a.user_id = sp.user_id AND a.course_id = sp.course_id
+          )
+        HAVING COUNT(*) > 0
       ) sub
       ORDER BY
-        CASE WHEN status LIKE 'Submitted%' THEN 0 ELSE 1 END,
-        avg_responses DESC
+        CASE
+          WHEN status LIKE 'Submitted%' THEN 0
+          WHEN status LIKE 'In Progress%' THEN 1
+          ELSE 2
+        END,
+        avg_responses DESC NULLS LAST
     `, [targetCourseId]);
 
     const stats = {
