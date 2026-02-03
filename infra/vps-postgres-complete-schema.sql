@@ -125,8 +125,8 @@ CREATE TABLE student_profiles (
   
   -- Baseline Financial Background & Context (B6-B8)
   prior_financial_products JSONB, -- B6: Array of selected products: ['credit-card', 'student-loan', 'auto-loan', 'investment-account', 'insurance', 'none']
-  self_rated_financial_knowledge TEXT CHECK (self_rated_financial_knowledge IN ('very-low', 'low', 'moderate', 'high', 'very-high')), -- B7
-  financial_stress_frequency TEXT CHECK (financial_stress_frequency IN ('never', 'rarely', 'sometimes', 'often', 'always')), -- B8
+  self_rated_financial_knowledge TEXT CHECK (self_rated_financial_knowledge IN ('very-low', 'low', 'moderate', 'high', 'very-high', 'prefer-not-to-answer')), -- B7
+  financial_stress_frequency TEXT CHECK (financial_stress_frequency IN ('never', 'rarely', 'sometimes', 'often', 'always', 'prefer-not-to-answer')), -- B8
   
   -- Baseline Socio-economic data (B9-B10)
   parental_education TEXT CHECK (parental_education IN ('less-than-high-school', 'high-school-diploma-or-ged', 'some-college-no-degree', 'associate-degree', 'bachelors-degree', 'graduate-or-professional-degree', 'dont-know', 'prefer-not-to-answer')), -- B9
