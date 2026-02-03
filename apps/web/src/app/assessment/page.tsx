@@ -806,10 +806,24 @@ export default function AssessmentPage() {
               );
 
               let sdmQuestions: Question[];
-              if (answeredSdmIds.size > 0) {
-                // Legacy student: preserve only SDM items they already answered
+              if (answeredSdmIds.size >= SDM_SIZE) {
+                // Student completed all 10 SDM questions - preserve them
                 sdmQuestions = loadedSdmBank.filter(q => answeredSdmIds.has(q.id));
-                console.log(`Resume: Preserving ${sdmQuestions.length} previously-answered SDM questions`);
+                console.log(`Resume: Preserving all ${sdmQuestions.length} completed SDM questions`);
+              } else if (answeredSdmIds.size > 0) {
+                // Student has PARTIAL SDM answers - need to add remaining questions
+                // Re-run SDM selection and merge with already-answered questions
+                const freshSelection = selectSdmFromAnchors(rebuilt, loadedSdmBank, parsedSession.isTestUser || false);
+                const answeredSdmQuestions = loadedSdmBank.filter(q => answeredSdmIds.has(q.id));
+                const answeredIds = new Set(answeredSdmQuestions.map(q => q.id));
+
+                // Start with answered questions, then add new ones from fresh selection
+                const remainingNeeded = SDM_SIZE - answeredSdmQuestions.length;
+                const newQuestions = freshSelection.filter(q => !answeredIds.has(q.id)).slice(0, remainingNeeded);
+
+                // Combine: answered first (preserves order/progress), then new ones
+                sdmQuestions = [...answeredSdmQuestions, ...newQuestions];
+                console.log(`Resume: Preserving ${answeredSdmQuestions.length} answered SDM + adding ${newQuestions.length} new = ${sdmQuestions.length} total`);
               } else {
                 // Fresh SDM selection (just finished anchors, no SDM answers yet)
                 sdmQuestions = selectSdmFromAnchors(rebuilt, loadedSdmBank, parsedSession.isTestUser || false);

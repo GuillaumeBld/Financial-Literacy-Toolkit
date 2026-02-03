@@ -12,6 +12,7 @@ function OnboardingContent() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingStudent, setIsCheckingStudent] = useState(false);
   const [error, setError] = useState('');
 
   // Video state
@@ -60,7 +61,7 @@ function OnboardingContent() {
 
   const totalSteps = 5;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Step 0: Intro Video - no validation needed
     if (currentStep === 1) {
       // Step 1: Consent and Data Use
@@ -81,6 +82,42 @@ function OnboardingContent() {
       if (studentId.trim() !== confirmStudentId.trim()) {
         setError('Student IDs do not match. Please re-enter your Student ID.');
         return;
+      }
+
+      // Check if student already completed onboarding for this course
+      setIsCheckingStudent(true);
+      setError('');
+
+      try {
+        const response = await fetch('/api/onboarding/check-student', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseCode: courseCode.trim(),
+            studentId: studentId.trim(),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.exists) {
+          // Student already registered - redirect to login
+          setError('You have already completed onboarding for this course. Redirecting to login...');
+          setTimeout(() => {
+            router.push(`/login?courseCode=${encodeURIComponent(courseCode)}`);
+          }, 2000);
+          setIsCheckingStudent(false);
+          return;
+        }
+
+        // Not registered - proceed to next step
+        setCurrentStep(currentStep + 1);
+        setIsCheckingStudent(false);
+        return;
+      } catch (err) {
+        // On error, allow to continue (fail open for UX)
+        console.error('Check student error:', err);
+        setIsCheckingStudent(false);
       }
     } else if (currentStep === 3) {
       // Step 3: Demographics (B1-B5) - all required
@@ -634,7 +671,8 @@ function OnboardingContent() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                  disabled={isCheckingStudent}
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ArrowLeft className="w-5 h-5" />
                   Back
@@ -642,10 +680,20 @@ function OnboardingContent() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-loyola-maroon/20"
+                  disabled={isCheckingStudent}
+                  className="bg-loyola-maroon hover:bg-loyola-maroon-dark text-white font-semibold py-3 px-6 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-loyola-maroon/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Continue
-                  <ChevronRight className="w-5 h-5" />
+                  {isCheckingStudent ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Checking...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="w-5 h-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
