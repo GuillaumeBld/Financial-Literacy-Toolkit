@@ -127,6 +127,7 @@ function LoginForm() {
         startedAt: new Date().toISOString(),
         isTestUser: data.isTestUser || false,
         attemptId: data.attemptId || null,
+        sessionToken: data.sessionToken || null, // Server-side multi-tab prevention token
       };
       localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
 

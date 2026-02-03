@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, transaction } from '@/lib/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, courseId, attemptId, responses, currentIndex } = body;
+    const { userId, courseId, attemptId, responses, currentIndex, sessionToken } = body;
 
     if (!userId || !courseId) {
       return NextResponse.json(
@@ -29,12 +30,13 @@ export async function POST(request: NextRequest) {
 
     const result = await transaction(async (client) => {
       let activeAttemptId = attemptId;
+      let activeSessionToken = sessionToken;
 
       // If no attemptId, find or create an attempt
       if (!activeAttemptId) {
         // Check for existing in-progress attempt
         const existingAttempt = await client.query(
-          `SELECT attempt_id FROM attempts
+          `SELECT attempt_id, session_token FROM attempts
            WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
            ORDER BY started_at DESC LIMIT 1`,
           [userId, courseId]
@@ -42,15 +44,36 @@ export async function POST(request: NextRequest) {
 
         if (existingAttempt.rows.length > 0) {
           activeAttemptId = existingAttempt.rows[0].attempt_id;
+          // Validate session token if attempt exists
+          const dbToken = existingAttempt.rows[0].session_token;
+          if (dbToken && sessionToken && dbToken !== sessionToken) {
+            throw new Error('SESSION_CONFLICT');
+          }
         } else {
-          // Create new attempt
+          // Create new attempt with session token
+          const newSessionToken = randomUUID();
           const newAttempt = await client.query(
-            `INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, started_at)
-             VALUES ($1, $2, (SELECT instrument_id FROM instruments LIMIT 1), 'pre', NOW())
+            `INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, started_at, session_token, session_created_at)
+             VALUES ($1, $2, (SELECT instrument_id FROM instruments LIMIT 1), 'pre', NOW(), $3, NOW())
              RETURNING attempt_id`,
-            [userId, courseId]
+            [userId, courseId, newSessionToken]
           );
           activeAttemptId = newAttempt.rows[0].attempt_id;
+          activeSessionToken = newSessionToken;
+        }
+      } else {
+        // Validate session token for provided attemptId
+        if (sessionToken) {
+          const attemptCheck = await client.query(
+            `SELECT session_token FROM attempts WHERE attempt_id = $1`,
+            [attemptId]
+          );
+          if (attemptCheck.rows.length > 0) {
+            const dbToken = attemptCheck.rows[0].session_token;
+            if (dbToken && dbToken !== sessionToken) {
+              throw new Error('SESSION_CONFLICT');
+            }
+          }
         }
       }
 
@@ -88,6 +111,7 @@ export async function POST(request: NextRequest) {
         savedCount: responses.length,
         totalAnswered: parseInt(progressCount.rows[0].answered),
         currentIndex: currentIndex,
+        sessionToken: activeSessionToken,
       };
     });
 
@@ -97,6 +121,17 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error saving progress:', error);
+
+    // Handle session conflict (multi-tab detection)
+    if (error.message === 'SESSION_CONFLICT') {
+      return NextResponse.json(
+        {
+          error: 'Session expired. This assessment is open in another browser tab or window. Please close this tab and continue in the other window.',
+          code: 'SESSION_CONFLICT'
+        },
+        { status: 409 }
+      );
+    }
 
     // User-friendly error messages
     let userMessage = 'Failed to save progress';

@@ -207,6 +207,7 @@ type SessionData = {
   attemptId?: string | null;
   userId?: string;
   courseId?: string;
+  sessionToken?: string | null; // Server-side multi-tab prevention token
 };
 
 type SubmittedResponse = {
@@ -1087,14 +1088,30 @@ export default function AssessmentPage() {
             attemptId: sessionData.attemptId,
             responses: responsesToSave,
             currentIndex,
+            sessionToken: sessionData.sessionToken,
           }),
         });
 
+        if (response.status === 409) {
+          // Session conflict - another tab has taken over
+          const data = await response.json();
+          if (data.code === 'SESSION_CONFLICT') {
+            setIsBlockedByMultiTab(true);
+            setSubmitError('Your session has expired because this assessment was opened in another window. Your progress has been saved. Please close this tab and continue in the other window.');
+            return;
+          }
+        }
+
         if (response.ok) {
           const data = await response.json();
-          // Update attemptId if it was created
-          if (data.attemptId && !sessionData.attemptId) {
-            const updatedSession = { ...sessionData, attemptId: data.attemptId };
+          // Update attemptId and sessionToken if provided
+          if (data.attemptId || data.sessionToken) {
+            const updatedSession = {
+              ...sessionData,
+              attemptId: data.attemptId || sessionData.attemptId,
+              sessionToken: data.sessionToken || sessionData.sessionToken,
+            };
+            setSessionData(updatedSession);
             localStorage.setItem('assessment-session', JSON.stringify(updatedSession));
           }
         }
@@ -1216,7 +1233,8 @@ export default function AssessmentPage() {
         metadata: {
           tabSwitches,
           isFullscreen
-        }
+        },
+        sessionToken: sessionData.sessionToken,
       });
 
       let lastError: Error | null = null;
@@ -1242,6 +1260,11 @@ export default function AssessmentPage() {
 
           if (response.status >= 400 && response.status < 500) {
             const result = await response.json();
+            // Handle session conflict (another tab took over)
+            if (response.status === 409 && result.code === 'SESSION_CONFLICT') {
+              setIsBlockedByMultiTab(true);
+              throw new Error('Your session has expired because this assessment was opened in another window. Your progress has been saved. Please close this tab and continue in the other window.');
+            }
             throw new Error(result?.error ?? 'Submission failed');
           }
 
@@ -1647,6 +1670,7 @@ export default function AssessmentPage() {
                           attemptId: sessionData.attemptId,
                           responses: responsesToSave,
                           currentIndex,
+                          sessionToken: sessionData.sessionToken,
                         }),
                       });
                     }

@@ -4,6 +4,7 @@ import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
 import { submissionBreaker } from '@/lib/circuit-breaker';
 import { checkStudentRateLimit, checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   console.log('=== API SUBMISSION START ===');
@@ -30,7 +31,8 @@ export async function POST(request: NextRequest) {
       attemptType, // 'pre' or 'post'
       responses, // Array of { itemId, answer, confidence }
       timeSpent, // in seconds
-      metadata // { tabSwitches: number, etc. }
+      metadata, // { tabSwitches: number, etc. }
+      sessionToken // Multi-tab prevention token
     } = body;
 
     // Apply student-specific rate limiting (after we have studentId)
@@ -165,7 +167,7 @@ export async function POST(request: NextRequest) {
     let attemptId: string;
 
     const existingInProgress = await client.query(
-      `SELECT attempt_id FROM attempts
+      `SELECT attempt_id, session_token FROM attempts
        WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND submitted_at IS NULL
        ORDER BY started_at DESC LIMIT 1`,
       [userId, courseData.course_id, instrumentId]
@@ -173,6 +175,13 @@ export async function POST(request: NextRequest) {
 
     if (existingInProgress.rows.length > 0) {
       attemptId = existingInProgress.rows[0].attempt_id;
+
+      // Validate session token for multi-tab prevention
+      const dbToken = existingInProgress.rows[0].session_token;
+      if (dbToken && sessionToken && dbToken !== sessionToken) {
+        throw new Error('SESSION_CONFLICT');
+      }
+
       console.log('Reusing existing in-progress attempt:', attemptId);
 
       // Clear old auto-saved responses (will be replaced with final submission data)
@@ -333,7 +342,18 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('=== API SUBMISSION ERROR ===', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    
+
+    // Handle session conflict (multi-tab detection)
+    if (errorMessage === 'SESSION_CONFLICT') {
+      return NextResponse.json(
+        {
+          error: 'Session expired. This assessment is open in another browser tab or window. Please close this tab and continue in the other window.',
+          code: 'SESSION_CONFLICT'
+        },
+        { status: 409 }
+      );
+    }
+
     // Handle specific error cases
     if (errorMessage.includes('already completed')) {
       return NextResponse.json(

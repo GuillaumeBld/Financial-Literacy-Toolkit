@@ -3,6 +3,7 @@ import { query, transaction } from '@/lib/db';
 import { AuthUtils } from '@/lib/auth';
 import { findCourseByName } from '@/lib/course-utils';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,6 +85,19 @@ export async function POST(request: NextRequest) {
       const normalizedStudentId = studentId.trim().toLowerCase();
       const isTestUser = normalizedStudentId === '123456789';
 
+      // Generate new session token for multi-tab prevention
+      // This invalidates any previous sessions for this attempt
+      let sessionToken: string | null = null;
+      if (attemptData) {
+        sessionToken = randomUUID();
+        await client.query(
+          `UPDATE attempts
+           SET session_token = $1, session_created_at = NOW()
+           WHERE attempt_id = $2`,
+          [sessionToken, attemptData.attempt_id]
+        );
+      }
+
       return {
         success: true,
         userId: userData.user_id,
@@ -93,6 +107,7 @@ export async function POST(request: NextRequest) {
         attemptId: attemptData?.attempt_id || null,
         attemptType: attemptData?.attempt_type || null,
         isTestUser,
+        sessionToken,
       };
     });
 
