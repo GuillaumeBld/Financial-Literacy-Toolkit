@@ -48,6 +48,7 @@ type ResponseType = 'correct' | 'incorrect' | 'do_not_know';
 // Scored anchor data structure
 type ScoredAnchor = {
   anchorId: string;
+  externalItemId?: string;  // e.g., "Q1", "1" for cross-format matching with SDM anchor_item_id
   needScore: number;
   responseType: ResponseType;
   confidence: number | null;  // null for Do Not Know
@@ -288,9 +289,15 @@ const personalizeSDMQuestionText = (
   const normalizedAnchorId = normalizeAnchorId(anchorId);
   let scoredAnchor: ScoredAnchor | undefined;
 
-  // Try to find matching anchor (handles Q1, Q1#, 1 format differences)
+  // Try to find matching anchor by anchorId OR externalItemId (handles format differences)
   for (const [key, value] of scoredAnchors.entries()) {
+    // Match by map key (anchorId)
     if (normalizeAnchorId(key) === normalizedAnchorId) {
+      scoredAnchor = value;
+      break;
+    }
+    // Match by externalItemId (handles UUID key with text anchor_item_id)
+    if (value.externalItemId && normalizeAnchorId(value.externalItemId) === normalizedAnchorId) {
       scoredAnchor = value;
       break;
     }
@@ -300,7 +307,9 @@ const personalizeSDMQuestionText = (
     return questionText.replace("[student's answer]", `"${scoredAnchor.studentAnswer}"`);
   }
 
-  return questionText;
+  // Fallback: show a visible indicator instead of raw placeholder
+  console.warn(`SDM personalization: No student answer found for anchor ${anchorId}`);
+  return questionText.replace("[student's answer]", '"your previous answer"');
 };
 
 // Shuffle answer options for multiple choice questions (while preserving correct answer)
@@ -356,6 +365,7 @@ const rebuildScoredAnchorsFromData = (
 
     rebuilt.set(question.id, {
       anchorId: question.id,
+      externalItemId: question.external_item_id || question.id,
       needScore,
       responseType,
       confidence,
@@ -1340,6 +1350,7 @@ export default function AssessmentPage() {
         // Create or update scored anchor
         const scoredAnchor: ScoredAnchor = {
           anchorId: currentQuestion.id,
+          externalItemId: currentQuestion.external_item_id || currentQuestion.id,
           needScore,
           responseType,
           confidence: value,
