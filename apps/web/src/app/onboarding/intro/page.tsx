@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BookOpen, Play, ChevronRight, CheckCircle } from 'lucide-react';
 
@@ -9,6 +9,7 @@ function IntroVideoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseCode = searchParams.get('courseCode') || '';
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -25,8 +26,46 @@ function IntroVideoContent() {
     }
   }, [router, courseCode]);
 
+  // Cross-browser fullscreen exit function
+  const exitFullscreen = () => {
+    const doc = document as Document & {
+      webkitExitFullscreen?: () => Promise<void>;
+      msExitFullscreen?: () => Promise<void>;
+      webkitFullscreenElement?: Element;
+      msFullscreenElement?: Element;
+    };
+
+    const video = videoRef.current as HTMLVideoElement & {
+      webkitExitFullscreen?: () => void;
+      webkitDisplayingFullscreen?: boolean;
+    };
+
+    // Check if document is in fullscreen (standard + prefixed)
+    const isDocFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement;
+
+    // Check if video is in fullscreen (iOS Safari uses different API)
+    const isVideoFullscreen = video?.webkitDisplayingFullscreen;
+
+    if (isDocFullscreen) {
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen().catch(() => {});
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
+    }
+
+    // iOS Safari: video has its own fullscreen API
+    if (isVideoFullscreen && video?.webkitExitFullscreen) {
+      video.webkitExitFullscreen();
+    }
+  };
+
   const handleVideoEnd = () => {
     setHasWatchedVideo(true);
+    // Exit fullscreen when video ends
+    exitFullscreen();
   };
 
   const handleContinue = () => {
@@ -73,6 +112,7 @@ function IntroVideoContent() {
           <div className="relative aspect-video bg-gray-900">
             {/* Video placeholder - will be replaced with actual video */}
             <video
+              ref={videoRef}
               className="w-full h-full object-cover"
               controls
               onPlay={() => setIsVideoPlaying(true)}

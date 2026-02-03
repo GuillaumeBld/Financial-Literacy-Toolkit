@@ -540,6 +540,52 @@ const selectSdmFromAnchors = (
     }
   }
 
+  // PHASE 4: Emergency fallback - fill remaining slots with any available variant
+  if (selectedItems.length < SDM_SIZE) {
+    const usedVariantIds = new Set(selectedItems.map(item => item.variant.id));
+
+    // Try all anchors (sorted by need score) with any available variant
+    const sortedAnchors = [...anchors].sort((a, b) => b.needScore - a.needScore);
+
+    for (const anchor of sortedAnchors) {
+      if (selectedItems.length >= SDM_SIZE) break;
+      if (selectedAnchorIds.has(anchor.anchorId)) continue;
+
+      // Find ANY available variant for this anchor (ignore type preference)
+      const candidates = sdmBankList.filter(item =>
+        anchorIdsMatch(item.anchor_item_id, anchor.anchorId) &&
+        !usedVariantIds.has(item.id)
+      );
+
+      if (candidates.length > 0) {
+        const variant = candidates[0];
+        const variantIsOpenEnded = isOpenEndedVariant(variant.variant_type || '');
+
+        // Skip if open-ended cap reached, else add
+        if (!variantIsOpenEnded || openEndedCount < OPEN_ENDED_CAP) {
+          selectedItems.push({
+            anchor,
+            variant,
+            variantType: variant.variant_type || 'fallback',
+            isOpenEnded: variantIsOpenEnded
+          });
+          selectedAnchorIds.add(anchor.anchorId);
+          usedVariantIds.add(variant.id);
+          if (variantIsOpenEnded) openEndedCount++;
+
+          if (isTest) {
+            console.log(`SDM Phase 4 fallback: Added ${variant.id} for anchor ${anchor.anchorId}`);
+          }
+        }
+      }
+    }
+  }
+
+  // Log warning if still underfilled
+  if (selectedItems.length < SDM_SIZE) {
+    console.warn(`SDM: Only selected ${selectedItems.length}/${SDM_SIZE} items - insufficient variants in bank`);
+  }
+
   // ORDER FOR PRESENTATION
   const orderedItems = [...selectedItems].sort((a, b) => {
     const orderA = getVariantPresentationWeight(a.variantType);
@@ -738,7 +784,7 @@ export default function AssessmentPage() {
 
             // Check if all anchor questions have been answered
             const anchorCount = loadedQuestions.filter(q => !q.is_sdm).length;
-            const answeredAnchors = loadedQuestions.filter(q => !q.is_sdm && restoredAnswers[q.id]).length;
+            const answeredAnchors = loadedQuestions.filter(q => !q.is_sdm && restoredAnswers[q.id] !== undefined).length;
 
             let totalQuestionCount = loadedQuestions.length;
             let finalQuestionSet = loadedQuestions;
@@ -1165,17 +1211,17 @@ export default function AssessmentPage() {
         error instanceof Error
           ? `An error occurred while submitting your assessment: ${error.message}`
           : 'An error occurred while submitting your assessment. Please try again.';
-      alert(message);
+      setSubmitError(message);
       setIsSubmitting(false);
     }
   }, [answers, confidenceRatings, isSubmitting, questions, router, sessionData, submitAttempts]);
 
   const isLoadingQuestions = questions.length === 0;
   const currentQuestion = !isLoadingQuestions ? questions[currentIndex] : null;
-  const TOTAL_QUESTIONS = questions.length || 50; // Use actual question count (40 anchor + SDM)
+  const TOTAL_QUESTIONS = 50; // Always 50: 40 anchor questions + 10 SDM questions
   const progress = !isLoadingQuestions ? ((currentIndex + 1) / TOTAL_QUESTIONS) * 100 : 0;
   // Count only answers that match actual questions (not orphaned SDM answers from old selections)
-  const answeredCount = !isLoadingQuestions ? questions.filter(q => answers[q.id]).length : 0;
+  const answeredCount = !isLoadingQuestions ? questions.filter(q => answers[q.id] !== undefined).length : 0;
   const currentConfidence = currentQuestion ? confidenceRatings[currentQuestion.id] ?? 0 : 0;
   const hasSelectedConfidence = currentConfidence > 0;
 
@@ -1223,6 +1269,9 @@ export default function AssessmentPage() {
         const selectedSdm = selectSdmQuestions();
 
         if (selectedSdm.length > 0) {
+          if (selectedSdm.length < 10) {
+            console.warn(`SDM: Only ${selectedSdm.length}/10 questions selected - some anchors may lack variants`);
+          }
           if (isTestUser) {
             console.log(`SDM: Appending ${selectedSdm.length} SDM questions (Q41-Q${40 + selectedSdm.length})`);
           }
@@ -1530,7 +1579,10 @@ export default function AssessmentPage() {
                   }
 
                   if (confirm('Your progress has been saved. Are you sure you want to exit?')) {
-                    router.push('/start');
+                    // Clear session and redirect to login
+                    localStorage.removeItem('student-session');
+                    localStorage.removeItem('assessment-session');
+                    router.push('/login');
                   }
                 }}
                 className="flex items-center gap-2 px-3 py-1.5 bg-loyola-gray-100 hover:bg-loyola-gray-200 text-loyola-gray-700 rounded-lg transition text-sm font-medium"
@@ -1732,7 +1784,7 @@ export default function AssessmentPage() {
 
           <button
             onClick={handleNext}
-            disabled={!isTestUser && (!answers[currentQuestion.id] || !hasSelectedConfidence || isSubmitting)}
+            disabled={!isTestUser && (answers[currentQuestion.id] === undefined || !hasSelectedConfidence || isSubmitting)}
             className="px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             type="button"
           >

@@ -155,38 +155,64 @@ export async function POST(request: NextRequest) {
         throw new Error(`You have already completed the ${attemptType} assessment for this course`);
     }
 
-    console.log('Creating assessment attempt...');
-
     // Check if metadata column exists in attempts table
     const metadataColumnCheck = await client.query(
       "SELECT column_name FROM information_schema.columns WHERE table_name = 'attempts' AND column_name = 'metadata'"
     );
     const hasMetadataColumn = metadataColumnCheck.rows && metadataColumnCheck.rows.length > 0;
 
-    // Create assessment attempt WITHOUT submitted_at (set after all data is saved)
-    let attempt;
-    if (hasMetadataColumn) {
-      attempt = await client.query(
-        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
-        [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, metadata || {}]
-      );
-    } else {
-      // Fallback: insert without metadata column
-      attempt = await client.query(
-        'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s) VALUES ($1, $2, $3, $4, $5) RETURNING attempt_id',
-        [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null]
-      );
-      console.log('Note: metadata column not found in attempts table - anti-cheating data not stored');
-    }
+    // Reuse existing in-progress attempt (created by auto-save) or create a new one
+    let attemptId: string;
 
-      const attemptId = attempt.rows[0].attempt_id;
-      console.log('Attempt created:', attemptId);
+    const existingInProgress = await client.query(
+      `SELECT attempt_id FROM attempts
+       WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND submitted_at IS NULL
+       ORDER BY started_at DESC LIMIT 1`,
+      [userId, courseData.course_id, instrumentId]
+    );
+
+    if (existingInProgress.rows.length > 0) {
+      attemptId = existingInProgress.rows[0].attempt_id;
+      console.log('Reusing existing in-progress attempt:', attemptId);
+
+      // Clear old auto-saved responses (will be replaced with final submission data)
+      await client.query('DELETE FROM responses WHERE attempt_id = $1', [attemptId]);
+
+      // Update attempt metadata with final submission data
+      if (hasMetadataColumn) {
+        await client.query(
+          'UPDATE attempts SET attempt_type = $1, duration_s = $2, metadata = $3 WHERE attempt_id = $4',
+          [attemptType, timeSpent || null, metadata || {}, attemptId]
+        );
+      } else {
+        await client.query(
+          'UPDATE attempts SET attempt_type = $1, duration_s = $2 WHERE attempt_id = $3',
+          [attemptType, timeSpent || null, attemptId]
+        );
+      }
+    } else {
+      console.log('Creating new assessment attempt...');
+      let attempt;
+      if (hasMetadataColumn) {
+        attempt = await client.query(
+          'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
+          [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, metadata || {}]
+        );
+      } else {
+        attempt = await client.query(
+          'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s) VALUES ($1, $2, $3, $4, $5) RETURNING attempt_id',
+          [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null]
+        );
+      }
+      attemptId = attempt.rows[0].attempt_id;
+      console.log('New attempt created:', attemptId);
+    }
 
     console.log('Inserting responses (batch)...');
     // === BULK INSERT RESPONSES ===
     // Prepare arrays for PostgreSQL UNNEST - reduces 40 queries to 1
     const itemIds = validResponses.map((r: any) => r.itemId);
-    const rawAnswers = validResponses.map((r: any) => JSON.stringify({ answer: r.answer }));
+    const rawAnswers = validResponses.map((r: any) => JSON.stringify(r.answer));
     const confidences = validResponses.map((r: any) => r.confidence || null);
 
     // Single bulk insert instead of 40 individual inserts

@@ -22,11 +22,11 @@ type Submission = {
   course_id: string;
   course_name: string;
   attempt_type: 'pre' | 'post';
-  submitted_at: string;
-  duration_s: number;
-  overall_score: number;
-  overconfidence_index: number;
-  domain_scores: Record<string, number>;
+  submitted_at: string | null;
+  duration_s: number | null;
+  overall_score: number | null;
+  overconfidence_index: number | null;
+  domain_scores: Record<string, number> | null;
 };
 
 type FilterOptions = {
@@ -113,27 +113,32 @@ export default function InstructorSubmissionsPage() {
   const filteredSubmissions = submissions.filter(submission => {
     if (filters.courseId && submission.course_id !== filters.courseId) return false;
     if (filters.attemptType && submission.attempt_type !== filters.attemptType) return false;
-    if (filters.searchTerm && !submission.hashed_student_key.toLowerCase().includes(filters.searchTerm.toLowerCase())) return false;
-    
-    if (filters.dateRange) {
+    if (filters.searchTerm && !(submission.hashed_student_key ?? '').toLowerCase().includes(filters.searchTerm.toLowerCase())) return false;
+
+    if (filters.dateRange && submission.submitted_at) {
       const submissionDate = new Date(submission.submitted_at);
       const now = new Date();
       const daysAgo = parseInt(filters.dateRange);
       const cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
       if (submissionDate < cutoffDate) return false;
     }
-    
+
     return true;
   });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Invalid date';
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -312,10 +317,10 @@ export default function InstructorSubmissionsPage() {
                 {filteredSubmissions.map((submission) => (
                   <tr key={submission.attempt_id} className="hover:bg-loyola-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-loyola-gray-900">
-                      {submission.hashed_student_key}
+                      {submission.hashed_student_key ?? 'Unknown'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
-                      {submission.course_name}
+                      {submission.course_name ?? 'Unknown'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -329,15 +334,15 @@ export default function InstructorSubmissionsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-900">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">
-                          {Math.round(submission.overall_score * 100)}%
+                          {Math.round((submission.overall_score ?? 0) * 100)}%
                         </span>
                         <span className="text-xs text-loyola-gray-500">
-                          (OC: {submission.overconfidence_index.toFixed(2)})
+                          (OC: {(submission.overconfidence_index ?? 0).toFixed(2)})
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
-                      {formatDuration(submission.duration_s)}
+                      {formatDuration(submission.duration_s ?? 0)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
                       {formatDate(submission.submitted_at)}
@@ -400,13 +405,13 @@ export default function InstructorSubmissionsPage() {
                 <div>
                   <h3 className="font-semibold text-loyola-gray-700 mb-2">Performance</h3>
                   <p className="text-sm text-loyola-gray-600">
-                    Overall Score: {Math.round(selectedSubmission.overall_score * 100)}%
+                    Overall Score: {Math.round((selectedSubmission.overall_score ?? 0) * 100)}%
                   </p>
                   <p className="text-sm text-loyola-gray-600">
-                    Duration: {formatDuration(selectedSubmission.duration_s)}
+                    Duration: {formatDuration(selectedSubmission.duration_s ?? 0)}
                   </p>
                   <p className="text-sm text-loyola-gray-600">
-                    Overconfidence Index: {selectedSubmission.overconfidence_index.toFixed(2)}
+                    Overconfidence Index: {(selectedSubmission.overconfidence_index ?? 0).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -414,20 +419,20 @@ export default function InstructorSubmissionsPage() {
               <div>
                 <h3 className="font-semibold text-loyola-gray-700 mb-4">Domain Performance</h3>
                 <div className="space-y-3">
-                  {Object.entries(selectedSubmission.domain_scores).map(([domain, score]) => (
+                  {Object.entries(selectedSubmission.domain_scores ?? {}).map(([domain, score]) => (
                     <div key={domain}>
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-medium text-loyola-gray-700">
                           {domain}
                         </span>
                         <span className="text-sm text-loyola-gray-600">
-                          {Math.round(score * 100)}%
+                          {Math.round((score ?? 0) * 100)}%
                         </span>
                       </div>
                       <div className="w-full bg-loyola-gray-200 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${score * 100}%` }}
+                          style={{ width: `${(score ?? 0) * 100}%` }}
                         />
                       </div>
                     </div>
