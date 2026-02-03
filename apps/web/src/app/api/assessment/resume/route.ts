@@ -25,12 +25,15 @@ export async function GET(request: NextRequest) {
         [attemptId]
       );
     } else {
-      // Get latest in-progress attempt for user/course
+      // Get latest attempt for user/course (prioritize in-progress, then completed)
       attempt = await query(
         `SELECT attempt_id, user_id, course_id, attempt_type, started_at, submitted_at
          FROM attempts
-         WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
-         ORDER BY started_at DESC LIMIT 1`,
+         WHERE user_id = $1 AND course_id = $2
+         ORDER BY
+           CASE WHEN submitted_at IS NULL THEN 0 ELSE 1 END,
+           started_at DESC
+         LIMIT 1`,
         [userId, courseId]
       );
     }
