@@ -131,6 +131,9 @@ function LoginForm() {
       };
       localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
 
+      // Clear any orphaned global progress key (legacy cleanup for cross-user contamination fix)
+      localStorage.removeItem('assessment-progress');
+
       // Returning users go to start page to select assessment
       router.push('/start');
     } catch (err: any) {

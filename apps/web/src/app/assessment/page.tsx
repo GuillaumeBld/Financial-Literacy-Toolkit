@@ -87,6 +87,11 @@ const anchorIdsMatch = (id1: string | null | undefined, id2: string | null | und
   return normalizeAnchorId(id1) === normalizeAnchorId(id2);
 };
 
+// Check if string is a UUID format (for case-insensitive UUID matching)
+const isUUID = (id: string): boolean => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+};
+
 // ============================================================================
 // NEED SCORE CALCULATION (Source of Truth Table 4)
 // ============================================================================
@@ -286,21 +291,32 @@ const personalizeSDMQuestionText = (
     return questionText;
   }
 
-  // Find the parent anchor's scored data
-  const normalizedAnchorId = normalizeAnchorId(anchorId);
   let scoredAnchor: ScoredAnchor | undefined;
 
-  // Try to find matching anchor by anchorId OR externalItemId (handles format differences)
-  for (const [key, value] of scoredAnchors.entries()) {
-    // Match by map key (anchorId)
-    if (normalizeAnchorId(key) === normalizedAnchorId) {
-      scoredAnchor = value;
-      break;
+  // Direct UUID lookup first (most common case) - case-insensitive
+  if (isUUID(anchorId)) {
+    const anchorIdLower = anchorId.toLowerCase();
+    for (const [key, value] of scoredAnchors.entries()) {
+      if (key.toLowerCase() === anchorIdLower) {
+        scoredAnchor = value;
+        break;
+      }
     }
-    // Match by externalItemId (handles UUID key with text anchor_item_id)
-    if (value.externalItemId && normalizeAnchorId(value.externalItemId) === normalizedAnchorId) {
-      scoredAnchor = value;
-      break;
+  }
+
+  // Fallback: normalized text ID matching (for "Q1#" style IDs)
+  if (!scoredAnchor) {
+    const normalizedAnchorId = normalizeAnchorId(anchorId);
+    for (const [key, value] of scoredAnchors.entries()) {
+      if (normalizeAnchorId(key) === normalizedAnchorId) {
+        scoredAnchor = value;
+        break;
+      }
+      // Also check externalItemId for cross-format matching
+      if (value.externalItemId && normalizeAnchorId(value.externalItemId) === normalizedAnchorId) {
+        scoredAnchor = value;
+        break;
+      }
     }
   }
 
@@ -323,8 +339,10 @@ const shuffleOptions = (options: Array<{id: string, text: string}>): Array<{id: 
   return shuffled;
 };
 
-// localStorage key for auto-saving progress
-const PROGRESS_STORAGE_KEY = 'assessment-progress';
+// Generate per-user localStorage key for progress (prevents cross-user contamination)
+const getProgressStorageKey = (userId: string | undefined): string => {
+  return userId ? `assessment-progress-${userId}` : 'assessment-progress';
+};
 
 // ============================================================================
 // PURE FUNCTIONS FOR RESUME SUPPORT
@@ -867,36 +885,43 @@ export default function AssessmentPage() {
 
           // First, try to recover from localStorage (browser crash recovery)
           try {
-            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            const progressKey = getProgressStorageKey(parsedSession.userId);
+            const savedProgress = localStorage.getItem(progressKey);
             if (savedProgress) {
               const progress = JSON.parse(savedProgress);
-              // Only restore if saved within last 2 hours (session still valid)
-              const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
-              if (progress.savedAt && progress.savedAt > twoHoursAgo) {
-                if (progress.answers && Object.keys(progress.answers).length > 0) {
-                  // Validate: check if all answer keys are either anchors or in SDM bank
-                  const anchorIds = new Set(loadedQuestions.map(q => q.id));
-                  const sdmBankIds = new Set(loadedSdmBank.map(q => q.id));
-                  const answerKeys = Object.keys(progress.answers);
-                  const orphanedAnswers = answerKeys.filter(k => !anchorIds.has(k) && !sdmBankIds.has(k));
-
-                  if (orphanedAnswers.length > 0) {
-                    // Stale localStorage with answer IDs not in current item banks — discard
-                    console.warn('localStorage has orphaned answer IDs, falling through to DB resume:', orphanedAnswers);
-                    localStorage.removeItem(PROGRESS_STORAGE_KEY);
-                  } else {
-                    restoreWithSdm(
-                      progress.answers,
-                      progress.confidenceRatings || {},
-                      progress.currentIndex || 0
-                    );
-                    console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
-                    return; // Skip API resume if localStorage has data
-                  }
-                }
+              // Validate ownership - ensure this progress belongs to the current user
+              if (progress.userId && progress.userId !== parsedSession.userId) {
+                console.warn('localStorage progress belongs to different user, clearing');
+                localStorage.removeItem(progressKey);
               } else {
-                // Clear stale progress
-                localStorage.removeItem(PROGRESS_STORAGE_KEY);
+                // Only restore if saved within last 2 hours (session still valid)
+                const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+                if (progress.savedAt && progress.savedAt > twoHoursAgo) {
+                  if (progress.answers && Object.keys(progress.answers).length > 0) {
+                    // Validate: check if all answer keys are either anchors or in SDM bank
+                    const anchorIds = new Set(loadedQuestions.map(q => q.id));
+                    const sdmBankIds = new Set(loadedSdmBank.map(q => q.id));
+                    const answerKeys = Object.keys(progress.answers);
+                    const orphanedAnswers = answerKeys.filter(k => !anchorIds.has(k) && !sdmBankIds.has(k));
+
+                    if (orphanedAnswers.length > 0) {
+                      // Stale localStorage with answer IDs not in current item banks — discard
+                      console.warn('localStorage has orphaned answer IDs, falling through to DB resume:', orphanedAnswers);
+                      localStorage.removeItem(progressKey);
+                    } else {
+                      restoreWithSdm(
+                        progress.answers,
+                        progress.confidenceRatings || {},
+                        progress.currentIndex || 0
+                      );
+                      console.log('Restored progress from localStorage:', Object.keys(progress.answers).length, 'answers');
+                      return; // Skip API resume if localStorage has data
+                    }
+                  }
+                } else {
+                  // Clear stale progress
+                  localStorage.removeItem(progressKey);
+                }
               }
             }
           } catch (e) {
@@ -1142,6 +1167,7 @@ export default function AssessmentPage() {
     }
 
     const progress = {
+      userId: sessionData.userId,
       answers,
       confidenceRatings,
       currentIndex,
@@ -1149,7 +1175,7 @@ export default function AssessmentPage() {
     };
 
     try {
-      localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+      localStorage.setItem(getProgressStorageKey(sessionData.userId), JSON.stringify(progress));
     } catch (e) {
       console.warn('Failed to auto-save progress:', e);
     }
@@ -1252,7 +1278,7 @@ export default function AssessmentPage() {
             console.log('Submission successful:', result);
             if (typeof window !== 'undefined') {
               localStorage.removeItem('assessment-session');
-              localStorage.removeItem(PROGRESS_STORAGE_KEY);
+              localStorage.removeItem(getProgressStorageKey(sessionData?.userId));
             }
             router.push('/results');
             return;
