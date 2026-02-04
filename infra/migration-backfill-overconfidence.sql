@@ -19,12 +19,12 @@ FROM (
     AVG(CASE WHEN TRIM(BOTH '"' FROM r.raw_answer::text) = i.key THEN 1 ELSE 0 END)::float as oc
   FROM responses r
   JOIN items i ON r.item_id = i.item_id
-  WHERE i.is_scored = true
+  WHERE i.is_anchor = true
+    AND i.is_scored = true
     AND r.confidence IS NOT NULL
   GROUP BY r.attempt_id
 ) calc
-WHERE s.attempt_id = calc.attempt_id
-  AND s.overconfidence_index = 0;
+WHERE s.attempt_id = calc.attempt_id;
 
 -- Verify the update
 SELECT

@@ -256,15 +256,17 @@ export async function POST(request: NextRequest) {
     const hasIsScoredColumn = columnCheck.rows && columnCheck.rows.length > 0;
 
     // Fetch all items in single query instead of 40 individual queries
+    // Include is_anchor to properly exclude SDM items from grade calculation
     const itemQuery = hasIsScoredColumn
-      ? `SELECT item_id, key, type, is_scored FROM items WHERE item_id = ANY($1::text[])`
-      : `SELECT item_id, key, type, NULL::boolean as is_scored FROM items WHERE item_id = ANY($1::text[])`;
+      ? `SELECT item_id, key, type, is_scored, is_anchor FROM items WHERE item_id = ANY($1::text[])`
+      : `SELECT item_id, key, type, NULL::boolean as is_scored, is_anchor FROM items WHERE item_id = ANY($1::text[])`;
 
     interface ItemRow {
       item_id: string;
       key: string | null;
       type: string;
       is_scored: boolean | null;
+      is_anchor: boolean | null;
     }
 
     const itemsResult = await client.query(itemQuery, [validResponses.map((r: any) => r.itemId)]);
@@ -282,8 +284,9 @@ export async function POST(request: NextRequest) {
       const item = itemsMap.get(response.itemId);
       if (!item) continue;
 
-      // Skip preference items (Q15-Q28) where is_scored = false
-      if (hasIsScoredColumn && item.is_scored === false) {
+      // Skip non-anchor items (SDM) and non-scored items (preference Q15-Q28)
+      // Per source of truth: only 26 anchor knowledge items contribute to grade
+      if (item.is_anchor === false || (hasIsScoredColumn && item.is_scored === false)) {
         continue;
       }
 
@@ -331,6 +334,7 @@ export async function POST(request: NextRequest) {
     // OC = avg(normalized_confidence) - avg(actual_correctness)
     // normalized_confidence: (confidence - 1) / 2 maps 1-3 to 0-1
     // actual_correctness: 1 if answer matches key, 0 otherwise
+    // Only include anchor items (exclude SDM) per source of truth
     const ocQuery = `
       SELECT
         AVG((r.confidence - 1)::float / 2) as avg_norm_confidence,
@@ -338,6 +342,7 @@ export async function POST(request: NextRequest) {
       FROM responses r
       JOIN items i ON r.item_id = i.item_id
       WHERE r.attempt_id = $1
+        AND i.is_anchor = true
         AND i.is_scored = true
         AND r.confidence IS NOT NULL
     `;
