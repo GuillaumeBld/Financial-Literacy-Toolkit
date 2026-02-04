@@ -191,7 +191,7 @@ async function getSubmissionDetail(instructorId: string, attemptId: string) {
       FROM responses r
       JOIN items i ON r.item_id = i.item_id
       WHERE r.attempt_id = $1
-      ORDER BY i.item_id`,
+      ORDER BY (SUBSTRING(i.item_id FROM '(\\d+)')::integer), i.item_id`,
       [attemptId]
     );
 
