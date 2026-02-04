@@ -100,8 +100,9 @@ export async function GET(request: NextRequest) {
     const postAttempts = attempts.filter(a => a.attempt_type === 'post');
 
     const completedAttempts = attempts.filter(a => a.submitted_at);
+    // Note: PostgreSQL numeric columns return strings, so we parse them
     const avgScore = completedAttempts.length > 0
-      ? completedAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum, a) => sum + (parseFloat(a.overall as unknown as string) || 0), 0) / completedAttempts.length
       : 0;
 
     const avgDuration = completedAttempts.length > 0
@@ -116,7 +117,7 @@ export async function GET(request: NextRequest) {
           if (!domainScores[domain]) {
             domainScores[domain] = [];
           }
-          domainScores[domain].push(score as number);
+          domainScores[domain].push(parseFloat(score as string) || 0);
         });
       }
     });

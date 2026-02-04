@@ -86,17 +86,18 @@ export async function GET(request: NextRequest) {
     );
 
     // Transform the data for easier consumption
+    // Note: PostgreSQL numeric columns return strings, so we parse them to numbers
     const transformedSubmissions = submissions.map(submission => ({
-        attempt_id: submission.attempt_id,
-        user_id: submission.user_id,
+      attempt_id: submission.attempt_id,
+      user_id: submission.user_id,
       hashed_student_key: submission.hashed_student_key || 'Unknown',
-        course_id: submission.course_id,
+      course_id: submission.course_id,
       course_name: submission.course_name || 'Unknown Course',
-        attempt_type: submission.attempt_type,
-        submitted_at: submission.submitted_at,
-        duration_s: submission.duration_s || 0,
-      overall_score: submission.overall || 0,
-      overconfidence_index: submission.overconfidence_index || 0,
+      attempt_type: submission.attempt_type,
+      submitted_at: submission.submitted_at,
+      duration_s: submission.duration_s || 0,
+      overall_score: parseFloat(submission.overall as unknown as string) || 0,
+      overconfidence_index: parseFloat(submission.overconfidence_index as unknown as string) || 0,
       domain_scores: submission.by_domain || {}
     }));
 
