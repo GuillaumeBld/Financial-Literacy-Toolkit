@@ -393,86 +393,90 @@ export default function InstructorAnalyticsPage() {
               />
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2 mb-6 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab('performance')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'performance'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <PieChart className="w-4 h-4" />
-                  Performance
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('baseline')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'baseline'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4" />
-                  Baseline Covariates
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('risk')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'risk'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Risk Profiles
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('learning')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'learning'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Learning Gains
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('psychometrics')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'psychometrics'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4" />
-                  Psychometrics
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('heterogeneity')}
-                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === 'heterogeneity'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <GitBranch className="w-4 h-4" />
-                  Heterogeneity
-                </span>
-              </button>
+            {/* Tab Navigation - Horizontal Slider */}
+            <div className="relative mb-6">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-px">
+                <div className="flex gap-1 min-w-max border-b border-gray-200">
+                  <button
+                    onClick={() => setActiveTab('performance')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'performance'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <PieChart className="w-4 h-4" />
+                      Performance
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('baseline')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'baseline'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4" />
+                      Baseline
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('risk')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'risk'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Risk Profiles
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('learning')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'learning'
+                        ? 'text-green-600 border-green-600 bg-green-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      Learning Gains
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('psychometrics')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'psychometrics'
+                        ? 'text-indigo-600 border-indigo-600 bg-indigo-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <FlaskConical className="w-4 h-4" />
+                      Psychometrics
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('heterogeneity')}
+                    className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
+                      activeTab === 'heterogeneity'
+                        ? 'text-purple-600 border-purple-600 bg-purple-50'
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <GitBranch className="w-4 h-4" />
+                      Heterogeneity
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Performance Tab */}
