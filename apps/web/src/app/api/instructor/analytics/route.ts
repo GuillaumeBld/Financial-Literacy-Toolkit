@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queryMany } from '@/lib/db';
+import { queryMany, queryOne } from '@/lib/db';
 import { verifyInstructorToken } from '@/lib/instructor-auth';
 
 export const dynamic = 'force-dynamic';
@@ -94,11 +94,21 @@ export async function GET(request: NextRequest) {
       overconfidence_index: number | null;
     }>(attemptsQuery, [filterCourseIds]);
 
+    // Get total onboarded students from student_profiles
+    const onboardedResult = await queryOne<{ count: number }>(
+      `SELECT COUNT(*)::int as count FROM student_profiles WHERE course_id = $1`,
+      [targetCourseId]
+    );
+    const totalOnboarded = onboardedResult?.count || 0;
+
     // Calculate summary statistics
-    const totalAttempts = attempts.length;
     const completedAttempts = attempts.filter(a => a.submitted_at);
-    const uniqueStudents = new Set(attempts.map(a => a.user_id)).size;
-    
+    const inProgressAttempts = attempts.filter(a => !a.submitted_at);
+    const studentsWithAttempts = new Set(attempts.map(a => a.user_id)).size;
+
+    // Students who onboarded but never started an attempt
+    const notStarted = totalOnboarded - studentsWithAttempts;
+
     const avgScore = completedAttempts.length > 0
       ? completedAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / completedAttempts.length
       : 0;
@@ -106,8 +116,6 @@ export async function GET(request: NextRequest) {
     const avgDuration = completedAttempts.length > 0
       ? completedAttempts.reduce((sum, a) => sum + (a.duration_s || 0), 0) / completedAttempts.length
       : 0;
-
-    const completionRate = totalAttempts > 0 ? (completedAttempts.length / totalAttempts) * 100 : 0;
 
     // Calculate domain performance
     const domainScores: Record<string, { scores: number[], preScores: number[], postScores: number[] }> = {};
@@ -456,11 +464,12 @@ export async function GET(request: NextRequest) {
 
     const analytics = {
       summary: {
-        totalStudents: uniqueStudents,
-        totalAttempts,
+        totalStudents: totalOnboarded,
+        submitted: completedAttempts.length,
+        inProgress: inProgressAttempts.length,
+        notStarted: notStarted,
         avgScore: Math.round(avgScore), // Already a percentage
-        avgDuration: Math.round(avgDuration),
-        completionRate: Math.round(completionRate)
+        avgDuration: Math.round(avgDuration)
       },
       domainPerformance,
       scoreDistribution,

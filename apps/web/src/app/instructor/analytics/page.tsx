@@ -33,10 +33,11 @@ type DistributionItem = {
 type AnalyticsData = {
   summary: {
     totalStudents: number;
-    totalAttempts: number;
+    submitted: number;
+    inProgress: number;
+    notStarted: number;
     avgScore: number;
     avgDuration: number;
-    completionRate: number;
   };
   domainPerformance: Array<{
     domain: string;
@@ -274,7 +275,7 @@ export default function InstructorAnalyticsPage() {
         ) : (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
               <StatCard
                 icon={<Users className="w-6 h-6" />}
                 title="Total Students"
@@ -282,10 +283,22 @@ export default function InstructorAnalyticsPage() {
                 color="blue"
               />
               <StatCard
-                icon={<BarChart3 className="w-6 h-6" />}
-                title="Total Attempts"
-                value={analytics.summary.totalAttempts}
+                icon={<UserCheck className="w-6 h-6" />}
+                title="Submitted"
+                value={analytics.summary.submitted}
                 color="green"
+              />
+              <StatCard
+                icon={<Activity className="w-6 h-6" />}
+                title="In Progress"
+                value={analytics.summary.inProgress}
+                color="orange"
+              />
+              <StatCard
+                icon={<Clock className="w-6 h-6" />}
+                title="Not Started"
+                value={analytics.summary.notStarted}
+                color="red"
               />
               <StatCard
                 icon={<TrendingUp className="w-6 h-6" />}
@@ -294,16 +307,10 @@ export default function InstructorAnalyticsPage() {
                 color="purple"
               />
               <StatCard
-                icon={<Clock className="w-6 h-6" />}
+                icon={<BarChart3 className="w-6 h-6" />}
                 title="Avg Duration"
                 value={`${Math.floor(analytics.summary.avgDuration / 60)}m`}
-                color="orange"
-              />
-              <StatCard
-                icon={<Activity className="w-6 h-6" />}
-                title="Completion Rate"
-                value={`${analytics.summary.completionRate}%`}
-                color="red"
+                color="blue"
               />
             </div>
 
