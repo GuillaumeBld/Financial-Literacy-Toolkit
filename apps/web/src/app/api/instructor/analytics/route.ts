@@ -117,29 +117,31 @@ export async function GET(request: NextRequest) {
     // Students who onboarded but never started an attempt
     const notStarted = totalOnboarded - studentsWithAttempts;
 
+    // Note: PostgreSQL numeric types are returned as strings by the pg driver
     const avgScore = completedAttempts.length > 0
-      ? completedAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum, a) => sum + (Number(a.overall) || 0), 0) / completedAttempts.length
       : 0;
 
     const avgDuration = completedAttempts.length > 0
-      ? completedAttempts.reduce((sum, a) => sum + (a.duration_s || 0), 0) / completedAttempts.length
+      ? completedAttempts.reduce((sum, a) => sum + (Number(a.duration_s) || 0), 0) / completedAttempts.length
       : 0;
 
     // Calculate domain performance
     const domainScores: Record<string, { scores: number[], preScores: number[], postScores: number[] }> = {};
     
     completedAttempts.forEach(attempt => {
-      if (attempt.by_domain) {
+      if (attempt.by_domain && Object.keys(attempt.by_domain).length > 0) {
         Object.entries(attempt.by_domain).forEach(([domain, score]) => {
           if (!domainScores[domain]) {
             domainScores[domain] = { scores: [], preScores: [], postScores: [] };
           }
-          domainScores[domain].scores.push(score as number);
-          
+          const numericScore = Number(score) || 0;
+          domainScores[domain].scores.push(numericScore);
+
           if (attempt.attempt_type === 'pre') {
-            domainScores[domain].preScores.push(score as number);
+            domainScores[domain].preScores.push(numericScore);
           } else {
-            domainScores[domain].postScores.push(score as number);
+            domainScores[domain].postScores.push(numericScore);
           }
         });
       }
@@ -172,7 +174,7 @@ export async function GET(request: NextRequest) {
 
     const scoreDistribution = scoreRanges.map(range => {
       const count = completedAttempts.filter(attempt => {
-        const score = attempt.overall || 0;
+        const score = Number(attempt.overall) || 0;
         return score >= range.min && score <= range.max;
       }).length;
       
@@ -205,7 +207,7 @@ export async function GET(request: NextRequest) {
       );
       
       const avgScore = periodAttempts.length > 0
-        ? periodAttempts.reduce((sum, a) => sum + (a.overall || 0), 0) / periodAttempts.length
+        ? periodAttempts.reduce((sum, a) => sum + (Number(a.overall) || 0), 0) / periodAttempts.length
         : 0;
 
       return {
@@ -219,8 +221,8 @@ export async function GET(request: NextRequest) {
     const studentProgressMap: Record<string, { preScore: number, postScore: number, attempts: number }> = {};
     
     completedAttempts.forEach(attempt => {
-      const score = attempt.overall || 0;
-      
+      const score = Number(attempt.overall) || 0;
+
       if (!studentProgressMap[attempt.user_id]) {
         studentProgressMap[attempt.user_id] = { preScore: 0, postScore: 0, attempts: 0 };
       }
@@ -418,7 +420,7 @@ export async function GET(request: NextRequest) {
     // Calculate overconfidence from scores
     const overconfidenceData = completedAttempts
       .filter(a => a.overconfidence_index !== null)
-      .map(a => a.overconfidence_index as number);
+      .map(a => Number(a.overconfidence_index));
 
     const avgOverconfidence = overconfidenceData.length > 0
       ? overconfidenceData.reduce((sum, v) => sum + v, 0) / overconfidenceData.length
@@ -784,8 +786,8 @@ export async function GET(request: NextRequest) {
       if (preAttempt && postAttempt && preAttempt.overall !== null && postAttempt.overall !== null) {
         studentGains.push({
           userId,
-          preScore: preAttempt.overall,
-          postScore: postAttempt.overall,
+          preScore: Number(preAttempt.overall),
+          postScore: Number(postAttempt.overall),
           preDomains: preAttempt.by_domain || {},
           postDomains: postAttempt.by_domain || {}
         });
