@@ -449,6 +449,287 @@ export async function GET(request: NextRequest) {
       p.student_loan_interest_rate === 'above-10'
     ).length;
 
+    // ============================================
+    // PREFERENCE QUESTIONS (Q15-Q28) AGGREGATION
+    // ============================================
+
+    // Query to get aggregated responses for preference questions (is_scored = false, is_anchor = true)
+    const preferenceResponsesQuery = `
+      SELECT
+        i.item_id,
+        i.stem,
+        i.subdomain,
+        i.options,
+        r.raw_answer,
+        COUNT(*)::int as count
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      JOIN attempts a ON r.attempt_id = a.attempt_id
+      WHERE a.course_id = ANY($1::uuid[])
+        AND a.submitted_at IS NOT NULL
+        AND i.is_scored = false
+        AND i.is_anchor = true
+      GROUP BY i.item_id, i.stem, i.subdomain, i.options, r.raw_answer
+      ORDER BY (SUBSTRING(i.item_id FROM '(\\d+)')::integer), r.raw_answer
+    `;
+
+    const preferenceRawData = await queryMany<{
+      item_id: string;
+      stem: string;
+      subdomain: string;
+      options: { id: string; text: string }[];
+      raw_answer: string;
+      count: number;
+    }>(preferenceResponsesQuery, [filterCourseIds]);
+
+    // Group by question and calculate totals/percentages
+    const questionMap: Record<string, {
+      questionId: string;
+      questionText: string;
+      category: string;
+      options: { id: string; text: string }[];
+      responses: { answer: string; answerText: string; count: number; percentage: number }[];
+      totalResponses: number;
+    }> = {};
+
+    preferenceRawData.forEach(row => {
+      if (!questionMap[row.item_id]) {
+        questionMap[row.item_id] = {
+          questionId: row.item_id,
+          questionText: row.stem,
+          category: row.subdomain || 'Other',
+          options: row.options || [],
+          responses: [],
+          totalResponses: 0
+        };
+      }
+
+      // Clean the raw_answer (remove quotes if present)
+      const cleanAnswer = String(row.raw_answer).replace(/"/g, '');
+      const option = (row.options || []).find((o: { id: string; text: string }) => o.id === cleanAnswer);
+      const answerText = option?.text || cleanAnswer;
+
+      questionMap[row.item_id].responses.push({
+        answer: cleanAnswer,
+        answerText,
+        count: row.count,
+        percentage: 0 // Will calculate after totals
+      });
+      questionMap[row.item_id].totalResponses += row.count;
+    });
+
+    // Calculate percentages and convert to array
+    const preferenceResponses = Object.values(questionMap).map(q => {
+      q.responses = q.responses.map(r => ({
+        ...r,
+        percentage: q.totalResponses > 0 ? Math.round((r.count / q.totalResponses) * 100) : 0
+      }));
+      return q;
+    });
+
+    // ============================================
+    // RISK TOLERANCE CATEGORIZATION
+    // ============================================
+    // Based on Q15 (bonus), Q16 (downturn), Q23 (attitude toward risk)
+
+    let riskToleranceCounts = { conservative: 0, moderate: 0, aggressive: 0 };
+    let riskToleranceTotal = 0;
+
+    // Q15: Bonus allocation question
+    const q15 = questionMap['Q15'];
+    if (q15) {
+      q15.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') riskToleranceCounts.conservative += r.count; // Savings
+        else if (ans === 'B') riskToleranceCounts.moderate += r.count; // Mutual funds
+        else if (ans === 'C' || ans === 'D') riskToleranceCounts.aggressive += r.count; // Stocks or spend
+        riskToleranceTotal += r.count;
+      });
+    }
+
+    // Q16: Market downturn reaction
+    const q16 = questionMap['Q16'];
+    if (q16) {
+      q16.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A' || ans === 'D') riskToleranceCounts.conservative += r.count; // Sell or move to bonds
+        else if (ans === 'B') riskToleranceCounts.moderate += r.count; // Hold
+        else if (ans === 'C') riskToleranceCounts.aggressive += r.count; // Buy more
+        riskToleranceTotal += r.count;
+      });
+    }
+
+    // Q23: Attitude toward financial risk
+    const q23 = questionMap['Q23'];
+    if (q23) {
+      q23.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') riskToleranceCounts.conservative += r.count; // Avoid risk
+        else if (ans === 'B') riskToleranceCounts.moderate += r.count; // Small risks
+        else if (ans === 'C' || ans === 'D') riskToleranceCounts.aggressive += r.count; // Calculated or high risks
+        riskToleranceTotal += r.count;
+      });
+    }
+
+    // Normalize to get distribution
+    const riskTolerance = {
+      conservative: riskToleranceTotal > 0 ? Math.round((riskToleranceCounts.conservative / riskToleranceTotal) * 100) : 0,
+      moderate: riskToleranceTotal > 0 ? Math.round((riskToleranceCounts.moderate / riskToleranceTotal) * 100) : 0,
+      aggressive: riskToleranceTotal > 0 ? Math.round((riskToleranceCounts.aggressive / riskToleranceTotal) * 100) : 0,
+      totalResponses: riskToleranceTotal
+    };
+
+    // ============================================
+    // BEHAVIORAL INDICATORS
+    // ============================================
+
+    // Loss Aversion (Q17, Q18, Q19)
+    let lossAversionCounts = { high: 0, moderate: 0, low: 0 };
+    let lossAversionTotal = 0;
+
+    // Q17: Loss aversion - selling winners vs losers
+    const q17 = questionMap['Q17'];
+    if (q17) {
+      q17.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') lossAversionCounts.high += r.count; // Sell winners (loss averse)
+        else if (ans === 'B') lossAversionCounts.moderate += r.count; // Hold both
+        else if (ans === 'C') lossAversionCounts.low += r.count; // Sell losers (not loss averse)
+        lossAversionTotal += r.count;
+      });
+    }
+
+    // Q18: Regret about past decisions
+    const q18 = questionMap['Q18'];
+    if (q18) {
+      q18.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A' || ans === 'B') lossAversionCounts.high += r.count; // Often/sometimes regret
+        else if (ans === 'C') lossAversionCounts.moderate += r.count; // Rarely
+        else if (ans === 'D') lossAversionCounts.low += r.count; // Never
+        lossAversionTotal += r.count;
+      });
+    }
+
+    // Q19: Reaction to small losses
+    const q19 = questionMap['Q19'];
+    if (q19) {
+      q19.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') lossAversionCounts.high += r.count; // Very upset
+        else if (ans === 'B') lossAversionCounts.moderate += r.count; // Somewhat upset
+        else if (ans === 'C' || ans === 'D') lossAversionCounts.low += r.count; // Not upset / accept as normal
+        lossAversionTotal += r.count;
+      });
+    }
+
+    const lossAversion = {
+      high: lossAversionTotal > 0 ? Math.round((lossAversionCounts.high / lossAversionTotal) * 100) : 0,
+      moderate: lossAversionTotal > 0 ? Math.round((lossAversionCounts.moderate / lossAversionTotal) * 100) : 0,
+      low: lossAversionTotal > 0 ? Math.round((lossAversionCounts.low / lossAversionTotal) * 100) : 0,
+      totalResponses: lossAversionTotal
+    };
+
+    // Herding Tendency (Q20, Q21, Q22)
+    let herdingCounts = { high: 0, moderate: 0, low: 0 };
+    let herdingTotal = 0;
+
+    // Q20: Following friends' investment advice
+    const q20 = questionMap['Q20'];
+    if (q20) {
+      q20.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') herdingCounts.high += r.count; // Always follow
+        else if (ans === 'B') herdingCounts.moderate += r.count; // Sometimes
+        else if (ans === 'C' || ans === 'D') herdingCounts.low += r.count; // Rarely/never
+        herdingTotal += r.count;
+      });
+    }
+
+    // Q21: Influenced by market trends
+    const q21 = questionMap['Q21'];
+    if (q21) {
+      q21.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') herdingCounts.high += r.count; // Very influenced
+        else if (ans === 'B') herdingCounts.moderate += r.count; // Somewhat
+        else if (ans === 'C' || ans === 'D') herdingCounts.low += r.count; // Not much/not at all
+        herdingTotal += r.count;
+      });
+    }
+
+    // Q22: Buying popular stocks
+    const q22 = questionMap['Q22'];
+    if (q22) {
+      q22.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') herdingCounts.high += r.count; // Often buy popular
+        else if (ans === 'B') herdingCounts.moderate += r.count; // Sometimes
+        else if (ans === 'C' || ans === 'D') herdingCounts.low += r.count; // Rarely/do own research
+        herdingTotal += r.count;
+      });
+    }
+
+    const herdingTendency = {
+      high: herdingTotal > 0 ? Math.round((herdingCounts.high / herdingTotal) * 100) : 0,
+      moderate: herdingTotal > 0 ? Math.round((herdingCounts.moderate / herdingTotal) * 100) : 0,
+      low: herdingTotal > 0 ? Math.round((herdingCounts.low / herdingTotal) * 100) : 0,
+      totalResponses: herdingTotal
+    };
+
+    // Emotional Control (Q24, Q25, Q26)
+    let emotionalCounts = { high: 0, moderate: 0, low: 0 };
+    let emotionalTotal = 0;
+
+    // Q24: Emotional reactions to market swings
+    const q24 = questionMap['Q24'];
+    if (q24) {
+      q24.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'D') emotionalCounts.high += r.count; // Stay calm (high control)
+        else if (ans === 'B' || ans === 'C') emotionalCounts.moderate += r.count; // Some anxiety
+        else if (ans === 'A') emotionalCounts.low += r.count; // Very anxious (low control)
+        emotionalTotal += r.count;
+      });
+    }
+
+    // Q25: Impulsive buying decisions
+    const q25 = questionMap['Q25'];
+    if (q25) {
+      q25.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'D') emotionalCounts.high += r.count; // Never impulsive
+        else if (ans === 'C') emotionalCounts.moderate += r.count; // Rarely
+        else if (ans === 'A' || ans === 'B') emotionalCounts.low += r.count; // Often/sometimes impulsive
+        emotionalTotal += r.count;
+      });
+    }
+
+    // Q26: Delaying gratification
+    const q26 = questionMap['Q26'];
+    if (q26) {
+      q26.responses.forEach(r => {
+        const ans = r.answer.toUpperCase();
+        if (ans === 'A') emotionalCounts.high += r.count; // Always delay
+        else if (ans === 'B') emotionalCounts.moderate += r.count; // Usually
+        else if (ans === 'C' || ans === 'D') emotionalCounts.low += r.count; // Sometimes/rarely
+        emotionalTotal += r.count;
+      });
+    }
+
+    const emotionalControl = {
+      high: emotionalTotal > 0 ? Math.round((emotionalCounts.high / emotionalTotal) * 100) : 0,
+      moderate: emotionalTotal > 0 ? Math.round((emotionalCounts.moderate / emotionalTotal) * 100) : 0,
+      low: emotionalTotal > 0 ? Math.round((emotionalCounts.low / emotionalTotal) * 100) : 0,
+      totalResponses: emotionalTotal
+    };
+
+    const behavioralIndicators = {
+      lossAversion,
+      herdingTendency,
+      emotionalControl
+    };
+
     const riskProfiles = {
       overconfidence: {
         average: avgOverconfidence !== null ? Math.round(avgOverconfidence * 100) : null,
@@ -464,7 +745,10 @@ export async function GET(request: NextRequest) {
         firstGenWithLoans,
         highInterestLoans,
         totalAtRisk: Math.max(lowKnowledgeHighStress, firstGenWithLoans, highInterestLoans)
-      }
+      },
+      riskTolerance,
+      behavioralIndicators,
+      preferenceResponses
     };
 
     const analytics = {

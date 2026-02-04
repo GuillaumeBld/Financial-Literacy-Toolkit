@@ -21,7 +21,12 @@ import {
   Wallet,
   UserCheck,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  TrendingDown,
+  UsersRound,
+  Gauge,
+  MessageSquare
 } from 'lucide-react';
 
 type DistributionItem = {
@@ -106,6 +111,25 @@ type AnalyticsData = {
       highInterestLoans: number;
       totalAtRisk: number;
     };
+    riskTolerance?: {
+      conservative: number;
+      moderate: number;
+      aggressive: number;
+      totalResponses: number;
+    };
+    behavioralIndicators?: {
+      lossAversion: { high: number; moderate: number; low: number; totalResponses: number };
+      herdingTendency: { high: number; moderate: number; low: number; totalResponses: number };
+      emotionalControl: { high: number; moderate: number; low: number; totalResponses: number };
+    };
+    preferenceResponses?: Array<{
+      questionId: string;
+      questionText: string;
+      category: string;
+      options: { id: string; text: string }[];
+      responses: Array<{ answer: string; answerText: string; count: number; percentage: number }>;
+      totalResponses: number;
+    }>;
   };
 };
 
@@ -861,6 +885,271 @@ export default function InstructorAnalyticsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Risk Tolerance Distribution */}
+                {analytics.riskProfiles.riskTolerance && analytics.riskProfiles.riskTolerance.totalResponses > 0 && (
+                  <div className="bg-white rounded-xl shadow-md p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      <Gauge className="w-5 h-5 text-blue-600" />
+                      Risk Tolerance Distribution
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Based on Q15 (bonus allocation), Q16 (market downturn reaction), and Q23 (attitude toward risk). Shows overall risk appetite.
+                    </p>
+
+                    {/* Horizontal bar showing distribution */}
+                    <div className="mb-4">
+                      <div className="flex h-8 rounded-lg overflow-hidden">
+                        <div
+                          className="bg-green-500 flex items-center justify-center text-white text-sm font-medium"
+                          style={{ width: `${analytics.riskProfiles.riskTolerance.conservative}%` }}
+                        >
+                          {analytics.riskProfiles.riskTolerance.conservative > 10 && `${analytics.riskProfiles.riskTolerance.conservative}%`}
+                        </div>
+                        <div
+                          className="bg-yellow-500 flex items-center justify-center text-white text-sm font-medium"
+                          style={{ width: `${analytics.riskProfiles.riskTolerance.moderate}%` }}
+                        >
+                          {analytics.riskProfiles.riskTolerance.moderate > 10 && `${analytics.riskProfiles.riskTolerance.moderate}%`}
+                        </div>
+                        <div
+                          className="bg-red-500 flex items-center justify-center text-white text-sm font-medium"
+                          style={{ width: `${analytics.riskProfiles.riskTolerance.aggressive}%` }}
+                        >
+                          {analytics.riskProfiles.riskTolerance.aggressive > 10 && `${analytics.riskProfiles.riskTolerance.aggressive}%`}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Legend */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-green-500 rounded"></div>
+                        <div>
+                          <span className="font-medium text-gray-700">Conservative</span>
+                          <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.conservative}%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                        <div>
+                          <span className="font-medium text-gray-700">Moderate</span>
+                          <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.moderate}%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                        <div>
+                          <span className="font-medium text-gray-700">Aggressive</span>
+                          <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.aggressive}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">
+                      Based on {analytics.riskProfiles.riskTolerance.totalResponses} question responses
+                    </p>
+                  </div>
+                )}
+
+                {/* Behavioral Indicators */}
+                {analytics.riskProfiles.behavioralIndicators && (
+                  <div className="bg-white rounded-xl shadow-md p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-purple-600" />
+                      Behavioral Indicators (Q15-Q28)
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Psychological factors that influence financial decision-making, derived from preference questions.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Loss Aversion */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <TrendingDown className="w-5 h-5 text-red-500" />
+                          <h4 className="font-semibold text-gray-800">Loss Aversion</h4>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-3">Tendency to prefer avoiding losses over acquiring gains (Q17-Q19)</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">High</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.high}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.high}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Moderate</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.moderate}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.moderate}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Low</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.low}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.low}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Herding Tendency */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <UsersRound className="w-5 h-5 text-blue-500" />
+                          <h4 className="font-semibold text-gray-800">Herding Tendency</h4>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-3">Tendency to follow the crowd in financial decisions (Q20-Q22)</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">High</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.high}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.high}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Moderate</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.moderate}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.moderate}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Low</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.low}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.low}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Emotional Control */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="w-5 h-5 text-green-500" />
+                          <h4 className="font-semibold text-gray-800">Emotional Control</h4>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-3">Ability to manage emotions in financial decisions (Q24-Q26)</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">High</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.high}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.high}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Moderate</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.moderate}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.moderate}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Low</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.low}%` }}></div>
+                              </div>
+                              <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.low}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Preference Question Responses (Collapsible) */}
+                {analytics.riskProfiles.preferenceResponses && analytics.riskProfiles.preferenceResponses.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('preferenceQuestions')}
+                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className="w-5 h-5 text-indigo-600" />
+                        <span className="font-semibold text-gray-800">Preference Question Responses (Q15-Q28)</span>
+                        <span className="text-sm text-gray-500">
+                          ({analytics.riskProfiles.preferenceResponses.length} questions)
+                        </span>
+                      </div>
+                      {expandedSection === 'preferenceQuestions' ? (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
+                    {expandedSection === 'preferenceQuestions' && (
+                      <div className="px-6 pb-6 space-y-6">
+                        {/* Group questions by category */}
+                        {(() => {
+                          const groupedQuestions: Record<string, typeof analytics.riskProfiles.preferenceResponses> = {};
+                          analytics.riskProfiles.preferenceResponses?.forEach(q => {
+                            const cat = q.category || 'Other';
+                            if (!groupedQuestions[cat]) groupedQuestions[cat] = [];
+                            groupedQuestions[cat]!.push(q);
+                          });
+
+                          return Object.entries(groupedQuestions).map(([category, questions]) => (
+                            <div key={category} className="space-y-4">
+                              <h4 className="font-medium text-gray-700 border-b pb-2">{category}</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {questions?.map((q) => (
+                                  <div key={q.questionId} className="bg-gray-50 rounded-lg p-4">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded">
+                                        {q.questionId}
+                                      </span>
+                                      <span className="text-xs text-gray-400">{q.totalResponses} responses</span>
+                                    </div>
+                                    <p className="text-sm text-gray-700 mb-3 line-clamp-2" title={q.questionText}>
+                                      {q.questionText}
+                                    </p>
+                                    <div className="space-y-1.5">
+                                      {q.responses.map((r, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                          <span className="w-5 text-xs font-medium text-gray-500">{r.answer}</span>
+                                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div
+                                              className="bg-indigo-500 h-2 rounded-full"
+                                              style={{ width: `${r.percentage}%` }}
+                                            ></div>
+                                          </div>
+                                          <span className="text-xs text-gray-500 w-12 text-right">{r.percentage}%</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
