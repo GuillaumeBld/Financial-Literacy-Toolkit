@@ -215,7 +215,7 @@ export default function InstructorDashboardPage() {
               />
               <StatCard
                 icon={<Clock className="w-6 h-6" />}
-                title="Not Started"
+                title="Onboarded"
                 value={stats.notStarted}
                 color="red"
               />

@@ -296,7 +296,7 @@ export default function InstructorAnalyticsPage() {
               />
               <StatCard
                 icon={<Clock className="w-6 h-6" />}
-                title="Not Started"
+                title="Onboarded"
                 value={analytics.summary.notStarted}
                 color="red"
               />

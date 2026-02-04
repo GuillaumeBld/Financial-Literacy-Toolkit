@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
 
         -- Onboarded students with no attempts
         SELECT
-          'Onboarded (No Attempt)' as status,
+          'Onboarded' as status,
           COUNT(*)::int as count,
           NULL::numeric as avg_score,
           0 as avg_responses,
