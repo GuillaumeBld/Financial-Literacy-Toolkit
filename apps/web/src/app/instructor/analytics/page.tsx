@@ -26,7 +26,9 @@ import {
   Target,
   CheckCircle2,
   XCircle,
-  Info
+  Info,
+  FlaskConical,
+  GitBranch
 } from 'lucide-react';
 
 type DistributionItem = {
@@ -197,7 +199,7 @@ export default function InstructorAnalyticsPage() {
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [instructorName, setInstructorName] = useState('');
-  const [activeTab, setActiveTab] = useState<'performance' | 'baseline' | 'risk' | 'learning'>('performance');
+  const [activeTab, setActiveTab] = useState<'performance' | 'baseline' | 'risk' | 'learning' | 'psychometrics' | 'heterogeneity'>('performance');
   const [expandedSection, setExpandedSection] = useState<string | null>('demographics');
   const router = useRouter();
 
@@ -443,6 +445,32 @@ export default function InstructorAnalyticsPage() {
                 <span className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
                   Learning Gains
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('psychometrics')}
+                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
+                  activeTab === 'psychometrics'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <FlaskConical className="w-4 h-4" />
+                  Psychometrics
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('heterogeneity')}
+                className={`px-6 py-3 font-medium transition-colors border-b-2 -mb-px ${
+                  activeTab === 'heterogeneity'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <GitBranch className="w-4 h-4" />
+                  Heterogeneity
                 </span>
               </button>
             </div>
@@ -1621,6 +1649,41 @@ export default function InstructorAnalyticsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Psychometrics Tab */}
+            {activeTab === 'psychometrics' && analytics.learningGains && (
+              <div className="space-y-6">
+                {/* Introduction Panel */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                    <FlaskConical className="w-6 h-6" />
+                    Understanding Psychometric Analysis
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-6 text-sm text-indigo-800">
+                    <div>
+                      <h4 className="font-semibold mb-2">What This Tab Shows</h4>
+                      <p className="mb-2">
+                        Psychometrics evaluates the <strong>quality and validity</strong> of the assessment itself.
+                        Before trusting learning gains data, you need to verify the assessment measures what it claims to measure.
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-indigo-700">
+                        <li><strong>Internal Consistency:</strong> Do items within a domain hang together?</li>
+                        <li><strong>Factor Structure:</strong> Do questions group into the expected 3 domains?</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">How to Use This Data</h4>
+                      <ul className="list-disc list-inside space-y-1 text-indigo-700">
+                        <li>Verify Cronbach&apos;s α ≥ 0.7 for each domain before trusting domain-level scores</li>
+                        <li>Check EFA loadings to confirm items measure their intended domain</li>
+                        <li>Identify problematic items with low or cross-loadings</li>
+                        <li>Use this data to improve future assessment versions</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Section 4: Internal Consistency (Cronbach's Alpha) */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -1861,8 +1924,44 @@ export default function InstructorAnalyticsPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
 
-                {/* Section 6: SUR Heterogeneity Analysis */}
+            {/* Heterogeneity Tab */}
+            {activeTab === 'heterogeneity' && analytics.learningGains && (
+              <div className="space-y-6">
+                {/* Introduction Panel */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-purple-900 mb-3 flex items-center gap-2">
+                    <GitBranch className="w-6 h-6" />
+                    Understanding Heterogeneity Analysis
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-6 text-sm text-purple-800">
+                    <div>
+                      <h4 className="font-semibold mb-2">What This Tab Shows (RQ2)</h4>
+                      <p className="mb-2">
+                        Heterogeneity analysis examines whether <strong>different student groups</strong> experience
+                        different learning outcomes. This helps identify equity gaps and informs targeted interventions.
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-purple-700">
+                        <li>Do first-generation students learn as much as others?</li>
+                        <li>Does financial stress affect learning gains?</li>
+                        <li>Are there gender differences in specific domains?</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">How to Use This Data</h4>
+                      <ul className="list-disc list-inside space-y-1 text-purple-700">
+                        <li>Identify groups with significantly lower gains (negative coefficients)</li>
+                        <li>Design targeted support for underperforming groups</li>
+                        <li>Evaluate whether interventions reduce equity gaps</li>
+                        <li>Report findings for institutional equity initiatives</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SUR Heterogeneity Analysis */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                   <button
                     onClick={() => toggleSection('sur')}
@@ -2001,6 +2100,28 @@ export default function InstructorAnalyticsPage() {
                 <h3 className="text-lg font-medium text-gray-700 mb-2">No Learning Gains Data Available</h3>
                 <p className="text-gray-500">
                   Learning gains require students with both pre-course and post-course assessments.
+                </p>
+              </div>
+            )}
+
+            {/* No psychometrics data message */}
+            {activeTab === 'psychometrics' && !analytics.learningGains && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-700 mb-2">No Psychometric Data Available</h3>
+                <p className="text-gray-500">
+                  Psychometric analysis requires completed assessment responses.
+                </p>
+              </div>
+            )}
+
+            {/* No heterogeneity data message */}
+            {activeTab === 'heterogeneity' && !analytics.learningGains && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                <GitBranch className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-700 mb-2">No Heterogeneity Data Available</h3>
+                <p className="text-gray-500">
+                  Heterogeneity analysis requires matched pre/post data with baseline covariates.
                 </p>
               </div>
             )}
