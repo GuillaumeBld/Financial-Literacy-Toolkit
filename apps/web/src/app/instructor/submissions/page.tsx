@@ -292,7 +292,9 @@ export default function InstructorSubmissionsPage() {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `submissions_detailed_${new Date().toISOString().split('T')[0]}.csv`;
+      const now = new Date();
+      const timestamp = `${now.toISOString().split('T')[0]}_${now.toTimeString().slice(0,8).replace(/:/g, '')}`;
+      link.download = `submissions_detailed_${timestamp}.csv`;
       link.click();
 
     } catch (error) {
