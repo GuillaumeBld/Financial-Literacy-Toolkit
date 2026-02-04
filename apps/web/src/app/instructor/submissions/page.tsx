@@ -29,6 +29,41 @@ type Submission = {
   domain_scores: Record<string, number> | null;
 };
 
+type ResponseDetail = {
+  item_id: string;
+  question: string;
+  type: string;
+  domain: string;
+  answer: string;
+  correct_answer: string;
+  options: any;
+  score: number | null;
+  confidence: number;
+  is_scored: boolean;
+  answered_at: string;
+};
+
+type StudentProfile = {
+  gender: string | null;
+  race_ethnicity: string | null;
+  age_range: string | null;
+  first_language: string | null;
+  work_experience: string | null;
+  prior_financial_products: string[] | null;
+  self_rated_financial_knowledge: string | null;
+  financial_stress_frequency: string | null;
+  parental_education: string | null;
+  first_generation_college: string | null;
+  has_student_loan_debt: string | null;
+  research_consent: boolean | null;
+};
+
+type SubmissionDetail = {
+  submission: Submission & { metadata: any; started_at: string };
+  responses: ResponseDetail[];
+  profile: StudentProfile | null;
+};
+
 type FilterOptions = {
   courseId: string;
   attemptType: string;
@@ -48,6 +83,9 @@ export default function InstructorSubmissionsPage() {
     searchTerm: ''
   });
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [submissionDetail, setSubmissionDetail] = useState<SubmissionDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [activeTab, setActiveTab] = useState<'responses' | 'profile' | 'metadata'>('responses');
   const router = useRouter();
 
   useEffect(() => {
@@ -107,6 +145,175 @@ export default function InstructorSubmissionsPage() {
     const token = localStorage.getItem('instructor-token');
     if (token) {
       loadSubmissions(token);
+    }
+  };
+
+  const loadSubmissionDetail = async (submission: Submission) => {
+    setSelectedSubmission(submission);
+    setSubmissionDetail(null);
+    setIsLoadingDetail(true);
+    setActiveTab('responses');
+
+    try {
+      const token = localStorage.getItem('instructor-token');
+      const response = await fetch(`/api/instructor/submissions?attemptId=${submission.attempt_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load submission details');
+      }
+
+      const data = await response.json();
+      setSubmissionDetail(data);
+    } catch (error) {
+      console.error('Error loading submission detail:', error);
+      alert('Failed to load submission details');
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (filteredSubmissions.length === 0) {
+      alert('No submissions to export');
+      return;
+    }
+
+    // Build CSV header
+    const headers = [
+      'Student ID', 'Course', 'Attempt Type', 'Submitted At', 'Duration (s)',
+      'Overall Score (%)', 'Overconfidence Index'
+    ];
+
+    // Build CSV rows
+    const rows = filteredSubmissions.map(sub => [
+      sub.hashed_student_key,
+      sub.course_name,
+      sub.attempt_type,
+      sub.submitted_at || '',
+      sub.duration_s?.toString() || '0',
+      Math.round(sub.overall_score ?? 0).toString(),
+      Number(sub.overconfidence_index ?? 0).toFixed(2)
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `submissions_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const handleExportDetailedCSV = async () => {
+    if (filteredSubmissions.length === 0) {
+      alert('No submissions to export');
+      return;
+    }
+
+    // Show loading state
+    const exportButton = document.getElementById('export-detailed-btn');
+    if (exportButton) exportButton.textContent = 'Exporting...';
+
+    try {
+      const token = localStorage.getItem('instructor-token');
+      const allDetails: any[] = [];
+
+      // Fetch details for each submission
+      for (const sub of filteredSubmissions) {
+        const response = await fetch(`/api/instructor/submissions?attemptId=${sub.attempt_id}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          allDetails.push(data);
+        }
+      }
+
+      // Get all unique question IDs
+      const allQuestionIds = new Set<string>();
+      allDetails.forEach(d => d.responses?.forEach((r: any) => allQuestionIds.add(r.item_id)));
+      const sortedQuestionIds = Array.from(allQuestionIds).sort();
+
+      // Build headers
+      const headers = [
+        'Student ID', 'Course', 'Attempt Type', 'Submitted At', 'Duration (s)',
+        'Overall Score (%)', 'Overconfidence Index', 'Tab Switches',
+        // Question columns
+        ...sortedQuestionIds.flatMap(qid => [`${qid}_answer`, `${qid}_score`, `${qid}_confidence`]),
+        // Profile columns
+        'Gender', 'Age Range', 'Race/Ethnicity', 'First Language', 'Work Experience',
+        'Financial Knowledge', 'Financial Stress', 'Parental Education',
+        'First Gen College', 'Has Student Loans', 'Research Consent'
+      ];
+
+      // Build rows
+      const rows = allDetails.map(d => {
+        const sub = d.submission;
+        const profile = d.profile || {};
+        const responseMap = new Map(d.responses?.map((r: any) => [r.item_id, r]) || []);
+
+        const row = [
+          sub.hashed_student_key,
+          sub.course_name,
+          sub.attempt_type,
+          sub.submitted_at || '',
+          sub.duration_s?.toString() || '0',
+          Math.round(sub.overall_score ?? 0).toString(),
+          Number(sub.overconfidence_index ?? 0).toFixed(2),
+          sub.metadata?.tabSwitches?.toString() || '0',
+          // Question answers
+          ...sortedQuestionIds.flatMap(qid => {
+            const r = responseMap.get(qid) as any;
+            return [
+              r?.answer || '',
+              r?.score?.toString() || '',
+              r?.confidence?.toString() || ''
+            ];
+          }),
+          // Profile data
+          profile.gender || '',
+          profile.age_range || '',
+          profile.race_ethnicity || '',
+          profile.first_language || '',
+          profile.work_experience || '',
+          profile.self_rated_financial_knowledge || '',
+          profile.financial_stress_frequency || '',
+          profile.parental_education || '',
+          profile.first_generation_college || '',
+          profile.has_student_loan_debt || '',
+          profile.research_consent?.toString() || ''
+        ];
+
+        return row;
+      });
+
+      // Create CSV
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `submissions_detailed_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+    } catch (error) {
+      console.error('Error exporting detailed CSV:', error);
+      alert('Failed to export detailed CSV');
+    } finally {
+      if (exportButton) exportButton.textContent = 'Export Detailed CSV';
     }
   };
 
@@ -354,8 +561,9 @@ export default function InstructorSubmissionsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => setSelectedSubmission(submission)}
+                        onClick={() => loadSubmissionDetail(submission)}
                         className="text-loyola-maroon hover:text-loyola-maroon-dark transition"
+                        title="View details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -367,11 +575,22 @@ export default function InstructorSubmissionsPage() {
           </div>
         </div>
 
-        {/* Export Button */}
-        <div className="mt-6 text-center">
-          <button className="flex items-center gap-2 px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition mx-auto">
+        {/* Export Buttons */}
+        <div className="mt-6 flex justify-center gap-4">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-6 py-3 bg-loyola-gray-600 text-white rounded-lg hover:bg-loyola-gray-700 transition"
+          >
             <Download className="w-5 h-5" />
-            Export to CSV
+            Export Summary CSV
+          </button>
+          <button
+            id="export-detailed-btn"
+            onClick={handleExportDetailedCSV}
+            className="flex items-center gap-2 px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition"
+          >
+            <Download className="w-5 h-5" />
+            Export Detailed CSV
           </button>
         </div>
       </main>
@@ -379,71 +598,223 @@ export default function InstructorSubmissionsPage() {
       {/* Submission Detail Modal */}
       {selectedSubmission && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-loyola-gray-200">
+          <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-loyola-gray-200 flex-shrink-0">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-loyola-gray-800">
-                  Submission Details
-                </h2>
+                <div>
+                  <h2 className="text-xl font-bold text-loyola-gray-800">
+                    Submission Details
+                  </h2>
+                  <p className="text-sm text-loyola-gray-500">
+                    {selectedSubmission.hashed_student_key?.slice(0, 12)}... | {selectedSubmission.course_name} | {selectedSubmission.attempt_type}
+                  </p>
+                </div>
                 <button
-                  onClick={() => setSelectedSubmission(null)}
-                  className="text-loyola-gray-400 hover:text-loyola-gray-600"
+                  onClick={() => { setSelectedSubmission(null); setSubmissionDetail(null); }}
+                  className="text-loyola-gray-400 hover:text-loyola-gray-600 text-2xl"
                 >
                   ×
                 </button>
               </div>
+
+              {/* Summary Stats */}
+              <div className="mt-4 grid grid-cols-4 gap-4">
+                <div className="bg-loyola-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-loyola-gray-500">Score</p>
+                  <p className="text-lg font-bold text-loyola-maroon">{Math.round(selectedSubmission.overall_score ?? 0)}%</p>
+                </div>
+                <div className="bg-loyola-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-loyola-gray-500">Duration</p>
+                  <p className="text-lg font-bold text-loyola-gray-800">{formatDuration(selectedSubmission.duration_s ?? 0)}</p>
+                </div>
+                <div className="bg-loyola-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-loyola-gray-500">Overconfidence</p>
+                  <p className="text-lg font-bold text-loyola-gray-800">{Number(selectedSubmission.overconfidence_index ?? 0).toFixed(2)}</p>
+                </div>
+                <div className="bg-loyola-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-loyola-gray-500">Questions</p>
+                  <p className="text-lg font-bold text-loyola-gray-800">{submissionDetail?.responses?.length || '...'}</p>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="mt-4 flex gap-2">
+                {['responses', 'profile', 'metadata'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab as any)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      activeTab === tab
+                        ? 'bg-loyola-maroon text-white'
+                        : 'bg-loyola-gray-100 text-loyola-gray-600 hover:bg-loyola-gray-200'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h3 className="font-semibold text-loyola-gray-700 mb-2">Student Information</h3>
-                  <p className="text-sm text-loyola-gray-600">
-                    Student ID: {selectedSubmission.hashed_student_key}
-                  </p>
-                  <p className="text-sm text-loyola-gray-600">
-                    Course: {selectedSubmission.course_name}
-                  </p>
-                  <p className="text-sm text-loyola-gray-600">
-                    Attempt Type: {selectedSubmission.attempt_type}
-                  </p>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {isLoadingDetail ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-8 h-8 text-loyola-maroon animate-spin" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-loyola-gray-700 mb-2">Performance</h3>
-                  <p className="text-sm text-loyola-gray-600">
-                    Overall Score: {Math.round(selectedSubmission.overall_score ?? 0)}%
-                  </p>
-                  <p className="text-sm text-loyola-gray-600">
-                    Duration: {formatDuration(selectedSubmission.duration_s ?? 0)}
-                  </p>
-                  <p className="text-sm text-loyola-gray-600">
-                    Overconfidence Index: {Number(selectedSubmission.overconfidence_index ?? 0).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-loyola-gray-700 mb-4">Domain Performance</h3>
-                <div className="space-y-3">
-                  {Object.entries(selectedSubmission.domain_scores ?? {}).map(([domain, score]) => (
-                    <div key={domain}>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-medium text-loyola-gray-700">
-                          {domain}
-                        </span>
-                        <span className="text-sm text-loyola-gray-600">
-                          {Math.round((score ?? 0) * 100)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-loyola-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${(score ?? 0) * 100}%` }}
-                        />
-                      </div>
+              ) : (
+                <>
+                  {/* Responses Tab */}
+                  {activeTab === 'responses' && submissionDetail && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-loyola-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left">Q#</th>
+                            <th className="px-3 py-2 text-left">Question</th>
+                            <th className="px-3 py-2 text-left">Domain</th>
+                            <th className="px-3 py-2 text-center">Answer</th>
+                            <th className="px-3 py-2 text-center">Correct</th>
+                            <th className="px-3 py-2 text-center">Score</th>
+                            <th className="px-3 py-2 text-center">Confidence</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {submissionDetail.responses.map((r, idx) => (
+                            <tr key={r.item_id} className={idx % 2 === 0 ? 'bg-white' : 'bg-loyola-gray-50'}>
+                              <td className="px-3 py-2 font-medium">{r.item_id}</td>
+                              <td className="px-3 py-2 max-w-xs truncate" title={r.question}>{r.question}</td>
+                              <td className="px-3 py-2 text-xs">{r.domain || '-'}</td>
+                              <td className="px-3 py-2 text-center font-mono">{String(r.answer).replace(/"/g, '')}</td>
+                              <td className="px-3 py-2 text-center font-mono text-loyola-gray-500">{r.correct_answer || '-'}</td>
+                              <td className={`px-3 py-2 text-center ${r.score === 100 ? 'text-green-600' : r.score === 0 ? 'text-red-600' : 'text-loyola-gray-500'}`}>
+                                {r.is_scored ? (r.score !== null ? `${r.score}%` : '-') : 'N/A'}
+                              </td>
+                              <td className="px-3 py-2 text-center">{r.confidence || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  )}
+
+                  {/* Profile Tab */}
+                  {activeTab === 'profile' && submissionDetail && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {submissionDetail.profile ? (
+                        <>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Gender</p>
+                            <p className="font-medium">{submissionDetail.profile.gender || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Age Range</p>
+                            <p className="font-medium">{submissionDetail.profile.age_range || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Race/Ethnicity</p>
+                            <p className="font-medium">{submissionDetail.profile.race_ethnicity || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">First Language</p>
+                            <p className="font-medium">{submissionDetail.profile.first_language || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Work Experience</p>
+                            <p className="font-medium">{submissionDetail.profile.work_experience || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Financial Knowledge</p>
+                            <p className="font-medium">{submissionDetail.profile.self_rated_financial_knowledge || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Financial Stress</p>
+                            <p className="font-medium">{submissionDetail.profile.financial_stress_frequency || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Parental Education</p>
+                            <p className="font-medium">{submissionDetail.profile.parental_education || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">First Gen College</p>
+                            <p className="font-medium">{submissionDetail.profile.first_generation_college || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Student Loans</p>
+                            <p className="font-medium">{submissionDetail.profile.has_student_loan_debt || 'Not provided'}</p>
+                          </div>
+                          <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                            <p className="text-xs text-loyola-gray-500 mb-1">Research Consent</p>
+                            <p className="font-medium">{submissionDetail.profile.research_consent ? 'Yes' : 'No'}</p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="col-span-3 text-center py-8 text-loyola-gray-500">
+                          No profile data available for this student
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Metadata Tab */}
+                  {activeTab === 'metadata' && submissionDetail && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                          <p className="text-xs text-loyola-gray-500 mb-1">Started At</p>
+                          <p className="font-medium text-sm">{formatDate(submissionDetail.submission.started_at)}</p>
+                        </div>
+                        <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                          <p className="text-xs text-loyola-gray-500 mb-1">Submitted At</p>
+                          <p className="font-medium text-sm">{formatDate(submissionDetail.submission.submitted_at)}</p>
+                        </div>
+                        <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                          <p className="text-xs text-loyola-gray-500 mb-1">Tab Switches</p>
+                          <p className="font-medium">{submissionDetail.submission.metadata?.tabSwitches ?? 0}</p>
+                        </div>
+                        <div className="bg-loyola-gray-50 p-4 rounded-lg">
+                          <p className="text-xs text-loyola-gray-500 mb-1">Duration</p>
+                          <p className="font-medium">{formatDuration(submissionDetail.submission.duration_s ?? 0)}</p>
+                        </div>
+                      </div>
+
+                      {/* Domain Scores */}
+                      <div>
+                        <h4 className="font-semibold text-loyola-gray-700 mb-3">Domain Performance</h4>
+                        <div className="space-y-3">
+                          {Object.entries(selectedSubmission.domain_scores ?? {}).map(([domain, score]) => (
+                            <div key={domain}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium text-loyola-gray-700">{domain}</span>
+                                <span className="text-sm text-loyola-gray-600">{Math.round((score ?? 0) * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-loyola-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2 rounded-full"
+                                  style={{ width: `${(score ?? 0) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {Object.keys(selectedSubmission.domain_scores ?? {}).length === 0 && (
+                            <p className="text-loyola-gray-500 text-sm">No domain scores available</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Raw Metadata */}
+                      {submissionDetail.submission.metadata && Object.keys(submissionDetail.submission.metadata).length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-loyola-gray-700 mb-2">Raw Metadata</h4>
+                          <pre className="bg-loyola-gray-50 p-4 rounded-lg text-xs overflow-x-auto">
+                            {JSON.stringify(submissionDetail.submission.metadata, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
