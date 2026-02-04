@@ -334,10 +334,10 @@ export default function InstructorSubmissionsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-900">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">
-                          {Math.round((submission.overall_score ?? 0) * 100)}%
+                          {Math.round(submission.overall_score ?? 0)}%
                         </span>
                         <span className="text-xs text-loyola-gray-500">
-                          (OC: {(submission.overconfidence_index ?? 0).toFixed(2)})
+                          (OC: {Number(submission.overconfidence_index ?? 0).toFixed(2)})
                         </span>
                       </div>
                     </td>
@@ -405,13 +405,13 @@ export default function InstructorSubmissionsPage() {
                 <div>
                   <h3 className="font-semibold text-loyola-gray-700 mb-2">Performance</h3>
                   <p className="text-sm text-loyola-gray-600">
-                    Overall Score: {Math.round((selectedSubmission.overall_score ?? 0) * 100)}%
+                    Overall Score: {Math.round(selectedSubmission.overall_score ?? 0)}%
                   </p>
                   <p className="text-sm text-loyola-gray-600">
                     Duration: {formatDuration(selectedSubmission.duration_s ?? 0)}
                   </p>
                   <p className="text-sm text-loyola-gray-600">
-                    Overconfidence Index: {(selectedSubmission.overconfidence_index ?? 0).toFixed(2)}
+                    Overconfidence Index: {Number(selectedSubmission.overconfidence_index ?? 0).toFixed(2)}
                   </p>
                 </div>
               </div>
