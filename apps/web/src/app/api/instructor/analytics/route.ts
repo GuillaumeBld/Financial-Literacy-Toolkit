@@ -130,6 +130,7 @@ export async function GET(request: NextRequest) {
     });
 
     const domainPerformance = Object.entries(domainScores).map(([domain, data]) => {
+      // Note: domain scores are stored as percentages (0-100), not decimals
       const avgScore = data.scores.reduce((sum, s) => sum + s, 0) / data.scores.length;
       const avgPreScore = data.preScores.length > 0 ? data.preScores.reduce((sum, s) => sum + s, 0) / data.preScores.length : 0;
       const avgPostScore = data.postScores.length > 0 ? data.postScores.reduce((sum, s) => sum + s, 0) / data.postScores.length : 0;
@@ -137,19 +138,20 @@ export async function GET(request: NextRequest) {
 
       return {
         domain,
-        avgScore: avgScore * 100,
+        avgScore: avgScore, // Already a percentage
         attemptCount: data.scores.length,
-        improvement: improvement * 100
+        improvement: improvement // Already a percentage difference
       };
     });
 
     // Calculate score distribution
+    // Note: scores are stored as percentages (0-100), not decimals (0-1)
     const scoreRanges = [
-      { range: '0-20%', min: 0, max: 0.2 },
-      { range: '21-40%', min: 0.21, max: 0.4 },
-      { range: '41-60%', min: 0.41, max: 0.6 },
-      { range: '61-80%', min: 0.61, max: 0.8 },
-      { range: '81-100%', min: 0.81, max: 1.0 }
+      { range: '0-20%', min: 0, max: 20 },
+      { range: '21-40%', min: 21, max: 40 },
+      { range: '41-60%', min: 41, max: 60 },
+      { range: '61-80%', min: 61, max: 80 },
+      { range: '81-100%', min: 81, max: 100 }
     ];
 
     const scoreDistribution = scoreRanges.map(range => {
@@ -193,7 +195,7 @@ export async function GET(request: NextRequest) {
       return {
         period: period.period,
         attempts: periodAttempts.length,
-        avgScore: avgScore * 100
+        avgScore: avgScore // Already a percentage
       };
     });
 
@@ -220,9 +222,9 @@ export async function GET(request: NextRequest) {
       .filter(([_, data]) => data.preScore > 0 && data.postScore > 0)
       .map(([studentId, data]) => ({
         studentId,
-        preScore: data.preScore * 100,
-        postScore: data.postScore * 100,
-        improvement: (data.postScore - data.preScore) * 100,
+        preScore: data.preScore, // Already a percentage
+        postScore: data.postScore, // Already a percentage
+        improvement: data.postScore - data.preScore, // Already a percentage difference
         attempts: data.attempts
       }))
       .sort((a, b) => b.improvement - a.improvement);
@@ -456,7 +458,7 @@ export async function GET(request: NextRequest) {
       summary: {
         totalStudents: uniqueStudents,
         totalAttempts,
-        avgScore: Math.round(avgScore * 100),
+        avgScore: Math.round(avgScore), // Already a percentage
         avgDuration: Math.round(avgDuration),
         completionRate: Math.round(completionRate)
       },

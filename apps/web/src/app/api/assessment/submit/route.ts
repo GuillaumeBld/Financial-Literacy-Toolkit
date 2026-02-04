@@ -184,6 +184,17 @@ export async function POST(request: NextRequest) {
 
       console.log('Reusing existing in-progress attempt:', attemptId);
 
+      // Calculate duration server-side from attempt creation time for accuracy
+      // This fixes incorrect durations for resumed assessments where client-side
+      // timing may be lost or reset between sessions
+      const attemptTiming = await client.query(
+        'SELECT created_at FROM attempts WHERE attempt_id = $1',
+        [attemptId]
+      );
+      const serverDuration = attemptTiming.rows[0]?.created_at
+        ? Math.floor((Date.now() - new Date(attemptTiming.rows[0].created_at).getTime()) / 1000)
+        : timeSpent;
+
       // Clear old auto-saved responses (will be replaced with final submission data)
       await client.query('DELETE FROM responses WHERE attempt_id = $1', [attemptId]);
 
@@ -191,12 +202,12 @@ export async function POST(request: NextRequest) {
       if (hasMetadataColumn) {
         await client.query(
           'UPDATE attempts SET attempt_type = $1, duration_s = $2, metadata = $3 WHERE attempt_id = $4',
-          [attemptType, timeSpent || null, metadata || {}, attemptId]
+          [attemptType, serverDuration || null, metadata || {}, attemptId]
         );
       } else {
         await client.query(
           'UPDATE attempts SET attempt_type = $1, duration_s = $2 WHERE attempt_id = $3',
-          [attemptType, timeSpent || null, attemptId]
+          [attemptType, serverDuration || null, attemptId]
         );
       }
     } else {
