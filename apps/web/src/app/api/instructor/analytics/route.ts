@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryMany, queryOne } from '@/lib/db';
 import { verifyInstructorToken } from '@/lib/instructor-auth';
+import {
+  computeLearningGainsAnalysis,
+  getEmptyLearningGainsAnalysis,
+  DOMAIN_CONFIG,
+  type StudentGainData,
+  type ItemResponseData,
+  type LearningGainsAnalysis
+} from '@/lib/learning-gains-analysis';
 
 export const dynamic = 'force-dynamic';
 
@@ -751,6 +759,124 @@ export async function GET(request: NextRequest) {
       preferenceResponses
     };
 
+    // ============================================
+    // LEARNING GAINS ANALYSIS (RQ1 & RQ2)
+    // Using consolidated learning-gains-analysis module
+    // ============================================
+
+    // Get students with both pre and post scores
+    const studentGains: StudentGainData[] = [];
+
+    // Group attempts by user
+    const attemptsByUser: Record<string, typeof completedAttempts> = {};
+    completedAttempts.forEach(attempt => {
+      if (!attemptsByUser[attempt.user_id]) {
+        attemptsByUser[attempt.user_id] = [];
+      }
+      attemptsByUser[attempt.user_id].push(attempt);
+    });
+
+    // Find users with both pre and post
+    Object.entries(attemptsByUser).forEach(([userId, userAttempts]) => {
+      const preAttempt = userAttempts.find(a => a.attempt_type === 'pre');
+      const postAttempt = userAttempts.find(a => a.attempt_type === 'post');
+
+      if (preAttempt && postAttempt && preAttempt.overall !== null && postAttempt.overall !== null) {
+        studentGains.push({
+          userId,
+          preScore: preAttempt.overall,
+          postScore: postAttempt.overall,
+          preDomains: preAttempt.by_domain || {},
+          postDomains: postAttempt.by_domain || {}
+        });
+      }
+    });
+
+    // Query item-level responses for psychometric analysis
+    const itemResponsesQuery = `
+      SELECT
+        r.attempt_id,
+        a.user_id,
+        i.item_id,
+        i.domain,
+        CASE WHEN r.score > 0 THEN 1 ELSE 0 END as correct
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      JOIN attempts a ON r.attempt_id = a.attempt_id
+      WHERE a.course_id = ANY($1::uuid[])
+        AND a.submitted_at IS NOT NULL
+        AND i.is_anchor = true
+        AND i.is_scored = true
+      ORDER BY a.user_id, i.item_id
+    `;
+
+    const rawItemResponses = await queryMany<{
+      attempt_id: string;
+      user_id: string;
+      item_id: string;
+      domain: string;
+      correct: number;
+    }>(itemResponsesQuery, [filterCourseIds]);
+
+    // Transform to ItemResponseData format
+    const itemResponses: ItemResponseData[] = rawItemResponses.map(r => ({
+      attemptId: r.attempt_id,
+      userId: r.user_id,
+      itemId: r.item_id,
+      domain: r.domain,
+      correct: r.correct
+    }));
+
+    // Count pre/post assessments
+    const preAssessmentCount = completedAttempts.filter(a => a.attempt_type === 'pre').length;
+    const postAssessmentCount = completedAttempts.filter(a => a.attempt_type === 'post').length;
+
+    // Compute learning gains using consolidated module
+    const gainsAnalysis = computeLearningGainsAnalysis({
+      studentGains,
+      itemResponses,
+      preAssessmentCount,
+      postAssessmentCount
+    });
+
+    // Map to API response format (backward compatible)
+    const learningGains = {
+      overall: gainsAnalysis.overall,
+      byDomain: gainsAnalysis.byDomain.map(d => ({
+        domain: d.domain,
+        preMean: d.preMean,
+        postMean: d.postMean,
+        gain: d.gain,
+        cohensD: d.cohensD,
+        itemCount: d.itemCount
+      })),
+      distribution: gainsAnalysis.distribution.map(d => ({
+        range: d.range,
+        count: d.count,
+        percentage: d.percentage
+      })),
+      cronbachAlpha: {
+        borrowingCredit: gainsAnalysis.psychometrics.cronbachAlpha.byDomain['Borrowing, Interest Rates, and Financial Numeracy Knowledge'] || { alpha: 0, interpretation: 'no data', itemCount: 0 },
+        riskManagement: gainsAnalysis.psychometrics.cronbachAlpha.byDomain['Behavioral and Risk Management Knowledge'] || { alpha: 0, interpretation: 'no data', itemCount: 0 },
+        investmentRisk: gainsAnalysis.psychometrics.cronbachAlpha.byDomain['Risk and Return Knowledge'] || { alpha: 0, interpretation: 'no data', itemCount: 0 },
+        overall: gainsAnalysis.psychometrics.cronbachAlpha.overall
+      },
+      efa: {
+        loadings: gainsAnalysis.psychometrics.efa.loadings.map(l => ({
+          itemId: l.itemId,
+          factor1: l.factor1,
+          factor2: l.factor2,
+          factor3: l.factor3,
+          primaryFactor: l.primaryFactor
+        })),
+        eigenvalues: gainsAnalysis.psychometrics.efa.eigenvalues,
+        varianceExplained: gainsAnalysis.psychometrics.efa.varianceExplained,
+        warnings: gainsAnalysis.psychometrics.efa.warnings
+      },
+      sur: gainsAnalysis.heterogeneity.sur,
+      sampleWarnings: gainsAnalysis.warnings
+    };
+
     const analytics = {
       summary: {
         totalStudents: totalOnboarded,
@@ -765,7 +891,8 @@ export async function GET(request: NextRequest) {
       timeAnalysis,
       studentProgress,
       baselineCovariates,
-      riskProfiles
+      riskProfiles,
+      learningGains
     };
 
     console.log('Analytics calculated:', analytics);
