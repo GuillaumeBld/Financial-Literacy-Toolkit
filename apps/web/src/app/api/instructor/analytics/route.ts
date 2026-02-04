@@ -417,8 +417,13 @@ export async function GET(request: NextRequest) {
       : null;
 
     // Categorize overconfidence levels
+    // Underconfident: OC < 0 (confidence lower than performance)
+    // Well-calibrated: -0.1 <= OC < 0.1 (confidence matches performance)
+    // Moderate overconfidence: 0.1 <= OC < 0.3
+    // High overconfidence: OC >= 0.3
     const overconfidenceLevels = {
-      low: overconfidenceData.filter(v => v < 0.1).length,
+      underconfident: overconfidenceData.filter(v => v < -0.1).length,
+      low: overconfidenceData.filter(v => v >= -0.1 && v < 0.1).length,
       moderate: overconfidenceData.filter(v => v >= 0.1 && v < 0.3).length,
       high: overconfidenceData.filter(v => v >= 0.3).length
     };
