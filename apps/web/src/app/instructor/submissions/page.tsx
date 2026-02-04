@@ -359,6 +359,14 @@ export default function InstructorSubmissionsPage() {
     return `${minutes}m ${remainingSeconds}s`;
   };
 
+  // Get answer text from option ID or return as-is if already text
+  const getAnswerText = (answer: string | null, options: any[] | null): string => {
+    if (!answer) return '-';
+    if (!options || options.length === 0) return String(answer).replace(/"/g, '');
+    const option = options.find((o: any) => o.id === answer || o.text === answer);
+    return option?.text || String(answer).replace(/"/g, '');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -685,8 +693,8 @@ export default function InstructorSubmissionsPage() {
                               <td className="px-3 py-2 font-medium">{r.item_id}</td>
                               <td className="px-3 py-2 max-w-xs truncate" title={r.question}>{r.question}</td>
                               <td className="px-3 py-2 text-xs">{r.domain || '-'}</td>
-                              <td className="px-3 py-2 text-center font-mono">{String(r.answer).replace(/"/g, '')}</td>
-                              <td className="px-3 py-2 text-center font-mono text-loyola-gray-500">{r.correct_answer || '-'}</td>
+                              <td className="px-3 py-2 text-center font-mono">{getAnswerText(r.answer, r.options)}</td>
+                              <td className="px-3 py-2 text-center font-mono text-loyola-gray-500">{getAnswerText(r.correct_answer, r.options)}</td>
                               <td className={`px-3 py-2 text-center ${r.score === 100 ? 'text-green-600' : r.score === 0 ? 'text-red-600' : 'text-loyola-gray-500'}`}>
                                 {r.is_scored ? (r.score !== null ? `${r.score}%` : '-') : 'N/A'}
                               </td>
