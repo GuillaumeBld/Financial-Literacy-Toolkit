@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
         ? Math.floor((Date.now() - new Date(attemptTiming.rows[0].created_at).getTime()) / 1000)
         : timeSpent;
 
-      // Clear old auto-saved responses (will be replaced with final submission data)
-      await client.query('DELETE FROM responses WHERE attempt_id = $1', [attemptId]);
+      // Note: We no longer delete auto-saved responses here.
+      // Instead, we use ON CONFLICT DO UPDATE below to preserve original created_at timestamps.
 
       // Update attempt metadata with final submission data
       if (hasMetadataColumn) {
@@ -235,10 +235,12 @@ export async function POST(request: NextRequest) {
     const rawAnswers = validResponses.map((r: any) => JSON.stringify(r.answer));
     const confidences = validResponses.map((r: any) => r.confidence || null);
 
-    // Single bulk insert instead of 40 individual inserts
+    // Single bulk upsert - preserves original created_at timestamps for auto-saved responses
     await client.query(
       `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence)
-       SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[])`,
+       SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[])
+       ON CONFLICT (attempt_id, item_id)
+       DO UPDATE SET raw_answer = EXCLUDED.raw_answer, confidence = EXCLUDED.confidence`,
       [attemptId, itemIds, rawAnswers, confidences]
     );
     console.log(`Bulk inserted ${validResponses.length} responses`);
