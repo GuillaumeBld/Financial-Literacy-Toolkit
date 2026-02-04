@@ -241,7 +241,30 @@ export default function InstructorSubmissionsPage() {
       // Get all unique question IDs
       const allQuestionIds = new Set<string>();
       allDetails.forEach(d => d.responses?.forEach((r: any) => allQuestionIds.add(r.item_id)));
-      const sortedQuestionIds = Array.from(allQuestionIds).sort();
+
+      // Separate anchor and SDM questions, sort each numerically
+      const anchorQuestions: string[] = [];
+      const sdmQuestions: string[] = [];
+
+      allQuestionIds.forEach(qid => {
+        if (qid.includes('_')) {
+          sdmQuestions.push(qid);
+        } else {
+          anchorQuestions.push(qid);
+        }
+      });
+
+      const sortNumerically = (a: string, b: string) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+        if (numA !== numB) return numA - numB;
+        return a.localeCompare(b);
+      };
+
+      anchorQuestions.sort(sortNumerically);
+      sdmQuestions.sort(sortNumerically);
+
+      const sortedQuestionIds = [...anchorQuestions, ...sdmQuestions];
 
       // Build headers
       const headers = [
@@ -511,13 +534,10 @@ export default function InstructorSubmissionsPage() {
               <thead className="bg-loyola-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
-                    Student ID
+                    Actions
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
-                    Course
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
-                    Type
+                    Submitted
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
                     Score
@@ -526,10 +546,13 @@ export default function InstructorSubmissionsPage() {
                     Duration
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
-                    Submitted
+                    Course
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
-                    Actions
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
+                    Student ID
                   </th>
                 </tr>
               </thead>
