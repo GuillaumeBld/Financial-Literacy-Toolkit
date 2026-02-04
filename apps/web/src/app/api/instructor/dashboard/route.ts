@@ -136,6 +136,7 @@ export async function GET(request: NextRequest) {
       count: number;
       avg_score: number | null;
       avg_responses: number;
+      max_hours_stale: number | null;
     }>(`
       SELECT * FROM (
         -- Attempt-based statuses
@@ -145,11 +146,15 @@ export async function GET(request: NextRequest) {
             a.submitted_at,
             a.metadata->>'submission_type' as sub_type,
             s.overall,
-            COALESCE(r.resp_count, 0) as resp_count
+            COALESCE(r.resp_count, 0) as resp_count,
+            -- Time since last activity (last response saved, or started_at if no responses)
+            EXTRACT(EPOCH FROM (NOW() - COALESCE(lr.last_response, a.started_at))) / 3600 as hours_stale
           FROM attempts a
           LEFT JOIN scores s ON s.attempt_id = a.attempt_id
           LEFT JOIN (SELECT attempt_id, COUNT(*) as resp_count FROM responses GROUP BY attempt_id) r
             ON r.attempt_id = a.attempt_id
+          LEFT JOIN (SELECT attempt_id, MAX(created_at) as last_response FROM responses GROUP BY attempt_id) lr
+            ON lr.attempt_id = a.attempt_id
           WHERE a.course_id = $1
         )
         SELECT
@@ -166,7 +171,9 @@ export async function GET(request: NextRequest) {
           END as status,
           COUNT(*)::int as count,
           ROUND(AVG(overall)::numeric, 1) as avg_score,
-          ROUND(AVG(resp_count))::int as avg_responses
+          ROUND(AVG(resp_count))::int as avg_responses,
+          -- Max hours stale (only for in-progress, NULL for submitted)
+          ROUND(MAX(CASE WHEN submitted_at IS NULL THEN hours_stale ELSE NULL END)::numeric, 1) as max_hours_stale
         FROM attempt_data
         GROUP BY 1
 
@@ -177,7 +184,9 @@ export async function GET(request: NextRequest) {
           'Onboarded (No Attempt)' as status,
           COUNT(*)::int as count,
           NULL::numeric as avg_score,
-          0 as avg_responses
+          0 as avg_responses,
+          -- Hours since onboarding for most stale student
+          ROUND(MAX(EXTRACT(EPOCH FROM (NOW() - sp.created_at)) / 3600)::numeric, 1) as max_hours_stale
         FROM student_profiles sp
         WHERE sp.course_id = $1
           AND NOT EXISTS (
