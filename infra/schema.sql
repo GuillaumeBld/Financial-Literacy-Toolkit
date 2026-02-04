@@ -71,7 +71,7 @@ CREATE TABLE responses (
   item_id UUID NOT NULL REFERENCES items(item_id) ON DELETE CASCADE,
   raw_answer JSONB NOT NULL, -- Student's answer (text, selected option, etc.)
   score DECIMAL(5,2), -- Auto-calculated score (0-100)
-  confidence INTEGER CHECK (confidence >= 1 AND confidence <= 5), -- Student's confidence 1-5
+  confidence INTEGER CHECK (confidence >= 1 AND confidence <= 3), -- Student's confidence 1-3
   ai_confidence DECIMAL(3,2), -- AI model's confidence in scoring (0-1)
   ai_flags JSONB, -- Additional AI analysis flags
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

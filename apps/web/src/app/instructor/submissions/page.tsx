@@ -176,43 +176,6 @@ export default function InstructorSubmissionsPage() {
     }
   };
 
-  const handleExportCSV = () => {
-    if (filteredSubmissions.length === 0) {
-      alert('No submissions to export');
-      return;
-    }
-
-    // Build CSV header
-    const headers = [
-      'Student ID', 'Course', 'Attempt Type', 'Submitted At', 'Duration (s)',
-      'Overall Score (%)', 'Overconfidence Index'
-    ];
-
-    // Build CSV rows
-    const rows = filteredSubmissions.map(sub => [
-      sub.hashed_student_key,
-      sub.course_name,
-      sub.attempt_type,
-      sub.submitted_at || '',
-      sub.duration_s?.toString() || '0',
-      Math.round(sub.overall_score ?? 0).toString(),
-      Number(sub.overconfidence_index ?? 0).toFixed(2)
-    ]);
-
-    // Create CSV content
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    ].join('\n');
-
-    // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `submissions_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
   const handleExportDetailedCSV = async () => {
     if (filteredSubmissions.length === 0) {
       alert('No submissions to export');
@@ -520,11 +483,19 @@ export default function InstructorSubmissionsPage() {
           </div>
         </div>
 
-        {/* Results Summary */}
-        <div className="mb-6">
+        {/* Results Summary + Export */}
+        <div className="mb-6 flex justify-between items-center">
           <p className="text-loyola-gray-600">
             Showing {filteredSubmissions.length} of {submissions.length} submissions
           </p>
+          <button
+            id="export-detailed-btn"
+            onClick={handleExportDetailedCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
         </div>
 
         {/* Submissions Table */}
@@ -559,20 +530,17 @@ export default function InstructorSubmissionsPage() {
               <tbody className="bg-white divide-y divide-loyola-gray-200">
                 {filteredSubmissions.map((submission) => (
                   <tr key={submission.attempt_id} className="hover:bg-loyola-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-loyola-gray-900">
-                      {submission.hashed_student_key ?? 'Unknown'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => loadSubmissionDetail(submission)}
+                        className="text-loyola-maroon hover:text-loyola-maroon-dark transition"
+                        title="View details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
-                      {submission.course_name ?? 'Unknown'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        submission.attempt_type === 'pre' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {submission.attempt_type === 'pre' ? 'Pre' : 'Post'}
-                      </span>
+                      {formatDate(submission.submitted_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-900">
                       <div className="flex items-center gap-2">
@@ -588,16 +556,19 @@ export default function InstructorSubmissionsPage() {
                       {formatDuration(submission.duration_s ?? 0)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
-                      {formatDate(submission.submitted_at)}
+                      {submission.course_name ?? 'Unknown'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => loadSubmissionDetail(submission)}
-                        className="text-loyola-maroon hover:text-loyola-maroon-dark transition"
-                        title="View details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        submission.attempt_type === 'pre'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {submission.attempt_type === 'pre' ? 'Pre' : 'Post'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-loyola-gray-900">
+                      {submission.hashed_student_key ?? 'Unknown'}
                     </td>
                   </tr>
                 ))}
@@ -606,24 +577,6 @@ export default function InstructorSubmissionsPage() {
           </div>
         </div>
 
-        {/* Export Buttons */}
-        <div className="mt-6 flex justify-center gap-4">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 px-6 py-3 bg-loyola-gray-600 text-white rounded-lg hover:bg-loyola-gray-700 transition"
-          >
-            <Download className="w-5 h-5" />
-            Export Summary CSV
-          </button>
-          <button
-            id="export-detailed-btn"
-            onClick={handleExportDetailedCSV}
-            className="flex items-center gap-2 px-6 py-3 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition"
-          >
-            <Download className="w-5 h-5" />
-            Export Detailed CSV
-          </button>
-        </div>
       </main>
 
       {/* Submission Detail Modal */}

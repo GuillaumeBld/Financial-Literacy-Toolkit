@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Clock,
   BarChart3,
-  Download,
   LogOut,
   RefreshCw
 } from 'lucide-react';
@@ -237,43 +236,6 @@ export default function InstructorDashboardPage() {
             {stats.studentStatus && stats.studentStatus.length > 0 && (
               <StatusTable data={stats.studentStatus} />
             )}
-
-            {/* Domain Breakdown */}
-            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-loyola-gray-800 flex items-center gap-2">
-                  <BarChart3 className="w-6 h-6 text-loyola-maroon" />
-                  Performance by Domain
-                </h2>
-                <button
-                  className="flex items-center gap-2 px-4 py-2 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition"
-                >
-                  <Download className="w-4 h-4" />
-                  Export Data
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {stats.domainAverages.map((domain) => (
-                  <div key={domain.domain}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-loyola-gray-700">
-                        {domain.domain}
-                      </span>
-                      <span className="text-sm text-loyola-gray-600">
-                        {Math.round(domain.average)}% ({domain.count} responses)
-                      </span>
-                    </div>
-                    <div className="w-full bg-loyola-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-3 rounded-full transition-all duration-500"
-                        style={{ width: `${domain.average}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

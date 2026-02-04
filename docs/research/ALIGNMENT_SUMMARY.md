@@ -20,7 +20,7 @@ This document summarizes the alignment between the independent study objectives 
 - Platform supports:
   - Pre and post assessment administration
   - Multiple choice questions with answer keys
-  - Confidence ratings (1-5 scale)
+  - Confidence ratings (1-3 scale)
   - Domain-based scoring
   - Time tracking
 

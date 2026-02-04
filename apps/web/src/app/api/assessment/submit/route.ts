@@ -327,10 +327,30 @@ export async function POST(request: NextRequest) {
     const overallScore = denominator > 0 ? totalScore / denominator : 0;
     console.log(`Scored ${scoredItems}/${totalScoreableItems} scoreable items, overall: ${overallScore.toFixed(1)}%`);
 
+    // Calculate Overconfidence Index
+    // OC = avg(normalized_confidence) - avg(actual_correctness)
+    // normalized_confidence: (confidence - 1) / 2 maps 1-3 to 0-1
+    // actual_correctness: 1 if answer matches key, 0 otherwise
+    const ocQuery = `
+      SELECT
+        AVG((r.confidence - 1)::float / 2) as avg_norm_confidence,
+        AVG(CASE WHEN TRIM(BOTH '"' FROM r.raw_answer::text) = i.key THEN 1 ELSE 0 END)::float as avg_correctness
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      WHERE r.attempt_id = $1
+        AND i.is_scored = true
+        AND r.confidence IS NOT NULL
+    `;
+    const ocResult = await client.query(ocQuery, [attemptId]);
+    const avgNormConfidence = parseFloat(ocResult.rows[0]?.avg_norm_confidence) || 0;
+    const avgCorrectness = parseFloat(ocResult.rows[0]?.avg_correctness) || 0;
+    const overconfidenceIndex = avgNormConfidence - avgCorrectness;
+    console.log(`OC calculation: avg_conf=${avgNormConfidence.toFixed(3)}, avg_correct=${avgCorrectness.toFixed(3)}, OC=${overconfidenceIndex.toFixed(3)}`);
+
     // Insert overall scores
       await client.query(
         'INSERT INTO scores (attempt_id, overall, by_domain, se_overall, overconfidence_index) VALUES ($1, $2, $3, $4, $5)',
-        [attemptId, overallScore, {}, 5.0, 0]
+        [attemptId, overallScore, {}, 5.0, overconfidenceIndex]
       );
 
     // Mark attempt as submitted ONLY after all data is saved successfully
