@@ -305,7 +305,7 @@ export default function InstructorAnalyticsPage() {
                 icon={<Users className="w-6 h-6" />}
                 title="Total Students"
                 value={analytics.summary.totalStudents}
-                color="blue"
+                color="gray"
               />
               <StatCard
                 icon={<UserCheck className="w-6 h-6" />}
@@ -317,25 +317,25 @@ export default function InstructorAnalyticsPage() {
                 icon={<Activity className="w-6 h-6" />}
                 title="In Progress"
                 value={analytics.summary.inProgress}
-                color="orange"
+                color="gray"
               />
               <StatCard
                 icon={<Clock className="w-6 h-6" />}
                 title="Onboarded"
                 value={analytics.summary.notStarted}
-                color="red"
+                color="gray"
               />
               <StatCard
                 icon={<TrendingUp className="w-6 h-6" />}
                 title="Average Score"
                 value={`${analytics.summary.avgScore}%`}
-                color="purple"
+                color="green"
               />
               <StatCard
                 icon={<BarChart3 className="w-6 h-6" />}
                 title="Avg Duration"
                 value={`${Math.floor(analytics.summary.avgDuration / 60)}m`}
-                color="blue"
+                color="gray"
               />
             </div>
 
@@ -456,28 +456,36 @@ export default function InstructorAnalyticsPage() {
 
                   {/* Confidence Calibration */}
                   <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-loyola-gray-800 mb-4 flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-amber-600" />
+                    <h3 className="text-lg font-bold text-loyola-gray-800 mb-2 flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-gray-600" />
                       Confidence Calibration
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      How well does student confidence match their actual performance?
-                    </p>
+
+                    {/* Legend/Explanation */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                      <p className="text-gray-700 mb-2">
+                        <strong>What it measures:</strong> The gap between how confident students feel and how well they actually perform.
+                      </p>
+                      <p className="text-gray-600 text-xs">
+                        <strong>Formula:</strong> OC = Avg(Confidence) − Avg(Correctness), where confidence is normalized from 1-3 scale to 0-1.
+                      </p>
+                    </div>
+
                     {analytics.riskProfiles ? (
                       <>
                         <div className="grid grid-cols-3 gap-3 mb-4">
-                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-center">
-                            <div className="text-xl font-bold text-blue-700">
+                          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                            <div className="text-xl font-bold text-gray-700">
                               {analytics.riskProfiles.overconfidence.distribution.underconfident}
                             </div>
-                            <div className="text-xs text-blue-600">Underconfident</div>
-                            <div className="text-xs text-blue-500">OC &lt; -10%</div>
+                            <div className="text-xs font-medium text-gray-600">Underconfident</div>
+                            <div className="text-xs text-gray-500">OC &lt; -10%</div>
                           </div>
                           <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-center">
                             <div className="text-xl font-bold text-green-700">
                               {analytics.riskProfiles.overconfidence.distribution.low}
                             </div>
-                            <div className="text-xs text-green-600">Well-Calibrated</div>
+                            <div className="text-xs font-medium text-green-600">Well-Calibrated</div>
                             <div className="text-xs text-green-500">|OC| &lt; 10%</div>
                           </div>
                           <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-center">
@@ -485,10 +493,27 @@ export default function InstructorAnalyticsPage() {
                               {analytics.riskProfiles.overconfidence.distribution.moderate +
                                analytics.riskProfiles.overconfidence.distribution.high}
                             </div>
-                            <div className="text-xs text-red-600">Overconfident</div>
+                            <div className="text-xs font-medium text-red-600">Overconfident</div>
                             <div className="text-xs text-red-500">OC &gt; 10%</div>
                           </div>
                         </div>
+
+                        {/* Color Legend */}
+                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3 px-1">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-green-500 rounded"></div>
+                            <span>Good</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                            <span>Neutral</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-500 rounded"></div>
+                            <span>Needs attention</span>
+                          </div>
+                        </div>
+
                         <div className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Average OC Index</span>
@@ -496,7 +521,7 @@ export default function InstructorAnalyticsPage() {
                               (analytics.riskProfiles.overconfidence.average ?? 0) > 10
                                 ? 'text-red-600'
                                 : (analytics.riskProfiles.overconfidence.average ?? 0) < -10
-                                  ? 'text-blue-600'
+                                  ? 'text-gray-600'
                                   : 'text-green-600'
                             }`}>
                               {analytics.riskProfiles.overconfidence.average !== null
@@ -505,7 +530,7 @@ export default function InstructorAnalyticsPage() {
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
-                            {analytics.riskProfiles.overconfidence.totalMeasured} students measured
+                            Based on {analytics.riskProfiles.overconfidence.totalMeasured} student submissions
                           </p>
                         </div>
                       </>
@@ -517,52 +542,222 @@ export default function InstructorAnalyticsPage() {
 
                 {/* Overconfidence Breakdown */}
                 {analytics.riskProfiles && (
-                  <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-loyola-gray-800 mb-4 flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-amber-600" />
-                      Overconfidence Analysis
+                  <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                    <h3 className="text-lg font-bold text-loyola-gray-800 mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-gray-600" />
+                      Overconfidence Detailed Breakdown
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Students with high overconfidence may believe they understand material better than they actually do.
-                      This can lead to inadequate study habits and poor financial decisions.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    {/* Legend/Explanation */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                      <p className="text-gray-700 mb-2">
+                        <strong>Why it matters:</strong> Students with high overconfidence believe they understand material better than they actually do, leading to inadequate study habits and poor financial decisions.
+                      </p>
+                      <p className="text-gray-600 text-xs">
+                        <strong>Interpretation:</strong> Green = confidence matches performance. Red = significant gap requiring intervention.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                          <span className="font-medium text-gray-700">Underconfident</span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-700">
+                          {analytics.riskProfiles.overconfidence.distribution.underconfident}
+                        </div>
+                        <p className="text-sm text-gray-600">OC &lt; -10%</p>
+                        <p className="text-xs text-gray-500 mt-1">Performs better than they believe</p>
+                      </div>
                       <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                          <span className="font-medium text-green-800">Low Risk</span>
+                          <span className="font-medium text-green-800">Well-Calibrated</span>
                         </div>
                         <div className="text-2xl font-bold text-green-700">
                           {analytics.riskProfiles.overconfidence.distribution.low}
                         </div>
-                        <p className="text-sm text-green-600">OC index &lt; 10%</p>
+                        <p className="text-sm text-green-600">|OC| &lt; 10%</p>
                         <p className="text-xs text-green-500 mt-1">Good self-awareness</p>
-                      </div>
-                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                          <span className="font-medium text-amber-800">Moderate Risk</span>
-                        </div>
-                        <div className="text-2xl font-bold text-amber-700">
-                          {analytics.riskProfiles.overconfidence.distribution.moderate}
-                        </div>
-                        <p className="text-sm text-amber-600">OC index 10-30%</p>
-                        <p className="text-xs text-amber-500 mt-1">Some miscalibration</p>
                       </div>
                       <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <span className="font-medium text-red-800">High Risk</span>
+                          <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                          <span className="font-medium text-red-700">Moderate OC</span>
+                        </div>
+                        <div className="text-2xl font-bold text-red-600">
+                          {analytics.riskProfiles.overconfidence.distribution.moderate}
+                        </div>
+                        <p className="text-sm text-red-500">OC 10-30%</p>
+                        <p className="text-xs text-red-400 mt-1">Some miscalibration</p>
+                      </div>
+                      <div className="p-4 bg-red-100 rounded-lg border border-red-300">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                          <span className="font-medium text-red-800">High OC</span>
                         </div>
                         <div className="text-2xl font-bold text-red-700">
                           {analytics.riskProfiles.overconfidence.distribution.high}
                         </div>
-                        <p className="text-sm text-red-600">OC index &gt; 30%</p>
+                        <p className="text-sm text-red-600">OC &gt; 30%</p>
                         <p className="text-xs text-red-500 mt-1">Needs intervention</p>
+                      </div>
+                    </div>
+
+                    {/* Visual Legend */}
+                    <div className="flex items-center justify-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                        <span>Underconfident (neutral)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-green-500 rounded"></div>
+                        <span>Well-Calibrated (ideal)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-red-500 rounded"></div>
+                        <span>Overconfident (concern)</span>
                       </div>
                     </div>
                   </div>
                 )}
+
+                {/* Methodology Explanation */}
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <button
+                    onClick={() => toggleSection('methodology')}
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Activity className="w-5 h-5 text-gray-600" />
+                      <span className="font-semibold text-gray-800">How Metrics Are Calculated</span>
+                    </div>
+                    {expandedSection === 'methodology' ? (
+                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                  {expandedSection === 'methodology' && (
+                    <div className="px-6 pb-6 space-y-6">
+                      {/* Score Calculation */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-gray-600" />
+                          Score
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          The assessment score is calculated from <strong>26 anchor knowledge items</strong> (Q1-Q14, Q29-Q40).
+                        </p>
+                        <div className="bg-white rounded p-3 font-mono text-sm text-gray-700 border">
+                          Score = (Correct Answers / 26) × 100%
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Note: Preference questions (Q15-Q28) and SDM adaptive items are not included in the score.
+                        </p>
+                      </div>
+
+                      {/* Confidence Scale */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <Brain className="w-4 h-4 text-gray-600" />
+                          Confidence Rating
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Students rate their confidence for each knowledge question on a 3-point scale:
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 mt-2">
+                          <div className="bg-white rounded p-2 text-center border">
+                            <span className="text-lg font-bold text-gray-700">1</span>
+                            <p className="text-xs text-gray-600">Low</p>
+                          </div>
+                          <div className="bg-white rounded p-2 text-center border">
+                            <span className="text-lg font-bold text-gray-700">2</span>
+                            <p className="text-xs text-gray-600">Medium</p>
+                          </div>
+                          <div className="bg-white rounded p-2 text-center border">
+                            <span className="text-lg font-bold text-gray-700">3</span>
+                            <p className="text-xs text-gray-600">High</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* OC Formula */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-gray-600" />
+                          Overconfidence Index (OC)
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Measures the gap between how confident students feel and how well they actually perform.
+                        </p>
+                        <div className="bg-white rounded p-3 font-mono text-sm text-gray-700 border mb-3">
+                          OC = Avg(Normalized Confidence) − Avg(Actual Correctness)
+                        </div>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p><strong>Normalized Confidence</strong>: Maps 1-3 scale to 0-1 → <code className="bg-gray-200 px-1 rounded">(confidence - 1) / 2</code></p>
+                          <p><strong>Actual Correctness</strong>: 1 if correct, 0 if incorrect</p>
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500">
+                          Example: A student with average confidence of 2.5 (normalized: 0.75) who scores 60% correct has OC = 0.75 - 0.60 = +15% (moderate overconfidence)
+                        </div>
+                      </div>
+
+                      {/* OC Categories */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-2">Calibration Categories</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div className="bg-gray-100 rounded p-2 border border-gray-200">
+                            <p className="text-sm font-medium text-gray-700">Underconfident</p>
+                            <p className="text-xs text-gray-600">OC &lt; -10%</p>
+                            <p className="text-xs text-gray-500 mt-1">Performs better than they believe</p>
+                          </div>
+                          <div className="bg-green-50 rounded p-2 border border-green-200">
+                            <p className="text-sm font-medium text-green-800">Well-Calibrated</p>
+                            <p className="text-xs text-green-600">|OC| &lt; 10%</p>
+                            <p className="text-xs text-green-500 mt-1">Confidence matches performance</p>
+                          </div>
+                          <div className="bg-red-50 rounded p-2 border border-red-200">
+                            <p className="text-sm font-medium text-red-700">Moderate OC</p>
+                            <p className="text-xs text-red-600">OC 10-30%</p>
+                            <p className="text-xs text-red-500 mt-1">Somewhat overestimates ability</p>
+                          </div>
+                          <div className="bg-red-100 rounded p-2 border border-red-300">
+                            <p className="text-sm font-medium text-red-800">High OC</p>
+                            <p className="text-xs text-red-600">OC &gt; 30%</p>
+                            <p className="text-xs text-red-500 mt-1">Significantly overestimates ability</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-green-500 rounded"></div>
+                            <span>Good (target state)</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                            <span>Neutral</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-500 rounded"></div>
+                            <span>Needs attention</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Duration */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-gray-600" />
+                          Duration
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Time elapsed from assessment start to final submission, measured in minutes.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
 
@@ -801,55 +996,87 @@ export default function InstructorAnalyticsPage() {
 
                 {/* Overconfidence Distribution */}
                 <div className="bg-white rounded-xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-gray-600" />
                     Confidence Calibration Distribution
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Measures the gap between student confidence and actual performance. Positive OC indicates overconfidence; negative indicates underconfidence.
-                  </p>
-                  <div className="grid grid-cols-4 gap-4">
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-2xl font-bold text-blue-700">
+
+                  {/* Legend/Explanation */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                    <p className="text-gray-700 mb-2">
+                      <strong>What it measures:</strong> The Overconfidence Index (OC) = Average Confidence − Average Correctness
+                    </p>
+                    <p className="text-gray-600 text-xs">
+                      <strong>Interpretation:</strong> Positive OC = overconfident (thinks they know more than they do). Negative OC = underconfident. Near zero = well-calibrated.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="text-2xl font-bold text-gray-700">
                         {analytics.riskProfiles.overconfidence.distribution.underconfident}
                       </div>
-                      <div className="text-sm text-blue-600">Underconfident</div>
-                      <div className="text-xs text-blue-500 mt-1">OC &lt; -10%</div>
+                      <div className="text-sm font-medium text-gray-600">Underconfident</div>
+                      <div className="text-xs text-gray-500 mt-1">OC &lt; -10%</div>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <div className="text-2xl font-bold text-green-700">
                         {analytics.riskProfiles.overconfidence.distribution.low}
                       </div>
-                      <div className="text-sm text-green-600">Well-Calibrated</div>
+                      <div className="text-sm font-medium text-green-600">Well-Calibrated</div>
                       <div className="text-xs text-green-500 mt-1">|OC| &lt; 10%</div>
                     </div>
-                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                      <div className="text-2xl font-bold text-amber-700">
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <div className="text-2xl font-bold text-red-600">
                         {analytics.riskProfiles.overconfidence.distribution.moderate}
                       </div>
-                      <div className="text-sm text-amber-600">Moderate OC</div>
-                      <div className="text-xs text-amber-500 mt-1">OC 10-30%</div>
+                      <div className="text-sm font-medium text-red-600">Moderate OC</div>
+                      <div className="text-xs text-red-500 mt-1">OC 10-30%</div>
                     </div>
-                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="p-4 bg-red-100 rounded-lg border border-red-300">
                       <div className="text-2xl font-bold text-red-700">
                         {analytics.riskProfiles.overconfidence.distribution.high}
                       </div>
-                      <div className="text-sm text-red-600">High OC</div>
+                      <div className="text-sm font-medium text-red-700">High OC</div>
                       <div className="text-xs text-red-500 mt-1">OC &gt; 30%</div>
+                    </div>
+                  </div>
+
+                  {/* Color Legend */}
+                  <div className="flex items-center justify-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                      <span>Neutral</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-500 rounded"></div>
+                      <span>Good (target)</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-red-500 rounded"></div>
+                      <span>Needs attention</span>
                     </div>
                   </div>
                 </div>
 
                 {/* At-Risk Indicators */}
                 <div className="bg-white rounded-xl shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-red-600" />
                     At-Risk Indicators
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Students who may need additional support based on their baseline characteristics and assessment performance.
-                  </p>
-                  <div className="space-y-4">
+
+                  {/* Legend/Explanation */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                    <p className="text-gray-700 mb-2">
+                      <strong>What it shows:</strong> Students who may need additional support based on their baseline characteristics.
+                    </p>
+                    <p className="text-gray-600 text-xs">
+                      <strong>Data source:</strong> Derived from onboarding questions (B1-B13). These are risk factors, not predictions.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                       <div>
                         <h4 className="font-medium text-red-800">Low Knowledge + High Stress</h4>
@@ -861,59 +1088,72 @@ export default function InstructorAnalyticsPage() {
                         {analytics.riskProfiles.atRiskIndicators.lowKnowledgeHighStress}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                       <div>
-                        <h4 className="font-medium text-purple-800">First-Generation + Student Loans</h4>
-                        <p className="text-sm text-purple-600">
+                        <h4 className="font-medium text-red-800">First-Generation + Student Loans</h4>
+                        <p className="text-sm text-red-600">
                           First-generation college students with existing loan debt
                         </p>
                       </div>
-                      <div className="text-2xl font-bold text-purple-700">
+                      <div className="text-2xl font-bold text-red-700">
                         {analytics.riskProfiles.atRiskIndicators.firstGenWithLoans}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                       <div>
-                        <h4 className="font-medium text-orange-800">High Interest Rate Loans</h4>
-                        <p className="text-sm text-orange-600">
+                        <h4 className="font-medium text-red-800">High Interest Rate Loans</h4>
+                        <p className="text-sm text-red-600">
                           Students with loan interest rates above 10%
                         </p>
                       </div>
-                      <div className="text-2xl font-bold text-orange-700">
+                      <div className="text-2xl font-bold text-red-700">
                         {analytics.riskProfiles.atRiskIndicators.highInterestLoans}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 mt-3 border-t border-gray-100">
+                    <div className="w-3 h-3 bg-red-500 rounded"></div>
+                    <span>All indicators represent students who may benefit from additional support</span>
                   </div>
                 </div>
 
                 {/* Risk Tolerance Distribution */}
                 {analytics.riskProfiles.riskTolerance && analytics.riskProfiles.riskTolerance.totalResponses > 0 && (
                   <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                      <Gauge className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                      <Gauge className="w-5 h-5 text-gray-600" />
                       Risk Tolerance Distribution
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Based on Q15 (bonus allocation), Q16 (market downturn reaction), and Q23 (attitude toward risk). Shows overall risk appetite.
-                    </p>
+
+                    {/* Legend/Explanation */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                      <p className="text-gray-700 mb-2">
+                        <strong>What it measures:</strong> How much financial risk students are willing to take in investment decisions.
+                      </p>
+                      <p className="text-gray-600 text-xs">
+                        <strong>Data source:</strong> Q15 (bonus allocation), Q16 (market downturn reaction), Q23 (attitude toward risk). This is descriptive, not prescriptive—there is no &quot;correct&quot; risk tolerance.
+                      </p>
+                    </div>
 
                     {/* Horizontal bar showing distribution */}
                     <div className="mb-4">
                       <div className="flex h-8 rounded-lg overflow-hidden">
                         <div
-                          className="bg-green-500 flex items-center justify-center text-white text-sm font-medium"
+                          className="bg-gray-400 flex items-center justify-center text-white text-sm font-medium"
                           style={{ width: `${analytics.riskProfiles.riskTolerance.conservative}%` }}
                         >
                           {analytics.riskProfiles.riskTolerance.conservative > 10 && `${analytics.riskProfiles.riskTolerance.conservative}%`}
                         </div>
                         <div
-                          className="bg-yellow-500 flex items-center justify-center text-white text-sm font-medium"
+                          className="bg-gray-500 flex items-center justify-center text-white text-sm font-medium"
                           style={{ width: `${analytics.riskProfiles.riskTolerance.moderate}%` }}
                         >
                           {analytics.riskProfiles.riskTolerance.moderate > 10 && `${analytics.riskProfiles.riskTolerance.moderate}%`}
                         </div>
                         <div
-                          className="bg-red-500 flex items-center justify-center text-white text-sm font-medium"
+                          className="bg-gray-600 flex items-center justify-center text-white text-sm font-medium"
                           style={{ width: `${analytics.riskProfiles.riskTolerance.aggressive}%` }}
                         >
                           {analytics.riskProfiles.riskTolerance.aggressive > 10 && `${analytics.riskProfiles.riskTolerance.aggressive}%`}
@@ -922,31 +1162,31 @@ export default function InstructorAnalyticsPage() {
                     </div>
 
                     {/* Legend */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-4 mb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 rounded"></div>
+                        <div className="w-4 h-4 bg-gray-400 rounded"></div>
                         <div>
                           <span className="font-medium text-gray-700">Conservative</span>
                           <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.conservative}%</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                        <div className="w-4 h-4 bg-gray-500 rounded"></div>
                         <div>
                           <span className="font-medium text-gray-700">Moderate</span>
                           <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.moderate}%</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-red-500 rounded"></div>
+                        <div className="w-4 h-4 bg-gray-600 rounded"></div>
                         <div>
                           <span className="font-medium text-gray-700">Aggressive</span>
                           <span className="text-sm text-gray-500 ml-2">{analytics.riskProfiles.riskTolerance.aggressive}%</span>
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-3">
-                      Based on {analytics.riskProfiles.riskTolerance.totalResponses} question responses
+                    <p className="text-xs text-gray-400 pt-2 border-t border-gray-100">
+                      Based on {analytics.riskProfiles.riskTolerance.totalResponses} question responses. Gray scale used because no level is inherently good or bad.
                     </p>
                   </div>
                 )}
@@ -954,28 +1194,35 @@ export default function InstructorAnalyticsPage() {
                 {/* Behavioral Indicators */}
                 {analytics.riskProfiles.behavioralIndicators && (
                   <div className="bg-white rounded-xl shadow-md p-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-gray-600" />
                       Behavioral Indicators (Q15-Q28)
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Psychological factors that influence financial decision-making, derived from preference questions.
-                    </p>
+
+                    {/* Legend/Explanation */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
+                      <p className="text-gray-700 mb-2">
+                        <strong>What it measures:</strong> Psychological factors that influence financial decision-making.
+                      </p>
+                      <p className="text-gray-600 text-xs">
+                        <strong>Color coding:</strong> Green = typically beneficial trait. Red = may lead to suboptimal decisions. Gray bars show the percentage distribution.
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Loss Aversion */}
                       <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <TrendingDown className="w-5 h-5 text-red-500" />
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingDown className="w-5 h-5 text-gray-600" />
                           <h4 className="font-semibold text-gray-800">Loss Aversion</h4>
                         </div>
                         <p className="text-xs text-gray-500 mb-3">Tendency to prefer avoiding losses over acquiring gains (Q17-Q19)</p>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">High</span>
+                            <span className="text-sm text-red-600 font-medium">High</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.high}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.high}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.high}%</span>
                             </div>
@@ -984,36 +1231,37 @@ export default function InstructorAnalyticsPage() {
                             <span className="text-sm text-gray-600">Moderate</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.moderate}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.moderate}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.moderate}%</span>
                             </div>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Low</span>
+                            <span className="text-sm text-green-600 font-medium">Low</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.low}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.lossAversion.low}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.lossAversion.low}%</span>
                             </div>
                           </div>
                         </div>
+                        <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-200">High = may avoid beneficial risks</p>
                       </div>
 
                       {/* Herding Tendency */}
                       <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <UsersRound className="w-5 h-5 text-blue-500" />
+                        <div className="flex items-center gap-2 mb-2">
+                          <UsersRound className="w-5 h-5 text-gray-600" />
                           <h4 className="font-semibold text-gray-800">Herding Tendency</h4>
                         </div>
                         <p className="text-xs text-gray-500 mb-3">Tendency to follow the crowd in financial decisions (Q20-Q22)</p>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">High</span>
+                            <span className="text-sm text-red-600 font-medium">High</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.high}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.high}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.high}%</span>
                             </div>
@@ -1022,36 +1270,37 @@ export default function InstructorAnalyticsPage() {
                             <span className="text-sm text-gray-600">Moderate</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.moderate}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.moderate}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.moderate}%</span>
                             </div>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Low</span>
+                            <span className="text-sm text-green-600 font-medium">Low</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.low}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.herdingTendency.low}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.herdingTendency.low}%</span>
                             </div>
                           </div>
                         </div>
+                        <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-200">High = susceptible to crowd influence</p>
                       </div>
 
                       {/* Emotional Control */}
                       <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Shield className="w-5 h-5 text-green-500" />
+                        <div className="flex items-center gap-2 mb-2">
+                          <Shield className="w-5 h-5 text-gray-600" />
                           <h4 className="font-semibold text-gray-800">Emotional Control</h4>
                         </div>
                         <p className="text-xs text-gray-500 mb-3">Ability to manage emotions in financial decisions (Q24-Q26)</p>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">High</span>
+                            <span className="text-sm text-green-600 font-medium">High</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.high}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.high}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.high}%</span>
                             </div>
@@ -1060,21 +1309,34 @@ export default function InstructorAnalyticsPage() {
                             <span className="text-sm text-gray-600">Moderate</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.moderate}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.moderate}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.moderate}%</span>
                             </div>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Low</span>
+                            <span className="text-sm text-red-600 font-medium">Low</span>
                             <div className="flex items-center gap-2">
                               <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.low}%` }}></div>
+                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${analytics.riskProfiles.behavioralIndicators.emotionalControl.low}%` }}></div>
                               </div>
                               <span className="text-sm font-medium w-10 text-right">{analytics.riskProfiles.behavioralIndicators.emotionalControl.low}%</span>
                             </div>
                           </div>
                         </div>
+                        <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-200">High = better at rational decisions</p>
+                      </div>
+                    </div>
+
+                    {/* Overall Legend */}
+                    <div className="flex items-center justify-center gap-6 text-xs text-gray-500 pt-4 mt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <span className="text-green-600 font-medium">Green label</span>
+                        <span>= typically beneficial</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-red-600 font-medium">Red label</span>
+                        <span>= may need attention</span>
                       </div>
                     </div>
                   </div>
@@ -1193,17 +1455,15 @@ function StatCard({
   value: string | number;
   color: string;
 }) {
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
+  const colorClasses: Record<string, string> = {
+    gray: 'bg-gray-100 text-gray-600',
     green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
     red: 'bg-red-100 text-red-600'
   };
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      <div className={`inline-flex p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses]} mb-4`}>
+      <div className={`inline-flex p-3 rounded-lg ${colorClasses[color] || colorClasses.gray} mb-4`}>
         {icon}
       </div>
       <h3 className="text-sm font-medium text-loyola-gray-600 mb-1">{title}</h3>
@@ -1212,29 +1472,17 @@ function StatCard({
   );
 }
 
-// Distribution Card Component
+// Distribution Card Component - uses neutral gray for demographic/baseline data
 function DistributionCard({
   title,
   data,
-  color,
   subtitle
 }: {
   title: string;
   data: DistributionItem[];
-  color: string;
+  color?: string; // kept for backwards compatibility but ignored
   subtitle?: string;
 }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    purple: 'bg-purple-500',
-    orange: 'bg-orange-500',
-    red: 'bg-red-500',
-    amber: 'bg-amber-500'
-  };
-
-  const bgColor = colorClasses[color] || 'bg-gray-500';
-
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <h4 className="font-medium text-gray-800 mb-1">{title}</h4>
@@ -1252,7 +1500,7 @@ function DistributionCard({
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
-                className={`${bgColor} h-1.5 rounded-full transition-all`}
+                className="bg-gray-500 h-1.5 rounded-full transition-all"
                 style={{ width: `${Math.min(item.percentage, 100)}%` }}
               />
             </div>
