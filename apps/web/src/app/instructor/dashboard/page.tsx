@@ -5,7 +5,8 @@ import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import {
   Users,
-  FileText,
+  UserCheck,
+  Activity,
   TrendingUp,
   Clock,
   BarChart3,
@@ -15,11 +16,10 @@ import {
 } from 'lucide-react';
 
 type DashboardStats = {
-  totalAttempts: number;
-  preAttempts: number;
-  postAttempts: number;
-  completedAttempts: number;
-  uniqueStudents: number;
+  totalStudents: number;
+  submitted: number;
+  inProgress: number;
+  notStarted: number;
   avgScore: number;
   avgDuration: number;
   domainAverages: Array<{
@@ -194,19 +194,30 @@ export default function InstructorDashboardPage() {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
               <StatCard
                 icon={<Users className="w-6 h-6" />}
                 title="Total Students"
-                value={stats.uniqueStudents}
+                value={stats.totalStudents}
                 color="blue"
               />
               <StatCard
-                icon={<FileText className="w-6 h-6" />}
-                title="Total Attempts"
-                value={stats.totalAttempts}
-                subtitle={`${stats.preAttempts} pre, ${stats.postAttempts} post`}
+                icon={<UserCheck className="w-6 h-6" />}
+                title="Submitted"
+                value={stats.submitted}
                 color="green"
+              />
+              <StatCard
+                icon={<Activity className="w-6 h-6" />}
+                title="In Progress"
+                value={stats.inProgress}
+                color="orange"
+              />
+              <StatCard
+                icon={<Clock className="w-6 h-6" />}
+                title="Not Started"
+                value={stats.notStarted}
+                color="red"
               />
               <StatCard
                 icon={<TrendingUp className="w-6 h-6" />}
@@ -215,11 +226,10 @@ export default function InstructorDashboardPage() {
                 color="purple"
               />
               <StatCard
-                icon={<Clock className="w-6 h-6" />}
+                icon={<BarChart3 className="w-6 h-6" />}
                 title="Avg Duration"
                 value={`${Math.floor(stats.avgDuration / 60)}m`}
-                subtitle={`${stats.avgDuration % 60}s`}
-                color="orange"
+                color="blue"
               />
             </div>
 

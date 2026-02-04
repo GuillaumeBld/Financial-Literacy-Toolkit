@@ -94,12 +94,19 @@ export async function GET(request: NextRequest) {
       overconfidence_index: number | null;
     }>(attemptsQuery, [filterCourseIds]);
 
-    // Calculate aggregate statistics
-    const totalAttempts = attempts.length;
-    const preAttempts = attempts.filter(a => a.attempt_type === 'pre');
-    const postAttempts = attempts.filter(a => a.attempt_type === 'post');
+    // Get total onboarded students from student_profiles
+    const onboardedResult = await queryOne<{ count: number }>(
+      `SELECT COUNT(*)::int as count FROM student_profiles WHERE course_id = $1`,
+      [targetCourseId]
+    );
+    const totalStudents = onboardedResult?.count || 0;
 
+    // Calculate aggregate statistics
     const completedAttempts = attempts.filter(a => a.submitted_at);
+    const inProgressAttempts = attempts.filter(a => !a.submitted_at);
+    const studentsWithAttempts = new Set(attempts.map(a => a.user_id)).size;
+    const notStarted = totalStudents - studentsWithAttempts;
+
     // Note: PostgreSQL numeric columns return strings, so we parse them
     const avgScore = completedAttempts.length > 0
       ? completedAttempts.reduce((sum, a) => sum + (parseFloat(a.overall as unknown as string) || 0), 0) / completedAttempts.length
@@ -128,8 +135,6 @@ export async function GET(request: NextRequest) {
       count: scores.length
     }));
 
-    // Get unique students
-    const uniqueStudents = new Set(attempts.map(a => a.user_id)).size;
 
     // Get student status breakdown (including onboarded students with no attempts)
     const studentStatus = await queryMany<{
@@ -206,11 +211,10 @@ export async function GET(request: NextRequest) {
     `, [targetCourseId]);
 
     const stats = {
-      totalAttempts,
-      preAttempts: preAttempts.length,
-      postAttempts: postAttempts.length,
-      completedAttempts: completedAttempts.length,
-      uniqueStudents,
+      totalStudents,
+      submitted: completedAttempts.length,
+      inProgress: inProgressAttempts.length,
+      notStarted,
       avgScore: Math.round(avgScore * 100) / 100,
       avgDuration: Math.round(avgDuration),
       domainAverages,
