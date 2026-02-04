@@ -32,6 +32,7 @@ type DashboardStats = {
     count: number;
     avg_score: number | null;
     avg_responses: number;
+    max_hours_stale: number | null;
   }>;
 };
 
@@ -361,8 +362,28 @@ function ActionCard({
 function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
   const submittedRows = data.filter(r => r.status.startsWith('Submitted'));
   const inProgressRows = data.filter(r => r.status.startsWith('In Progress'));
+  const onboardedRows = data.filter(r => r.status.startsWith('Onboarded'));
   const totalSubmitted = submittedRows.reduce((sum, r) => sum + r.count, 0);
   const totalInProgress = inProgressRows.reduce((sum, r) => sum + r.count, 0);
+  const totalOnboarded = onboardedRows.reduce((sum, r) => sum + r.count, 0);
+
+  // Format hours stale for display
+  const formatHoursStale = (hours: number | null) => {
+    if (hours === null) return '—';
+    if (hours < 1) return `${Math.round(hours * 60)}m`;
+    if (hours < 24) return `${Math.round(hours)}h`;
+    const days = Math.floor(hours / 24);
+    const remainingHours = Math.round(hours % 24);
+    return `${days}d ${remainingHours}h`;
+  };
+
+  // Determine if hours stale is concerning (>24h for in-progress, >48h for onboarded)
+  const isStaleWarning = (status: string, hours: number | null) => {
+    if (hours === null) return false;
+    if (status.startsWith('In Progress')) return hours > 24;
+    if (status.startsWith('Onboarded')) return hours > 48;
+    return false;
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
@@ -378,12 +399,14 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Students</th>
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Score</th>
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Responses</th>
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Max Stale</th>
             </tr>
           </thead>
           <tbody>
             {data.map((row, idx) => (
               <tr key={idx} className={`border-b border-loyola-gray-100 ${
-                row.status.startsWith('Submitted') ? 'bg-green-50' : 'bg-amber-50'
+                row.status.startsWith('Submitted') ? 'bg-green-50' :
+                row.status.startsWith('Onboarded') ? 'bg-blue-50' : 'bg-amber-50'
               }`}>
                 <td className="py-3 px-4 font-medium">{row.status}</td>
                 <td className="py-3 px-4 text-right">{row.count}</td>
@@ -391,15 +414,26 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
                   {row.avg_score ? `${row.avg_score}%` : '—'}
                 </td>
                 <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+                <td className={`py-3 px-4 text-right ${
+                  isStaleWarning(row.status, row.max_hours_stale) ? 'text-red-600 font-semibold' : ''
+                }`}>
+                  {formatHoursStale(row.max_hours_stale)}
+                </td>
               </tr>
             ))}
             <tr className="border-t-2 border-loyola-gray-300 font-bold bg-loyola-gray-50">
               <td className="py-3 px-4">Total</td>
-              <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress}</td>
-              <td className="py-3 px-4 text-right" colSpan={2}>
+              <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress + totalOnboarded}</td>
+              <td className="py-3 px-4 text-right" colSpan={3}>
                 <span className="text-green-600">{totalSubmitted} submitted</span>
                 {' / '}
                 <span className="text-amber-600">{totalInProgress} in progress</span>
+                {totalOnboarded > 0 && (
+                  <>
+                    {' / '}
+                    <span className="text-blue-600">{totalOnboarded} onboarded</span>
+                  </>
+                )}
               </td>
             </tr>
           </tbody>
