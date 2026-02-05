@@ -6,7 +6,7 @@
 set -euo pipefail
 
 LOG_FILE="/var/log/finlit-docs.log"
-WRITING_DIR="/root/Financial-Literacy-Toolkit/writing/data"
+WRITING_DIR="/root/Financial-Literacy-Toolkit/docs/data"
 DB_CONN="postgresql://finlit_user:FinLit2025SecurePassword@localhost:6432/financial_literacy"
 
 log() {
