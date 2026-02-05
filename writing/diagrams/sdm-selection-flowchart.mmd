@@ -1,0 +1,66 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#8B0015'}}}%%
+flowchart TD
+    Start["Start: After Q40 Submitted"] --> Compute["Compute Need Scores<br/>for All 26 Knowledge Items"]
+
+    subgraph NeedScoring["Need Score Calculation"]
+        N1["Incorrect + High Conf → Need 5"]
+        N2["Correct + Low Conf → Need 5"]
+        N3["Do Not Know → Need 4"]
+        N4["Incorrect + Mid Conf → Need 3"]
+        N5["Incorrect + Low Conf → Need 2"]
+        N6["Correct + Mid Conf (T/F) → Need 2"]
+        N7["Correct + Mid Conf (MCQ) → Need 1"]
+        N8["Correct + High Conf → Need 0"]
+    end
+
+    Compute --> Sort["Sort Items by Need Score<br/>(descending)"]
+
+    subgraph Phase1["Phase 1: Domain Minimum"]
+        D1["Select 2 highest-Need items<br/>from Borrowing & Credit"]
+        D2["Select 2 highest-Need items<br/>from Risk Management"]
+        D3["Select 2 highest-Need items<br/>from Investment & Risk"]
+    end
+
+    Sort --> D1
+    D1 --> D2
+    D2 --> D3
+
+    subgraph Phase2["Phase 2: Fill Remaining Slots"]
+        F1["Iterate remaining items<br/>by Need score"]
+        F2{"Subcategory<br/>cap (2) met?"}
+        F3{"Open-ended<br/>cap (3) met?"}
+        F4["Select item"]
+        F5["Skip item"]
+        F6["Apply fallback<br/>variant"]
+    end
+
+    D3 --> F1
+    F1 --> F2
+    F2 -->|"Yes"| F5
+    F2 -->|"No"| F3
+    F3 -->|"Yes, Need=5"| F6
+    F3 -->|"No"| F4
+    F6 --> Check{"10 items<br/>selected?"}
+    F4 --> Check
+    F5 --> F1
+    Check -->|"No"| F1
+    Check -->|"Yes"| Assign
+
+    subgraph VariantAssignment["Variant Assignment"]
+        V1["Need 5, Incorrect+High → Open_Diagnose"]
+        V2["Need 5, Correct+Low → Open_Confirm"]
+        V3["Need 4, DNK → Lower_MCQ"]
+        V4["Need 3, Incorrect+Mid → Lower_MCQ"]
+        V5["Need 2 → Lower_TF"]
+        V6["Need 1 → Same_MCQ"]
+        V7["Need 0 → Higher_MCQ"]
+    end
+
+    Assign["Assign Variant Types"] --> Order["Order for Presentation:<br/>1. Open_Diagnose<br/>2. Lower items<br/>3. Same/Higher<br/>4. Open_Confirm"]
+
+    Order --> Display["Display SDM Items<br/>Q41-Q50"]
+
+    style NeedScoring fill:#f5f5f5,stroke:#8B0015
+    style Phase1 fill:#F1BE48,stroke:#8B0015
+    style Phase2 fill:#f5f5f5,stroke:#8B0015
+    style VariantAssignment fill:#f5f5f5,stroke:#8B0015

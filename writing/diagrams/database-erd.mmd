@@ -1,0 +1,144 @@
+%%{init: {'theme': 'base'}}%%
+erDiagram
+    USERS {
+        uuid user_id PK
+        text hashed_student_key UK
+        text sso_provider
+        text hashed_password
+        timestamp created_at
+    }
+
+    COURSES {
+        uuid course_id PK
+        text name
+        text term
+        text pepper UK
+        timestamp created_at
+    }
+
+    ENROLLMENTS {
+        uuid user_id PK,FK
+        uuid course_id PK,FK
+        text role
+        timestamp created_at
+    }
+
+    INSTRUMENTS {
+        uuid instrument_id PK
+        text name
+        text version
+        text status
+        timestamp created_at
+    }
+
+    ITEMS {
+        uuid item_id PK
+        text external_item_id
+        text domain
+        text subdomain
+        decimal difficulty
+        text type
+        text stem
+        jsonb options
+        text key
+        jsonb rubric
+        boolean is_anchor
+        boolean is_active
+        boolean is_scored
+        timestamp created_at
+    }
+
+    ATTEMPTS {
+        uuid attempt_id PK
+        uuid user_id FK
+        uuid course_id FK
+        uuid instrument_id FK
+        text attempt_type
+        timestamp started_at
+        timestamp submitted_at
+        integer duration_s
+        jsonb metadata
+        uuid session_token
+        timestamp created_at
+    }
+
+    RESPONSES {
+        uuid response_id PK
+        uuid attempt_id FK
+        uuid item_id FK
+        jsonb raw_answer
+        decimal score
+        integer confidence
+        decimal ai_confidence
+        jsonb ai_flags
+        timestamp created_at
+    }
+
+    SCORES {
+        uuid attempt_id PK,FK
+        decimal overall
+        jsonb by_domain
+        decimal se_overall
+        decimal overconfidence_index
+        timestamp created_at
+    }
+
+    STUDENT_PROFILES {
+        uuid profile_id PK
+        uuid user_id FK
+        uuid course_id FK
+        text email
+        text gender
+        text race_ethnicity
+        text age_range
+        text first_language
+        text work_experience
+        jsonb prior_financial_products
+        text self_rated_financial_knowledge
+        text financial_stress_frequency
+        text parental_education
+        text first_generation_college
+        text has_student_loan_debt
+        text student_loan_interest_rate
+        text student_loan_maturity
+        timestamp completed_at
+    }
+
+    INSTRUCTORS {
+        uuid instructor_id PK
+        text email UK
+        text hashed_password
+        text full_name
+        text department
+        boolean is_active
+        timestamp last_login_at
+    }
+
+    INSTRUCTOR_COURSES {
+        uuid instructor_id PK,FK
+        uuid course_id PK,FK
+        text access_level
+        timestamp created_at
+    }
+
+    INSTRUCTOR_SESSIONS {
+        uuid session_id PK
+        uuid instructor_id FK
+        text token UK
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    USERS ||--o{ ENROLLMENTS : "enrolled in"
+    COURSES ||--o{ ENROLLMENTS : "has"
+    USERS ||--o{ ATTEMPTS : "takes"
+    COURSES ||--o{ ATTEMPTS : "contains"
+    INSTRUMENTS ||--o{ ATTEMPTS : "uses"
+    ATTEMPTS ||--o{ RESPONSES : "contains"
+    ITEMS ||--o{ RESPONSES : "answered in"
+    ATTEMPTS ||--o| SCORES : "produces"
+    USERS ||--o| STUDENT_PROFILES : "has"
+    COURSES ||--o{ STUDENT_PROFILES : "collects"
+    INSTRUCTORS ||--o{ INSTRUCTOR_COURSES : "teaches"
+    COURSES ||--o{ INSTRUCTOR_COURSES : "taught by"
+    INSTRUCTORS ||--o{ INSTRUCTOR_SESSIONS : "has"
