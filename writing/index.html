@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Literacy Assessment Platform - Documentation</title>
+  <meta name="description" content="Technical documentation for the Financial Literacy Assessment Platform supporting Quinn 102 research.">
+
+  <!-- Docsify -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+
+  <!-- Custom styles for Loyola branding -->
+  <style>
+    :root {
+      --theme-color: #8B0015;
+      --theme-color-secondary: #F1BE48;
+      --sidebar-background: #fafafa;
+      --sidebar-nav-link-color--active: #8B0015;
+      --sidebar-nav-link-border-color--active: #F1BE48;
+      --link-color: #8B0015;
+      --heading-color: #8B0015;
+    }
+
+    .app-name-link img {
+      max-width: 180px;
+    }
+
+    .sidebar-nav > ul > li > a {
+      font-weight: 600;
+    }
+
+    .markdown-section h1 {
+      border-bottom: 3px solid #F1BE48;
+      padding-bottom: 10px;
+    }
+
+    .markdown-section h2 {
+      color: #8B0015;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .markdown-section table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .markdown-section table th {
+      background-color: #8B0015;
+      color: white;
+      padding: 10px;
+    }
+
+    .markdown-section table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    .markdown-section table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .cover-main {
+      background: linear-gradient(135deg, #8B0015 0%, #5a000e 100%) !important;
+    }
+
+    .cover-main h1 {
+      color: #F1BE48 !important;
+    }
+
+    .cover-main a.anchor {
+      color: white !important;
+    }
+
+    /* Mermaid diagram styling */
+    .mermaid {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    window.$docsify = {
+      name: 'Financial Literacy Documentation',
+      repo: 'https://github.com/GuillaumeBld/Financial-Literacy-Toolkit',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        placeholder: 'Search documentation...',
+        noData: 'No results found',
+        depth: 3
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        successText: 'Copied!'
+      },
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next',
+        crossChapter: true
+      },
+      tabs: {
+        persist: true,
+        sync: true
+      },
+      // Mermaid configuration
+      markdown: {
+        renderer: {
+          code: function(code, lang) {
+            if (lang === 'mermaid') {
+              return '<div class="mermaid">' + code + '</div>';
+            }
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+
+  <!-- Syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+
+  <!-- Mermaid for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#8B0015',
+        primaryTextColor: '#fff',
+        primaryBorderColor: '#F1BE48',
+        lineColor: '#333',
+        secondaryColor: '#F1BE48'
+      }
+    });
+
+    // Re-render mermaid diagrams on page change
+    window.$docsify.plugins = (window.$docsify.plugins || []).concat(function(hook) {
+      hook.doneEach(function() {
+        mermaid.init(undefined, '.mermaid');
+      });
+    });
+  </script>
+</body>
+</html>
