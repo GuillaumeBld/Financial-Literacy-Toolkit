@@ -571,23 +571,26 @@ export default function InstructorAnalyticsPage() {
                     {analytics.riskProfiles ? (
                       <>
                         <p className={`text-4xl font-bold ${
-                          (analytics.riskProfiles.overconfidence.average ?? 0) > 10
+                          (analytics.riskProfiles.overconfidence.average ?? 0) > 30
                             ? 'text-red-600'
-                            : (analytics.riskProfiles.overconfidence.average ?? 0) < -10
-                              ? 'text-sky-600'
-                              : 'text-green-600'
+                            : (analytics.riskProfiles.overconfidence.average ?? 0) > 10
+                              ? 'text-amber-600'
+                              : (analytics.riskProfiles.overconfidence.average ?? 0) < -10
+                                ? 'text-gray-500'
+                                : 'text-green-600'
                         }`}>
                           {analytics.riskProfiles.overconfidence.average !== null
                             ? `${analytics.riskProfiles.overconfidence.average > 0 ? '+' : ''}${analytics.riskProfiles.overconfidence.average}%`
                             : 'N/A'}
                         </p>
                         <p className="text-sm text-gray-500 mt-2">
-                          {analytics.riskProfiles.overconfidence.totalMeasured} students measured
+                          n = {analytics.riskProfiles.overconfidence.totalMeasured}
                         </p>
-                        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
-                          <p><span className="text-green-600">●</span> |OC| &lt; 10% = Well-calibrated</p>
-                          <p><span className="text-red-600">●</span> OC &gt; 10% = Overconfident</p>
-                          <p><span className="text-sky-600">●</span> OC &lt; -10% = Underconfident</p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 space-y-1">
+                          <p><span className="text-gray-400">●</span> OC &lt; -10% = Underconfident</p>
+                          <p><span className="text-green-600">●</span> -10% to +10% = Well-calibrated</p>
+                          <p><span className="text-amber-600">●</span> +10% to +30% = Moderate OC</p>
+                          <p><span className="text-red-600">●</span> OC &gt; +30% = High OC</p>
                         </div>
                       </>
                     ) : (
@@ -597,108 +600,170 @@ export default function InstructorAnalyticsPage() {
                 </div>
 
                 {/* OC Distribution Histogram */}
-                {analytics.riskProfiles && analytics.riskProfiles.overconfidence.histogram && (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-ink" />
-                      Overconfidence Distribution
-                    </h3>
+                {analytics.riskProfiles && analytics.riskProfiles.overconfidence.histogram && (() => {
+                  const histogram = analytics.riskProfiles.overconfidence.histogram;
+                  const distribution = analytics.riskProfiles.overconfidence.distribution;
+                  const total = analytics.riskProfiles.overconfidence.totalMeasured || 1;
+                  const maxCount = Math.max(...histogram.map(b => b.count), 1);
 
-                    {/* Histogram Chart */}
-                    <div className="relative">
-                      {/* Y-axis label */}
-                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-500 whitespace-nowrap">
-                        Number of Students
+                  // Calculate category percentages
+                  const underconfidentPct = Math.round((distribution.underconfident / total) * 100);
+                  const wellCalibratedPct = Math.round((distribution.low / total) * 100);
+                  const moderatePct = Math.round((distribution.moderate / total) * 100);
+                  const highPct = Math.round((distribution.high / total) * 100);
+
+                  // Zone positions (based on bins from -10% to 60% in 5% increments = 14 bins)
+                  // -10% to 60% range = 70% total
+                  // Zone boundaries: -10%, +10%, +30%, +60%
+                  const zoneUnderconfident = { start: 0, end: 0 }; // -10% to -10% (bin 0 only, OC < -10%)
+                  const zoneWellCalibrated = { start: 0, end: 28.57 }; // -10% to +10% = 20/70 = 28.57%
+                  const zoneModerate = { start: 28.57, end: 57.14 }; // +10% to +30% = 20/70 = 28.57%
+                  const zoneHigh = { start: 57.14, end: 100 }; // +30% to +60% = 30/70 = 42.86%
+
+                  return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <Brain className="w-5 h-5 text-ink" />
+                          Overconfidence Distribution
+                        </h3>
+                        <span className="text-sm text-gray-500">n = {total}</span>
                       </div>
 
-                      <div className="ml-8">
-                        {/* Chart area */}
-                        <div className="relative h-48 border-l border-b border-gray-300">
-                          {/* Y-axis ticks */}
-                          {(() => {
-                            const maxCount = Math.max(...analytics.riskProfiles!.overconfidence.histogram!.map(b => b.count), 1);
-                            const yTicks = [0, Math.round(maxCount / 2), maxCount];
-                            return yTicks.map((tick, i) => (
+                      {/* Histogram Chart */}
+                      <div className="relative">
+                        {/* Y-axis label */}
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-500 whitespace-nowrap">
+                          Students
+                        </div>
+
+                        <div className="ml-8">
+                          {/* Chart area with background zones */}
+                          <div className="relative h-48 border-l border-b border-gray-300">
+                            {/* Background zones */}
+                            <div className="absolute inset-0 flex">
+                              {/* Underconfident zone: -10% to -10% (first ~14% of range, but we show from start) */}
+                              <div className="h-full bg-[#F1F5F9]" style={{ width: '14.3%' }}></div>
+                              {/* Well-calibrated zone: -10% to +10% */}
+                              <div className="h-full bg-[#DCFCE7]" style={{ width: '28.6%' }}></div>
+                              {/* Moderate zone: +10% to +30% */}
+                              <div className="h-full bg-[#FFEDD5]" style={{ width: '28.6%' }}></div>
+                              {/* High zone: +30% to +60% */}
+                              <div className="h-full bg-[#FEE2E2]" style={{ width: '28.5%' }}></div>
+                            </div>
+
+                            {/* Vertical threshold lines */}
+                            {/* 0% line (solid, darker) - at position 14.3% (1 bin from start) */}
+                            <div className="absolute h-full w-px bg-gray-400" style={{ left: '14.3%' }}></div>
+                            {/* +10% line (dashed) - at position 28.6% */}
+                            <div className="absolute h-full border-l border-dashed border-gray-400" style={{ left: '28.6%' }}></div>
+                            {/* +30% line (dashed) - at position 57.1% */}
+                            <div className="absolute h-full border-l border-dashed border-gray-400" style={{ left: '57.1%' }}></div>
+
+                            {/* Y-axis ticks */}
+                            {[0, Math.round(maxCount / 2), maxCount].map((tick) => (
                               <div
                                 key={tick}
-                                className="absolute left-0 flex items-center"
+                                className="absolute left-0 flex items-center z-10"
                                 style={{ bottom: `${(tick / maxCount) * 100}%`, transform: 'translateY(50%)' }}
                               >
                                 <span className="text-xs text-gray-500 -ml-7 w-6 text-right">{tick}</span>
                                 <div className="w-2 h-px bg-gray-300 ml-1"></div>
                               </div>
-                            ));
-                          })()}
+                            ))}
 
-                          {/* Bars */}
-                          <div className="absolute inset-0 flex items-end pl-1">
-                            {analytics.riskProfiles.overconfidence.histogram.map((bin, idx) => {
-                              const maxCount = Math.max(...analytics.riskProfiles!.overconfidence.histogram!.map(b => b.count), 1);
-                              const heightPct = (bin.count / maxCount) * 100;
-                              // Color based on OC value: sky for negative, green for near-zero, amber for moderate, red for high
-                              let barColor = 'bg-green-500';
-                              if (bin.binStart < -0.05) barColor = 'bg-sky-500';
-                              else if (bin.binStart >= 0.10 && bin.binStart < 0.30) barColor = 'bg-amber-500';
-                              else if (bin.binStart >= 0.30) barColor = 'bg-red-500';
+                            {/* Bars (neutral gray) */}
+                            <div className="absolute inset-0 flex items-end gap-px px-px z-10">
+                              {histogram.map((bin, idx) => {
+                                const heightPct = (bin.count / maxCount) * 100;
+                                // Determine category for tooltip
+                                let category = 'Well-calibrated';
+                                if (bin.binStart < -0.10) category = 'Underconfident';
+                                else if (bin.binStart >= 0.10 && bin.binStart < 0.30) category = 'Moderate OC';
+                                else if (bin.binStart >= 0.30) category = 'High OC';
 
-                              return (
-                                <div
-                                  key={idx}
-                                  className="flex-1 flex flex-col items-center justify-end h-full group relative"
-                                >
-                                  {bin.count > 0 && (
-                                    <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                      {bin.count} students ({Math.round(bin.binStart * 100)}% to {Math.round(bin.binEnd * 100)}%)
-                                    </div>
-                                  )}
+                                return (
                                   <div
-                                    className={`w-full ${barColor} transition-all duration-300 hover:opacity-80`}
-                                    style={{ height: `${heightPct}%`, minHeight: bin.count > 0 ? '2px' : '0' }}
-                                  />
-                                </div>
-                              );
-                            })}
+                                    key={idx}
+                                    className="flex-1 flex flex-col items-center justify-end h-full group relative"
+                                  >
+                                    {bin.count > 0 && (
+                                      <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20 pointer-events-none">
+                                        <div className="font-medium">{bin.count} ({Math.round((bin.count / total) * 100)}%)</div>
+                                        <div className="text-gray-300">{Math.round(bin.binStart * 100)}% to {Math.round(bin.binEnd * 100)}%</div>
+                                        <div className="text-gray-400">{category}</div>
+                                      </div>
+                                    )}
+                                    <div
+                                      className="w-full bg-[#94A3B8] hover:bg-[#64748B] transition-colors rounded-t"
+                                      style={{ height: `${heightPct}%`, minHeight: bin.count > 0 ? '2px' : '0', opacity: 0.85 }}
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Mean line */}
+                            {analytics.riskProfiles.overconfidence.average !== null && (() => {
+                              const avgPct = analytics.riskProfiles!.overconfidence.average!;
+                              // Convert from percentage to position (range -10 to 60, so 70 total)
+                              const position = ((avgPct + 10) / 70) * 100;
+                              if (position >= 0 && position <= 100) {
+                                return (
+                                  <div
+                                    className="absolute h-full w-0.5 bg-ink z-20 group"
+                                    style={{ left: `${position}%` }}
+                                  >
+                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                      Mean: {avgPct > 0 ? '+' : ''}{avgPct}%
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
+
+                          {/* X-axis labels */}
+                          <div className="relative h-5 mt-1">
+                            <span className="absolute text-xs text-gray-500" style={{ left: '0%', transform: 'translateX(-50%)' }}>-10%</span>
+                            <span className="absolute text-xs text-gray-600 font-medium" style={{ left: '14.3%', transform: 'translateX(-50%)' }}>0%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: '28.6%', transform: 'translateX(-50%)' }}>+10%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: '57.1%', transform: 'translateX(-50%)' }}>+30%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: '100%', transform: 'translateX(-50%)' }}>+60%</span>
+                          </div>
+                          <div className="text-center text-xs text-gray-500 mt-1">
+                            Overconfidence Index (OC)
                           </div>
                         </div>
+                      </div>
 
-                        {/* X-axis labels */}
-                        <div className="flex justify-between mt-1 pl-1 text-xs text-gray-500">
-                          <span>-10%</span>
-                          <span>0%</span>
-                          <span>10%</span>
-                          <span>20%</span>
-                          <span>30%</span>
-                          <span>40%</span>
-                          <span>50%</span>
-                          <span>60%</span>
+                      {/* Legend with percentages */}
+                      <div className="flex items-center justify-center gap-4 text-xs mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-[#F1F5F9] border border-gray-300"></div>
+                          <span className="text-gray-600">Underconfident</span>
+                          <span className="text-gray-400">({underconfidentPct}%)</span>
                         </div>
-                        <div className="text-center text-xs text-gray-500 mt-2">
-                          Overconfidence Index (OC)
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-[#DCFCE7] border border-green-200"></div>
+                          <span className="text-gray-600">Well-calibrated</span>
+                          <span className="text-gray-400">({wellCalibratedPct}%)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-[#FFEDD5] border border-amber-200"></div>
+                          <span className="text-gray-600">Moderate</span>
+                          <span className="text-gray-400">({moderatePct}%)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-[#FEE2E2] border border-red-200"></div>
+                          <span className="text-gray-600">High</span>
+                          <span className="text-gray-400">({highPct}%)</span>
                         </div>
                       </div>
                     </div>
-
-                    {/* Color Legend */}
-                    <div className="flex items-center justify-center gap-6 text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-sky-500 rounded"></div>
-                        <span>Underconfident (&lt;-5%)</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-green-500 rounded"></div>
-                        <span>Well-Calibrated (-5% to 10%)</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-amber-500 rounded"></div>
-                        <span>Moderate (10-30%)</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-red-500 rounded"></div>
-                        <span>High (&gt;30%)</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Overconfidence Breakdown */}
                 {analytics.riskProfiles && (
@@ -719,16 +784,16 @@ export default function InstructorAnalyticsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div className="p-4 bg-sky-50 rounded-lg border border-sky-200">
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-3 h-3 bg-sky-500 rounded-full"></div>
-                          <span className="font-medium text-sky-700">Underconfident</span>
+                          <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                          <span className="font-medium text-gray-700">Underconfident</span>
                         </div>
-                        <div className="text-2xl font-bold text-sky-700">
+                        <div className="text-2xl font-bold text-gray-700">
                           {analytics.riskProfiles.overconfidence.distribution.underconfident}
                         </div>
-                        <p className="text-sm text-sky-600">OC &lt; -10%</p>
-                        <p className="text-xs text-sky-500 mt-1">Performs better than they believe</p>
+                        <p className="text-sm text-gray-600">OC &lt; -10%</p>
+                        <p className="text-xs text-gray-500 mt-1">Performs better than they believe</p>
                       </div>
                       <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                         <div className="flex items-center gap-2 mb-2">
@@ -738,7 +803,7 @@ export default function InstructorAnalyticsPage() {
                         <div className="text-2xl font-bold text-green-700">
                           {analytics.riskProfiles.overconfidence.distribution.low}
                         </div>
-                        <p className="text-sm text-green-600">|OC| &lt; 10%</p>
+                        <p className="text-sm text-green-600">-10% to +10%</p>
                         <p className="text-xs text-green-500 mt-1">Good self-awareness</p>
                       </div>
                       <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
@@ -749,7 +814,7 @@ export default function InstructorAnalyticsPage() {
                         <div className="text-2xl font-bold text-amber-700">
                           {analytics.riskProfiles.overconfidence.distribution.moderate}
                         </div>
-                        <p className="text-sm text-amber-600">OC 10-30%</p>
+                        <p className="text-sm text-amber-600">+10% to +30%</p>
                         <p className="text-xs text-amber-500 mt-1">Some miscalibration</p>
                       </div>
                       <div className="p-4 bg-red-50 rounded-lg border border-red-200">
@@ -760,7 +825,7 @@ export default function InstructorAnalyticsPage() {
                         <div className="text-2xl font-bold text-red-700">
                           {analytics.riskProfiles.overconfidence.distribution.high}
                         </div>
-                        <p className="text-sm text-red-600">OC &gt; 30%</p>
+                        <p className="text-sm text-red-600">OC &gt; +30%</p>
                         <p className="text-xs text-red-500 mt-1">Needs intervention</p>
                       </div>
                     </div>
@@ -768,8 +833,8 @@ export default function InstructorAnalyticsPage() {
                     {/* Visual Legend */}
                     <div className="flex items-center justify-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
                       <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-sky-500 rounded"></div>
-                        <span>Info (underconfident)</span>
+                        <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                        <span>Neutral (underconfident)</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-green-500 rounded"></div>
