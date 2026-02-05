@@ -503,7 +503,17 @@ export default function InstructorQuestionsPage() {
                     </span>
                     <span className="text-xs text-amber-700">{q.domain}</span>
                   </div>
-                  <p className="text-gray-800">{q.question_text}</p>
+                  <p className="text-gray-800 mb-3">{q.question_text}</p>
+                  {q.type === 'multiple-choice' && q.options && q.options.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                      {q.options.map((opt, idx) => (
+                        <div key={idx} className="px-3 py-2 rounded text-sm bg-white border border-amber-200 text-gray-700">
+                          <span className="font-medium text-amber-700 mr-2">{String.fromCharCode(65 + idx)}.</span>
+                          {opt}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

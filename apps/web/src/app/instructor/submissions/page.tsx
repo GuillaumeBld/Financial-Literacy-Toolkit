@@ -27,6 +27,7 @@ type Submission = {
   overall_score: number | null;
   overconfidence_index: number | null;
   domain_scores: Record<string, number> | null;
+  tab_switches: number;
 };
 
 type ResponseDetail = {
@@ -519,6 +520,9 @@ export default function InstructorSubmissionsPage() {
                     Duration
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
+                    Tab Switches
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
                     Course
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-loyola-gray-500 uppercase tracking-wider">
@@ -556,6 +560,11 @@ export default function InstructorSubmissionsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
                       {formatDuration(submission.duration_s ?? 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
+                      <span className={submission.tab_switches > 5 ? 'text-status-warning font-medium' : ''}>
+                        {submission.tab_switches}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
                       {submission.course_name ?? 'Unknown'}

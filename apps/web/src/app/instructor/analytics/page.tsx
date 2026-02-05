@@ -523,9 +523,10 @@ export default function InstructorAnalyticsPage() {
                   </div>
                 </div>
 
-                {/* Score Distribution & Confidence Calibration */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                {/* Score Distribution & Average OC */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                  {/* Score Distribution - spans 2 columns */}
+                  <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">
                       Score Distribution
                     </h3>
@@ -551,91 +552,80 @@ export default function InstructorAnalyticsPage() {
                     </div>
                   </div>
 
-                  {/* Confidence Calibration */}
+                  {/* Average OC Index Card */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-ink" />
-                      Confidence Calibration
-                    </h3>
-
-                    {/* Legend/Explanation */}
-                    <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
-                      <p className="text-gray-700 mb-2">
-                        <strong>What it measures:</strong> The gap between how confident students feel and how well they actually perform.
-                      </p>
-                      <p className="text-gray-600 text-xs">
-                        <strong>Formula:</strong> OC = Avg(Confidence) − Avg(Correctness), where confidence is normalized from 1-3 scale to 0-1.
-                      </p>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <Brain className="w-6 h-6 text-ink" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Average OC Index</h3>
+                        <p className="text-sm text-gray-500">Confidence calibration</p>
+                      </div>
                     </div>
-
                     {analytics.riskProfiles ? (
                       <>
-                        <div className="grid grid-cols-3 gap-3 mb-4">
-                          <div className="p-3 bg-sky-50 rounded-lg border border-sky-200 text-center">
-                            <div className="text-xl font-bold text-sky-700">
-                              {analytics.riskProfiles.overconfidence.distribution.underconfident}
-                            </div>
-                            <div className="text-xs font-medium text-sky-600">Underconfident</div>
-                            <div className="text-xs text-sky-500">OC &lt; -10%</div>
-                          </div>
-                          <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-center">
-                            <div className="text-xl font-bold text-green-700">
-                              {analytics.riskProfiles.overconfidence.distribution.low}
-                            </div>
-                            <div className="text-xs font-medium text-green-600">Well-Calibrated</div>
-                            <div className="text-xs text-green-500">|OC| &lt; 10%</div>
-                          </div>
-                          <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-center">
-                            <div className="text-xl font-bold text-red-700">
-                              {analytics.riskProfiles.overconfidence.distribution.moderate +
-                               analytics.riskProfiles.overconfidence.distribution.high}
-                            </div>
-                            <div className="text-xs font-medium text-red-600">Overconfident</div>
-                            <div className="text-xs text-red-500">OC &gt; 10%</div>
-                          </div>
-                        </div>
-
-                        {/* Color Legend */}
-                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3 px-1">
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-green-500 rounded"></div>
-                            <span>Success</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-sky-500 rounded"></div>
-                            <span>Info</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-red-500 rounded"></div>
-                            <span>Risk</span>
-                          </div>
-                        </div>
-
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Average OC Index</span>
-                            <span className={`text-lg font-bold ${
-                              (analytics.riskProfiles.overconfidence.average ?? 0) > 10
-                                ? 'text-red-600'
-                                : (analytics.riskProfiles.overconfidence.average ?? 0) < -10
-                                  ? 'text-gray-600'
-                                  : 'text-green-600'
-                            }`}>
-                              {analytics.riskProfiles.overconfidence.average !== null
-                                ? `${analytics.riskProfiles.overconfidence.average > 0 ? '+' : ''}${analytics.riskProfiles.overconfidence.average}%`
-                                : 'N/A'}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Based on {analytics.riskProfiles.overconfidence.totalMeasured} student submissions
-                          </p>
+                        <p className={`text-4xl font-bold ${
+                          (analytics.riskProfiles.overconfidence.average ?? 0) > 10
+                            ? 'text-red-600'
+                            : (analytics.riskProfiles.overconfidence.average ?? 0) < -10
+                              ? 'text-sky-600'
+                              : 'text-green-600'
+                        }`}>
+                          {analytics.riskProfiles.overconfidence.average !== null
+                            ? `${analytics.riskProfiles.overconfidence.average > 0 ? '+' : ''}${analytics.riskProfiles.overconfidence.average}%`
+                            : 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          {analytics.riskProfiles.overconfidence.totalMeasured} students measured
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                          <p><span className="text-green-600">●</span> |OC| &lt; 10% = Well-calibrated</p>
+                          <p><span className="text-red-600">●</span> OC &gt; 10% = Overconfident</p>
+                          <p><span className="text-sky-600">●</span> OC &lt; -10% = Underconfident</p>
                         </div>
                       </>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No confidence data available</p>
+                      <p className="text-sm text-gray-400 italic">No data available</p>
                     )}
                   </div>
                 </div>
+
+                {/* OC Distribution Histogram */}
+                {analytics.riskProfiles && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-ink" />
+                      Overconfidence Distribution
+                    </h3>
+                    <div className="flex items-end justify-between gap-2 h-40">
+                      {[
+                        { label: 'Under-confident', value: analytics.riskProfiles.overconfidence.distribution.underconfident, color: 'bg-sky-500', range: 'OC < -10%' },
+                        { label: 'Well-Calibrated', value: analytics.riskProfiles.overconfidence.distribution.low, color: 'bg-green-500', range: '|OC| < 10%' },
+                        { label: 'Moderate OC', value: analytics.riskProfiles.overconfidence.distribution.moderate, color: 'bg-amber-500', range: 'OC 10-30%' },
+                        { label: 'High OC', value: analytics.riskProfiles.overconfidence.distribution.high, color: 'bg-red-500', range: 'OC > 30%' },
+                      ].map((bar) => {
+                        const total = analytics.riskProfiles!.overconfidence.totalMeasured || 1;
+                        const pct = Math.round((bar.value / total) * 100);
+                        const height = Math.max(pct, 5); // minimum 5% height for visibility
+                        return (
+                          <div key={bar.label} className="flex-1 flex flex-col items-center">
+                            <span className="text-sm font-bold text-gray-700 mb-1">{bar.value}</span>
+                            <span className="text-xs text-gray-500 mb-1">({pct}%)</span>
+                            <div
+                              className={`w-full ${bar.color} rounded-t transition-all duration-500`}
+                              style={{ height: `${height}%` }}
+                            />
+                            <div className="mt-2 text-center">
+                              <p className="text-xs font-medium text-gray-700">{bar.label}</p>
+                              <p className="text-xs text-gray-400">{bar.range}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Overconfidence Breakdown */}
                 {analytics.riskProfiles && (
@@ -1059,11 +1049,12 @@ export default function InstructorAnalyticsPage() {
                       </div>
                     </div>
                     <p className="text-3xl font-bold text-gray-900">
-                      {analytics.riskProfiles.financialStress.highStressPercentage}%
+                      {analytics.riskProfiles.financialStress.highStressCount}
+                      <span className="text-lg font-medium text-gray-500 ml-2">
+                        ({analytics.riskProfiles.financialStress.highStressPercentage}%)
+                      </span>
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {analytics.riskProfiles.financialStress.highStressCount} students
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">students</p>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -1109,75 +1100,6 @@ export default function InstructorAnalyticsPage() {
                   </div>
                 </div>
 
-                {/* Overconfidence Distribution */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-ink" />
-                    Confidence Calibration Distribution
-                  </h3>
-
-                  {/* Legend/Explanation */}
-                  <div className="bg-gray-50 rounded-lg p-3 mb-4 text-sm">
-                    <p className="text-gray-700 mb-2">
-                      <strong>What it measures:</strong> The Overconfidence Index (OC) = Average Confidence − Average Correctness
-                    </p>
-                    <p className="text-gray-600 text-xs">
-                      <strong>Interpretation:</strong> Positive OC = overconfident (thinks they know more than they do). Negative OC = underconfident. Near zero = well-calibrated.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-4 mb-4">
-                    <div className="p-4 bg-sky-50 rounded-lg border border-sky-200">
-                      <div className="text-2xl font-bold text-sky-700">
-                        {analytics.riskProfiles.overconfidence.distribution.underconfident}
-                      </div>
-                      <div className="text-sm font-medium text-sky-600">Underconfident</div>
-                      <div className="text-xs text-sky-500 mt-1">OC &lt; -10%</div>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="text-2xl font-bold text-green-700">
-                        {analytics.riskProfiles.overconfidence.distribution.low}
-                      </div>
-                      <div className="text-sm font-medium text-green-600">Well-Calibrated</div>
-                      <div className="text-xs text-green-500 mt-1">|OC| &lt; 10%</div>
-                    </div>
-                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                      <div className="text-2xl font-bold text-amber-600">
-                        {analytics.riskProfiles.overconfidence.distribution.moderate}
-                      </div>
-                      <div className="text-sm font-medium text-amber-600">Moderate OC</div>
-                      <div className="text-xs text-amber-500 mt-1">OC 10-30%</div>
-                    </div>
-                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                      <div className="text-2xl font-bold text-red-700">
-                        {analytics.riskProfiles.overconfidence.distribution.high}
-                      </div>
-                      <div className="text-sm font-medium text-red-700">High OC</div>
-                      <div className="text-xs text-red-500 mt-1">OC &gt; 30%</div>
-                    </div>
-                  </div>
-
-                  {/* Color Legend */}
-                  <div className="flex items-center justify-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-sky-500 rounded"></div>
-                      <span>Info (underconfident)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-500 rounded"></div>
-                      <span>Success (calibrated)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-amber-500 rounded"></div>
-                      <span>Warning (moderate)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-500 rounded"></div>
-                      <span>Danger (high)</span>
-                    </div>
-                  </div>
-                </div>
-
                 {/* At-Risk Indicators */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -1203,8 +1125,15 @@ export default function InstructorAnalyticsPage() {
                           Students with low self-rated knowledge AND frequent financial stress
                         </p>
                       </div>
-                      <div className="text-2xl font-bold text-red-600">
-                        {analytics.riskProfiles.atRiskIndicators.lowKnowledgeHighStress}
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-red-600">
+                          {analytics.riskProfiles.atRiskIndicators.lowKnowledgeHighStress}
+                        </span>
+                        <span className="text-lg font-medium text-gray-500 ml-1">
+                          ({analytics.baselineCovariates?.totalProfiles
+                            ? Math.round((analytics.riskProfiles.atRiskIndicators.lowKnowledgeHighStress / analytics.baselineCovariates.totalProfiles) * 100)
+                            : 0}%)
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-amber-50/50 rounded-lg border-l-4 border-amber-500">
@@ -1214,8 +1143,15 @@ export default function InstructorAnalyticsPage() {
                           First-generation college students with existing loan debt
                         </p>
                       </div>
-                      <div className="text-2xl font-bold text-amber-600">
-                        {analytics.riskProfiles.atRiskIndicators.firstGenWithLoans}
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-amber-600">
+                          {analytics.riskProfiles.atRiskIndicators.firstGenWithLoans}
+                        </span>
+                        <span className="text-lg font-medium text-gray-500 ml-1">
+                          ({analytics.baselineCovariates?.totalProfiles
+                            ? Math.round((analytics.riskProfiles.atRiskIndicators.firstGenWithLoans / analytics.baselineCovariates.totalProfiles) * 100)
+                            : 0}%)
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-amber-50/50 rounded-lg border-l-4 border-amber-500">
@@ -1225,8 +1161,15 @@ export default function InstructorAnalyticsPage() {
                           Students with loan interest rates above 10%
                         </p>
                       </div>
-                      <div className="text-2xl font-bold text-amber-600">
-                        {analytics.riskProfiles.atRiskIndicators.highInterestLoans}
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-amber-600">
+                          {analytics.riskProfiles.atRiskIndicators.highInterestLoans}
+                        </span>
+                        <span className="text-lg font-medium text-gray-500 ml-1">
+                          ({analytics.baselineCovariates?.totalProfiles
+                            ? Math.round((analytics.riskProfiles.atRiskIndicators.highInterestLoans / analytics.baselineCovariates.totalProfiles) * 100)
+                            : 0}%)
+                        </span>
                       </div>
                     </div>
                   </div>

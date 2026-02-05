@@ -70,14 +70,16 @@ export async function GET(request: NextRequest) {
       overall: number | null;
       by_domain: any;
       overconfidence_index: number | null;
+      metadata: any;
     }>(
-      `SELECT 
+      `SELECT
         a.attempt_id,
         a.user_id,
         a.course_id,
         a.attempt_type,
         a.submitted_at,
         a.duration_s,
+        a.metadata,
         u.hashed_student_key,
         c.name as course_name,
         s.overall,
@@ -106,7 +108,8 @@ export async function GET(request: NextRequest) {
       duration_s: submission.duration_s || 0,
       overall_score: parseFloat(submission.overall as unknown as string) || 0,
       overconfidence_index: parseFloat(submission.overconfidence_index as unknown as string) || 0,
-      domain_scores: submission.by_domain || {}
+      domain_scores: submission.by_domain || {},
+      tab_switches: submission.metadata?.tabSwitches ?? 0
     }));
 
     console.log('Submissions loaded:', transformedSubmissions.length);
