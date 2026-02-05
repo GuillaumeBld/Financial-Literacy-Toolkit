@@ -715,7 +715,7 @@ export default function InstructorAnalyticsPage() {
                               })}
                             </div>
 
-                            {/* Mean line (very subtle, with label) */}
+                            {/* Mean line (very subtle, secondary to 0% reference) */}
                             {avgOC !== null && (() => {
                               const position = pos(avgOC);
                               if (position >= 0 && position <= 100) {
@@ -724,9 +724,9 @@ export default function InstructorAnalyticsPage() {
                                     className="absolute h-full z-20"
                                     style={{ left: `${position}%` }}
                                   >
-                                    <div className="h-full border-l border-dashed border-gray-500 opacity-40"></div>
-                                    <div className="absolute top-1 -translate-x-1/2 bg-white/90 px-1 rounded text-[10px] text-gray-500 whitespace-nowrap">
-                                      Mean {avgOC > 0 ? '+' : ''}{avgOC}%
+                                    <div className="h-full border-l border-dashed border-gray-400 opacity-30"></div>
+                                    <div className="absolute bottom-1 -translate-x-1/2 bg-white/80 px-1 rounded text-[9px] text-gray-400 whitespace-nowrap">
+                                      μ={avgOC > 0 ? '+' : ''}{avgOC}%
                                     </div>
                                   </div>
                                 );
@@ -735,16 +735,25 @@ export default function InstructorAnalyticsPage() {
                             })()}
                           </div>
 
-                          {/* X-axis labels */}
-                          <div className="relative h-5 mt-1">
-                            <span className="absolute text-xs text-gray-400" style={{ left: '0%', transform: 'translateX(-50%)' }}>-30%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(-10)}%`, transform: 'translateX(-50%)' }}>-10%</span>
-                            <span className="absolute text-xs text-gray-700 font-medium" style={{ left: `${pos(0)}%`, transform: 'translateX(-50%)' }}>0%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(10)}%`, transform: 'translateX(-50%)' }}>+10%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(30)}%`, transform: 'translateX(-50%)' }}>+30%</span>
-                            <span className="absolute text-xs text-gray-400" style={{ left: '100%', transform: 'translateX(-50%)' }}>+60%</span>
+                          {/* X-axis ticks and labels */}
+                          <div className="relative h-6 mt-0.5">
+                            {/* Tick marks at key thresholds */}
+                            {[-30, -10, 0, 10, 30, 60].map((val) => (
+                              <div
+                                key={val}
+                                className={`absolute h-1.5 w-px ${val === 0 ? 'bg-gray-400' : 'bg-gray-300'}`}
+                                style={{ left: `${pos(val)}%`, top: 0 }}
+                              />
+                            ))}
+                            {/* Labels */}
+                            <span className="absolute text-[10px] text-gray-400 top-2" style={{ left: '0%', transform: 'translateX(-50%)' }}>-30%</span>
+                            <span className="absolute text-[10px] text-gray-500 top-2" style={{ left: `${pos(-10)}%`, transform: 'translateX(-50%)' }}>-10%</span>
+                            <span className="absolute text-xs text-gray-700 font-medium top-2" style={{ left: `${pos(0)}%`, transform: 'translateX(-50%)' }}>0%</span>
+                            <span className="absolute text-[10px] text-gray-500 top-2" style={{ left: `${pos(10)}%`, transform: 'translateX(-50%)' }}>+10%</span>
+                            <span className="absolute text-[10px] text-gray-500 top-2" style={{ left: `${pos(30)}%`, transform: 'translateX(-50%)' }}>+30%</span>
+                            <span className="absolute text-[10px] text-gray-400 top-2" style={{ left: '100%', transform: 'translateX(-50%)' }}>+60%</span>
                           </div>
-                          <div className="text-center text-xs text-gray-500 mt-1">
+                          <div className="text-center text-[10px] text-gray-400 mt-0.5">
                             Overconfidence Index (OC)
                           </div>
                         </div>
