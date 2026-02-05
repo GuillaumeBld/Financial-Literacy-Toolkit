@@ -101,6 +101,11 @@ type AnalyticsData = {
         moderate: number;
         high: number;
       };
+      histogram?: Array<{
+        binStart: number;
+        binEnd: number;
+        count: number;
+      }>;
       totalMeasured: number;
     };
     financialStress: {
@@ -592,37 +597,105 @@ export default function InstructorAnalyticsPage() {
                 </div>
 
                 {/* OC Distribution Histogram */}
-                {analytics.riskProfiles && (
+                {analytics.riskProfiles && analytics.riskProfiles.overconfidence.histogram && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                       <Brain className="w-5 h-5 text-ink" />
                       Overconfidence Distribution
                     </h3>
-                    <div className="flex items-end justify-between gap-2 h-40">
-                      {[
-                        { label: 'Under-confident', value: analytics.riskProfiles.overconfidence.distribution.underconfident, color: 'bg-sky-500', range: 'OC < -10%' },
-                        { label: 'Well-Calibrated', value: analytics.riskProfiles.overconfidence.distribution.low, color: 'bg-green-500', range: '|OC| < 10%' },
-                        { label: 'Moderate OC', value: analytics.riskProfiles.overconfidence.distribution.moderate, color: 'bg-amber-500', range: 'OC 10-30%' },
-                        { label: 'High OC', value: analytics.riskProfiles.overconfidence.distribution.high, color: 'bg-red-500', range: 'OC > 30%' },
-                      ].map((bar) => {
-                        const total = analytics.riskProfiles!.overconfidence.totalMeasured || 1;
-                        const pct = Math.round((bar.value / total) * 100);
-                        const height = Math.max(pct, 5); // minimum 5% height for visibility
-                        return (
-                          <div key={bar.label} className="flex-1 flex flex-col items-center">
-                            <span className="text-sm font-bold text-gray-700 mb-1">{bar.value}</span>
-                            <span className="text-xs text-gray-500 mb-1">({pct}%)</span>
-                            <div
-                              className={`w-full ${bar.color} rounded-t transition-all duration-500`}
-                              style={{ height: `${height}%` }}
-                            />
-                            <div className="mt-2 text-center">
-                              <p className="text-xs font-medium text-gray-700">{bar.label}</p>
-                              <p className="text-xs text-gray-400">{bar.range}</p>
-                            </div>
+
+                    {/* Histogram Chart */}
+                    <div className="relative">
+                      {/* Y-axis label */}
+                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-500 whitespace-nowrap">
+                        Number of Students
+                      </div>
+
+                      <div className="ml-8">
+                        {/* Chart area */}
+                        <div className="relative h-48 border-l border-b border-gray-300">
+                          {/* Y-axis ticks */}
+                          {(() => {
+                            const maxCount = Math.max(...analytics.riskProfiles!.overconfidence.histogram!.map(b => b.count), 1);
+                            const yTicks = [0, Math.round(maxCount / 2), maxCount];
+                            return yTicks.map((tick, i) => (
+                              <div
+                                key={tick}
+                                className="absolute left-0 flex items-center"
+                                style={{ bottom: `${(tick / maxCount) * 100}%`, transform: 'translateY(50%)' }}
+                              >
+                                <span className="text-xs text-gray-500 -ml-7 w-6 text-right">{tick}</span>
+                                <div className="w-2 h-px bg-gray-300 ml-1"></div>
+                              </div>
+                            ));
+                          })()}
+
+                          {/* Bars */}
+                          <div className="absolute inset-0 flex items-end pl-1">
+                            {analytics.riskProfiles.overconfidence.histogram.map((bin, idx) => {
+                              const maxCount = Math.max(...analytics.riskProfiles!.overconfidence.histogram!.map(b => b.count), 1);
+                              const heightPct = (bin.count / maxCount) * 100;
+                              // Color based on OC value: sky for negative, green for near-zero, amber for moderate, red for high
+                              let barColor = 'bg-green-500';
+                              if (bin.binStart < -0.05) barColor = 'bg-sky-500';
+                              else if (bin.binStart >= 0.10 && bin.binStart < 0.30) barColor = 'bg-amber-500';
+                              else if (bin.binStart >= 0.30) barColor = 'bg-red-500';
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex-1 flex flex-col items-center justify-end h-full group relative"
+                                >
+                                  {bin.count > 0 && (
+                                    <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                                      {bin.count} students ({Math.round(bin.binStart * 100)}% to {Math.round(bin.binEnd * 100)}%)
+                                    </div>
+                                  )}
+                                  <div
+                                    className={`w-full ${barColor} transition-all duration-300 hover:opacity-80`}
+                                    style={{ height: `${heightPct}%`, minHeight: bin.count > 0 ? '2px' : '0' }}
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
+                        </div>
+
+                        {/* X-axis labels */}
+                        <div className="flex justify-between mt-1 pl-1 text-xs text-gray-500">
+                          <span>-10%</span>
+                          <span>0%</span>
+                          <span>10%</span>
+                          <span>20%</span>
+                          <span>30%</span>
+                          <span>40%</span>
+                          <span>50%</span>
+                          <span>60%</span>
+                        </div>
+                        <div className="text-center text-xs text-gray-500 mt-2">
+                          Overconfidence Index (OC)
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Color Legend */}
+                    <div className="flex items-center justify-center gap-6 text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-sky-500 rounded"></div>
+                        <span>Underconfident (&lt;-5%)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-green-500 rounded"></div>
+                        <span>Well-Calibrated (-5% to 10%)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-amber-500 rounded"></div>
+                        <span>Moderate (10-30%)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-red-500 rounded"></div>
+                        <span>High (&gt;30%)</span>
+                      </div>
                     </div>
                   </div>
                 )}

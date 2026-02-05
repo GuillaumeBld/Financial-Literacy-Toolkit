@@ -740,10 +740,28 @@ export async function GET(request: NextRequest) {
       emotionalControl
     };
 
+    // Create histogram bins for OC distribution (-0.10 to 0.60 in 0.05 increments)
+    const ocHistogramBins: Array<{ binStart: number; binEnd: number; count: number }> = [];
+    for (let binStart = -0.10; binStart < 0.60; binStart += 0.05) {
+      const binEnd = binStart + 0.05;
+      const count = overconfidenceData.filter(v => v >= binStart && v < binEnd).length;
+      ocHistogramBins.push({
+        binStart: Math.round(binStart * 100) / 100,
+        binEnd: Math.round(binEnd * 100) / 100,
+        count
+      });
+    }
+    // Add overflow bin for values >= 0.60
+    const overflowCount = overconfidenceData.filter(v => v >= 0.60).length;
+    if (overflowCount > 0) {
+      ocHistogramBins.push({ binStart: 0.60, binEnd: 0.65, count: overflowCount });
+    }
+
     const riskProfiles = {
       overconfidence: {
         average: avgOverconfidence !== null ? Math.round(avgOverconfidence * 100) : null,
         distribution: overconfidenceLevels,
+        histogram: ocHistogramBins,
         totalMeasured: overconfidenceData.length
       },
       financialStress: {
