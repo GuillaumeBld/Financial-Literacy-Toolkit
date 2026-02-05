@@ -31,6 +31,7 @@ type DashboardStats = {
     count: number;
     avg_score: number | null;
     avg_responses: number;
+    min_hours_stale: number | null;
     max_hours_stale: number | null;
   }>;
 };
@@ -356,6 +357,7 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Students</th>
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Score</th>
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Avg Responses</th>
+              <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Min Stale</th>
               <th className="py-3 px-4 font-semibold text-loyola-gray-700 text-right">Max Stale</th>
             </tr>
           </thead>
@@ -384,6 +386,9 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
                     {row.avg_score ? `${row.avg_score}%` : '—'}
                   </td>
                   <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+                  <td className="py-3 px-4 text-right">
+                    {formatHoursStale(row.min_hours_stale)}
+                  </td>
                   <td className={`py-3 px-4 text-right ${
                     isStaleWarning(row.status, row.max_hours_stale) ? 'text-status-danger font-semibold' : ''
                   }`}>
@@ -395,7 +400,7 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
             <tr className="border-t-2 border-loyola-gray-300 font-bold bg-loyola-gray-50">
               <td className="py-3 px-4">Total</td>
               <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress + totalOnboarded}</td>
-              <td className="py-3 px-4 text-right" colSpan={3}>
+              <td className="py-3 px-4 text-right" colSpan={4}>
                 <span className="text-status-success">{totalSubmitted} submitted</span>
                 {' / '}
                 <span className="text-status-warning">{totalInProgress} in progress</span>

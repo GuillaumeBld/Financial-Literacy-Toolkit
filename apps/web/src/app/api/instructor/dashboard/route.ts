@@ -142,6 +142,7 @@ export async function GET(request: NextRequest) {
       count: number;
       avg_score: number | null;
       avg_responses: number;
+      min_hours_stale: number | null;
       max_hours_stale: number | null;
     }>(`
       SELECT * FROM (
@@ -178,7 +179,8 @@ export async function GET(request: NextRequest) {
           COUNT(*)::int as count,
           ROUND(AVG(overall)::numeric, 1) as avg_score,
           ROUND(AVG(resp_count))::int as avg_responses,
-          -- Max hours stale (only for in-progress, NULL for submitted)
+          -- Min/Max hours stale (only for in-progress, NULL for submitted)
+          ROUND(MIN(CASE WHEN submitted_at IS NULL THEN hours_stale ELSE NULL END)::numeric, 1) as min_hours_stale,
           ROUND(MAX(CASE WHEN submitted_at IS NULL THEN hours_stale ELSE NULL END)::numeric, 1) as max_hours_stale
         FROM attempt_data
         GROUP BY 1
@@ -191,7 +193,8 @@ export async function GET(request: NextRequest) {
           COUNT(*)::int as count,
           NULL::numeric as avg_score,
           0 as avg_responses,
-          -- Hours since onboarding for most stale student
+          -- Min/Max hours since onboarding
+          ROUND(MIN(EXTRACT(EPOCH FROM (NOW() - sp.created_at)) / 3600)::numeric, 1) as min_hours_stale,
           ROUND(MAX(EXTRACT(EPOCH FROM (NOW() - sp.created_at)) / 3600)::numeric, 1) as max_hours_stale
         FROM student_profiles sp
         WHERE sp.course_id = $1

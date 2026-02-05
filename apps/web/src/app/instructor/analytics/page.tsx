@@ -1078,6 +1078,11 @@ export default function InstructorAnalyticsPage() {
                     </div>
                     <p className="text-3xl font-bold text-gray-900">
                       {analytics.riskProfiles.atRiskIndicators.firstGenWithLoans}
+                      <span className="text-lg font-medium text-gray-500 ml-2">
+                        ({analytics.baselineCovariates?.totalProfiles
+                          ? Math.round((analytics.riskProfiles.atRiskIndicators.firstGenWithLoans / analytics.baselineCovariates.totalProfiles) * 100)
+                          : 0}%)
+                      </span>
                     </p>
                     <p className="text-sm text-gray-500 mt-1">students</p>
                   </div>
@@ -1094,6 +1099,11 @@ export default function InstructorAnalyticsPage() {
                     </div>
                     <p className="text-3xl font-bold text-gray-900">
                       {analytics.riskProfiles.atRiskIndicators.highInterestLoans}
+                      <span className="text-lg font-medium text-gray-500 ml-2">
+                        ({analytics.baselineCovariates?.totalProfiles
+                          ? Math.round((analytics.riskProfiles.atRiskIndicators.highInterestLoans / analytics.baselineCovariates.totalProfiles) * 100)
+                          : 0}%)
+                      </span>
                     </p>
                     <p className="text-sm text-gray-500 mt-1">students</p>
                   </div>
@@ -1878,19 +1888,60 @@ export default function InstructorAnalyticsPage() {
                             </div>
                           </div>
 
+                          {/* Factor Definitions */}
+                          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                            <h4 className="font-medium text-gray-800 mb-3">Factor Definitions</h4>
+                            <div className="grid md:grid-cols-3 gap-4 text-sm">
+                              <div className="p-3 bg-white rounded border-l-4 border-gray-500">
+                                <div className="font-semibold text-gray-700 mb-1">Factor 1: Borrowing & Credit</div>
+                                <p className="text-gray-600 text-xs">
+                                  Questions measuring understanding of interest rates, loans, credit cards, and financial numeracy.
+                                  Items that load highly here test borrowing concepts and calculations.
+                                </p>
+                              </div>
+                              <div className="p-3 bg-white rounded border-l-4 border-green-500">
+                                <div className="font-semibold text-green-700 mb-1">Factor 2: Risk Management</div>
+                                <p className="text-gray-600 text-xs">
+                                  Questions measuring understanding of insurance, emergency funds, and behavioral risk.
+                                  Items that load highly here test protective financial behaviors.
+                                </p>
+                              </div>
+                              <div className="p-3 bg-white rounded border-l-4 border-purple-500">
+                                <div className="font-semibold text-purple-700 mb-1">Factor 3: Investment & Returns</div>
+                                <p className="text-gray-600 text-xs">
+                                  Questions measuring understanding of stocks, bonds, diversification, and compound growth.
+                                  Items that load highly here test investment knowledge.
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-3">
+                              <strong>How factors are determined:</strong> Principal Component Analysis extracts factors that explain the most variance in student responses.
+                              Varimax rotation is then applied to maximize the interpretability of factor loadings, ensuring each item loads primarily on one factor.
+                            </p>
+                          </div>
+
                           <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="border-b border-gray-200">
                                   <th className="text-left py-2 px-3 font-semibold text-gray-700">Item</th>
-                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">Factor 1</th>
-                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">Factor 2</th>
-                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">Factor 3</th>
+                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">
+                                    <span className="text-gray-700">Factor 1</span>
+                                    <div className="text-xs font-normal text-gray-500">Borrowing</div>
+                                  </th>
+                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">
+                                    <span className="text-green-700">Factor 2</span>
+                                    <div className="text-xs font-normal text-gray-500">Risk Mgmt</div>
+                                  </th>
+                                  <th className="text-center py-2 px-3 font-semibold text-gray-700">
+                                    <span className="text-purple-700">Factor 3</span>
+                                    <div className="text-xs font-normal text-gray-500">Investment</div>
+                                  </th>
                                   <th className="text-center py-2 px-3 font-semibold text-gray-700">Primary</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {analytics.learningGains.efa.loadings.slice(0, 15).map((item) => (
+                                {analytics.learningGains.efa.loadings.map((item) => (
                                   <tr key={item.itemId} className="border-b border-gray-100">
                                     <td className="py-2 px-3 font-mono text-gray-800">{item.itemId}</td>
                                     <td className={`py-2 px-3 text-center font-mono ${Math.abs(item.factor1) > 0.4 ? 'font-bold text-ink' : 'text-gray-500'}`}>
@@ -1915,11 +1966,9 @@ export default function InstructorAnalyticsPage() {
                                 ))}
                               </tbody>
                             </table>
-                            {analytics.learningGains.efa.loadings.length > 15 && (
-                              <p className="text-sm text-gray-500 mt-2">
-                                Showing first 15 of {analytics.learningGains.efa.loadings.length} items
-                              </p>
-                            )}
+                            <p className="text-sm text-gray-500 mt-2">
+                              Showing all {analytics.learningGains.efa.loadings.length} scored knowledge items (Q1-Q14, Q29-Q40)
+                            </p>
                           </div>
                         </>
                       ) : (
