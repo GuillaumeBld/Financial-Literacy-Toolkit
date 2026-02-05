@@ -787,6 +787,7 @@ export default function AssessmentPage() {
       if (
         parsedSession?.courseCode &&
         parsedSession?.studentId &&
+        parsedSession?.userId &&
         parsedSession?.attemptType &&
         parsedSession?.startedAt
       ) {

@@ -289,6 +289,8 @@ function OnboardingContent() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('student-session', JSON.stringify(sessionData));
         localStorage.setItem('assessment-session', JSON.stringify(assessmentSession));
+        // Clear any orphaned global progress key (legacy cleanup)
+        localStorage.removeItem('assessment-progress');
       }
 
       // After completing onboarding, go to start page to select assessment
