@@ -624,20 +624,14 @@ export default function InstructorAnalyticsPage() {
 
                   return (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-1">
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                           <Brain className="w-5 h-5 text-ink" />
-                          Overconfidence Distribution
+                          Calibration (OC) Distribution
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>n = {total}</span>
-                          {avgOC !== null && (
-                            <span className="font-medium text-gray-700">
-                              Mean = {avgOC > 0 ? '+' : ''}{avgOC}%
-                            </span>
-                          )}
-                        </div>
+                        <span className="text-sm text-gray-500">n = {total}</span>
                       </div>
+                      <p className="text-xs text-gray-400 mb-4">Bin width: 5%</p>
 
                       {/* Histogram Chart */}
                       <div className="relative">
@@ -649,27 +643,34 @@ export default function InstructorAnalyticsPage() {
                         <div className="ml-8">
                           {/* Chart area with background zones */}
                           <div className="relative h-48 border-l border-b border-gray-300">
-                            {/* Background zones (subtle opacity ~6%) */}
+                            {/* Top threshold labels */}
+                            <div className="absolute -top-4 left-0 right-0 flex text-[10px] text-gray-400">
+                              <span className="absolute" style={{ left: `${pos(-10)}%`, transform: 'translateX(-50%)' }}>-10%</span>
+                              <span className="absolute" style={{ left: `${pos(10)}%`, transform: 'translateX(-50%)' }}>+10%</span>
+                              <span className="absolute" style={{ left: `${pos(30)}%`, transform: 'translateX(-50%)' }}>+30%</span>
+                            </div>
+
+                            {/* Background zones (very subtle opacity ~4%) */}
                             <div className="absolute inset-0 flex">
                               {/* Underconfident: -30% to -10% = 22.2% */}
-                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(148, 163, 184, 0.08)' }}></div>
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(148, 163, 184, 0.04)' }}></div>
                               {/* Well-calibrated: -10% to +10% = 22.2% */}
-                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(22, 163, 74, 0.06)' }}></div>
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(22, 163, 74, 0.04)' }}></div>
                               {/* Moderate: +10% to +30% = 22.2% */}
-                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(217, 119, 6, 0.06)' }}></div>
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(217, 119, 6, 0.04)' }}></div>
                               {/* High: +30% to +60% = 33.4% */}
-                              <div className="h-full" style={{ width: '33.4%', backgroundColor: 'rgba(220, 38, 38, 0.06)' }}></div>
+                              <div className="h-full" style={{ width: '33.4%', backgroundColor: 'rgba(220, 38, 38, 0.04)' }}></div>
                             </div>
 
                             {/* Vertical threshold lines */}
-                            {/* -10% line (dashed) */}
-                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(-10)}%` }}></div>
-                            {/* 0% line (solid, prominent reference) */}
-                            <div className="absolute h-full w-px bg-gray-500" style={{ left: `${pos(0)}%` }}></div>
-                            {/* +10% line (dashed) */}
-                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(10)}%` }}></div>
-                            {/* +30% line (dashed) */}
-                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(30)}%` }}></div>
+                            {/* -10% line (dashed, subtle) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-200" style={{ left: `${pos(-10)}%` }}></div>
+                            {/* 0% line (solid, main reference) */}
+                            <div className="absolute h-full w-px bg-gray-400" style={{ left: `${pos(0)}%` }}></div>
+                            {/* +10% line (dashed, subtle) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-200" style={{ left: `${pos(10)}%` }}></div>
+                            {/* +30% line (dashed, subtle) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-200" style={{ left: `${pos(30)}%` }}></div>
 
                             {/* Y-axis ticks */}
                             {[0, Math.round(maxCount / 2), maxCount].map((tick) => (
@@ -702,7 +703,7 @@ export default function InstructorAnalyticsPage() {
                                       <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20 pointer-events-none">
                                         <div className="font-medium">{bin.count} ({Math.round((bin.count / total) * 100)}%)</div>
                                         <div className="text-gray-300">{Math.round(bin.binStart * 100)}% to {Math.round(bin.binEnd * 100)}%</div>
-                                        <div className="text-gray-400">{category}</div>
+                                        <div className="text-gray-400">{category} · Bin: 5%</div>
                                       </div>
                                     )}
                                     <div
@@ -714,15 +715,20 @@ export default function InstructorAnalyticsPage() {
                               })}
                             </div>
 
-                            {/* Mean line (subtle) */}
+                            {/* Mean line (very subtle, with label) */}
                             {avgOC !== null && (() => {
                               const position = pos(avgOC);
                               if (position >= 0 && position <= 100) {
                                 return (
                                   <div
-                                    className="absolute h-full border-l-2 border-ink border-dashed z-20 opacity-60"
+                                    className="absolute h-full z-20"
                                     style={{ left: `${position}%` }}
-                                  />
+                                  >
+                                    <div className="h-full border-l border-dashed border-gray-500 opacity-40"></div>
+                                    <div className="absolute top-1 -translate-x-1/2 bg-white/90 px-1 rounded text-[10px] text-gray-500 whitespace-nowrap">
+                                      Mean {avgOC > 0 ? '+' : ''}{avgOC}%
+                                    </div>
+                                  </div>
                                 );
                               }
                               return null;
@@ -744,27 +750,27 @@ export default function InstructorAnalyticsPage() {
                         </div>
                       </div>
 
-                      {/* Legend with percentages */}
-                      <div className="flex items-center justify-center gap-4 text-xs mt-4 pt-3 border-t border-gray-100">
+                      {/* Legend with percentages and accessibility indicators */}
+                      <div className="flex items-center justify-center gap-5 text-xs mt-4 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(148, 163, 184, 0.3)', border: '1px solid #94A3B8' }}></div>
+                          <span className="w-4 h-4 rounded flex items-center justify-center text-[10px]" style={{ backgroundColor: 'rgba(148, 163, 184, 0.15)' }}>−</span>
                           <span className="text-gray-600">Underconfident</span>
-                          <span className="text-gray-400">({underconfidentPct}%)</span>
+                          <span className="text-gray-400 font-medium">{underconfidentPct}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)', border: '1px solid #16A34A' }}></div>
+                          <span className="w-4 h-4 rounded flex items-center justify-center text-[10px] text-green-700" style={{ backgroundColor: 'rgba(22, 163, 74, 0.12)' }}>✓</span>
                           <span className="text-gray-600">Well-calibrated</span>
-                          <span className="text-gray-400">({wellCalibratedPct}%)</span>
+                          <span className="text-gray-400 font-medium">{wellCalibratedPct}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(217, 119, 6, 0.15)', border: '1px solid #D97706' }}></div>
+                          <span className="w-4 h-4 rounded flex items-center justify-center text-[10px] text-amber-700" style={{ backgroundColor: 'rgba(217, 119, 6, 0.12)' }}>!</span>
                           <span className="text-gray-600">Moderate</span>
-                          <span className="text-gray-400">({moderatePct}%)</span>
+                          <span className="text-gray-400 font-medium">{moderatePct}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)', border: '1px solid #DC2626' }}></div>
+                          <span className="w-4 h-4 rounded flex items-center justify-center text-[10px] text-red-700" style={{ backgroundColor: 'rgba(220, 38, 38, 0.12)' }}>⚠</span>
                           <span className="text-gray-600">High</span>
-                          <span className="text-gray-400">({highPct}%)</span>
+                          <span className="text-gray-400 font-medium">{highPct}%</span>
                         </div>
                       </div>
                     </div>
