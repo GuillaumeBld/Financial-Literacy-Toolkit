@@ -32,34 +32,65 @@ export async function POST(request: NextRequest) {
       let activeAttemptId = attemptId;
       let activeSessionToken = sessionToken;
 
-      // If no attemptId, find or create an attempt
+      // If no attemptId, find or create an attempt atomically
       if (!activeAttemptId) {
-        // Check for existing in-progress attempt
-        const existingAttempt = await client.query(
-          `SELECT attempt_id, session_token FROM attempts
-           WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
-           ORDER BY started_at DESC LIMIT 1`,
-          [userId, courseId]
+        const newSessionToken = randomUUID();
+
+        // Atomic find-or-create using INSERT ... ON CONFLICT
+        // The partial unique index idx_attempts_single_in_progress ensures only one
+        // in-progress attempt per user/course/instrument combination
+        const upsertResult = await client.query(
+          `WITH existing AS (
+            SELECT attempt_id, session_token
+            FROM attempts
+            WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
+            LIMIT 1
+          ), inserted AS (
+            INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, started_at, session_token, session_created_at)
+            SELECT $1, $2, (SELECT instrument_id FROM instruments LIMIT 1), 'pre', NOW(), $3, NOW()
+            WHERE NOT EXISTS (SELECT 1 FROM existing)
+            ON CONFLICT (user_id, course_id, instrument_id) WHERE submitted_at IS NULL
+            DO NOTHING
+            RETURNING attempt_id, session_token, true as is_new
+          )
+          SELECT attempt_id, session_token, false as is_new FROM existing
+          UNION ALL
+          SELECT attempt_id, session_token, is_new FROM inserted`,
+          [userId, courseId, newSessionToken]
         );
 
-        if (existingAttempt.rows.length > 0) {
-          activeAttemptId = existingAttempt.rows[0].attempt_id;
-          // Validate session token if attempt exists
-          const dbToken = existingAttempt.rows[0].session_token;
-          if (dbToken && sessionToken && dbToken !== sessionToken) {
-            throw new Error('SESSION_CONFLICT');
+        if (upsertResult.rows.length > 0) {
+          activeAttemptId = upsertResult.rows[0].attempt_id;
+          const dbToken = upsertResult.rows[0].session_token;
+          const isNew = upsertResult.rows[0].is_new;
+
+          if (isNew) {
+            activeSessionToken = newSessionToken;
+          } else {
+            // Validate session token for existing attempt
+            if (dbToken && sessionToken && dbToken !== sessionToken) {
+              throw new Error('SESSION_CONFLICT');
+            }
+            activeSessionToken = dbToken;
           }
         } else {
-          // Create new attempt with session token
-          const newSessionToken = randomUUID();
-          const newAttempt = await client.query(
-            `INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, started_at, session_token, session_created_at)
-             VALUES ($1, $2, (SELECT instrument_id FROM instruments LIMIT 1), 'pre', NOW(), $3, NOW())
-             RETURNING attempt_id`,
-            [userId, courseId, newSessionToken]
+          // Edge case: concurrent request won the race, retry fetch
+          const retryFetch = await client.query(
+            `SELECT attempt_id, session_token FROM attempts
+             WHERE user_id = $1 AND course_id = $2 AND submitted_at IS NULL
+             LIMIT 1`,
+            [userId, courseId]
           );
-          activeAttemptId = newAttempt.rows[0].attempt_id;
-          activeSessionToken = newSessionToken;
+          if (retryFetch.rows.length > 0) {
+            activeAttemptId = retryFetch.rows[0].attempt_id;
+            const dbToken = retryFetch.rows[0].session_token;
+            if (dbToken && sessionToken && dbToken !== sessionToken) {
+              throw new Error('SESSION_CONFLICT');
+            }
+            activeSessionToken = dbToken;
+          } else {
+            throw new Error('Failed to create or find attempt');
+          }
         }
       } else {
         // Validate session token for provided attemptId

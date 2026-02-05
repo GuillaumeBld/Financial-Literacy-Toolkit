@@ -163,69 +163,86 @@ export async function POST(request: NextRequest) {
     );
     const hasMetadataColumn = metadataColumnCheck.rows && metadataColumnCheck.rows.length > 0;
 
-    // Reuse existing in-progress attempt (created by auto-save) or create a new one
+    // Atomic find-or-create attempt using INSERT ... ON CONFLICT
+    // The partial unique index idx_attempts_single_in_progress prevents duplicate in-progress attempts
     let attemptId: string;
+    const newSessionToken = randomUUID();
 
-    const existingInProgress = await client.query(
-      `SELECT attempt_id, session_token FROM attempts
-       WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND submitted_at IS NULL
-       ORDER BY started_at DESC LIMIT 1`,
-      [userId, courseData.course_id, instrumentId]
+    // Try to insert, get existing on conflict
+    const upsertAttempt = await client.query(
+      `WITH existing AS (
+        SELECT attempt_id, session_token, created_at
+        FROM attempts
+        WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND submitted_at IS NULL
+        LIMIT 1
+      ), inserted AS (
+        INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s, session_token, session_created_at${hasMetadataColumn ? ', metadata' : ''})
+        SELECT $1, $2, $3, $4, $5, $6, NOW()${hasMetadataColumn ? ', $7' : ''}
+        WHERE NOT EXISTS (SELECT 1 FROM existing)
+        ON CONFLICT (user_id, course_id, instrument_id) WHERE submitted_at IS NULL
+        DO NOTHING
+        RETURNING attempt_id, session_token, created_at, true as is_new
+      )
+      SELECT attempt_id, session_token, created_at, false as is_new FROM existing
+      UNION ALL
+      SELECT attempt_id, session_token, created_at, is_new FROM inserted`,
+      hasMetadataColumn
+        ? [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, newSessionToken, metadata || {}]
+        : [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, newSessionToken]
     );
 
-    if (existingInProgress.rows.length > 0) {
-      attemptId = existingInProgress.rows[0].attempt_id;
+    if (upsertAttempt.rows.length > 0) {
+      attemptId = upsertAttempt.rows[0].attempt_id;
+      const dbToken = upsertAttempt.rows[0].session_token;
+      const isNew = upsertAttempt.rows[0].is_new;
+      const createdAt = upsertAttempt.rows[0].created_at;
 
-      // Validate session token for multi-tab prevention
-      const dbToken = existingInProgress.rows[0].session_token;
-      if (dbToken && sessionToken && dbToken !== sessionToken) {
-        throw new Error('SESSION_CONFLICT');
-      }
-
-      console.log('Reusing existing in-progress attempt:', attemptId);
-
-      // Calculate duration server-side from attempt creation time for accuracy
-      // This fixes incorrect durations for resumed assessments where client-side
-      // timing may be lost or reset between sessions
-      const attemptTiming = await client.query(
-        'SELECT created_at FROM attempts WHERE attempt_id = $1',
-        [attemptId]
-      );
-      const serverDuration = attemptTiming.rows[0]?.created_at
-        ? Math.floor((Date.now() - new Date(attemptTiming.rows[0].created_at).getTime()) / 1000)
-        : timeSpent;
-
-      // Note: We no longer delete auto-saved responses here.
-      // Instead, we use ON CONFLICT DO UPDATE below to preserve original created_at timestamps.
-
-      // Update attempt metadata with final submission data
-      if (hasMetadataColumn) {
-        await client.query(
-          'UPDATE attempts SET attempt_type = $1, duration_s = $2, metadata = $3 WHERE attempt_id = $4',
-          [attemptType, serverDuration || null, metadata || {}, attemptId]
-        );
+      if (isNew) {
+        console.log('New attempt created:', attemptId);
       } else {
-        await client.query(
-          'UPDATE attempts SET attempt_type = $1, duration_s = $2 WHERE attempt_id = $3',
-          [attemptType, serverDuration || null, attemptId]
-        );
+        // Validate session token for multi-tab prevention
+        if (dbToken && sessionToken && dbToken !== sessionToken) {
+          throw new Error('SESSION_CONFLICT');
+        }
+
+        console.log('Reusing existing in-progress attempt:', attemptId);
+
+        // Calculate duration server-side from attempt creation time for accuracy
+        const serverDuration = createdAt
+          ? Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000)
+          : timeSpent;
+
+        // Update attempt metadata with final submission data
+        if (hasMetadataColumn) {
+          await client.query(
+            'UPDATE attempts SET attempt_type = $1, duration_s = $2, metadata = $3 WHERE attempt_id = $4',
+            [attemptType, serverDuration || null, metadata || {}, attemptId]
+          );
+        } else {
+          await client.query(
+            'UPDATE attempts SET attempt_type = $1, duration_s = $2 WHERE attempt_id = $3',
+            [attemptType, serverDuration || null, attemptId]
+          );
+        }
       }
     } else {
-      console.log('Creating new assessment attempt...');
-      let attempt;
-      if (hasMetadataColumn) {
-        attempt = await client.query(
-          'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s, metadata) VALUES ($1, $2, $3, $4, $5, $6) RETURNING attempt_id',
-          [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null, metadata || {}]
-        );
+      // Edge case: concurrent request won the race, retry fetch
+      const retryFetch = await client.query(
+        `SELECT attempt_id, session_token FROM attempts
+         WHERE user_id = $1 AND course_id = $2 AND instrument_id = $3 AND submitted_at IS NULL
+         LIMIT 1`,
+        [userId, courseData.course_id, instrumentId]
+      );
+      if (retryFetch.rows.length > 0) {
+        attemptId = retryFetch.rows[0].attempt_id;
+        const dbToken = retryFetch.rows[0].session_token;
+        if (dbToken && sessionToken && dbToken !== sessionToken) {
+          throw new Error('SESSION_CONFLICT');
+        }
+        console.log('Found attempt after retry:', attemptId);
       } else {
-        attempt = await client.query(
-          'INSERT INTO attempts (user_id, course_id, instrument_id, attempt_type, duration_s) VALUES ($1, $2, $3, $4, $5) RETURNING attempt_id',
-          [userId, courseData.course_id, instrumentId, attemptType, timeSpent || null]
-        );
+        throw new Error('Failed to create or find attempt');
       }
-      attemptId = attempt.rows[0].attempt_id;
-      console.log('New attempt created:', attemptId);
     }
 
     console.log('Inserting responses (batch)...');
