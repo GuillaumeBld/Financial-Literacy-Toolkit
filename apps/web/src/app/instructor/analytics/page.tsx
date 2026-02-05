@@ -605,6 +605,7 @@ export default function InstructorAnalyticsPage() {
                   const distribution = analytics.riskProfiles.overconfidence.distribution;
                   const total = analytics.riskProfiles.overconfidence.totalMeasured || 1;
                   const maxCount = Math.max(...histogram.map(b => b.count), 1);
+                  const avgOC = analytics.riskProfiles.overconfidence.average;
 
                   // Calculate category percentages
                   const underconfidentPct = Math.round((distribution.underconfident / total) * 100);
@@ -612,13 +613,14 @@ export default function InstructorAnalyticsPage() {
                   const moderatePct = Math.round((distribution.moderate / total) * 100);
                   const highPct = Math.round((distribution.high / total) * 100);
 
-                  // Zone positions (based on bins from -10% to 60% in 5% increments = 14 bins)
-                  // -10% to 60% range = 70% total
-                  // Zone boundaries: -10%, +10%, +30%, +60%
-                  const zoneUnderconfident = { start: 0, end: 0 }; // -10% to -10% (bin 0 only, OC < -10%)
-                  const zoneWellCalibrated = { start: 0, end: 28.57 }; // -10% to +10% = 20/70 = 28.57%
-                  const zoneModerate = { start: 28.57, end: 57.14 }; // +10% to +30% = 20/70 = 28.57%
-                  const zoneHigh = { start: 57.14, end: 100 }; // +30% to +60% = 30/70 = 42.86%
+                  // Zone positions for axis range -30% to +60% (90% total)
+                  // Underconfident: < -10% = from -30 to -10 = 20/90 = 22.2%
+                  // Well-calibrated: -10% to +10% = 20/90 = 22.2%
+                  // Moderate: +10% to +30% = 20/90 = 22.2%
+                  // High: > +30% = from +30 to +60 = 30/90 = 33.3%
+
+                  // Line positions (as % of total range -30 to +60)
+                  const pos = (val: number) => ((val + 30) / 90) * 100;
 
                   return (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
@@ -627,7 +629,14 @@ export default function InstructorAnalyticsPage() {
                           <Brain className="w-5 h-5 text-ink" />
                           Overconfidence Distribution
                         </h3>
-                        <span className="text-sm text-gray-500">n = {total}</span>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>n = {total}</span>
+                          {avgOC !== null && (
+                            <span className="font-medium text-gray-700">
+                              Mean = {avgOC > 0 ? '+' : ''}{avgOC}%
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Histogram Chart */}
@@ -640,25 +649,27 @@ export default function InstructorAnalyticsPage() {
                         <div className="ml-8">
                           {/* Chart area with background zones */}
                           <div className="relative h-48 border-l border-b border-gray-300">
-                            {/* Background zones */}
+                            {/* Background zones (subtle opacity ~6%) */}
                             <div className="absolute inset-0 flex">
-                              {/* Underconfident zone: -10% to -10% (first ~14% of range, but we show from start) */}
-                              <div className="h-full bg-[#F1F5F9]" style={{ width: '14.3%' }}></div>
-                              {/* Well-calibrated zone: -10% to +10% */}
-                              <div className="h-full bg-[#DCFCE7]" style={{ width: '28.6%' }}></div>
-                              {/* Moderate zone: +10% to +30% */}
-                              <div className="h-full bg-[#FFEDD5]" style={{ width: '28.6%' }}></div>
-                              {/* High zone: +30% to +60% */}
-                              <div className="h-full bg-[#FEE2E2]" style={{ width: '28.5%' }}></div>
+                              {/* Underconfident: -30% to -10% = 22.2% */}
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(148, 163, 184, 0.08)' }}></div>
+                              {/* Well-calibrated: -10% to +10% = 22.2% */}
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(22, 163, 74, 0.06)' }}></div>
+                              {/* Moderate: +10% to +30% = 22.2% */}
+                              <div className="h-full" style={{ width: '22.2%', backgroundColor: 'rgba(217, 119, 6, 0.06)' }}></div>
+                              {/* High: +30% to +60% = 33.4% */}
+                              <div className="h-full" style={{ width: '33.4%', backgroundColor: 'rgba(220, 38, 38, 0.06)' }}></div>
                             </div>
 
                             {/* Vertical threshold lines */}
-                            {/* 0% line (solid, darker) - at position 14.3% (1 bin from start) */}
-                            <div className="absolute h-full w-px bg-gray-400" style={{ left: '14.3%' }}></div>
-                            {/* +10% line (dashed) - at position 28.6% */}
-                            <div className="absolute h-full border-l border-dashed border-gray-400" style={{ left: '28.6%' }}></div>
-                            {/* +30% line (dashed) - at position 57.1% */}
-                            <div className="absolute h-full border-l border-dashed border-gray-400" style={{ left: '57.1%' }}></div>
+                            {/* -10% line (dashed) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(-10)}%` }}></div>
+                            {/* 0% line (solid, prominent reference) */}
+                            <div className="absolute h-full w-px bg-gray-500" style={{ left: `${pos(0)}%` }}></div>
+                            {/* +10% line (dashed) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(10)}%` }}></div>
+                            {/* +30% line (dashed) */}
+                            <div className="absolute h-full border-l border-dashed border-gray-300" style={{ left: `${pos(30)}%` }}></div>
 
                             {/* Y-axis ticks */}
                             {[0, Math.round(maxCount / 2), maxCount].map((tick) => (
@@ -703,21 +714,15 @@ export default function InstructorAnalyticsPage() {
                               })}
                             </div>
 
-                            {/* Mean line */}
-                            {analytics.riskProfiles.overconfidence.average !== null && (() => {
-                              const avgPct = analytics.riskProfiles!.overconfidence.average!;
-                              // Convert from percentage to position (range -10 to 60, so 70 total)
-                              const position = ((avgPct + 10) / 70) * 100;
+                            {/* Mean line (subtle) */}
+                            {avgOC !== null && (() => {
+                              const position = pos(avgOC);
                               if (position >= 0 && position <= 100) {
                                 return (
                                   <div
-                                    className="absolute h-full w-0.5 bg-ink z-20 group"
+                                    className="absolute h-full border-l-2 border-ink border-dashed z-20 opacity-60"
                                     style={{ left: `${position}%` }}
-                                  >
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                                      Mean: {avgPct > 0 ? '+' : ''}{avgPct}%
-                                    </div>
-                                  </div>
+                                  />
                                 );
                               }
                               return null;
@@ -726,11 +731,12 @@ export default function InstructorAnalyticsPage() {
 
                           {/* X-axis labels */}
                           <div className="relative h-5 mt-1">
-                            <span className="absolute text-xs text-gray-500" style={{ left: '0%', transform: 'translateX(-50%)' }}>-10%</span>
-                            <span className="absolute text-xs text-gray-600 font-medium" style={{ left: '14.3%', transform: 'translateX(-50%)' }}>0%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: '28.6%', transform: 'translateX(-50%)' }}>+10%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: '57.1%', transform: 'translateX(-50%)' }}>+30%</span>
-                            <span className="absolute text-xs text-gray-500" style={{ left: '100%', transform: 'translateX(-50%)' }}>+60%</span>
+                            <span className="absolute text-xs text-gray-400" style={{ left: '0%', transform: 'translateX(-50%)' }}>-30%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(-10)}%`, transform: 'translateX(-50%)' }}>-10%</span>
+                            <span className="absolute text-xs text-gray-700 font-medium" style={{ left: `${pos(0)}%`, transform: 'translateX(-50%)' }}>0%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(10)}%`, transform: 'translateX(-50%)' }}>+10%</span>
+                            <span className="absolute text-xs text-gray-500" style={{ left: `${pos(30)}%`, transform: 'translateX(-50%)' }}>+30%</span>
+                            <span className="absolute text-xs text-gray-400" style={{ left: '100%', transform: 'translateX(-50%)' }}>+60%</span>
                           </div>
                           <div className="text-center text-xs text-gray-500 mt-1">
                             Overconfidence Index (OC)
@@ -741,22 +747,22 @@ export default function InstructorAnalyticsPage() {
                       {/* Legend with percentages */}
                       <div className="flex items-center justify-center gap-4 text-xs mt-4 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded bg-[#F1F5F9] border border-gray-300"></div>
+                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(148, 163, 184, 0.3)', border: '1px solid #94A3B8' }}></div>
                           <span className="text-gray-600">Underconfident</span>
                           <span className="text-gray-400">({underconfidentPct}%)</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded bg-[#DCFCE7] border border-green-200"></div>
+                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)', border: '1px solid #16A34A' }}></div>
                           <span className="text-gray-600">Well-calibrated</span>
                           <span className="text-gray-400">({wellCalibratedPct}%)</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded bg-[#FFEDD5] border border-amber-200"></div>
+                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(217, 119, 6, 0.15)', border: '1px solid #D97706' }}></div>
                           <span className="text-gray-600">Moderate</span>
                           <span className="text-gray-400">({moderatePct}%)</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded bg-[#FEE2E2] border border-red-200"></div>
+                          <div className="w-3 h-3 rounded" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)', border: '1px solid #DC2626' }}></div>
                           <span className="text-gray-600">High</span>
                           <span className="text-gray-400">({highPct}%)</span>
                         </div>
@@ -779,7 +785,7 @@ export default function InstructorAnalyticsPage() {
                         <strong>Why it matters:</strong> Students with high overconfidence believe they understand material better than they actually do, leading to inadequate study habits and poor financial decisions.
                       </p>
                       <p className="text-gray-600 text-xs">
-                        <strong>Interpretation:</strong> Green = confidence matches performance. Orange/Red = gap requiring attention.
+                        <strong>Interpretation:</strong> Amber/Red = overconfidence requiring attention. Gray = underconfidence or conservative self-assessment.
                       </p>
                     </div>
 

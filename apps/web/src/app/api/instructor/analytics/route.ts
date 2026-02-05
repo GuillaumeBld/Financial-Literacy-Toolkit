@@ -740,9 +740,10 @@ export async function GET(request: NextRequest) {
       emotionalControl
     };
 
-    // Create histogram bins for OC distribution (-0.10 to 0.60 in 0.05 increments)
+    // Create histogram bins for OC distribution (-0.30 to 0.60 in 0.05 increments)
+    // Extended range to properly show underconfident zone (< -10%)
     const ocHistogramBins: Array<{ binStart: number; binEnd: number; count: number }> = [];
-    for (let binStart = -0.10; binStart < 0.60; binStart += 0.05) {
+    for (let binStart = -0.30; binStart < 0.60; binStart += 0.05) {
       const binEnd = binStart + 0.05;
       const count = overconfidenceData.filter(v => v >= binStart && v < binEnd).length;
       ocHistogramBins.push({
@@ -750,6 +751,11 @@ export async function GET(request: NextRequest) {
         binEnd: Math.round(binEnd * 100) / 100,
         count
       });
+    }
+    // Add underflow bin for values < -0.30
+    const underflowCount = overconfidenceData.filter(v => v < -0.30).length;
+    if (underflowCount > 0) {
+      ocHistogramBins.unshift({ binStart: -0.35, binEnd: -0.30, count: underflowCount });
     }
     // Add overflow bin for values >= 0.60
     const overflowCount = overconfidenceData.filter(v => v >= 0.60).length;
