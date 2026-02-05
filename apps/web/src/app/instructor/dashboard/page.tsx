@@ -11,7 +11,9 @@ import {
   Clock,
   BarChart3,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 type DashboardStats = {
@@ -318,12 +320,25 @@ function ActionCard({
 
 // Status Table Component
 function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
+  const [showSubmittedDetails, setShowSubmittedDetails] = useState(false);
+
   const submittedRows = data.filter(r => r.status.startsWith('Submitted'));
   const inProgressRows = data.filter(r => r.status.startsWith('In Progress'));
   const onboardedRows = data.filter(r => r.status.startsWith('Onboarded'));
   const totalSubmitted = submittedRows.reduce((sum, r) => sum + r.count, 0);
   const totalInProgress = inProgressRows.reduce((sum, r) => sum + r.count, 0);
   const totalOnboarded = onboardedRows.reduce((sum, r) => sum + r.count, 0);
+
+  // Calculate aggregated stats for submitted summary row
+  const submittedSummary = submittedRows.length > 0 ? {
+    count: totalSubmitted,
+    avg_score: totalSubmitted > 0
+      ? Math.round(submittedRows.reduce((sum, r) => sum + (r.avg_score || 0) * r.count, 0) / totalSubmitted * 10) / 10
+      : null,
+    avg_responses: totalSubmitted > 0
+      ? Math.round(submittedRows.reduce((sum, r) => sum + r.avg_responses * r.count, 0) / totalSubmitted)
+      : 0
+  } : null;
 
   // Format hours stale for display
   const formatHoursStale = (hours: number | null) => {
@@ -362,41 +377,97 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((row, idx) => {
-              const statusClass = row.status.startsWith('Submitted')
-                ? 'severity-border-success'
-                : row.status.startsWith('Onboarded')
-                ? ''
-                : 'severity-border-warning';
-              const badgeClass = row.status.startsWith('Submitted')
-                ? 'status-badge--success'
-                : row.status.startsWith('Onboarded')
-                ? 'bg-gray-100 text-gray-600'
-                : 'status-badge--warning';
-              return (
-                <tr key={idx} className={`border-b border-loyola-gray-100 bg-white ${statusClass}`}>
+            {/* Submitted Summary Row - Collapsible */}
+            {submittedSummary && (
+              <>
+                <tr
+                  className="border-b border-loyola-gray-100 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors"
+                  onClick={() => setShowSubmittedDetails(!showSubmittedDetails)}
+                >
                   <td className="py-3 px-4 font-medium">
-                    <span className={`status-badge ${badgeClass} mr-2`}>
-                      {row.status.startsWith('Submitted') ? '✓' : row.status.startsWith('Onboarded') ? '○' : '●'}
-                    </span>
-                    {row.status}
+                    <div className="flex items-center gap-2">
+                      {showSubmittedDetails ? (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                      )}
+                      <span className="text-green-600">✓</span>
+                      <span>Submitted</span>
+                      {submittedRows.length > 1 && (
+                        <span className="text-gray-500 text-sm">({submittedRows.length} types)</span>
+                      )}
+                    </div>
                   </td>
-                  <td className="py-3 px-4 text-right">{row.count}</td>
-                  <td className="py-3 px-4 text-right">
-                    {row.avg_score ? `${row.avg_score}%` : '—'}
-                  </td>
-                  <td className="py-3 px-4 text-right">{row.avg_responses}</td>
-                  <td className="py-3 px-4 text-right">
-                    {formatHoursStale(row.min_hours_stale)}
-                  </td>
-                  <td className={`py-3 px-4 text-right ${
-                    isStaleWarning(row.status, row.max_hours_stale) ? 'text-status-danger font-semibold' : ''
-                  }`}>
-                    {formatHoursStale(row.max_hours_stale)}
-                  </td>
+                  <td className="py-3 px-4 text-right font-semibold">{submittedSummary.count}</td>
+                  <td className="py-3 px-4 text-right">{submittedSummary.avg_score ? `${submittedSummary.avg_score}%` : '—'}</td>
+                  <td className="py-3 px-4 text-right">{submittedSummary.avg_responses}</td>
+                  <td className="py-3 px-4 text-right">—</td>
+                  <td className="py-3 px-4 text-right">—</td>
                 </tr>
-              );
-            })}
+
+                {/* Submitted Detail Rows - Shown when expanded */}
+                {showSubmittedDetails && submittedRows.map((row, idx) => (
+                  <tr key={`sub-${idx}`} className="border-b border-loyola-gray-100 bg-gray-50 text-sm">
+                    <td className="py-2 px-4 pl-12 text-gray-600">
+                      ↳ {row.status.replace('Submitted ', '')}
+                    </td>
+                    <td className="py-2 px-4 text-right text-gray-600">{row.count}</td>
+                    <td className="py-2 px-4 text-right text-gray-600">{row.avg_score ? `${row.avg_score}%` : '—'}</td>
+                    <td className="py-2 px-4 text-right text-gray-600">{row.avg_responses}</td>
+                    <td className="py-2 px-4 text-right text-gray-600">—</td>
+                    <td className="py-2 px-4 text-right text-gray-600">—</td>
+                  </tr>
+                ))}
+              </>
+            )}
+
+            {/* In Progress Rows */}
+            {inProgressRows.map((row, idx) => (
+              <tr key={`prog-${idx}`} className="border-b border-loyola-gray-100 bg-white severity-border-warning">
+                <td className="py-3 px-4 font-medium">
+                  <span className="status-badge status-badge--warning mr-2">●</span>
+                  {row.status}
+                </td>
+                <td className="py-3 px-4 text-right">{row.count}</td>
+                <td className="py-3 px-4 text-right">
+                  {row.avg_score ? `${row.avg_score}%` : '—'}
+                </td>
+                <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+                <td className="py-3 px-4 text-right">
+                  {formatHoursStale(row.min_hours_stale)}
+                </td>
+                <td className={`py-3 px-4 text-right ${
+                  isStaleWarning(row.status, row.max_hours_stale) ? 'text-status-danger font-semibold' : ''
+                }`}>
+                  {formatHoursStale(row.max_hours_stale)}
+                </td>
+              </tr>
+            ))}
+
+            {/* Onboarded Rows */}
+            {onboardedRows.map((row, idx) => (
+              <tr key={`onb-${idx}`} className="border-b border-loyola-gray-100 bg-white">
+                <td className="py-3 px-4 font-medium">
+                  <span className="status-badge bg-gray-100 text-gray-600 mr-2">○</span>
+                  {row.status}
+                </td>
+                <td className="py-3 px-4 text-right">{row.count}</td>
+                <td className="py-3 px-4 text-right">
+                  {row.avg_score ? `${row.avg_score}%` : '—'}
+                </td>
+                <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+                <td className="py-3 px-4 text-right">
+                  {formatHoursStale(row.min_hours_stale)}
+                </td>
+                <td className={`py-3 px-4 text-right ${
+                  isStaleWarning(row.status, row.max_hours_stale) ? 'text-status-danger font-semibold' : ''
+                }`}>
+                  {formatHoursStale(row.max_hours_stale)}
+                </td>
+              </tr>
+            ))}
+
+            {/* Total Row */}
             <tr className="border-t-2 border-loyola-gray-300 font-bold bg-loyola-gray-50">
               <td className="py-3 px-4">Total</td>
               <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress + totalOnboarded}</td>
