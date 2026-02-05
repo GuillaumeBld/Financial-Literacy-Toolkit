@@ -28,6 +28,18 @@ const config: Config = {
           800: '#1F2937',
           900: '#111827',
         },
+        // Ink accent for navigation, selected states, links, primary actions
+        'ink': '#111827',
+        'ink-light': '#374151',
+        // Semantic status colors (use only for status/outcome indication)
+        'status': {
+          'success': '#16A34A',
+          'success-tint': '#DCFCE7',
+          'warning': '#D97706',
+          'warning-tint': '#FFEDD5',
+          'danger': '#DC2626',
+          'danger-tint': '#FEE2E2',
+        },
       },
     },
   },

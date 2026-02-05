@@ -51,3 +51,28 @@ body {
   background-clip: text;
   color: transparent;
 }
+
+/* Status badges */
+.status-badge {
+  @apply px-2 py-0.5 text-xs font-medium rounded-full;
+}
+.status-badge--success {
+  @apply bg-[#DCFCE7] text-[#16A34A];
+}
+.status-badge--warning {
+  @apply bg-[#FFEDD5] text-[#D97706];
+}
+.status-badge--danger {
+  @apply bg-[#FEE2E2] text-[#DC2626];
+}
+
+/* Table severity borders */
+.severity-border-success {
+  border-left: 3px solid #16A34A;
+}
+.severity-border-warning {
+  border-left: 3px solid #D97706;
+}
+.severity-border-danger {
+  border-left: 3px solid #DC2626;
+}

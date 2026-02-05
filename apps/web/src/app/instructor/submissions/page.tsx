@@ -359,7 +359,7 @@ export default function InstructorSubmissionsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-loyola-maroon animate-spin mx-auto mb-4" />
+          <RefreshCw className="w-12 h-12 text-ink animate-spin mx-auto mb-4" />
           <p className="text-loyola-gray-600">Loading submissions...</p>
         </div>
       </div>
@@ -375,13 +375,13 @@ export default function InstructorSubmissionsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/instructor/dashboard')}
-                className="flex items-center gap-2 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 text-loyola-gray-600 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Back to Dashboard</span>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-loyola-maroon">
+                <h1 className="text-2xl font-bold text-ink">
                   Student Submissions
                 </h1>
                 <p className="text-sm text-loyola-gray-600">
@@ -392,14 +392,14 @@ export default function InstructorSubmissionsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleRefresh}
-                className="p-2 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="p-2 text-loyola-gray-600 hover:text-ink transition"
                 title="Refresh data"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-ink transition"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Logout</span>
@@ -421,7 +421,7 @@ export default function InstructorSubmissionsPage() {
               <select
                 value={filters.courseId}
                 onChange={(e) => setFilters(prev => ({ ...prev, courseId: e.target.value }))}
-                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
               >
                 <option value="">All Courses</option>
                 {courses.map((course) => (
@@ -440,7 +440,7 @@ export default function InstructorSubmissionsPage() {
               <select
                 value={filters.attemptType}
                 onChange={(e) => setFilters(prev => ({ ...prev, attemptType: e.target.value }))}
-                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
               >
                 <option value="">All Types</option>
                 <option value="pre">Pre-Assessment</option>
@@ -456,7 +456,7 @@ export default function InstructorSubmissionsPage() {
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
-                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                className="w-full px-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
               >
                 <option value="">All Time</option>
                 <option value="1">Last 24 hours</option>
@@ -478,7 +478,7 @@ export default function InstructorSubmissionsPage() {
                   placeholder="Search by student ID..."
                   value={filters.searchTerm}
                   onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                  className="w-full pl-10 pr-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+                  className="w-full pl-10 pr-3 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
                 />
               </div>
             </div>
@@ -493,7 +493,7 @@ export default function InstructorSubmissionsPage() {
           <button
             id="export-detailed-btn"
             onClick={handleExportDetailedCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-loyola-maroon text-white rounded-lg hover:bg-loyola-maroon-dark transition"
+            className="flex items-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-light transition"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -535,7 +535,7 @@ export default function InstructorSubmissionsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => loadSubmissionDetail(submission)}
-                        className="text-loyola-maroon hover:text-loyola-maroon-dark transition"
+                        className="text-ink hover:text-ink-light transition"
                         title="View details"
                       >
                         <Eye className="w-4 h-4" />
@@ -608,7 +608,7 @@ export default function InstructorSubmissionsPage() {
               <div className="mt-4 grid grid-cols-4 gap-4">
                 <div className="bg-loyola-gray-50 p-3 rounded-lg">
                   <p className="text-xs text-loyola-gray-500">Score</p>
-                  <p className="text-lg font-bold text-loyola-maroon">{Math.round(selectedSubmission.overall_score ?? 0)}%</p>
+                  <p className="text-lg font-bold text-ink">{Math.round(selectedSubmission.overall_score ?? 0)}%</p>
                 </div>
                 <div className="bg-loyola-gray-50 p-3 rounded-lg">
                   <p className="text-xs text-loyola-gray-500">Duration</p>
@@ -632,7 +632,7 @@ export default function InstructorSubmissionsPage() {
                     onClick={() => setActiveTab(tab as any)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       activeTab === tab
-                        ? 'bg-loyola-maroon text-white'
+                        ? 'bg-ink text-white'
                         : 'bg-loyola-gray-100 text-loyola-gray-600 hover:bg-loyola-gray-200'
                     }`}
                   >
@@ -646,7 +646,7 @@ export default function InstructorSubmissionsPage() {
             <div className="flex-1 overflow-y-auto p-6">
               {isLoadingDetail ? (
                 <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-8 h-8 text-loyola-maroon animate-spin" />
+                  <RefreshCw className="w-8 h-8 text-ink animate-spin" />
                 </div>
               ) : (
                 <>
@@ -776,7 +776,7 @@ export default function InstructorSubmissionsPage() {
                               </div>
                               <div className="w-full bg-loyola-gray-200 rounded-full h-2">
                                 <div
-                                  className="bg-gradient-to-r from-loyola-maroon to-loyola-gold h-2 rounded-full"
+                                  className="bg-ink h-2 rounded-full"
                                   style={{ width: `${(score ?? 0) * 100}%` }}
                                 />
                               </div>

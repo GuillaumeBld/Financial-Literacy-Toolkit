@@ -124,7 +124,7 @@ export default function InstructorDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-loyola-maroon animate-spin mx-auto mb-4" />
+          <RefreshCw className="w-12 h-12 text-ink animate-spin mx-auto mb-4" />
           <p className="text-loyola-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function InstructorDashboardPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-loyola-maroon">
+              <h1 className="text-2xl font-bold text-ink">
                 Instructor Dashboard
               </h1>
               <p className="text-sm text-loyola-gray-600">
@@ -148,14 +148,14 @@ export default function InstructorDashboardPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleRefresh}
-                className="p-2 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="p-2 text-loyola-gray-600 hover:text-ink transition"
                 title="Refresh data"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-ink transition"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Logout</span>
@@ -175,7 +175,7 @@ export default function InstructorDashboardPage() {
             <select
               value={selectedCourse}
               onChange={(e) => handleCourseChange(e.target.value)}
-              className="px-4 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon"
+              className="px-4 py-2 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
             >
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
@@ -198,37 +198,31 @@ export default function InstructorDashboardPage() {
                 icon={<Users className="w-6 h-6" />}
                 title="Total Students"
                 value={stats.totalStudents}
-                color="blue"
               />
               <StatCard
                 icon={<UserCheck className="w-6 h-6" />}
                 title="Submitted"
                 value={stats.submitted}
-                color="green"
               />
               <StatCard
                 icon={<Activity className="w-6 h-6" />}
                 title="In Progress"
                 value={stats.inProgress}
-                color="orange"
               />
               <StatCard
                 icon={<Clock className="w-6 h-6" />}
                 title="Onboarded"
                 value={stats.notStarted}
-                color="red"
               />
               <StatCard
                 icon={<TrendingUp className="w-6 h-6" />}
                 title="Average Score"
                 value={`${stats.avgScore}%`}
-                color="purple"
               />
               <StatCard
                 icon={<BarChart3 className="w-6 h-6" />}
                 title="Avg Duration"
                 value={`${Math.floor(stats.avgDuration / 60)}m`}
-                color="blue"
               />
             </div>
 
@@ -273,24 +267,15 @@ function StatCard({
   title,
   value,
   subtitle,
-  color
 }: {
   icon: React.ReactNode;
   title: string;
   value: string | number;
   subtitle?: string;
-  color: string;
 }) {
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600'
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      <div className={`inline-flex p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses]} mb-4`}>
+      <div className="inline-flex p-3 rounded-lg bg-gray-100 text-gray-600 mb-4">
         {icon}
       </div>
       <h3 className="text-sm font-medium text-loyola-gray-600 mb-1">{title}</h3>
@@ -322,7 +307,7 @@ function ActionCard({
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-loyola-maroon"
+      className="w-full text-left bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-ink"
     >
       <h3 className="text-lg font-bold text-loyola-gray-800 mb-2">{title}</h3>
       <p className="text-sm text-loyola-gray-600">{description}</p>
@@ -360,7 +345,7 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
   return (
     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
       <h2 className="text-xl font-bold text-loyola-gray-800 flex items-center gap-2 mb-6">
-        <Users className="w-6 h-6 text-loyola-maroon" />
+        <Users className="w-6 h-6 text-ink" />
         Student Progress Status
       </h2>
       <div className="overflow-x-auto">
@@ -375,35 +360,49 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((row, idx) => (
-              <tr key={idx} className={`border-b border-loyola-gray-100 ${
-                row.status.startsWith('Submitted') ? 'bg-green-50' :
-                row.status.startsWith('Onboarded') ? 'bg-blue-50' : 'bg-amber-50'
-              }`}>
-                <td className="py-3 px-4 font-medium">{row.status}</td>
-                <td className="py-3 px-4 text-right">{row.count}</td>
-                <td className="py-3 px-4 text-right">
-                  {row.avg_score ? `${row.avg_score}%` : '—'}
-                </td>
-                <td className="py-3 px-4 text-right">{row.avg_responses}</td>
-                <td className={`py-3 px-4 text-right ${
-                  isStaleWarning(row.status, row.max_hours_stale) ? 'text-red-600 font-semibold' : ''
-                }`}>
-                  {formatHoursStale(row.max_hours_stale)}
-                </td>
-              </tr>
-            ))}
+            {data.map((row, idx) => {
+              const statusClass = row.status.startsWith('Submitted')
+                ? 'severity-border-success'
+                : row.status.startsWith('Onboarded')
+                ? ''
+                : 'severity-border-warning';
+              const badgeClass = row.status.startsWith('Submitted')
+                ? 'status-badge--success'
+                : row.status.startsWith('Onboarded')
+                ? 'bg-gray-100 text-gray-600'
+                : 'status-badge--warning';
+              return (
+                <tr key={idx} className={`border-b border-loyola-gray-100 bg-white ${statusClass}`}>
+                  <td className="py-3 px-4 font-medium">
+                    <span className={`status-badge ${badgeClass} mr-2`}>
+                      {row.status.startsWith('Submitted') ? '✓' : row.status.startsWith('Onboarded') ? '○' : '●'}
+                    </span>
+                    {row.status}
+                  </td>
+                  <td className="py-3 px-4 text-right">{row.count}</td>
+                  <td className="py-3 px-4 text-right">
+                    {row.avg_score ? `${row.avg_score}%` : '—'}
+                  </td>
+                  <td className="py-3 px-4 text-right">{row.avg_responses}</td>
+                  <td className={`py-3 px-4 text-right ${
+                    isStaleWarning(row.status, row.max_hours_stale) ? 'text-status-danger font-semibold' : ''
+                  }`}>
+                    {formatHoursStale(row.max_hours_stale)}
+                  </td>
+                </tr>
+              );
+            })}
             <tr className="border-t-2 border-loyola-gray-300 font-bold bg-loyola-gray-50">
               <td className="py-3 px-4">Total</td>
               <td className="py-3 px-4 text-right">{totalSubmitted + totalInProgress + totalOnboarded}</td>
               <td className="py-3 px-4 text-right" colSpan={3}>
-                <span className="text-green-600">{totalSubmitted} submitted</span>
+                <span className="text-status-success">{totalSubmitted} submitted</span>
                 {' / '}
-                <span className="text-amber-600">{totalInProgress} in progress</span>
+                <span className="text-status-warning">{totalInProgress} in progress</span>
                 {totalOnboarded > 0 && (
                   <>
                     {' / '}
-                    <span className="text-blue-600">{totalOnboarded} onboarded</span>
+                    <span className="text-gray-600">{totalOnboarded} onboarded</span>
                   </>
                 )}
               </td>

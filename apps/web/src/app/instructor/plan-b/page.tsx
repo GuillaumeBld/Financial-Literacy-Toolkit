@@ -167,7 +167,7 @@ export default function PlanBSettingsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-loyola-maroon animate-spin mx-auto mb-4" />
+          <RefreshCw className="w-12 h-12 text-ink animate-spin mx-auto mb-4" />
           <p className="text-loyola-gray-600">Loading Plan B settings...</p>
         </div>
       </div>
@@ -183,13 +183,13 @@ export default function PlanBSettingsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/instructor/dashboard')}
-                className="flex items-center gap-1 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="flex items-center gap-1 text-loyola-gray-600 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span className="text-sm">Dashboard</span>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-loyola-maroon">Plan B Settings</h1>
+                <h1 className="text-2xl font-bold text-ink">Plan B Settings</h1>
                 <p className="text-sm text-loyola-gray-600">
                   Configure Google Forms fallback for your courses
                 </p>
@@ -198,14 +198,14 @@ export default function PlanBSettingsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleRefresh}
-                className="p-2 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="p-2 text-loyola-gray-600 hover:text-ink transition"
                 title="Refresh data"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-ink transition"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Logout</span>
@@ -320,7 +320,7 @@ export default function PlanBSettingsPage() {
                               key={level.value}
                               className={`border rounded-xl p-4 transition-all ${
                                 edited.active_level === level.value
-                                  ? 'border-loyola-maroon bg-loyola-maroon/5'
+                                  ? 'border-ink bg-ink/5'
                                   : 'border-gray-200'
                               }`}
                             >
@@ -332,7 +332,7 @@ export default function PlanBSettingsPage() {
                                   onChange={() =>
                                     updateEdit(setting.course_id, { active_level: level.value })
                                   }
-                                  className="mt-1 accent-loyola-maroon"
+                                  className="mt-1 accent-ink"
                                 />
                                 <div className="flex-1">
                                   <p className="font-medium text-loyola-gray-800">{level.label}</p>
@@ -349,7 +349,7 @@ export default function PlanBSettingsPage() {
                                             [urlKey]: e.target.value,
                                           } as any)
                                         }
-                                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon transition-all"
+                                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
                                         placeholder="https://docs.google.com/forms/d/e/..."
                                       />
                                       {currentUrl && (
@@ -357,7 +357,7 @@ export default function PlanBSettingsPage() {
                                           href={currentUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="p-2 text-loyola-gray-500 hover:text-loyola-maroon transition"
+                                          className="p-2 text-loyola-gray-500 hover:text-ink transition"
                                           title="Open form in new tab"
                                         >
                                           <ExternalLink className="w-4 h-4" />
@@ -380,7 +380,7 @@ export default function PlanBSettingsPage() {
                         disabled={isSaving || !hasChanges}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all ${
                           hasChanges
-                            ? 'bg-loyola-maroon hover:bg-loyola-maroon-dark text-white shadow-lg shadow-loyola-maroon/20'
+                            ? 'bg-ink hover:bg-ink-light text-white shadow-lg shadow-ink/20'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       >

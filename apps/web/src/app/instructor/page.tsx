@@ -59,7 +59,7 @@ export default function InstructorLoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-status-danger-tint border border-status-danger/30 text-status-danger px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -74,7 +74,7 @@ export default function InstructorLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
                 placeholder="instructor@university.edu"
                 required
               />
@@ -91,7 +91,7 @@ export default function InstructorLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-loyola-maroon focus:border-loyola-maroon transition"
+                className="w-full pl-10 pr-4 py-3 border-2 border-loyola-gray-300 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
                 placeholder="••••••••"
                 required
               />
@@ -110,7 +110,7 @@ export default function InstructorLoginPage() {
         <div className="mt-6 text-center">
           <a
             href="/"
-            className="text-sm text-loyola-gray-600 hover:text-loyola-maroon transition"
+            className="text-sm text-loyola-gray-600 hover:text-ink transition"
           >
             ← Back to Student Assessment
           </a>

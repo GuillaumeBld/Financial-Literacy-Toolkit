@@ -259,7 +259,7 @@ export default function InstructorQuestionsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-loyola-maroon animate-spin mx-auto mb-4" />
+          <RefreshCw className="w-12 h-12 text-ink animate-spin mx-auto mb-4" />
           <p className="text-loyola-gray-600">Loading questions...</p>
         </div>
       </div>
@@ -275,13 +275,13 @@ export default function InstructorQuestionsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/instructor/dashboard')}
-                className="flex items-center gap-2 text-loyola-gray-600 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 text-loyola-gray-600 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Dashboard</span>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-loyola-maroon">Question Bank</h1>
+                <h1 className="text-2xl font-bold text-ink">Question Bank</h1>
                 <p className="text-sm text-loyola-gray-600">
                   {stats.totalAnchors} anchors · {stats.totalVariants} variants · {stats.totalPreference} preference
                 </p>
@@ -290,14 +290,14 @@ export default function InstructorQuestionsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleRefresh}
-                className="p-2 text-loyola-gray-600 hover:text-loyola-maroon transition rounded-lg hover:bg-gray-100"
+                className="p-2 text-loyola-gray-600 hover:text-ink transition rounded-lg hover:bg-gray-100"
                 title="Refresh"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-loyola-maroon transition"
+                className="flex items-center gap-2 px-4 py-2 text-loyola-gray-700 hover:text-ink transition"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Logout</span>
@@ -319,14 +319,14 @@ export default function InstructorQuestionsPage() {
                   placeholder="Search questions..."
                   value={filters.searchTerm}
                   onChange={(e) => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
                 />
               </div>
             </div>
             <select
               value={filters.domain}
               onChange={(e) => setFilters(f => ({ ...f, domain: e.target.value }))}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-loyola-maroon/20 focus:border-loyola-maroon"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
             >
               <option value="">All Domains</option>
               {domains.map(d => (
@@ -338,7 +338,7 @@ export default function InstructorQuestionsPage() {
                 type="checkbox"
                 checked={filters.showPreference}
                 onChange={(e) => setFilters(f => ({ ...f, showPreference: e.target.checked }))}
-                className="w-4 h-4 text-loyola-maroon rounded focus:ring-loyola-maroon"
+                className="w-4 h-4 text-ink rounded focus:ring-ink"
               />
               <span className="text-sm text-gray-600">Show Preference Items (Q15-Q28)</span>
             </label>
@@ -377,7 +377,7 @@ export default function InstructorQuestionsPage() {
                 >
                   <div className="flex-shrink-0 mt-1">
                     {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-loyola-maroon" />
+                      <ChevronDown className="w-5 h-5 text-ink" />
                     ) : (
                       <ChevronRight className="w-5 h-5 text-gray-400" />
                     )}
@@ -385,7 +385,7 @@ export default function InstructorQuestionsPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="px-2 py-0.5 bg-loyola-maroon text-white text-xs font-bold rounded">
+                      <span className="px-2 py-0.5 bg-ink text-white text-xs font-bold rounded">
                         {(anchor.external_item_id || anchor.item_id || '').replace(/^Q?/, 'Q')}
                       </span>
                       <span className="text-xs text-gray-500">{anchor.domain}</span>
@@ -416,7 +416,7 @@ export default function InstructorQuestionsPage() {
                     {/* Anchor Details */}
                     <div className="mb-4 p-4 bg-white rounded-lg border border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <Target className="w-4 h-4 text-loyola-maroon" />
+                        <Target className="w-4 h-4 text-ink" />
                         Anchor Question
                       </h4>
                       <p className="text-gray-800 mb-3">{anchor.question_text}</p>
@@ -442,7 +442,7 @@ export default function InstructorQuestionsPage() {
                     {variants.length > 0 ? (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-loyola-maroon" />
+                          <Layers className="w-4 h-4 text-ink" />
                           SDM Variants ({variants.length})
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -539,7 +539,7 @@ export default function InstructorQuestionsPage() {
             <div className="p-6">
               <div className="mb-4">
                 <p className="text-xs text-gray-500 mb-1">Linked to Anchor</p>
-                <p className="text-sm text-loyola-maroon font-medium">Q{selectedVariant.anchor_item_id?.replace(/\D/g, '')}</p>
+                <p className="text-sm text-ink font-medium">Q{selectedVariant.anchor_item_id?.replace(/\D/g, '')}</p>
               </div>
 
               <div className="mb-6">

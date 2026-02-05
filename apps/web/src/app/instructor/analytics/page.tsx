@@ -282,7 +282,7 @@ export default function InstructorAnalyticsPage() {
     return (
       <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <RefreshCw className="w-12 h-12 text-ink animate-spin mx-auto mb-4" />
           <p className="text-gray-500">Loading analytics...</p>
         </div>
       </div>
@@ -298,7 +298,7 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/instructor/dashboard')}
-                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition"
+                className="flex items-center gap-2 text-gray-500 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Back to Dashboard</span>
@@ -315,14 +315,14 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleRefresh}
-                className="p-2 text-gray-500 hover:text-blue-600 transition"
+                className="p-2 text-gray-500 hover:text-ink transition"
                 title="Refresh data"
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-blue-600 transition"
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-ink transition"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Logout</span>
@@ -342,7 +342,7 @@ export default function InstructorAnalyticsPage() {
             <select
               value={selectedCourse}
               onChange={(e) => handleCourseChange(e.target.value)}
-              className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-ink/20 focus:border-ink"
             >
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
@@ -401,7 +401,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('performance')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'performance'
-                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -414,7 +414,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('baseline')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'baseline'
-                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -427,7 +427,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('risk')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'risk'
-                        ? 'text-blue-600 border-blue-600 bg-blue-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -440,7 +440,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('learning')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'learning'
-                        ? 'text-green-600 border-green-600 bg-green-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -453,7 +453,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('psychometrics')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'psychometrics'
-                        ? 'text-indigo-600 border-indigo-600 bg-indigo-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -466,7 +466,7 @@ export default function InstructorAnalyticsPage() {
                     onClick={() => setActiveTab('heterogeneity')}
                     className={`px-4 py-3 font-medium transition-all border-b-2 -mb-px whitespace-nowrap rounded-t-lg ${
                       activeTab === 'heterogeneity'
-                        ? 'text-purple-600 border-purple-600 bg-purple-50'
+                        ? 'text-ink border-ink bg-gray-50'
                         : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -486,10 +486,10 @@ export default function InstructorAnalyticsPage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <PieChart className="w-6 h-6 text-blue-600" />
+                      <PieChart className="w-6 h-6 text-ink" />
                       Domain Performance Analysis
                     </h2>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-light transition">
                       <Download className="w-4 h-4" />
                       Export Report
                     </button>
@@ -514,7 +514,7 @@ export default function InstructorAnalyticsPage() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
-                            className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                            className="bg-ink h-3 rounded-full transition-all duration-500"
                             style={{ width: `${domain.avgScore}%` }}
                           />
                         </div>
@@ -542,7 +542,7 @@ export default function InstructorAnalyticsPage() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                              className="bg-gray-500 h-2 rounded-full transition-all duration-500"
                               style={{ width: `${range.percentage}%` }}
                             />
                           </div>
@@ -554,7 +554,7 @@ export default function InstructorAnalyticsPage() {
                   {/* Confidence Calibration */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-blue-600" />
+                      <Brain className="w-5 h-5 text-ink" />
                       Confidence Calibration
                     </h3>
 
@@ -873,7 +873,7 @@ export default function InstructorAnalyticsPage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <GraduationCap className="w-6 h-6 text-blue-600" />
+                      <GraduationCap className="w-6 h-6 text-ink" />
                       Baseline Covariates (B1-B13)
                     </h2>
                     <span className="text-sm text-gray-500">
@@ -892,7 +892,7 @@ export default function InstructorAnalyticsPage() {
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-blue-600" />
+                      <Users className="w-5 h-5 text-ink" />
                       <span className="font-semibold text-gray-800">Demographics (B1-B5)</span>
                     </div>
                     {expandedSection === 'demographics' ? (
@@ -1030,8 +1030,8 @@ export default function InstructorAnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <Brain className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <Brain className="w-6 h-6 text-ink" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">Overconfidence</h3>
@@ -1050,8 +1050,8 @@ export default function InstructorAnalyticsPage() {
 
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <Heart className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <Heart className="w-6 h-6 text-ink" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">High Stress</h3>
@@ -1068,8 +1068,8 @@ export default function InstructorAnalyticsPage() {
 
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <UserCheck className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <UserCheck className="w-6 h-6 text-ink" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">First-Gen + Loans</h3>
@@ -1084,8 +1084,8 @@ export default function InstructorAnalyticsPage() {
 
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <AlertTriangle className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <AlertTriangle className="w-6 h-6 text-ink" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">High Interest Loans</h3>
@@ -1102,7 +1102,7 @@ export default function InstructorAnalyticsPage() {
                 {/* Overconfidence Distribution */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-blue-600" />
+                    <Brain className="w-5 h-5 text-ink" />
                     Confidence Calibration Distribution
                   </h3>
 
@@ -1240,7 +1240,7 @@ export default function InstructorAnalyticsPage() {
                 {analytics.riskProfiles.preferenceResponses && analytics.riskProfiles.preferenceResponses.length > 0 && (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-blue-600" />
+                      <MessageSquare className="w-5 h-5 text-ink" />
                       Preference Question Responses (Q15-Q28)
                     </h3>
 
@@ -1325,26 +1325,26 @@ export default function InstructorAnalyticsPage() {
             {activeTab === 'learning' && analytics.learningGains && (
               <div className="space-y-6">
                 {/* Introduction Panel */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <GraduationCap className="w-6 h-6" />
                     Understanding Learning Gains Analysis
                   </h3>
-                  <div className="grid md:grid-cols-2 gap-6 text-sm text-blue-800">
+                  <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-800">
                     <div>
                       <h4 className="font-semibold mb-2">What This Tab Shows</h4>
                       <p className="mb-2">
                         This analysis compares student performance <strong>before</strong> and <strong>after</strong> your
                         course intervention to measure learning effectiveness. It answers two research questions:
                       </p>
-                      <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <ul className="list-disc list-inside space-y-1 text-gray-700">
                         <li><strong>RQ1:</strong> Did students improve their financial literacy?</li>
                         <li><strong>RQ2:</strong> Which student groups benefited most/least?</li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">How to Use This Data</h4>
-                      <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <ul className="list-disc list-inside space-y-1 text-gray-700">
                         <li>Identify domains where students struggle most</li>
                         <li>Compare effect sizes across domains to prioritize curriculum changes</li>
                         <li>Use psychometric data to validate assessment quality</li>
@@ -1379,8 +1379,8 @@ export default function InstructorAnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <Users className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <Users className="w-6 h-6 text-ink" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">Sample Size</h3>
@@ -1440,7 +1440,7 @@ export default function InstructorAnalyticsPage() {
                     </p>
                     <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${
                       analytics.learningGains.overall.cohensInterpretation === 'large' ? 'bg-green-100 text-green-700' :
-                      analytics.learningGains.overall.cohensInterpretation === 'medium' ? 'bg-blue-100 text-blue-700' :
+                      analytics.learningGains.overall.cohensInterpretation === 'medium' ? 'bg-gray-200 text-gray-700' :
                       analytics.learningGains.overall.cohensInterpretation === 'small' ? 'bg-amber-100 text-amber-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
@@ -1470,7 +1470,7 @@ export default function InstructorAnalyticsPage() {
                     <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${
                       analytics.learningGains.overall.pValue < 0.001 ? 'bg-green-100 text-green-700' :
                       analytics.learningGains.overall.pValue < 0.01 ? 'bg-green-100 text-green-700' :
-                      analytics.learningGains.overall.pValue < 0.05 ? 'bg-blue-100 text-blue-700' :
+                      analytics.learningGains.overall.pValue < 0.05 ? 'bg-gray-200 text-gray-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
                       {analytics.learningGains.overall.pValue < 0.001 ? '***' :
@@ -1516,7 +1516,7 @@ export default function InstructorAnalyticsPage() {
                 {/* Pre vs Post Comparison */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                    <BarChart3 className="w-5 h-5 text-ink" />
                     Pre vs Post Score Comparison
                   </h3>
                   <p className="text-sm text-gray-600 mb-4">
@@ -1548,7 +1548,7 @@ export default function InstructorAnalyticsPage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-4">
                         <div
-                          className="bg-blue-600 h-4 rounded-full transition-all duration-500"
+                          className="bg-ink h-4 rounded-full transition-all duration-500"
                           style={{ width: `${analytics.learningGains.overall.postMean}%` }}
                         />
                       </div>
@@ -1559,7 +1559,7 @@ export default function InstructorAnalyticsPage() {
                 {/* Section 2: Domain-Level Gains */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-blue-600" />
+                    <PieChart className="w-5 h-5 text-ink" />
                     Learning Gains by Domain
                   </h3>
                   <div className="bg-green-50 rounded-lg p-3 mb-4 text-sm border border-green-100">
@@ -1599,7 +1599,7 @@ export default function InstructorAnalyticsPage() {
                                 style={{ width: `${domain.preMean}%` }}
                               />
                               <div
-                                className="absolute bg-blue-600 h-3 rounded-full opacity-80"
+                                className="absolute bg-ink h-3 rounded-full opacity-80"
                                 style={{ width: `${domain.postMean}%` }}
                               />
                             </div>
@@ -1613,7 +1613,7 @@ export default function InstructorAnalyticsPage() {
                 {/* Section 3: Gains Distribution */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                    <BarChart3 className="w-5 h-5 text-ink" />
                     Learning Gains Distribution
                   </h3>
                   <div className="bg-amber-50 rounded-lg p-3 mb-4 text-sm border border-amber-100">
@@ -1692,18 +1692,18 @@ export default function InstructorAnalyticsPage() {
                 {/* Section 4: Internal Consistency (Cronbach's Alpha) */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                    <CheckCircle2 className="w-5 h-5 text-ink" />
                     Internal Consistency (Cronbach&apos;s α)
                   </h3>
-                  <div className="bg-blue-50 rounded-lg p-4 mb-4 text-sm border border-blue-100">
-                    <h4 className="font-semibold text-blue-900 mb-2">What This Shows & Why It Matters</h4>
-                    <div className="grid md:grid-cols-2 gap-4 text-blue-800">
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4 text-sm border border-gray-100">
+                    <h4 className="font-semibold text-gray-900 mb-2">What This Shows & Why It Matters</h4>
+                    <div className="grid md:grid-cols-2 gap-4 text-gray-800">
                       <div>
                         <p className="mb-2">
                           <strong>Definition:</strong> Cronbach&apos;s alpha measures how well questions within a
                           domain correlate — whether they consistently measure the same underlying concept.
                         </p>
-                        <p className="text-xs text-blue-700">
+                        <p className="text-xs text-gray-700">
                           <strong>Formula:</strong> α = (k/(k-1)) × (1 - Σσᵢ²/σₜ²), where k = number of items,
                           σᵢ² = variance of each item, σₜ² = total score variance.
                         </p>
@@ -1713,7 +1713,7 @@ export default function InstructorAnalyticsPage() {
                           <strong>Practical implication:</strong> If α is low (&lt;0.7), the domain may be measuring
                           multiple distinct concepts, or some questions may be poorly worded or misaligned.
                         </p>
-                        <p className="text-xs text-blue-700">
+                        <p className="text-xs text-gray-700">
                           <strong>Action:</strong> Low α suggests reviewing item quality. Consider whether
                           questions truly measure the intended knowledge area.
                         </p>
@@ -1739,7 +1739,7 @@ export default function InstructorAnalyticsPage() {
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               analytics.learningGains.cronbachAlpha.borrowingCredit.interpretation === 'excellent' ? 'bg-green-100 text-green-700' :
                               analytics.learningGains.cronbachAlpha.borrowingCredit.interpretation === 'good' ? 'bg-green-100 text-green-700' :
-                              analytics.learningGains.cronbachAlpha.borrowingCredit.interpretation === 'acceptable' ? 'bg-blue-100 text-blue-700' :
+                              analytics.learningGains.cronbachAlpha.borrowingCredit.interpretation === 'acceptable' ? 'bg-gray-200 text-gray-700' :
                               analytics.learningGains.cronbachAlpha.borrowingCredit.interpretation === 'questionable' ? 'bg-amber-100 text-amber-700' :
                               'bg-red-100 text-red-700'
                             }`}>
@@ -1755,7 +1755,7 @@ export default function InstructorAnalyticsPage() {
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               analytics.learningGains.cronbachAlpha.riskManagement.interpretation === 'excellent' ? 'bg-green-100 text-green-700' :
                               analytics.learningGains.cronbachAlpha.riskManagement.interpretation === 'good' ? 'bg-green-100 text-green-700' :
-                              analytics.learningGains.cronbachAlpha.riskManagement.interpretation === 'acceptable' ? 'bg-blue-100 text-blue-700' :
+                              analytics.learningGains.cronbachAlpha.riskManagement.interpretation === 'acceptable' ? 'bg-gray-200 text-gray-700' :
                               analytics.learningGains.cronbachAlpha.riskManagement.interpretation === 'questionable' ? 'bg-amber-100 text-amber-700' :
                               'bg-red-100 text-red-700'
                             }`}>
@@ -1771,7 +1771,7 @@ export default function InstructorAnalyticsPage() {
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               analytics.learningGains.cronbachAlpha.investmentRisk.interpretation === 'excellent' ? 'bg-green-100 text-green-700' :
                               analytics.learningGains.cronbachAlpha.investmentRisk.interpretation === 'good' ? 'bg-green-100 text-green-700' :
-                              analytics.learningGains.cronbachAlpha.investmentRisk.interpretation === 'acceptable' ? 'bg-blue-100 text-blue-700' :
+                              analytics.learningGains.cronbachAlpha.investmentRisk.interpretation === 'acceptable' ? 'bg-gray-200 text-gray-700' :
                               analytics.learningGains.cronbachAlpha.investmentRisk.interpretation === 'questionable' ? 'bg-amber-100 text-amber-700' :
                               'bg-red-100 text-red-700'
                             }`}>
@@ -1787,7 +1787,7 @@ export default function InstructorAnalyticsPage() {
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               analytics.learningGains.cronbachAlpha.overall.interpretation === 'excellent' ? 'bg-green-100 text-green-700' :
                               analytics.learningGains.cronbachAlpha.overall.interpretation === 'good' ? 'bg-green-100 text-green-700' :
-                              analytics.learningGains.cronbachAlpha.overall.interpretation === 'acceptable' ? 'bg-blue-100 text-blue-700' :
+                              analytics.learningGains.cronbachAlpha.overall.interpretation === 'acceptable' ? 'bg-gray-200 text-gray-700' :
                               analytics.learningGains.cronbachAlpha.overall.interpretation === 'questionable' ? 'bg-amber-100 text-amber-700' :
                               'bg-red-100 text-red-700'
                             }`}>
@@ -1810,7 +1810,7 @@ export default function InstructorAnalyticsPage() {
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <Brain className="w-5 h-5 text-blue-600" />
+                      <Brain className="w-5 h-5 text-ink" />
                       <span className="font-semibold text-gray-800">Factor Analysis (EFA)</span>
                       {analytics.learningGains.efa.warnings.length > 0 && (
                         <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
@@ -1893,7 +1893,7 @@ export default function InstructorAnalyticsPage() {
                                 {analytics.learningGains.efa.loadings.slice(0, 15).map((item) => (
                                   <tr key={item.itemId} className="border-b border-gray-100">
                                     <td className="py-2 px-3 font-mono text-gray-800">{item.itemId}</td>
-                                    <td className={`py-2 px-3 text-center font-mono ${Math.abs(item.factor1) > 0.4 ? 'font-bold text-blue-600' : 'text-gray-500'}`}>
+                                    <td className={`py-2 px-3 text-center font-mono ${Math.abs(item.factor1) > 0.4 ? 'font-bold text-ink' : 'text-gray-500'}`}>
                                       {item.factor1.toFixed(2)}
                                     </td>
                                     <td className={`py-2 px-3 text-center font-mono ${Math.abs(item.factor2) > 0.4 ? 'font-bold text-green-600' : 'text-gray-500'}`}>
@@ -1904,7 +1904,7 @@ export default function InstructorAnalyticsPage() {
                                     </td>
                                     <td className="py-2 px-3 text-center">
                                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                        item.primaryFactor === 1 ? 'bg-blue-100 text-blue-700' :
+                                        item.primaryFactor === 1 ? 'bg-gray-200 text-gray-700' :
                                         item.primaryFactor === 2 ? 'bg-green-100 text-green-700' :
                                         'bg-purple-100 text-purple-700'
                                       }`}>
@@ -1972,7 +1972,7 @@ export default function InstructorAnalyticsPage() {
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <Activity className="w-5 h-5 text-blue-600" />
+                      <Activity className="w-5 h-5 text-ink" />
                       <span className="font-semibold text-gray-800">Heterogeneity Analysis (SUR)</span>
                       {analytics.learningGains.sur.warnings.length > 0 && (
                         <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
@@ -2148,7 +2148,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="inline-flex p-3 rounded-lg bg-blue-50 text-blue-600 mb-4">
+      <div className="inline-flex p-3 rounded-lg bg-gray-100 text-gray-600 mb-4">
         {icon}
       </div>
       <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
@@ -2170,7 +2170,7 @@ function DistributionCard({
   subtitle?: string;
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-500',
+    blue: 'bg-gray-500',
     green: 'bg-green-500',
     purple: 'bg-purple-500',
     amber: 'bg-amber-500',
@@ -2178,7 +2178,7 @@ function DistributionCard({
     indigo: 'bg-indigo-500'
   };
 
-  const bgColor = colorClasses[color] || 'bg-blue-500';
+  const bgColor = colorClasses[color] || 'bg-gray-500';
 
   return (
     <div className="bg-gray-50 rounded-lg p-4">
