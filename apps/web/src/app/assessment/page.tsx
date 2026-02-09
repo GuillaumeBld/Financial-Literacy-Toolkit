@@ -1360,6 +1360,38 @@ export default function AssessmentPage() {
       ...prev,
       [questionId]: isCorrect,
     }));
+
+    // Re-sync scoredAnchors if answer changed AFTER confidence was already selected
+    // (fixes stale variant assignment when student revises an anchor answer)
+    const question = questions.find(q => q.id === questionId);
+    const existingConfidence = confidenceRatings[questionId];
+    if (question && !question.is_sdm && question.is_scored !== false && existingConfidence) {
+      const anchorFormat = getAnchorFormat(question.external_item_id || question.id);
+      const responseType: ResponseType = isCorrect ? 'correct' : 'incorrect';
+      const needScore = calculateNeedScore(responseType, existingConfidence, anchorFormat);
+      const primaryVariant = getPrimaryVariant(responseType, existingConfidence, needScore);
+
+      const answerOption = question.options?.find((opt: {id: string, text: string}) => opt.id === answer);
+      const answerText = answerOption?.text || answer;
+
+      setScoredAnchors((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(questionId, {
+          anchorId: questionId,
+          externalItemId: question.external_item_id || questionId,
+          needScore,
+          responseType,
+          confidence: existingConfidence,
+          primaryVariant,
+          domain: question.domain || 'General',
+          subcategory: question.subdomain || question.domain || 'General',
+          anchorFormat,
+          studentAnswer: answerText,
+          studentAnswerId: answer,
+        });
+        return newMap;
+      });
+    }
   };
 
   // SDM-10 selection delegating to the extracted pure function
