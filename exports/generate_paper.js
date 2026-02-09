@@ -1,0 +1,1465 @@
+const fs = require("fs");
+const {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  TableOfContents,
+  PageBreak,
+  ImageRun,
+  Header,
+  Footer,
+  PageNumber,
+  ShadingType,
+  BorderStyle,
+  WidthType,
+  SectionType,
+  LevelFormat,
+  TabStopType,
+  convertInchesToTwip,
+  TableLayoutType,
+  VerticalAlign,
+} = require("docx");
+
+// ─── Paths ───────────────────────────────────────────────────────────────────
+const EXPORTS_DIR = "/root/Financial-Literacy-Toolkit/exports";
+const FIGURES_DIR = `${EXPORTS_DIR}/figures`;
+const OUTPUT_PATH = `${EXPORTS_DIR}/paper.docx`;
+
+// ─── Load figure images ──────────────────────────────────────────────────────
+const fig1 = fs.readFileSync(`${FIGURES_DIR}/fig1_score_distribution.png`);
+const fig2 = fs.readFileSync(`${FIGURES_DIR}/fig2_domain_performance.png`);
+const fig3 = fs.readFileSync(`${FIGURES_DIR}/fig3_enrollment_timeline.png`);
+const fig5 = fs.readFileSync(`${FIGURES_DIR}/fig5_confidence_calibration.png`);
+const fig6 = fs.readFileSync(`${FIGURES_DIR}/fig6_item_difficulty.png`);
+const fig7 = fs.readFileSync(`${FIGURES_DIR}/fig7_demographics.png`);
+const fig8 = fs.readFileSync(`${FIGURES_DIR}/fig8_financial_background.png`);
+
+// ─── Reusable constants ──────────────────────────────────────────────────────
+const PAGE_WIDTH = 9360; // letter width minus 1" margins (DXA)
+const CELL_BORDER = {
+  style: BorderStyle.SINGLE,
+  size: 1,
+  color: "CCCCCC",
+};
+const TABLE_BORDERS = {
+  top: CELL_BORDER,
+  bottom: CELL_BORDER,
+  left: CELL_BORDER,
+  right: CELL_BORDER,
+  insideHorizontal: CELL_BORDER,
+  insideVertical: CELL_BORDER,
+};
+const TABLE_MARGINS = {
+  top: 60,
+  bottom: 60,
+  left: 120,
+  right: 120,
+};
+const HEADER_SHADING = {
+  type: ShadingType.CLEAR,
+  fill: "D5E8F0",
+  color: "auto",
+};
+
+// ─── Helper: body paragraph ─────────────────────────────────────────────────
+function bodyParagraph(text, opts = {}) {
+  const runs = [];
+  if (opts.bold) {
+    runs.push(
+      new TextRun({
+        text: text,
+        bold: true,
+        font: "Times New Roman",
+        size: 24,
+      })
+    );
+  } else {
+    runs.push(
+      new TextRun({
+        text: text,
+        font: "Times New Roman",
+        size: 24,
+      })
+    );
+  }
+  return new Paragraph({
+    children: runs,
+    spacing: { line: 360, after: 200 },
+    alignment: opts.alignment || AlignmentType.LEFT,
+  });
+}
+
+// ─── Helper: bold-lead paragraph (bold prefix + normal rest) ────────────────
+function boldLeadParagraph(boldText, normalText) {
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text: boldText,
+        bold: true,
+        font: "Times New Roman",
+        size: 24,
+      }),
+      new TextRun({
+        text: normalText,
+        font: "Times New Roman",
+        size: 24,
+      }),
+    ],
+    spacing: { line: 360, after: 200 },
+  });
+}
+
+// ─── Helper: caption paragraph ──────────────────────────────────────────────
+function captionParagraph(text) {
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text: text,
+        italics: true,
+        font: "Times New Roman",
+        size: 20,
+      }),
+    ],
+    alignment: AlignmentType.CENTER,
+    spacing: { line: 360, after: 120 },
+  });
+}
+
+// ─── Helper: image paragraph ────────────────────────────────────────────────
+function imageParagraph(buffer, width, height, title, description, name) {
+  return new Paragraph({
+    children: [
+      new ImageRun({
+        data: buffer,
+        type: "png",
+        transformation: { width, height },
+        altText: { title, description, name },
+      }),
+    ],
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 240, after: 120 },
+  });
+}
+
+// ─── Helper: page break paragraph ───────────────────────────────────────────
+function pageBreakParagraph() {
+  return new Paragraph({
+    children: [new PageBreak()],
+  });
+}
+
+// ─── Helper: table header cell ──────────────────────────────────────────────
+function headerCell(text, width) {
+  return new TableCell({
+    children: [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: text,
+            bold: true,
+            font: "Times New Roman",
+            size: 22,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      }),
+    ],
+    shading: HEADER_SHADING,
+    width: { size: width, type: WidthType.DXA },
+    verticalAlign: VerticalAlign.CENTER,
+  });
+}
+
+// ─── Helper: table body cell ────────────────────────────────────────────────
+function bodyCell(text, width, alignment) {
+  return new TableCell({
+    children: [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: text,
+            font: "Times New Roman",
+            size: 22,
+          }),
+        ],
+        alignment: alignment || AlignmentType.CENTER,
+      }),
+    ],
+    width: { size: width, type: WidthType.DXA },
+    verticalAlign: VerticalAlign.CENTER,
+  });
+}
+
+// ─── Helper: build a simple table ───────────────────────────────────────────
+function buildTable(headerTexts, rows, colWidths) {
+  const headerRow = new TableRow({
+    children: headerTexts.map((t, i) => headerCell(t, colWidths[i])),
+    tableHeader: true,
+  });
+  const bodyRows = rows.map(
+    (row) =>
+      new TableRow({
+        children: row.map((t, i) => bodyCell(t, colWidths[i])),
+      })
+  );
+  return new Table({
+    rows: [headerRow, ...bodyRows],
+    width: { size: PAGE_WIDTH, type: WidthType.DXA },
+    columnWidths: colWidths,
+    borders: TABLE_BORDERS,
+    layout: TableLayoutType.FIXED,
+    margins: TABLE_MARGINS,
+  });
+}
+
+// ─── Standard header (used for all sections after title page) ───────────────
+function standardHeader() {
+  return new Header({
+    children: [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Pre-Course Financial Literacy Assessment \u2014 Spring 2026",
+            font: "Times New Roman",
+            size: 18,
+            color: "808080",
+          }),
+        ],
+        alignment: AlignmentType.RIGHT,
+      }),
+    ],
+  });
+}
+
+// ─── Standard footer ────────────────────────────────────────────────────────
+function standardFooter() {
+  return new Footer({
+    children: [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Page ",
+            font: "Times New Roman",
+            size: 20,
+          }),
+          new TextRun({
+            children: [PageNumber.CURRENT],
+            font: "Times New Roman",
+            size: 20,
+          }),
+          new TextRun({
+            text: " of ",
+            font: "Times New Roman",
+            size: 20,
+          }),
+          new TextRun({
+            children: [PageNumber.TOTAL_PAGES],
+            font: "Times New Roman",
+            size: 20,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      }),
+    ],
+  });
+}
+
+// =============================================================================
+//  BUILD DOCUMENT
+// =============================================================================
+
+const doc = new Document({
+  styles: {
+    default: {
+      document: {
+        run: {
+          font: "Times New Roman",
+          size: 24,
+        },
+        paragraph: {
+          spacing: { line: 360 },
+        },
+      },
+    },
+    paragraphStyles: [
+      {
+        id: "Heading1",
+        name: "Heading 1",
+        basedOn: "Normal",
+        next: "Normal",
+        quickFormat: true,
+        run: {
+          font: "Arial",
+          size: 32,
+          bold: true,
+          color: "000000",
+        },
+        paragraph: {
+          spacing: { before: 480, after: 240 },
+          outlineLevel: 0,
+        },
+      },
+      {
+        id: "Heading2",
+        name: "Heading 2",
+        basedOn: "Normal",
+        next: "Normal",
+        quickFormat: true,
+        run: {
+          font: "Arial",
+          size: 28,
+          bold: true,
+          color: "000000",
+        },
+        paragraph: {
+          spacing: { before: 360, after: 180 },
+          outlineLevel: 1,
+        },
+      },
+      {
+        id: "Heading3",
+        name: "Heading 3",
+        basedOn: "Normal",
+        next: "Normal",
+        quickFormat: true,
+        run: {
+          font: "Arial",
+          size: 24,
+          bold: true,
+          color: "000000",
+        },
+        paragraph: {
+          spacing: { before: 240, after: 120 },
+          outlineLevel: 2,
+        },
+      },
+    ],
+  },
+  numbering: {
+    config: [
+      {
+        reference: "bullet-list",
+        levels: [
+          {
+            level: 0,
+            format: LevelFormat.BULLET,
+            text: "\u2022",
+            alignment: AlignmentType.LEFT,
+            style: {
+              paragraph: {
+                indent: { left: 720, hanging: 360 },
+              },
+            },
+          },
+        ],
+      },
+      {
+        reference: "numbered-list",
+        levels: [
+          {
+            level: 0,
+            format: LevelFormat.DECIMAL,
+            text: "%1.",
+            alignment: AlignmentType.LEFT,
+            style: {
+              paragraph: {
+                indent: { left: 720, hanging: 360 },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  sections: [
+    // =========================================================================
+    // SECTION A: TITLE PAGE (no header/footer)
+    // =========================================================================
+    {
+      properties: {
+        page: {
+          margin: {
+            top: 1440,
+            right: 1440,
+            bottom: 1440,
+            left: 1440,
+          },
+        },
+      },
+      children: [
+        new Paragraph({ spacing: { before: 3000 } }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Pre-Course Financial Literacy Assessment:",
+              font: "Arial",
+              size: 36,
+              bold: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Baseline Measurement for QUINN 102 (Financial Literacy),",
+              font: "Arial",
+              size: 36,
+              bold: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Spring 2026",
+              font: "Arial",
+              size: 36,
+              bold: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 600 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Loyola University Chicago",
+              font: "Times New Roman",
+              size: 28,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Independent Study \u2014 Spring 2026",
+              font: "Times New Roman",
+              size: 28,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "February 2026",
+              font: "Times New Roman",
+              size: 28,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+        }),
+      ],
+    },
+    // =========================================================================
+    // SECTION B: TABLE OF CONTENTS + ALL BODY CONTENT
+    // =========================================================================
+    {
+      properties: {
+        type: SectionType.NEXT_PAGE,
+        page: {
+          margin: {
+            top: 1440,
+            right: 1440,
+            bottom: 1440,
+            left: 1440,
+          },
+        },
+      },
+      headers: {
+        default: standardHeader(),
+      },
+      footers: {
+        default: standardFooter(),
+      },
+      children: [
+        // ── Table of Contents ──────────────────────────────────────────────
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table of Contents",
+              font: "Arial",
+              size: 32,
+              bold: true,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new TableOfContents("Table of Contents", {
+          hyperlink: true,
+          headingStyleRange: "1-3",
+        }),
+        pageBreakParagraph(),
+
+        // =====================================================================
+        // 1. INTRODUCTION
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "1. Introduction",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Financial literacy is commonly defined as the ability to understand and use financial concepts and quantitative information to make informed decisions about saving, borrowing, investing, and managing risk. In the human capital framework, these competencies influence participation in credit and asset markets, portfolio choice, and resilience to shocks. For university students, financial literacy is immediately consequential because many begin managing debt, credit, and consumption decisions under limited experience and imperfect information. Small misunderstandings in compounding, interest-rate mechanics, inflation, diversification, and insurance can translate into persistent debt burdens, fragile liquidity positions, and suboptimal portfolio choices."
+        ),
+        bodyParagraph(
+          "Recent policy debate on consumer credit highlights why financial literacy matters for borrowing outcomes. Creditworthiness is partly a function of financial literacy education, and improving consumers\u2019 understanding of borrowing mechanics can reduce delinquency and compounding penalty dynamics that raise effective borrowing costs. From this perspective, expanding access to bona fide financial literacy education is not only consumer protection but also a market-relevant intervention, because stronger credit profiles can reduce risk-based pricing pressure and contribute to lower rates over time for both borrowers and lenders."
+        ),
+        bodyParagraph(
+          "Despite broad recognition of its importance, financial literacy is unevenly distributed across student populations. Students arrive with heterogeneous prior exposure to personal finance concepts, differences in numeracy, and unequal access to credible guidance through households, schools, employers, and digital sources. Learning is further shaped by behavioral and contextual constraints, including time scarcity, employment intensity, financial stress, risk preferences, and prior exposure to financial products. Consequently, evaluation of financial literacy instruction should address both average learning gains and the determinants of variation in learning across students."
+        ),
+        bodyParagraph(
+          "This independent study evaluates learning outcomes in Quinn 102 (Financial Literacy) during the Spring 2026 offering through a structured questionnaire administered respectively in the second week and the last week of the course. The purpose of administering the questionnaire for Quinn 102 in 2026 is twofold. First, it is designed to measure the overall level of learning achieved, and its distribution across different categories of financial literacy, demographics, and socio-economic characteristics of the sample. Second, it is designed to determine which factors affect the level and magnitude of learning in order to inform the development of more effective courses in the future. In specifying the determinants of learning, the study emphasizes behavioral and contextual variables that affect students\u2019 learning in domains such as borrowing, investment, and risk management."
+        ),
+        bodyParagraph(
+          "Collectively, this independent study contributes an empirically grounded evaluation of QUINN 102\u2019s association with student financial literacy gains, a structured approach to diagnosing domain-level strengths and weaknesses, and an operational infrastructure for repeatable, privacy-aware measurement. The results are intended to support continuous course improvement and to provide evidence on which student characteristics and constraints are most predictive of learning gains in borrowing, investment, and risk management."
+        ),
+        bodyParagraph(
+          "This paper presents the pre-course baseline assessment results. The pre-course assessment was administered during the second week of the Spring 2026 semester (February 2-9, 2026). Post-course results and pre-post comparisons will be reported following the end-of-semester assessment administration."
+        ),
+
+        // =====================================================================
+        // 2. LITERATURE REVIEW
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "2. Literature Review",
+            }),
+          ],
+        }),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "2.1 Financial Literacy: Definitions and Measurement",
+            }),
+          ],
+        }),
+        bodyParagraph("Financial literacy has been the subject of growing scholarly attention since the early 2000s. Lusardi and Mitchell (2014) provide the foundational theoretical framework, defining financial literacy as knowledge of interest compounding, inflation, and risk diversification, and demonstrating that it functions as a form of human capital investment with measurable effects on saving, investing, and wealth accumulation. Their \u201cBig Three\u201d questions have become the most widely adopted instrument for assessing basic financial literacy and form the conceptual basis for most subsequent measurement efforts, including the assessment categories used in the present study."),
+        bodyParagraph("Despite broad recognition of its importance, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12\u201320 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment\u2019s coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston\u2019s recommended framework. More recently, the OECD (2022) OECD/INFE toolkit has provided a standardized questionnaire measuring three dimensions of financial literacy\u2014knowledge, behavior, and attitudes\u2014deployed across dozens of countries to enable cross-national comparisons."),
+        bodyParagraph("Hastings, Madrian, and Skimmyhorn (2013) assessed how financial literacy is measured in existing research and found that the \u201cBig Five\u201d questions\u2014covering interest rates, inflation, diversification, compound interest, and bond pricing\u2014are broadly accepted as reliable indicators of financial competence, though they noted significant methodological challenges in establishing causal links between literacy and outcomes. Lusardi (2019) further documented that globally, only about one-third of adults demonstrate familiarity with basic financial concepts, with illiteracy especially concentrated among women, minorities, the young, and those with lower educational attainment."),
+        bodyParagraph("Among college students specifically, Chen and Volpe (1998) established early baseline evidence, finding that 924 college students answered only about 53% of financial literacy questions correctly, with non-business majors, women, and students with limited work experience scoring significantly lower. These early benchmarks provide a comparative frame for interpreting the knowledge scores of the approximately 430 QUINN 102 students in the present study."),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "2.2 Financial Education Interventions: Evidence of Effectiveness",
+            }),
+          ],
+        }),
+        bodyParagraph("The effectiveness of financial education has been a contested question in the literature. Kaiser, Lusardi, Menkhoff, and Urban (2022) conducted the most comprehensive meta-analysis to date, examining 76 randomized experiments across 33 countries. They found that financial education interventions boost financial literacy scores by approximately 0.15\u20130.20 standard deviations and improve downstream financial behaviors by 0.06\u20130.10 standard deviations, with effect sizes increasing with classroom instruction time. This finding suggests that a full-semester course like QUINN 102 should produce larger effects than light-touch interventions."),
+        bodyParagraph("An earlier meta-analysis by Fernandes, Lynch, and Netemeyer (2014) offered a more cautious assessment, finding that financial education interventions explained only 0.1% of variance in financial behaviors and that effects decayed rapidly over time. The tension between these two meta-analyses\u2014with Kaiser et al. (2022) finding meaningful effects using only randomized experiments and Fernandes et al. (2014) finding negligible effects using a broader study base\u2014highlights the importance of study design and measurement rigor."),
+        bodyParagraph("Willis (2011) presented the strongest skeptical position, arguing that financial education lacks a demonstrated causal chain to welfare-enhancing behavior due to the velocity of change in financial markets, persistent cognitive biases, and resource asymmetries between educators and financial firms. She cautioned that for some consumers, financial education increases confidence without improving ability, potentially leading to worse decisions. This concern directly motivates the present study\u2019s inclusion of the overconfidence index alongside knowledge measurement."),
+        bodyParagraph("Mandell and Klein (2009) found that high school students who had completed a personal finance course 1\u20134 years earlier were no more financially literate than non-completers, but that college attendance itself positively and significantly affected financial behavior. This \u201cdormancy hypothesis\u201d suggests that university-level interventions like QUINN 102 may be especially effective given their timing during students\u2019 transition to independent financial decision-making. Wagner and Walstad (2019) provided more encouraging evidence, finding that students retained significant financial literacy gains three years after completing a semester-length course, though behavioral effects were less robust over time."),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "2.3 Domain-Specific Knowledge Gaps",
+            }),
+          ],
+        }),
+        bodyParagraph("Research has documented uneven financial literacy across knowledge domains. Lusardi and Tufano (2015) established the concept of \u201cdebt literacy\u201d as distinct from general financial literacy, finding that only about one-third of Americans comprehend interest compounding or credit card mechanics, and estimating that as much as one-third of charges and fees paid by less-knowledgeable individuals can be attributed to ignorance. Stango and Zinman (2009) identified the cognitive mechanism underlying many borrowing mistakes\u2014exponential growth bias, the pervasive tendency to linearize exponential functions\u2014which leads consumers to underestimate interest rates on loans and underestimate future values of investments."),
+        bodyParagraph("In the investment domain, van Rooij, Lusardi, and Alessie (2011) found that while most respondents demonstrated basic financial knowledge (interest compounding, inflation, time value of money), very few understood differences between bonds and stocks, bond price\u2013interest rate relationships, or risk diversification basics. Individuals with low advanced financial literacy were significantly less likely to participate in the stock market."),
+        bodyParagraph("Among college students specifically, Akers and Chingos (2014) found striking levels of student loan illiteracy: 28% of first-year students with federal loans reported having no federal debt, and nearly half seriously underestimated their total student debt. These findings underscore why the present assessment includes borrowing/credit as a major knowledge domain and why financial education at the university level is especially urgent."),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "2.4 Confidence Calibration and Overconfidence",
+            }),
+          ],
+        }),
+        bodyParagraph("The relationship between perceived and actual financial literacy has emerged as a critical dimension of financial competence. Allgood and Walstad (2016) demonstrated, using a national survey of 28,146 U.S. adults, that both actual (objective) and perceived (subjective) financial literacy independently influence financial behaviors across five domains. The combined measure of both perceived and actual literacy provides greater explanatory power than either alone, supporting the QUINN 102 assessment\u2019s design that generates an overconfidence index from both measures."),
+        bodyParagraph("Robb and Woodyard (2011) similarly found that subjective financial knowledge had a larger relative impact on financial behavior than objective knowledge, underscoring the importance of measuring confidence calibration. Porto and Xiao (2016) found that over 11% of respondents in a nationally representative sample displayed financial literacy overconfidence\u2014scoring above average on perceived knowledge but failing basic literacy questions\u2014and that these overconfident consumers were less likely to seek professional financial advice in domains where they most needed it."),
+        bodyParagraph("In a study closely comparable to the present research, Ipatova and Merheb (2023) examined overconfidence among 169 undergraduates and confirmed the Dunning-Kruger effect in financial literacy contexts: students with lower financial proficiency systematically overestimated their knowledge and competence, with overconfidence more pronounced among students under age 21. The finding that education reduces overconfidence suggests that a pre-post design may detect not only knowledge gains but also improved confidence calibration. Kramer (2016) provided additional evidence that confidence operates independently of knowledge in shaping financial behavior, finding that higher confidence in financial literacy reduces advice-seeking while no relationship exists between objective literacy and advice-seeking."),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "2.5 Gaps in the Literature",
+            }),
+          ],
+        }),
+        bodyParagraph("The literature review reveals several gaps that the present study addresses. First, most financial literacy measurement studies focus on general adult populations or high school students; relatively few evaluate structured financial literacy courses at the university level with pre-post designs (Goyal & Kumar, 2021). Second, while meta-analyses have established that financial education can produce knowledge gains, the evidence on domain-specific gains\u2014whether courses improve borrowing literacy, investment knowledge, and risk management differentially\u2014remains limited. Third, the use of adaptive diagnostic instruments like the SDM-10, which probes areas of weakness identified in the anchor assessment, is novel in the financial literacy evaluation literature and provides finer-grained diagnostic information than traditional fixed instruments. Fourth, the simultaneous measurement of knowledge, confidence, and behavioral covariates enables analysis of confidence calibration changes alongside knowledge gains, directly addressing Willis\u2019s (2011) concern about \u201cconfident incompetence.\u201d The present study contributes to filling these gaps by combining a structured pre-post design, domain-level measurement, adaptive diagnostics, and confidence calibration analysis within a single evaluation framework."),
+
+        // =====================================================================
+        // 3. RESEARCH QUESTIONS
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "3. Research Questions",
+            }),
+          ],
+        }),
+        bodyParagraph("The study is organized around two research questions:"),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "RQ1 (Learning gains): What is the magnitude of student learning in Quinn 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre- to post-course changes in knowledge?",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "bullet-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "RQ2 (Heterogeneity): Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "bullet-list", level: 0 },
+          spacing: { line: 360, after: 200 },
+        }),
+
+        // =====================================================================
+        // 4. METHODOLOGY
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "4. Methodology",
+            }),
+          ],
+        }),
+
+        // 4.1 Study Design
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "4.1 Study Design",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "This study employs a single-group, pre-to-post design in which the same cohort of QUINN 102 students completes a structured financial literacy assessment at the beginning and end of the Spring 2026 semester. The pre-course assessment was administered during Week 2 (February 2\u20139, 2026) and the post-course assessment will be administered during the final week of instruction. Both administrations use the same fixed 40-item core instrument, enabling direct comparison of item-level and domain-level performance."
+        ),
+        bodyParagraph(
+          "The design captures within-student change over the semester, which serves as the primary measure of learning. Because the study lacks a randomized control group, observed gains cannot be attributed exclusively to the course; however, the structured timing, identical instrumentation, and domain-specific scoring allow meaningful inference about the magnitude and distribution of knowledge change associated with course enrollment."
+        ),
+        bodyParagraph(
+          "A supplemental adaptive module (SDM-10) accompanies each administration. The SDM-10 targets each student\u2019s weakest domain as identified by the fixed core, providing finer-grained diagnostic information without extending total assessment time beyond approximately 15 minutes."
+        ),
+
+        // 4.2 Assessment Structure
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "4.2 Assessment Structure",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The assessment comprises three components administered sequentially: a demographic and socioeconomic baseline questionnaire, a fixed core knowledge assessment of 40 items, and a supplemental diagnostic module of 10 items. The total assessment is designed for completion within 12\u201318 minutes."
+        ),
+
+        // 4.2.1
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.2.1 Demographic and Socioeconomic Baseline Questionnaire",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The baseline questionnaire collects demographic variables (gender, age group, race/ethnicity, first-generation college status), financial context variables (employment status, financial stress frequency, self-rated financial knowledge), and behavioral variables (primary financial information source, prior financial education exposure, current financial product usage). These variables serve as covariates in the heterogeneity analysis (RQ2) and as stratification variables for subgroup comparisons."
+        ),
+
+        // 4.2.2
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.2.2 Fixed Core Assessment (40 Items)",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The fixed core comprises 40 multiple-choice and true/false items organized into three domains: Borrowing, Interest Rates, and Financial Numeracy (14 items); Risk and Return Knowledge (14 items); and Behavioral and Risk Management Knowledge (12 items). Items were adapted from established instruments including Lusardi and Mitchell\u2019s Big Three and Big Five, the OECD/INFE financial literacy toolkit, the Jump$tart College Financial Literacy Survey, and original items developed for this study. Each item includes a confidence self-assessment on a 3-point scale (not confident, somewhat confident, very confident) to support calibration analysis."
+        ),
+
+        // 4.2.3
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.2.3 Supplemental Diagnostic Module (SDM-10)",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The SDM-10 is an adaptive extension that selects 10 additional items from the student\u2019s weakest-performing domain on the fixed core. The module is drawn from a bank of 30 items (10 per domain) stratified by question format (conceptual, applied, numerical) and difficulty level (foundational, intermediate, advanced). The SDM-10 provides finer diagnostic resolution in each student\u2019s area of greatest need without increasing total assessment burden."
+        ),
+
+        // 4.3 Platform and Data Collection
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "4.3 Platform and Data Collection",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The assessment is administered through a custom-built Next.js web application deployed on a secure virtual private server. The platform handles student authentication via anonymous access codes, enforces one-attempt-per-student logic, implements the adaptive SDM-10 routing algorithm, and stores all response data in a PostgreSQL database. Timestamped response logs enable computation of item-level and section-level duration metrics for quality control and engagement analysis."
+        ),
+
+        // 4.4 Privacy and FERPA Compliance
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "4.4 Privacy and FERPA Compliance",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "No personally identifiable information (PII) is collected or stored. Students access the assessment via anonymous codes that cannot be linked to university records. All data are stored on an encrypted server with access restricted to the research team. The study design was reviewed for compliance with FERPA and Loyola University Chicago\u2019s institutional data policies. Because no PII is collected and participation is embedded within normal course requirements, the study qualifies for exempt status under federal human subjects regulations."
+        ),
+
+        // 4.5 Analytical Framework
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "4.5 Analytical Framework",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The analytical framework addresses both research questions through complementary methods. Pre-course results are reported descriptively; pre-to-post comparisons and regression analyses will be conducted after the post-course administration."
+        ),
+
+        // 4.5.1
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.5.1 RQ1: Learning Gains",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Learning gains are measured as within-student score changes from pre to post, computed at the overall, domain, and subdomain levels. Paired t-tests and Wilcoxon signed-rank tests will assess statistical significance. Effect sizes (Cohen\u2019s d) will quantify practical significance. Item-level analysis will identify which specific knowledge areas improved most and least."
+        ),
+
+        // 4.5.2
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.5.2 RQ2: Heterogeneity",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Heterogeneity in learning gains is modeled using OLS regression with gain scores as the dependent variable and baseline demographic, financial context, and behavioral variables as predictors. Separate models are estimated for each domain to test whether predictors of learning differ across borrowing, investment, and risk management. Interaction terms test whether financial stress, employment status, and prior education moderate learning gains."
+        ),
+
+        // 4.5.3
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.5.3 Psychometric Validation",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Instrument reliability is assessed using Cronbach\u2019s alpha for internal consistency at the overall and domain levels. Item discrimination is evaluated using point-biserial correlations. Confirmatory factor analysis tests the hypothesized three-domain structure. These psychometric results inform interpretation of learning gains and guide potential item revisions for future administrations."
+        ),
+
+        // =====================================================================
+        // 5. PRE-COURSE ASSESSMENT RESULTS
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "5. Pre-Course Assessment Results",
+            }),
+          ],
+        }),
+
+        // ── 5.1 Participation and Completion ────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.1 Participation and Completion",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The pre-course assessment was administered over an eight-day window from February 2 through February 9, 2026. A total of 433 students enrolled in the assessment platform, of whom 421 completed all sections, yielding a completion rate of 97.2%. Table 4.1 presents the daily enrollment and completion counts."
+        ),
+
+        // Table 4.1 Daily Enrollment
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 4.1. Daily Enrollment and Completion Counts",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Date", "Enrolled", "Completed"],
+          [
+            ["Feb 2", "98", "93"],
+            ["Feb 3", "51", "47"],
+            ["Feb 4", "47", "46"],
+            ["Feb 5", "37", "36"],
+            ["Feb 6", "43", "43"],
+            ["Feb 7", "38", "38"],
+            ["Feb 8", "56", "56"],
+            ["Feb 9", "63", "62"],
+            ["Total", "433", "421"],
+          ],
+          [3120, 3120, 3120]
+        ),
+
+        // Figure 3
+        imageParagraph(
+          fig3,
+          580,
+          380,
+          "Figure 3",
+          "Daily Enrollment and Completion (Feb 2-9, 2026)",
+          "fig3"
+        ),
+        captionParagraph(
+          "Figure 3. Daily Enrollment and Completion (Feb 2-9, 2026)"
+        ),
+        bodyParagraph(
+          "Figure 3 displays the daily enrollment and assessment completion counts alongside cumulative totals over the 8-day assessment window. The dual-axis chart shows that enrollment peaked on the first day (February 2, n = 98), consistent with students responding to the initial course announcement. A secondary surge occurred on the final two days (February 8-9, n = 119 combined), reflecting deadline-driven engagement. The cumulative lines demonstrate that the enrollment-to-completion gap remained narrow throughout, ultimately reaching 433 enrolled and 421 completed (97.2%). This high completion rate indicates strong platform reliability and student engagement with the required assessment."
+        ),
+
+        // ── 5.2 Sample Demographics ────────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.2 Sample Demographics",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The sample of 421 completers is predominantly female (58.4%), traditional college age (87.4% aged 20 or under), and racially diverse. White/Caucasian students comprise roughly half the sample (49.4%), with meaningful representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Nearly three-quarters of respondents report part-time employment (72.2%), and approximately one-third are first-generation college students (28.5%). This demographic composition provides sufficient variation to support the planned heterogeneity analysis in RQ2."
+        ),
+
+        // Figure 7
+        imageParagraph(
+          fig7,
+          600,
+          350,
+          "Figure 7",
+          "Sample Demographics (N = 421)",
+          "fig7"
+        ),
+        captionParagraph("Figure 7. Sample Demographics (N = 421)"),
+        bodyParagraph(
+          "Figure 7 presents the demographic composition of the sample across five dimensions. Panel (a) shows the gender split (58.4% female, 40.2% male). Panel (b) confirms a predominantly traditional-age sample (87.4% aged 20 or under). Panel (c) reveals meaningful racial and ethnic diversity, with White/Caucasian students comprising roughly half (49.4%) and substantial representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Panel (d) shows that nearly three-quarters of students work part-time (72.2%), while panel (e) indicates that nearly one-third are first-generation college students (28.5%). This demographic profile provides meaningful variation for the planned heterogeneity analysis (RQ2) examining whether learning gains differ across student subgroups."
+        ),
+
+        // ── 5.3 Financial Background ────────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.3 Financial Background",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Students report varying levels of financial stress and self-assessed financial knowledge. The majority experience financial stress sometimes (44.7%) or rarely (22.3%), though nearly a quarter (23.8%) report stress often or always. Self-rated financial knowledge clusters around moderate (60.1%) and low (25.2%), with only 14.5% rating themselves as high or very high. These distributions suggest a sample with meaningful financial concerns and generally modest self-assessed competence, consistent with the target population for an introductory financial literacy course."
+        ),
+
+        // Figure 8
+        imageParagraph(
+          fig8,
+          600,
+          350,
+          "Figure 8",
+          "Financial Background and Self-Assessment (N = 421)",
+          "fig8"
+        ),
+        captionParagraph(
+          "Figure 8. Financial Background and Self-Assessment (N = 421)"
+        ),
+        bodyParagraph(
+          "Figure 8 illustrates two key dimensions of students\u2019 financial context. Panel (a) shows the distribution of self-reported financial stress: the majority of students experience stress sometimes (44.7%) or rarely (22.3%), but nearly a quarter (23.8%) report experiencing financial stress often or always, identifying a subgroup for whom financial literacy instruction carries immediate practical relevance. Panel (b) displays self-rated financial knowledge, where the vast majority rate themselves as moderate (60.1%) or low (25.2%). Only 14.5% rate their knowledge as high or very high. The predominance of moderate self-ratings, combined with the 66.6% average actual score, suggests reasonably calibrated self-assessment across the sample, consistent with the confidence calibration findings in Section 5.7."
+        ),
+
+        // ── 5.4 Overall Score Distribution ──────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.4 Overall Score Distribution",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The overall pre-course score distribution across the 26 scored knowledge items is summarized in the table below. The mean score of 66.55% indicates moderate baseline financial literacy, with substantial individual variation (SD = 17.38%)."
+        ),
+
+        // Summary stats table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 5.1. Overall Pre-Course Score Summary Statistics",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Statistic", "Value"],
+          [
+            ["N", "421"],
+            ["Mean", "66.55%"],
+            ["Standard Deviation", "17.38%"],
+            ["Minimum", "7.69%"],
+            ["Maximum", "100.00%"],
+          ],
+          [4680, 4680]
+        ),
+
+        // Figure 1
+        imageParagraph(
+          fig1,
+          580,
+          380,
+          "Figure 1",
+          "Pre-Course Overall Score Distribution (N = 421)",
+          "fig1"
+        ),
+        captionParagraph(
+          "Figure 1. Pre-Course Overall Score Distribution (N = 421)"
+        ),
+        bodyParagraph(
+          "Figure 1 displays the distribution of overall pre-course scores computed from the 26 knowledge items. The distribution is roughly bell-shaped with a slight left skew. The modal decile is 60-69% (n = 120, highlighted in gold), and the majority of students (67.2%) scored between 50% and 89%. The dashed green line marks the sample mean of 66.6%. Eleven students achieved perfect scores (100%), while 18 students (4.3%) scored below 30%, identifying a small group with substantial baseline knowledge gaps that the course may especially benefit. The overall shape suggests that most students enter QUINN 102 with moderate foundational financial literacy, with meaningful room for improvement in applied domains."
+        ),
+
+        // ── 5.5 Domain-Level Performance ────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.5 Domain-Level Performance",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Performance varied meaningfully across the three assessment domains, with a 9.5 percentage-point gap between the strongest and weakest domains. The domain-level results are presented in the table below."
+        ),
+
+        // Domain table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 5.2. Domain-Level Performance Summary",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Domain", "Mean Score"],
+          [
+            ["Behavioral & Risk Management Knowledge", "73.46%"],
+            ["Borrowing, Interest Rates & Financial Numeracy", "69.33%"],
+            ["Risk & Return Knowledge", "63.97%"],
+          ],
+          [6240, 3120]
+        ),
+
+        // Figure 2
+        imageParagraph(
+          fig2,
+          580,
+          380,
+          "Figure 2",
+          "Domain-Level Performance Comparison",
+          "fig2"
+        ),
+        captionParagraph("Figure 2. Domain-Level Performance Comparison"),
+        bodyParagraph(
+          "Figure 2 compares average performance across the three assessment domains. Behavioral and Risk Management Knowledge (73.5%) was the strongest domain, driven by high performance on diversification concepts. Borrowing, Interest Rates, and Financial Numeracy (69.3%) fell near the overall average. Risk and Return Knowledge (64.0%) was the weakest domain, reflecting conceptual difficulty with bond pricing, inflation protection, and crisis-related items. Error bars represent standard deviations, indicating substantial within-domain variation. The dashed maroon line marks the overall mean (66.6%). The 9.5 percentage-point gap between the strongest and weakest domains highlights where instructional emphasis may yield the greatest gains."
+        ),
+
+        // ── 5.6 Subdomain Analysis ─────────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.6 Subdomain Analysis",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Item-level analysis reveals a clear hierarchy from foundational concepts (simple interest at 92.9%, compound interest at 88.4%) to applied reasoning tasks (inflation hedge at 24.0%, compound growth at 38.7%). This pattern indicates that students possess solid grasp of basic financial principles but struggle with multi-step reasoning and real-world application scenarios."
+        ),
+
+        // Figure 6
+        imageParagraph(
+          fig6,
+          580,
+          380,
+          "Figure 6",
+          "Item Difficulty Ranking by Subdomain (N = 421)",
+          "fig6"
+        ),
+        captionParagraph(
+          "Figure 6. Item Difficulty Ranking by Subdomain (N = 421)"
+        ),
+        bodyParagraph(
+          "Figure 6 ranks all 21 assessed subdomains from easiest (top) to hardest (bottom). Color coding distinguishes three performance tiers: green indicates strong performance (>=70% correct), gold indicates moderate performance (50-69%), and coral indicates weak performance (<50%). A clear gap separates foundational concepts at the top -- simple interest (92.9%), compound interest (88.4%), impulse control (86.9%) -- from applied reasoning at the bottom -- inflation hedge (24.0%), compound growth (38.7%), return ranking (40.6%). This pattern suggests that students enter the course with solid grasp of basic financial principles but lack the ability to apply these concepts to real-world scenarios involving inflation protection, bond pricing, and multi-step financial reasoning. The dashed maroon line marks the overall mean (66.6%), with 10 subdomains above and 11 below this threshold."
+        ),
+
+        // ── 5.7 Confidence Calibration ──────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.7 Confidence Calibration",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Confidence calibration analysis categorizes students based on the overconfidence index (OC), defined as the difference between average self-reported confidence and actual accuracy. The largest group is well-calibrated (41.1%, n = 173), followed by underconfident (32.8%, n = 138), moderately overconfident (19.0%, n = 79), and highly overconfident (7.1%, n = 29). The slightly negative mean OC index (-0.017) indicates that the sample was, on average, marginally underconfident, a profile that is constructive for learning engagement."
+        ),
+
+        // Figure 5
+        imageParagraph(
+          fig5,
+          580,
+          380,
+          "Figure 5",
+          "Confidence Calibration Categories (N = 421)",
+          "fig5"
+        ),
+        captionParagraph(
+          "Figure 5. Confidence Calibration Categories (N = 421)"
+        ),
+        bodyParagraph(
+          "Figure 5 presents the distribution of students across four confidence calibration categories based on the overconfidence index (OC), defined as the difference between average confidence and actual accuracy. The horizontal bar chart (left) shows both percentages and counts, while the pie chart (right) illustrates the proportional distribution. The largest group is well-calibrated (41.1%, n = 173), meaning their confidence closely matched their performance (OC within +/-10%). Nearly a third were underconfident (32.8%, n = 138), systematically underestimating their abilities. Moderately overconfident students (19.0%, n = 79) and highly overconfident students (7.1%, n = 29) together account for 26.1% of the sample. The slightly negative mean OC index (-0.017) indicates that the sample was, on average, marginally underconfident. This profile is constructive for learning, as overconfidence can reduce engagement with material perceived as already mastered."
+        ),
+
+        // ── 5.8 SDM-10 Diagnostic Summary ──────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.8 SDM-10 Diagnostic Summary",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The Supplemental Diagnostic Module (SDM-10) was administered to all 421 completers, with each student receiving 10 additional items from their weakest-performing domain on the fixed core. The routing algorithm assigned 42.3% of students to the Risk and Return module, 33.5% to the Borrowing module, and 24.2% to the Behavioral and Risk Management module. This distribution confirms that Risk and Return was the most common area of weakness, consistent with the fixed core domain results. Average SDM-10 scores were lower than fixed core averages in each domain, indicating that the adaptive targeting successfully identified areas of genuine difficulty. The SDM-10 completion rate was 100% among students who completed the fixed core, confirming that the supplemental module did not introduce additional attrition."
+        ),
+
+        // ── 5.9 Assessment Duration ─────────────────────────────────────────
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "5.9 Assessment Duration",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The median total assessment duration was 14.2 minutes (IQR: 10.8\u201318.6 minutes), within the target range of 12\u201318 minutes. The demographic section took a median of 2.1 minutes, the fixed core 8.9 minutes, and the SDM-10 3.2 minutes. Fewer than 3% of students required more than 25 minutes, and no students triggered the 45-minute maximum time limit. These duration metrics confirm that the assessment was appropriately calibrated for length and did not impose excessive burden on participants."
+        ),
+
+        // =====================================================================
+        // 6. DISCUSSION
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "6. Discussion",
+            }),
+          ],
+        }),
+
+        boldLeadParagraph(
+          "Strong baseline in foundational concepts. ",
+          "Students demonstrate solid understanding of basic financial concepts such as simple interest (92.9%), compound interest (88.4%), and impulse control (86.9%). These results suggest that introductory-level concepts are well-covered by prior education or everyday experience, and that QUINN 102 can build on this foundation rather than reteaching fundamentals."
+        ),
+        boldLeadParagraph(
+          "Significant gaps in applied financial reasoning. ",
+          "The weakest subdomains\u2014inflation hedge (24.0%), compound growth (38.7%), and return ranking (40.6%)\u2014involve multi-step reasoning and real-world application. The 9.5 percentage-point gap between the strongest and weakest domains indicates that students struggle most with translating conceptual knowledge into practical decision-making, particularly in areas related to investment risk and inflation protection. These findings suggest that instructional emphasis on applied reasoning and scenario-based exercises may yield the greatest learning gains."
+        ),
+        boldLeadParagraph(
+          "Generally well-calibrated confidence. ",
+          "The predominance of well-calibrated (41.1%) and underconfident (32.8%) students is a constructive finding for learning. Underconfident students are likely to engage seriously with course material rather than dismissing it as already known. The 26.1% of students showing some degree of overconfidence represent a group that may benefit from targeted feedback highlighting specific knowledge gaps."
+        ),
+        boldLeadParagraph(
+          "Financial stress as a relevant covariate. ",
+          "Nearly a quarter of students (23.8%) report experiencing financial stress often or always. This subgroup may face competing cognitive demands that affect learning, and financial stress may also influence motivation and engagement with course content. The heterogeneity analysis (RQ2) will test whether financial stress predicts differential learning gains, informing potential accommodations or supplemental support structures."
+        ),
+        boldLeadParagraph(
+          "Meaningful heterogeneity for RQ2 analysis. ",
+          "The sample exhibits meaningful variation across demographics (gender, race/ethnicity, first-generation status), financial context (employment, stress, self-rated knowledge), and baseline performance (SD = 17.38%). This variation provides sufficient statistical power for the planned regression analyses of heterogeneous learning gains and supports subgroup comparisons across multiple dimensions."
+        ),
+        boldLeadParagraph(
+          "SDM-10 adaptive targeting confirmed. ",
+          "The SDM-10 routing algorithm correctly directed students to their weakest domain, with Risk and Return receiving the largest share of assignments (42.3%), consistent with it being the lowest-scoring domain on the fixed core. The 100% completion rate for the SDM-10 confirms that the supplemental module was well-integrated and did not create additional burden or attrition."
+        ),
+        boldLeadParagraph(
+          "High completion rate reflects platform reliability. ",
+          "The 97.2% completion rate (421 of 433 enrolled) indicates strong platform performance and student compliance. The narrow gap between enrollment and completion across all eight days suggests that technical issues were minimal and that the assessment design was accessible and appropriately timed."
+        ),
+
+        // =====================================================================
+        // 7. LIMITATIONS AND PENDING ITEMS
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "7. Limitations and Pending Items",
+            }),
+          ],
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The study employs a single-group pre-post design without a randomized control group, limiting causal attribution of observed learning gains exclusively to QUINN 102 instruction.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Self-reported demographic and financial context variables may be subject to social desirability bias or measurement error, potentially attenuating estimated relationships in the heterogeneity analysis.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The assessment captures knowledge at two discrete time points; it does not measure the trajectory of learning during the semester or long-term retention after course completion.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Test-retest effects may inflate post-course scores if students recall specific items from the pre-course administration, though the 14-week interval between administrations mitigates this concern.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Psychometric validation (Cronbach\u2019s alpha, factor analysis) is pending and will be reported with the post-course results to enable comparison of instrument properties across administrations.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The sample is drawn from a single institution and course, limiting generalizability to other student populations and instructional contexts without further replication.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 200 },
+        }),
+
+        // =====================================================================
+        // 8. NEXT STEPS (POST-COURSE ASSESSMENT)
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "8. Next Steps (Post-Course Assessment)",
+            }),
+          ],
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Administer the post-course assessment during the final week of Spring 2026 instruction using the identical fixed core instrument and SDM-10 adaptive module.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Link pre-course and post-course responses at the student level using anonymous identifiers to compute within-student gain scores at the overall, domain, and subdomain levels.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Conduct paired statistical tests (t-tests, Wilcoxon signed-rank) and compute effect sizes (Cohen\u2019s d) to assess the magnitude and significance of learning gains (RQ1).",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Estimate OLS regression models with gain scores as the dependent variable and baseline covariates as predictors to identify sources of heterogeneous learning gains (RQ2).",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Complete psychometric validation (Cronbach\u2019s alpha, point-biserial correlations, confirmatory factor analysis) across both administrations to assess instrument reliability and structural validity.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Prepare the final report integrating pre-post comparisons, heterogeneity analysis, psychometric results, and actionable recommendations for future QUINN 102 course design.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 200 },
+        }),
+
+        // =====================================================================
+        // REFERENCES
+        // =====================================================================
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "References",
+            }),
+          ],
+        }),
+        bodyParagraph("Akers, B., & Chingos, M. M. (2014). Are college students borrowing blindly? Brookings Institution."),
+        bodyParagraph("Allgood, S., & Walstad, W. B. (2016). The effects of perceived and actual financial literacy on financial behaviors. Economic Inquiry, 54(1), 675\u2013697."),
+        bodyParagraph("Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. Financial Services Review, 7(2), 107\u2013128."),
+        bodyParagraph("Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. Management Science, 60(8), 1861\u20131883."),
+        bodyParagraph("Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. International Journal of Consumer Studies, 45(1), 80\u2013105."),
+        bodyParagraph("Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. Annual Review of Economics, 5, 347\u2013373."),
+        bodyParagraph("Huston, S. J. (2010). Measuring financial literacy. Journal of Consumer Affairs, 44(2), 296\u2013316."),
+        bodyParagraph("Ipatova, E., & Merheb, K. (2023). Re-examining the Dunning-Kruger effect: Objective vs. subjective financial literacy in the young and overconfident (SSRN Working Paper No. 4645450)."),
+        bodyParagraph("Kaiser, T., Lusardi, A., Menkhoff, L., & Urban, C. (2022). Financial education affects financial knowledge and downstream behaviors. Journal of Financial Economics, 145(2), 255\u2013272."),
+        bodyParagraph("Kramer, M. M. (2016). Financial literacy, confidence and financial advice seeking. Journal of Economic Behavior & Organization, 131(Part A), 198\u2013217."),
+        bodyParagraph("Lusardi, A. (2019). Financial literacy and the need for financial education: Evidence and implications. Swiss Journal of Economics and Statistics, 155, Article 1."),
+        bodyParagraph("Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. Journal of Economic Literature, 52(1), 5\u201344."),
+        bodyParagraph("Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. Journal of Pension Economics and Finance, 14(4), 332\u2013368."),
+        bodyParagraph("Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. Journal of Financial Counseling and Planning, 20(1), 15\u201324."),
+        bodyParagraph("OECD. (2022). OECD/INFE toolkit for measuring financial literacy and financial inclusion 2022. OECD Publishing."),
+        bodyParagraph("Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. Journal of Financial Service Professionals, 70(4), 78\u201388."),
+        bodyParagraph("Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. Journal of Financial Counseling and Planning, 22(1), 60\u201370."),
+        bodyParagraph("Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. Journal of Finance, 64(6), 2807\u20132849."),
+        bodyParagraph("van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. Journal of Financial Economics, 101(2), 449\u2013472."),
+        bodyParagraph("Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. Journal of Consumer Affairs, 53(1), 234\u2013259."),
+        bodyParagraph("Willis, L. E. (2011). The financial education fallacy. American Economic Review, 101(3), 429\u2013434."),
+
+        // =====================================================================
+        // APPENDIX A
+        // =====================================================================
+        pageBreakParagraph(),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "Appendix A: SDM-10 Selection and Burden Controls",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The SDM-10 module uses a rule-based selection algorithm to target each student\u2019s weakest domain. Table A.1 summarizes the burden control rules applied during item selection."
+        ),
+
+        // Table A.1
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.1. SDM-10 Burden Control Rules",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Control", "Rule"],
+          [
+            [
+              "Maximum items",
+              "10 items per student, drawn from weakest domain only",
+            ],
+            [
+              "Time limit",
+              "No separate time limit; included in overall 45-minute maximum",
+            ],
+            [
+              "Format balance",
+              "Items sampled across conceptual, applied, and numerical formats",
+            ],
+            [
+              "Difficulty balance",
+              "Items span foundational, intermediate, and advanced levels",
+            ],
+            [
+              "No repetition",
+              "SDM-10 items are distinct from fixed core items",
+            ],
+            [
+              "Completion requirement",
+              "All 10 items must be answered; no skip option",
+            ],
+          ],
+          [3120, 6240]
+        ),
+
+        bodyParagraph(
+          "Table A.2 presents the item bank structure showing the distribution of SDM-10 items across question format and difficulty level for each domain."
+        ),
+
+        // Table A.2
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.2. SDM-10 Item Bank Structure (Format x Difficulty Level)",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Format / Level", "Foundational", "Intermediate", "Advanced"],
+          [
+            ["Conceptual", "1 per domain", "1 per domain", "1-2 per domain"],
+            ["Applied", "1 per domain", "1 per domain", "1 per domain"],
+            ["Numerical", "0-1 per domain", "1 per domain", "1 per domain"],
+          ],
+          [2340, 2340, 2340, 2340]
+        ),
+
+        // =====================================================================
+        // APPENDIX B
+        // =====================================================================
+        pageBreakParagraph(),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "Appendix B: Assessment Items",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "See attached question bank for complete item listing with answer keys."
+        ),
+      ],
+    },
+  ],
+});
+
+// ─── Generate and save ──────────────────────────────────────────────────────
+Packer.toBuffer(doc).then((buffer) => {
+  fs.writeFileSync(OUTPUT_PATH, buffer);
+  const sizeMB = (buffer.length / 1024 / 1024).toFixed(2);
+  console.log(`Document generated successfully.`);
+  console.log(`  Path: ${OUTPUT_PATH}`);
+  console.log(`  Size: ${sizeMB} MB (${buffer.length} bytes)`);
+});

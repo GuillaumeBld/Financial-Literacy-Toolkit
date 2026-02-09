@@ -8,32 +8,39 @@
 ## Table of Contents
 
 1. [Introduction](#1-introduction)
-2. [Research Questions](#2-research-questions)
-3. [Methodology](#3-methodology)
-   - 3.1 [Study Design](#31-study-design)
-   - 3.2 [Assessment Structure](#32-assessment-structure)
-     - 3.2.1 [Demographic and Socioeconomic Baseline Questionnaire](#321-demographic-and-socioeconomic-baseline-questionnaire)
-     - 3.2.2 [Fixed Core Assessment (40 Items)](#322-fixed-core-assessment-40-items)
-     - 3.2.3 [Supplemental Diagnostic Module (SDM-10)](#323-supplemental-diagnostic-module-sdm-10)
-   - 3.3 [Platform and Data Collection](#33-platform-and-data-collection)
-   - 3.4 [Privacy and FERPA Compliance](#34-privacy-and-ferpa-compliance)
-   - 3.5 [Analytical Framework](#35-analytical-framework)
-     - 3.5.1 [RQ1: Learning Gains](#351-rq1-learning-gains)
-     - 3.5.2 [RQ2: Heterogeneity](#352-rq2-heterogeneity)
-     - 3.5.3 [Psychometric Validation](#353-psychometric-validation)
-4. [Pre-Course Assessment Results](#4-pre-course-assessment-results)
-   - 4.1 [Participation and Completion](#41-participation-and-completion)
-   - 4.2 [Sample Demographics](#42-sample-demographics)
-   - 4.3 [Financial Background and Context](#43-financial-background-and-context)
-   - 4.4 [Overall Score Distribution](#44-overall-score-distribution)
-   - 4.5 [Domain-Level Performance](#45-domain-level-performance)
-   - 4.6 [Subdomain Analysis and Item Difficulty](#46-subdomain-analysis-and-item-difficulty)
-   - 4.7 [Confidence Calibration (Overconfidence Index)](#47-confidence-calibration-overconfidence-index)
-   - 4.8 [SDM-10 Diagnostic Summary](#48-sdm-10-diagnostic-summary)
-   - 4.9 [Assessment Duration](#49-assessment-duration)
-5. [Discussion of Pre-Course Baseline](#5-discussion-of-pre-course-baseline)
-6. [Limitations and Pending Items](#6-limitations-and-pending-items)
-7. [Next Steps (Post-Course Assessment)](#7-next-steps-post-course-assessment)
+2. [Literature Review](#2-literature-review)
+   - 2.1 [Financial Literacy: Definitions and Measurement](#21-financial-literacy-definitions-and-measurement)
+   - 2.2 [Financial Education Interventions: Evidence of Effectiveness](#22-financial-education-interventions-evidence-of-effectiveness)
+   - 2.3 [Domain-Specific Knowledge Gaps](#23-domain-specific-knowledge-gaps)
+   - 2.4 [Confidence Calibration and Overconfidence](#24-confidence-calibration-and-overconfidence)
+   - 2.5 [Gaps in the Literature](#25-gaps-in-the-literature)
+3. [Research Questions](#3-research-questions)
+4. [Methodology](#4-methodology)
+   - 4.1 [Study Design](#41-study-design)
+   - 4.2 [Assessment Structure](#42-assessment-structure)
+     - 4.2.1 [Demographic and Socioeconomic Baseline Questionnaire](#421-demographic-and-socioeconomic-baseline-questionnaire)
+     - 4.2.2 [Fixed Core Assessment (40 Items)](#422-fixed-core-assessment-40-items)
+     - 4.2.3 [Supplemental Diagnostic Module (SDM-10)](#423-supplemental-diagnostic-module-sdm-10)
+   - 4.3 [Platform and Data Collection](#43-platform-and-data-collection)
+   - 4.4 [Privacy and FERPA Compliance](#44-privacy-and-ferpa-compliance)
+   - 4.5 [Analytical Framework](#45-analytical-framework)
+     - 4.5.1 [RQ1: Learning Gains](#451-rq1-learning-gains)
+     - 4.5.2 [RQ2: Heterogeneity](#452-rq2-heterogeneity)
+     - 4.5.3 [Psychometric Validation](#453-psychometric-validation)
+5. [Pre-Course Assessment Results](#5-pre-course-assessment-results)
+   - 5.1 [Participation and Completion](#51-participation-and-completion)
+   - 5.2 [Sample Demographics](#52-sample-demographics)
+   - 5.3 [Financial Background and Context](#53-financial-background-and-context)
+   - 5.4 [Overall Score Distribution](#54-overall-score-distribution)
+   - 5.5 [Domain-Level Performance](#55-domain-level-performance)
+   - 5.6 [Subdomain Analysis and Item Difficulty](#56-subdomain-analysis-and-item-difficulty)
+   - 5.7 [Confidence Calibration (Overconfidence Index)](#57-confidence-calibration-overconfidence-index)
+   - 5.8 [SDM-10 Diagnostic Summary](#58-sdm-10-diagnostic-summary)
+   - 5.9 [Assessment Duration](#59-assessment-duration)
+6. [Discussion of Pre-Course Baseline](#6-discussion-of-pre-course-baseline)
+7. [Limitations and Pending Items](#7-limitations-and-pending-items)
+8. [Next Steps (Post-Course Assessment)](#8-next-steps-post-course-assessment)
+- [References](#references)
 - [Appendix A: SDM-10 Selection and Burden Controls](#appendix-a-sdm-10-selection-and-burden-controls)
 - [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
 
@@ -55,7 +62,53 @@ This paper presents the pre-course baseline assessment results. The pre-course a
 
 ---
 
-## 2. Research Questions
+## 2. Literature Review
+
+### 2.1 Financial Literacy: Definitions and Measurement
+
+Financial literacy has been the subject of growing scholarly attention since the early 2000s. Lusardi and Mitchell (2014) provide the foundational theoretical framework, defining financial literacy as knowledge of interest compounding, inflation, and risk diversification, and demonstrating that it functions as a form of human capital investment with measurable effects on saving, investing, and wealth accumulation. Their "Big Three" questions have become the most widely adopted instrument for assessing basic financial literacy and form the conceptual basis for most subsequent measurement efforts, including the assessment categories used in the present study.
+
+Despite broad recognition of its importance, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12--20 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment's coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston's recommended framework. More recently, the OECD (2022) OECD/INFE toolkit has provided a standardized questionnaire measuring three dimensions of financial literacy -- knowledge, behavior, and attitudes -- deployed across dozens of countries to enable cross-national comparisons.
+
+Hastings, Madrian, and Skimmyhorn (2013) assessed how financial literacy is measured in existing research and found that the "Big Five" questions -- covering interest rates, inflation, diversification, compound interest, and bond pricing -- are broadly accepted as reliable indicators of financial competence, though they noted significant methodological challenges in establishing causal links between literacy and outcomes. Lusardi (2019) further documented that globally, only about one-third of adults demonstrate familiarity with basic financial concepts, with illiteracy especially concentrated among women, minorities, the young, and those with lower educational attainment.
+
+Among college students specifically, Chen and Volpe (1998) established early baseline evidence, finding that 924 college students answered only about 53% of financial literacy questions correctly, with non-business majors, women, and students with limited work experience scoring significantly lower. These early benchmarks provide a comparative frame for interpreting the knowledge scores of the approximately 430 QUINN 102 students in the present study.
+
+### 2.2 Financial Education Interventions: Evidence of Effectiveness
+
+The effectiveness of financial education has been a contested question in the literature. Kaiser, Lusardi, Menkhoff, and Urban (2022) conducted the most comprehensive meta-analysis to date, examining 76 randomized experiments across 33 countries. They found that financial education interventions boost financial literacy scores by approximately 0.15--0.20 standard deviations and improve downstream financial behaviors by 0.06--0.10 standard deviations, with effect sizes increasing with classroom instruction time. This finding suggests that a full-semester course like QUINN 102 should produce larger effects than light-touch interventions.
+
+An earlier meta-analysis by Fernandes, Lynch, and Netemeyer (2014) offered a more cautious assessment, finding that financial education interventions explained only 0.1% of variance in financial behaviors and that effects decayed rapidly over time. The tension between these two meta-analyses -- with Kaiser et al. (2022) finding meaningful effects using only randomized experiments and Fernandes et al. (2014) finding negligible effects using a broader study base -- highlights the importance of study design and measurement rigor.
+
+Willis (2011) presented the strongest skeptical position, arguing that financial education lacks a demonstrated causal chain to welfare-enhancing behavior due to the velocity of change in financial markets, persistent cognitive biases, and resource asymmetries between educators and financial firms. She cautioned that for some consumers, financial education increases confidence without improving ability, potentially leading to worse decisions. This concern directly motivates the present study's inclusion of the overconfidence index alongside knowledge measurement.
+
+Mandell and Klein (2009) found that high school students who had completed a personal finance course 1--4 years earlier were no more financially literate than non-completers, but that college attendance itself positively and significantly affected financial behavior. This "dormancy hypothesis" suggests that university-level interventions like QUINN 102 may be especially effective given their timing during students' transition to independent financial decision-making. Wagner and Walstad (2019) provided more encouraging evidence, finding that students retained significant financial literacy gains three years after completing a semester-length course, though behavioral effects were less robust over time.
+
+### 2.3 Domain-Specific Knowledge Gaps
+
+Research has documented uneven financial literacy across knowledge domains. Lusardi and Tufano (2015) established the concept of "debt literacy" as distinct from general financial literacy, finding that only about one-third of Americans comprehend interest compounding or credit card mechanics, and estimating that as much as one-third of charges and fees paid by less-knowledgeable individuals can be attributed to ignorance. Stango and Zinman (2009) identified the cognitive mechanism underlying many borrowing mistakes -- exponential growth bias, the pervasive tendency to linearize exponential functions -- which leads consumers to underestimate interest rates on loans and underestimate future values of investments.
+
+In the investment domain, van Rooij, Lusardi, and Alessie (2011) found that while most respondents demonstrated basic financial knowledge (interest compounding, inflation, time value of money), very few understood differences between bonds and stocks, bond price-interest rate relationships, or risk diversification basics. Individuals with low advanced financial literacy were significantly less likely to participate in the stock market.
+
+Among college students specifically, Akers and Chingos (2014) found striking levels of student loan illiteracy: 28% of first-year students with federal loans reported having no federal debt, and nearly half seriously underestimated their total student debt. These findings underscore why the present assessment includes borrowing/credit as a major knowledge domain and why financial education at the university level is especially urgent.
+
+### 2.4 Confidence Calibration and Overconfidence
+
+The relationship between perceived and actual financial literacy has emerged as a critical dimension of financial competence. Allgood and Walstad (2016) demonstrated, using a national survey of 28,146 U.S. adults, that both actual (objective) and perceived (subjective) financial literacy independently influence financial behaviors across five domains. The combined measure of both perceived and actual literacy provides greater explanatory power than either alone, supporting the QUINN 102 assessment's design that generates an overconfidence index from both measures.
+
+Robb and Woodyard (2011) similarly found that subjective financial knowledge had a larger relative impact on financial behavior than objective knowledge, underscoring the importance of measuring confidence calibration. Porto and Xiao (2016) found that over 11% of respondents in a nationally representative sample displayed financial literacy overconfidence -- scoring above average on perceived knowledge but failing basic literacy questions -- and that these overconfident consumers were less likely to seek professional financial advice in domains where they most needed it.
+
+In a study closely comparable to the present research, Ipatova and Merheb (2023) examined overconfidence among 169 undergraduates and confirmed the Dunning-Kruger effect in financial literacy contexts: students with lower financial proficiency systematically overestimated their knowledge and competence, with overconfidence more pronounced among students under age 21. The finding that education reduces overconfidence suggests that a pre-post design may detect not only knowledge gains but also improved confidence calibration.
+
+Kramer (2016) provided additional evidence that confidence operates independently of knowledge in shaping financial behavior, finding that higher confidence in financial literacy reduces advice-seeking while no relationship exists between objective literacy and advice-seeking. This disconnection supports the theoretical basis for measuring confidence calibration alongside knowledge -- not just whether students learn, but whether they develop accurate self-assessment of their abilities.
+
+### 2.5 Gaps in the Literature
+
+The literature review reveals several gaps that the present study addresses. First, most financial literacy measurement studies focus on general adult populations or high school students; relatively few evaluate structured financial literacy courses at the university level with pre-post designs (Goyal & Kumar, 2021). Second, while meta-analyses have established that financial education can produce knowledge gains, the evidence on domain-specific gains -- whether courses improve borrowing literacy, investment knowledge, and risk management differentially -- remains limited. Third, the use of adaptive diagnostic instruments like the SDM-10, which probes areas of weakness identified in the anchor assessment, is novel in the financial literacy evaluation literature and provides finer-grained diagnostic information than traditional fixed instruments. Fourth, the simultaneous measurement of knowledge, confidence, and behavioral covariates enables analysis of confidence calibration changes alongside knowledge gains, directly addressing Willis's (2011) concern about "confident incompetence." The present study contributes to filling these gaps by combining a structured pre-post design, domain-level measurement, adaptive diagnostics, and confidence calibration analysis within a single evaluation framework.
+
+---
+
+## 3. Research Questions
 
 The study is organized around two research questions:
 
@@ -65,9 +118,9 @@ The study is organized around two research questions:
 
 ---
 
-## 3. Methodology
+## 4. Methodology
 
-### 3.1 Study Design
+### 4.1 Study Design
 
 Completion of the financial literacy assessment is a required course assignment in Quinn 102 (Financial Literacy) and included two planned administrations: a pre-course assessment (second week of class) and a post-course assessment (last week of class). The assessment supports instructional goals by providing baseline and post-instruction measures of students' financial literacy knowledge. Separately, students were offered the opportunity to allow their assessment data to be used for an independent research study evaluating learning outcomes in the 2026 offering of Quinn 102. Consent to research use of data was voluntary. Students could decline research participation without penalty and without any impact on course standing or grades.
 
@@ -75,7 +128,7 @@ The pre-to-post design supports a clear estimate of course-associated learning g
 
 Beyond average effects, the study is designed to explain heterogeneity in outcomes. Baseline measures collected during the second week of the course captured student characteristics and circumstances plausibly associated with learning trajectories, including demographic and socioeconomic background, prior exposure to financial products and experiences, and behavioral indicators such as confidence, financial stress, and time constraints. The post-course questionnaire results will enable analysis of baseline disparities, differential learning gains, and whether the course narrows or widens gaps in domain mastery.
 
-### 3.2 Assessment Structure
+### 4.2 Assessment Structure
 
 This study uses three assessment components:
 
@@ -85,13 +138,13 @@ This study uses three assessment components:
 
 Out of the 40 assessment items, 26 are knowledge items (Q1--Q14, Q29--Q40) scored as correct/incorrect and used to compute learning gains. The remaining 14 are preference items (Q15--Q28) that assess behavioral tendencies and serve as unscored covariates for heterogeneity analysis.
 
-#### 3.2.1 Demographic and Socioeconomic Baseline Questionnaire
+#### 4.2.1 Demographic and Socioeconomic Baseline Questionnaire
 
 The assessment began with a brief set of demographics, socioeconomic, and debt-status baseline questions administered during the onboarding flow at the start of the pre-course assessment. These items provide contextual covariates used to describe the study sample and to examine heterogeneity in learning gains (RQ2). The baseline set included standard demographics (gender, racial/ethnic background, age range, first language, and work experience), financial background and context items (prior use of common financial products such as credit cards, student loans, auto loans, investment accounts, and insurance; self-rated financial knowledge; and frequency of financial stress), and student loan debt items (current student loan debt status and, if applicable, an estimated interest-rate bracket), with "Prefer not to answer" options where appropriate. Where applicable, students who indicated student debt were asked a brief follow-up (for example, an estimated interest-rate bracket), with "Prefer not to answer" options provided where appropriate.
 
 Baseline onboarding items were collected once and will not be re-administered at the post-course administration except where students are invited to confirm or update selected background variables (for example, work status). During onboarding, students were informed that completing the assessment was a required course assignment, and they were asked whether they consented to the use of a de-identified version of their responses for research. Declining consent has no impact on grades or course standing.
 
-#### 3.2.2 Fixed Core Assessment (40 Items)
+#### 4.2.2 Fixed Core Assessment (40 Items)
 
 Following onboarding, students completed a 40-item anchor assessment that was identical across participants and will be identical in both the pre- and post-course administrations. Each anchor item was paired with a brief confidence rating on a 1--3 scale. The combination of correctness and confidence was used to determine whether additional diagnostic measurement was warranted in the supplemental module.
 
@@ -111,7 +164,7 @@ Items are classified into two types for analytic purposes:
 
 - **Preference items (Q15--Q28):** Assess financial attitudes, risk tolerance, and behavioral tendencies. These items are not scored as correct/incorrect; they serve as baseline covariates for heterogeneity analysis (RQ2) and do not trigger SDM-10 selection.
 
-#### 3.2.3 Supplemental Diagnostic Module (SDM-10)
+#### 4.2.3 Supplemental Diagnostic Module (SDM-10)
 
 In addition to the 40 anchor items, the assessment included a fixed-length Supplemental Diagnostic Module (SDM-10) consisting of 10 additional items selected from a pre-written item bank. The SDM-10 selected follow-up questions along two dimensions based on the combination of correctness and confidence rating. The first dimension was response format (True/False, multiple choice, or short open-ended response). The second dimension was level of understanding, defined relative to the anchor item's subcategory (lower-level foundational, base-level comparable, or higher-level applied). Items were selected to clarify whether incorrect or low-confidence responses reflected uncertainty, guessing, or misconceptions. To limit burden, the SDM-10 length was fixed (10 items) and open-ended items were capped.
 
@@ -119,31 +172,31 @@ The SDM-10 drew only from knowledge items (Q1--Q14, Q29--Q40). Preference items 
 
 The platform selected only from pre-written items and did not generate new questions or provide personalized feedback during the active assessment window. For the supplemental item bank, each anchor assessment concept was paired with pre-written variants across two dimensions: response format (True/False, multiple choice, short open-ended response) and level of understanding (lower-level foundational, same-level comparable, higher-level applied). This structure enabled targeted diagnostic follow-ups while preserving standardized measurement of the fixed 40-item anchor assessment.
 
-### 3.3 Platform and Data Collection
+### 4.3 Platform and Data Collection
 
 To ensure standardized delivery and data integrity at scale, the questionnaire was administered through a dedicated web platform developed for this study: the Financial Literacy Toolkit. After reviewing the IRB-approved information and consent screen, students entered the course code and their student ID and completed a brief onboarding process. Students authenticated using their university email address through institutional single sign-on. The platform did not collect or store passwords.
 
 The questions bank was developed by adapting and synthesizing items from established financial literacy and numeracy instruments and large-scale surveys, including the Berlin Numeracy Test (BNT), Lipkus Numeracy Scale, Schwartz Numeracy Scale, the 'Big Three' (Lusardi and Mitchell), the FINRA National Financial Capability Study (NFCS) item sets including the NFCS extension 'Big Five,' the OECD/INFE Toolkit (2022), the P-Fin Index (including Retirement Fluency; TIAA and GFLEC), and related decision science and medical decision-making research instruments, as well as RAND American Life Panel and RAND/NBER survey modules. An initial pool of approximately 80 candidate items was curated and refined to a 40-item anchor assessment. Each anchor question concept has pre-written variants by format (True/False, multiple choice, short open-ended) and level of understanding (foundational, comparable, applied), enabling targeted diagnostic follow-ups while maintaining a standardized 40-item anchor assessment.
 
-### 3.4 Privacy and FERPA Compliance
+### 4.4 Privacy and FERPA Compliance
 
 Student identifiers were transformed into coded keys prior to storage so that identities are not directly accessible in the research dataset, while still allowing pre-course and post-course responses to be linked. Identifiable information needed for course administration is stored separately with restricted access. The research dataset used for analysis contains only coded identifiers, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis.
 
 Students accessed the assessment through the platform onboarding flow. After reviewing the IRB-approved information and consent screen, students entered the course code and student ID, then authenticated using their university email address via institutional single sign-on or a passwordless email link. The platform did not collect or store passwords. The platform assigned each student a coded study identifier that links pre-course and post-course responses. Identifiable information, if collected for course administration (for example, verified university email), is stored separately from the research dataset with restricted access. The research dataset used for analysis is de-identified and contains only the coded identifier, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis. Only authorized instructional personnel may access identifiable information for course-related purposes (for example, confirming assignment completion). Research analyses use the de-identified dataset and follow institutional privacy and FERPA requirements.
 
-### 3.5 Analytical Framework
+### 4.5 Analytical Framework
 
 The primary learning outcomes are computed from the 26 knowledge items (Q1--Q14, Q29--Q40). Each knowledge item is scored as correct/incorrect and aggregated into (a) an overall percent-correct score and (b) domain-level percent-correct scores for borrowing and credit, investment, and risk management. Confidence ratings are recorded for each anchor item and used for secondary analyses (calibration and diagnostic interpretation), but do not change the primary scoring of the anchor items.
 
-#### 3.5.1 RQ1: Learning Gains
+#### 4.5.1 RQ1: Learning Gains
 
 For each student, learning gain will be defined as the difference between post-course and pre-course anchor scores (overall and by domain). The study will report mean gains, standard deviations, and 95% confidence intervals. Inference will use paired comparisons at the student level (for example, paired t-tests or equivalent nonparametric tests if assumptions are violated) and standardized effect sizes (for example, within-student Cohen's d). Domain-level results will be reported in parallel to identify where gains are concentrated or limited. The primary learning outcomes will be computed from the 26 knowledge items (Q1--Q14, Q29--Q40). Preference items are excluded from learning gain calculations.
 
-#### 3.5.2 RQ2: Heterogeneity
+#### 4.5.2 RQ2: Heterogeneity
 
 Heterogeneity analyses will model learning gains as a function of baseline covariates collected during onboarding, including demographic and socioeconomic indicators, prior exposure to financial products, debt status, self-rated financial knowledge, financial stress, and selected time-constraint measures (for example, work status). Models will be estimated for overall gains and domain-level gains. The analysis will use multivariable regression (or mixed-effects models when pooling domains) and will assess whether predictors differ by domain through interaction terms or domain-specific models. The study will report coefficient estimates with confidence intervals and will use appropriate adjustments or transparency practices for multiple comparisons (for example, pre-specifying a small set of primary predictors and treating others as exploratory). Preference items (Q15--Q28) will be analyzed as baseline covariates. These include measures of risk tolerance, loss aversion, allocation preferences, decision-making style, and confidence. The analysis will test whether these behavioral characteristics predict differential learning gains across students.
 
-#### 3.5.3 Psychometric Validation
+#### 4.5.3 Psychometric Validation
 
 Exploratory Factor Analysis (EFA) and internal consistency reliability metrics such as Cronbach's alpha will provide classical evidence that questionnaire items measure coherent and reliable constructs. EFA will be used to verify that items within each domain load on intended latent factors and to assess dimensionality -- that is, how many underlying constructs the item set appears to measure. Cronbach's alpha will evaluate internal consistency, indicating whether items intended to measure the same construct exhibit adequate correlation. Together, these methods will identify items or domains requiring refinement, support reliability across different student populations and assessment occasions, and establish replicable benchmarks that facilitate future research and institutional comparisons.
 
@@ -153,11 +206,11 @@ Item-level summaries (difficulty, missingness, and response distributions) will 
 
 ---
 
-## 4. Pre-Course Assessment Results
+## 5. Pre-Course Assessment Results
 
 This section reports the pre-course baseline results from the assessment administered during February 2--9, 2026. All data reflect the pre-course administration only; post-course results will be reported following the end-of-semester assessment.
 
-### 4.1 Participation and Completion
+### 5.1 Participation and Completion
 
 The pre-course assessment window was open from February 2 through February 9, 2026. A total of 433 students onboarded onto the platform, of whom 421 submitted completed assessments, yielding a completion rate of 97.2%. Seven students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure.
 
@@ -177,7 +230,7 @@ The pre-course assessment window was open from February 2 through February 9, 20
 
 Enrollment was highest on the first day of the window (Feb 2, n = 98), consistent with students responding to the initial course announcement, and showed a secondary uptick in the final two days (Feb 8--9, n = 119 combined), reflecting deadline-driven engagement.
 
-### 4.2 Sample Demographics
+### 5.2 Sample Demographics
 
 Demographic data were collected from all 433 onboarded students during the onboarding flow (N = 433 unless otherwise noted).
 
@@ -232,7 +285,7 @@ Note: Percentages do not sum to 100.0% due to rounding of the "Above 20" and "Pr
 
 The sample was predominantly traditional-age (87.4% aged 20 or under), majority female (58.4%), and racially diverse, with approximately half of respondents identifying as White or Caucasian (49.4%) and meaningful representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Nearly three in ten students (28.5%) identified as first-generation college students.
 
-### 4.3 Financial Background and Context
+### 5.3 Financial Background and Context
 
 **Table 4.3a: Student Loan Debt Status**
 
@@ -289,7 +342,7 @@ The sample was predominantly traditional-age (87.4% aged 20 or under), majority 
 
 Nearly a quarter of respondents (23.8%) reported experiencing financial stress often or always, and a quarter (24.5%) reported carrying student loan debt. Among those with student loans, nearly half (44.7%) did not know the interest rate on their debt -- a finding that underscores the relevance of the course's borrowing literacy content. The majority of students rated their own financial knowledge as moderate (60.1%) or low (25.2%), while only 14.5% rated it as high or very high. Two-thirds (66.0%) reported prior experience with a credit card, and over a third had experience with investment accounts (38.5%) or student loans (37.3%).
 
-### 4.4 Overall Score Distribution
+### 5.4 Overall Score Distribution
 
 Scores are computed from the 26 knowledge items (Q1--Q14, Q29--Q40) for the 421 students who submitted completed assessments.
 
@@ -321,7 +374,7 @@ Scores are computed from the 26 knowledge items (Q1--Q14, Q29--Q40) for the 421 
 
 The distribution was roughly bell-shaped with a slight left skew. The modal decile was 60--69% (n = 120), and the majority of students (67.2%) scored between 50% and 89%. Eleven students achieved perfect scores (100%), while 18 students (4.3%) scored below 30%, suggesting a small group with substantial baseline knowledge gaps.
 
-### 4.5 Domain-Level Performance
+### 5.5 Domain-Level Performance
 
 Domain-level scores were computed by averaging percent correct across items within each domain.
 
@@ -335,7 +388,7 @@ Domain-level scores were computed by averaging percent correct across items with
 
 Behavioral and Risk Management Knowledge (Q11--Q14) yielded the highest average score (73.46%), driven by strong performance on diversification concepts. Borrowing, Interest Rates, and Financial Numeracy (Q1--Q10) followed at 69.33%. Risk and Return Knowledge (Q29--Q40) was the weakest domain overall at 63.97%, reflecting conceptual difficulty with bond pricing, inflation protection, and crisis-related items.
 
-### 4.6 Subdomain Analysis and Item Difficulty
+### 5.6 Subdomain Analysis and Item Difficulty
 
 Item-level percent correct is reported below, ordered from strongest to weakest performance.
 
@@ -371,7 +424,7 @@ By contrast, three items emerged as notably difficult. Inflation protection (Q38
 
 Other items in the lower-performing range included credit reports (Q10, 52.73%) and general borrowing concepts (Q8, 57.24%), suggesting gaps in practical knowledge of credit systems and negotiation in lending.
 
-### 4.7 Confidence Calibration (Overconfidence Index)
+### 5.7 Confidence Calibration (Overconfidence Index)
 
 The overconfidence index (OC) was computed as the difference between average confidence (rescaled to a 0--1 probability) and actual percent correct for each student. Positive values indicate overconfidence; negative values indicate underconfidence.
 
@@ -393,7 +446,7 @@ The overconfidence index (OC) was computed as the difference between average con
 
 The mean OC index was slightly negative (-0.017), indicating that on average students were marginally underconfident relative to their actual performance. The largest group was well-calibrated (41.1%), followed by underconfident (32.8%). Moderately overconfident students represented 19.0% of the sample, and 7.1% were highly overconfident (OC > +30%). The overconfidence index will serve as a covariate in post-course analyses to examine whether calibration at baseline predicts differential learning gains.
 
-### 4.8 SDM-10 Diagnostic Summary
+### 5.8 SDM-10 Diagnostic Summary
 
 All 421 students who submitted the assessment completed the SDM-10 module (100% SDM completion among submitters). The platform collected a total of 3,985 SDM responses.
 
@@ -419,7 +472,7 @@ The average SDM-10 score (58.92%) was approximately 7.6 percentage points lower 
 
 Among submission types, 80.3% were classified as normal completions. The remaining 19.7% included legacy submission types (partial_legacy, complete_legacy, incomplete_sdm_legacy) that resulted from early technical adjustments to the platform during the first days of the assessment window.
 
-### 4.9 Assessment Duration
+### 5.9 Assessment Duration
 
 **Table 4.9: Assessment Duration**
 
@@ -433,7 +486,7 @@ The median assessment duration was 18.4 minutes, which is the more representativ
 
 ---
 
-## 5. Discussion of Pre-Course Baseline
+## 6. Discussion of Pre-Course Baseline
 
 The pre-course assessment results establish a detailed baseline of financial literacy knowledge among QUINN 102 students at the start of the Spring 2026 semester. Several patterns merit discussion.
 
@@ -453,7 +506,7 @@ The pre-course assessment results establish a detailed baseline of financial lit
 
 ---
 
-## 6. Limitations and Pending Items
+## 7. Limitations and Pending Items
 
 Several limitations and pending items should be noted when interpreting these pre-course baseline results.
 
@@ -471,7 +524,7 @@ Several limitations and pending items should be noted when interpreting these pr
 
 ---
 
-## 7. Next Steps (Post-Course Assessment)
+## 8. Next Steps (Post-Course Assessment)
 
 The following analyses are planned following the post-course assessment administration:
 
@@ -486,6 +539,52 @@ The following analyses are planned following the post-course assessment administ
 5. **SDM-10 open-ended scoring and misconception analysis.** Rubric-based scoring of open-ended SDM responses will be completed. Misconception prevalence will be estimated by domain and subcategory.
 
 6. **Integration of pre-post results into final paper.** The final paper will combine the pre-course baseline reported here with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUINN 102's association with student financial literacy outcomes.
+
+---
+
+## References
+
+Akers, B., & Chingos, M. M. (2014). *Are college students borrowing blindly?* Brookings Institution.
+
+Allgood, S., & Walstad, W. B. (2016). The effects of perceived and actual financial literacy on financial behaviors. *Economic Inquiry*, *54*(1), 675--697.
+
+Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. *Financial Services Review*, *7*(2), 107--128.
+
+Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. *Management Science*, *60*(8), 1861--1883.
+
+Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. *International Journal of Consumer Studies*, *45*(1), 80--105.
+
+Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. *Annual Review of Economics*, *5*, 347--373.
+
+Huston, S. J. (2010). Measuring financial literacy. *Journal of Consumer Affairs*, *44*(2), 296--316.
+
+Ipatova, E., & Merheb, K. (2023). Re-examining the Dunning-Kruger effect: Objective vs. subjective financial literacy in the young and overconfident (SSRN Working Paper No. 4645450).
+
+Kaiser, T., Lusardi, A., Menkhoff, L., & Urban, C. (2022). Financial education affects financial knowledge and downstream behaviors. *Journal of Financial Economics*, *145*(2), 255--272.
+
+Kramer, M. M. (2016). Financial literacy, confidence and financial advice seeking. *Journal of Economic Behavior & Organization*, *131*(Part A), 198--217.
+
+Lusardi, A. (2019). Financial literacy and the need for financial education: Evidence and implications. *Swiss Journal of Economics and Statistics*, *155*, Article 1.
+
+Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. *Journal of Economic Literature*, *52*(1), 5--44.
+
+Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. *Journal of Pension Economics and Finance*, *14*(4), 332--368.
+
+Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. *Journal of Financial Counseling and Planning*, *20*(1), 15--24.
+
+OECD. (2022). *OECD/INFE toolkit for measuring financial literacy and financial inclusion 2022*. OECD Publishing.
+
+Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. *Journal of Financial Service Professionals*, *70*(4), 78--88.
+
+Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. *Journal of Financial Counseling and Planning*, *22*(1), 60--70.
+
+Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. *Journal of Finance*, *64*(6), 2807--2849.
+
+van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. *Journal of Financial Economics*, *101*(2), 449--472.
+
+Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. *Journal of Consumer Affairs*, *53*(1), 234--259.
+
+Willis, L. E. (2011). The financial education fallacy. *American Economic Review*, *101*(3), 429--434.
 
 ---
 
