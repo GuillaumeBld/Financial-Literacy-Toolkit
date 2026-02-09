@@ -35,6 +35,7 @@ const OUTPUT_PATH = `${EXPORTS_DIR}/paper.docx`;
 const fig1 = fs.readFileSync(`${FIGURES_DIR}/fig1_score_distribution.png`);
 const fig2 = fs.readFileSync(`${FIGURES_DIR}/fig2_domain_performance.png`);
 const fig3 = fs.readFileSync(`${FIGURES_DIR}/fig3_enrollment_timeline.png`);
+const fig4 = fs.readFileSync(`${FIGURES_DIR}/fig4_submission_time.png`);
 const fig5 = fs.readFileSync(`${FIGURES_DIR}/fig5_confidence_calibration.png`);
 const fig6 = fs.readFileSync(`${FIGURES_DIR}/fig6_item_difficulty.png`);
 const fig7 = fs.readFileSync(`${FIGURES_DIR}/fig7_demographics.png`);
@@ -384,6 +385,10 @@ const doc = new Document({
     {
       properties: {
         page: {
+          size: {
+            width: 12240, // 8.5 inches (US Letter)
+            height: 15840, // 11 inches (US Letter)
+          },
           margin: {
             top: 1440,
             right: 1440,
@@ -472,6 +477,10 @@ const doc = new Document({
       properties: {
         type: SectionType.NEXT_PAGE,
         page: {
+          size: {
+            width: 12240, // 8.5 inches (US Letter)
+            height: 15840, // 11 inches (US Letter)
+          },
           margin: {
             top: 1440,
             right: 1440,
@@ -859,15 +868,31 @@ const doc = new Document({
           fig3,
           580,
           380,
-          "Figure 3",
+          "Figure 1",
           "Daily Enrollment and Completion (Feb 2-9, 2026)",
           "fig3"
         ),
         captionParagraph(
-          "Figure 3. Daily Enrollment and Completion (Feb 2-9, 2026)"
+          "Figure 1. Daily Enrollment and Completion (Feb 2-9, 2026)"
         ),
         bodyParagraph(
-          "Figure 3 displays the daily enrollment and assessment completion counts alongside cumulative totals over the 8-day assessment window. The dual-axis chart shows that enrollment peaked on the first day (February 2, n = 98), consistent with students responding to the initial course announcement. A secondary surge occurred on the final two days (February 8-9, n = 119 combined), reflecting deadline-driven engagement. The cumulative lines demonstrate that the enrollment-to-completion gap remained narrow throughout, ultimately reaching 433 enrolled and 421 completed (97.2%). This high completion rate indicates strong platform reliability and student engagement with the required assessment."
+          "Figure 1 displays the daily enrollment and assessment completion counts alongside cumulative totals over the 8-day assessment window. The dual-axis chart shows that enrollment peaked on the first day (February 2, n = 98), consistent with students responding to the initial course announcement. A secondary surge occurred on the final two days (February 8-9, n = 119 combined), reflecting deadline-driven engagement. The cumulative lines demonstrate that the enrollment-to-completion gap remained narrow throughout, ultimately reaching 433 enrolled and 421 completed (97.2%). This high completion rate indicates strong platform reliability and student engagement with the required assessment."
+        ),
+
+        // Figure 4 — Submission Time of Day
+        imageParagraph(
+          fig4,
+          580,
+          380,
+          "Figure 2",
+          "Assessment Submission Time of Day (N = 421)",
+          "fig4"
+        ),
+        captionParagraph(
+          "Figure 2. Assessment Submission Time of Day (N = 421)"
+        ),
+        bodyParagraph(
+          "Figure 2 presents the distribution of assessment submission times across the 24-hour clock (CST). The area chart reveals a pronounced evening peak between 8:00 PM and 10:00 PM, when approximately 35% of all submissions occurred. Morning hours (6:00 AM\u201312:00 PM) accounted for fewer than 10% of completions, with the lowest activity between 2:00 AM and 7:00 AM. A secondary afternoon uptick is visible between 2:00 PM and 5:00 PM. This temporal pattern is consistent with typical college student schedules, where academic tasks are concentrated in evening hours after classes and extracurricular activities. The strong evening concentration also suggests that students treated the assessment as a focused task rather than a casual activity, which supports the validity of the measured completion times."
         ),
 
         // ── 5.2 Sample Demographics ────────────────────────────────────────
@@ -888,13 +913,13 @@ const doc = new Document({
           fig7,
           600,
           350,
-          "Figure 7",
+          "Figure 3",
           "Sample Demographics (N = 421)",
           "fig7"
         ),
-        captionParagraph("Figure 7. Sample Demographics (N = 421)"),
+        captionParagraph("Figure 3. Sample Demographics (N = 421)"),
         bodyParagraph(
-          "Figure 7 presents the demographic composition of the sample across five dimensions. Panel (a) shows the gender split (58.4% female, 40.2% male). Panel (b) confirms a predominantly traditional-age sample (87.4% aged 20 or under). Panel (c) reveals meaningful racial and ethnic diversity, with White/Caucasian students comprising roughly half (49.4%) and substantial representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Panel (d) shows that nearly three-quarters of students work part-time (72.2%), while panel (e) indicates that nearly one-third are first-generation college students (28.5%). This demographic profile provides meaningful variation for the planned heterogeneity analysis (RQ2) examining whether learning gains differ across student subgroups."
+          "Figure 3 presents the demographic composition of the sample across five dimensions. Panel (a) shows the gender split (58.4% female, 40.2% male). Panel (b) confirms a predominantly traditional-age sample (87.4% aged 20 or under). Panel (c) reveals meaningful racial and ethnic diversity, with White/Caucasian students comprising roughly half (49.4%) and substantial representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Panel (d) shows that nearly three-quarters of students work part-time (72.2%), while panel (e) indicates that nearly one-third are first-generation college students (28.5%). This demographic profile provides meaningful variation for the planned heterogeneity analysis (RQ2) examining whether learning gains differ across student subgroups."
         ),
 
         // ── 5.3 Financial Background ────────────────────────────────────────
@@ -915,15 +940,15 @@ const doc = new Document({
           fig8,
           600,
           350,
-          "Figure 8",
+          "Figure 4",
           "Financial Background and Self-Assessment (N = 421)",
           "fig8"
         ),
         captionParagraph(
-          "Figure 8. Financial Background and Self-Assessment (N = 421)"
+          "Figure 4. Financial Background and Self-Assessment (N = 421)"
         ),
         bodyParagraph(
-          "Figure 8 illustrates two key dimensions of students\u2019 financial context. Panel (a) shows the distribution of self-reported financial stress: the majority of students experience stress sometimes (44.7%) or rarely (22.3%), but nearly a quarter (23.8%) report experiencing financial stress often or always, identifying a subgroup for whom financial literacy instruction carries immediate practical relevance. Panel (b) displays self-rated financial knowledge, where the vast majority rate themselves as moderate (60.1%) or low (25.2%). Only 14.5% rate their knowledge as high or very high. The predominance of moderate self-ratings, combined with the 66.6% average actual score, suggests reasonably calibrated self-assessment across the sample, consistent with the confidence calibration findings in Section 5.7."
+          "Figure 4 illustrates two key dimensions of students\u2019 financial context. Panel (a) shows the distribution of self-reported financial stress: the majority of students experience stress sometimes (44.7%) or rarely (22.3%), but nearly a quarter (23.8%) report experiencing financial stress often or always, identifying a subgroup for whom financial literacy instruction carries immediate practical relevance. Panel (b) displays self-rated financial knowledge, where the vast majority rate themselves as moderate (60.1%) or low (25.2%). Only 14.5% rate their knowledge as high or very high. The predominance of moderate self-ratings, combined with the 66.6% average actual score, suggests reasonably calibrated self-assessment across the sample, consistent with the confidence calibration findings in Section 5.7."
         ),
 
         // ── 5.4 Overall Score Distribution ──────────────────────────────────
@@ -970,15 +995,15 @@ const doc = new Document({
           fig1,
           580,
           380,
-          "Figure 1",
+          "Figure 5",
           "Pre-Course Overall Score Distribution (N = 421)",
           "fig1"
         ),
         captionParagraph(
-          "Figure 1. Pre-Course Overall Score Distribution (N = 421)"
+          "Figure 5. Pre-Course Overall Score Distribution (N = 421)"
         ),
         bodyParagraph(
-          "Figure 1 displays the distribution of overall pre-course scores computed from the 26 knowledge items. The distribution is roughly bell-shaped with a slight left skew. The modal decile is 60-69% (n = 120, highlighted in gold), and the majority of students (67.2%) scored between 50% and 89%. The dashed green line marks the sample mean of 66.6%. Eleven students achieved perfect scores (100%), while 18 students (4.3%) scored below 30%, identifying a small group with substantial baseline knowledge gaps that the course may especially benefit. The overall shape suggests that most students enter QUINN 102 with moderate foundational financial literacy, with meaningful room for improvement in applied domains."
+          "Figure 5 displays the distribution of overall pre-course scores computed from the 26 knowledge items. The distribution is roughly bell-shaped with a slight left skew. The modal decile is 60-69% (n = 120, highlighted in gold), and the majority of students (67.2%) scored between 50% and 89%. The dashed green line marks the sample mean of 66.6%. Eleven students achieved perfect scores (100%), while 18 students (4.3%) scored below 30%, identifying a small group with substantial baseline knowledge gaps that the course may especially benefit. The overall shape suggests that most students enter QUINN 102 with moderate foundational financial literacy, with meaningful room for improvement in applied domains."
         ),
 
         // ── 5.5 Domain-Level Performance ────────────────────────────────────
@@ -1023,13 +1048,13 @@ const doc = new Document({
           fig2,
           580,
           380,
-          "Figure 2",
+          "Figure 6",
           "Domain-Level Performance Comparison",
           "fig2"
         ),
-        captionParagraph("Figure 2. Domain-Level Performance Comparison"),
+        captionParagraph("Figure 6. Domain-Level Performance Comparison"),
         bodyParagraph(
-          "Figure 2 compares average performance across the three assessment domains. Behavioral and Risk Management Knowledge (73.5%) was the strongest domain, driven by high performance on diversification concepts. Borrowing, Interest Rates, and Financial Numeracy (69.3%) fell near the overall average. Risk and Return Knowledge (64.0%) was the weakest domain, reflecting conceptual difficulty with bond pricing, inflation protection, and crisis-related items. Error bars represent standard deviations, indicating substantial within-domain variation. The dashed maroon line marks the overall mean (66.6%). The 9.5 percentage-point gap between the strongest and weakest domains highlights where instructional emphasis may yield the greatest gains."
+          "Figure 6 compares average performance across the three assessment domains. Behavioral and Risk Management Knowledge (73.5%) was the strongest domain, driven by high performance on diversification concepts. Borrowing, Interest Rates, and Financial Numeracy (69.3%) fell near the overall average. Risk and Return Knowledge (64.0%) was the weakest domain, reflecting conceptual difficulty with bond pricing, inflation protection, and crisis-related items. Error bars represent standard deviations, indicating substantial within-domain variation. The dashed maroon line marks the overall mean (66.6%). The 9.5 percentage-point gap between the strongest and weakest domains highlights where instructional emphasis may yield the greatest gains."
         ),
 
         // ── 5.6 Subdomain Analysis ─────────────────────────────────────────
@@ -1050,15 +1075,15 @@ const doc = new Document({
           fig6,
           580,
           380,
-          "Figure 6",
+          "Figure 7",
           "Item Difficulty Ranking by Subdomain (N = 421)",
           "fig6"
         ),
         captionParagraph(
-          "Figure 6. Item Difficulty Ranking by Subdomain (N = 421)"
+          "Figure 7. Item Difficulty Ranking by Subdomain (N = 421)"
         ),
         bodyParagraph(
-          "Figure 6 ranks all 21 assessed subdomains from easiest (top) to hardest (bottom). Color coding distinguishes three performance tiers: green indicates strong performance (>=70% correct), gold indicates moderate performance (50-69%), and coral indicates weak performance (<50%). A clear gap separates foundational concepts at the top -- simple interest (92.9%), compound interest (88.4%), impulse control (86.9%) -- from applied reasoning at the bottom -- inflation hedge (24.0%), compound growth (38.7%), return ranking (40.6%). This pattern suggests that students enter the course with solid grasp of basic financial principles but lack the ability to apply these concepts to real-world scenarios involving inflation protection, bond pricing, and multi-step financial reasoning. The dashed maroon line marks the overall mean (66.6%), with 10 subdomains above and 11 below this threshold."
+          "Figure 7 ranks all 21 assessed subdomains from easiest (top) to hardest (bottom). Color coding distinguishes three performance tiers: green indicates strong performance (>=70% correct), gold indicates moderate performance (50-69%), and coral indicates weak performance (<50%). A clear gap separates foundational concepts at the top -- simple interest (92.9%), compound interest (88.4%), impulse control (86.9%) -- from applied reasoning at the bottom -- inflation hedge (24.0%), compound growth (38.7%), return ranking (40.6%). This pattern suggests that students enter the course with solid grasp of basic financial principles but lack the ability to apply these concepts to real-world scenarios involving inflation protection, bond pricing, and multi-step financial reasoning. The dashed maroon line marks the overall mean (66.6%), with 10 subdomains above and 11 below this threshold."
         ),
 
         // ── 5.7 Confidence Calibration ──────────────────────────────────────
@@ -1079,15 +1104,15 @@ const doc = new Document({
           fig5,
           580,
           380,
-          "Figure 5",
+          "Figure 8",
           "Confidence Calibration Categories (N = 421)",
           "fig5"
         ),
         captionParagraph(
-          "Figure 5. Confidence Calibration Categories (N = 421)"
+          "Figure 8. Confidence Calibration Categories (N = 421)"
         ),
         bodyParagraph(
-          "Figure 5 presents the distribution of students across four confidence calibration categories based on the overconfidence index (OC), defined as the difference between average confidence and actual accuracy. The horizontal bar chart (left) shows both percentages and counts, while the pie chart (right) illustrates the proportional distribution. The largest group is well-calibrated (41.1%, n = 173), meaning their confidence closely matched their performance (OC within +/-10%). Nearly a third were underconfident (32.8%, n = 138), systematically underestimating their abilities. Moderately overconfident students (19.0%, n = 79) and highly overconfident students (7.1%, n = 29) together account for 26.1% of the sample. The slightly negative mean OC index (-0.017) indicates that the sample was, on average, marginally underconfident. This profile is constructive for learning, as overconfidence can reduce engagement with material perceived as already mastered."
+          "Figure 8 presents the distribution of students across four confidence calibration categories based on the overconfidence index (OC), defined as the difference between average confidence and actual accuracy. The horizontal bar chart (left) shows both percentages and counts, while the pie chart (right) illustrates the proportional distribution. The largest group is well-calibrated (41.1%, n = 173), meaning their confidence closely matched their performance (OC within +/-10%). Nearly a third were underconfident (32.8%, n = 138), systematically underestimating their abilities. Moderately overconfident students (19.0%, n = 79) and highly overconfident students (7.1%, n = 29) together account for 26.1% of the sample. The slightly negative mean OC index (-0.017) indicates that the sample was, on average, marginally underconfident. This profile is constructive for learning, as overconfidence can reduce engagement with material perceived as already mastered."
         ),
 
         // ── 5.8 SDM-10 Diagnostic Summary ──────────────────────────────────
