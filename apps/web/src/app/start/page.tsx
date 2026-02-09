@@ -32,7 +32,7 @@ type AttemptStatus = {
 // Monday 12:01 AM through Sunday 11:59 PM
 const ASSESSMENT_WINDOW = {
   start: new Date('2026-02-01T00:01:00'), // Saturday, February 1, 2026 at 12:01 AM (opened early for early access)
-  end: new Date('2026-02-08T23:59:59'),   // Sunday, February 8, 2026 at 11:59 PM
+  end: new Date('2026-02-09T23:59:59'),   // Monday, February 9, 2026 at 11:59 PM (1-day extension)
 };
 
 function isWithinAssessmentWindow(): { isOpen: boolean; message: string } {
@@ -311,7 +311,7 @@ export default function StartPage() {
               </p>
               <p className="text-loyola-gray-600 mb-4 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-loyola-maroon" />
-                <span>Available: <strong>February 2 - February 8, 2026</strong></span>
+                <span>Available: <strong>February 2 - February 9, 2026</strong></span>
               </p>
               {!windowStatus.isOpen && !attemptStatus?.isSubmitted && (
                 <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
