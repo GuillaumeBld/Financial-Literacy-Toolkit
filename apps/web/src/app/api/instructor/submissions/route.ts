@@ -34,6 +34,19 @@ export async function GET(request: NextRequest) {
       return await getSubmissionDetail(instructorId, attemptId);
     }
 
+    // Bulk open-ended answers for flagged attempt IDs
+    const openAnswersParam = searchParams.get('openAnswers');
+    if (openAnswersParam) {
+      return await getOpenAnswers(instructorId, openAnswersParam.split(','));
+    }
+
+    // Export ALL open-ended responses as flat CSV-ready array
+    const exportOpen = searchParams.get('exportOpen');
+    const courseFilter = searchParams.get('courseId');
+    if (exportOpen === 'true') {
+      return await exportOpenQuestions(instructorId, courseFilter);
+    }
+
     // Get instructor's courses
     const instructorCourses = await queryMany<{
       course_id: string;
@@ -264,5 +277,131 @@ async function getSubmissionDetail(instructorId: string, attemptId: string) {
       { error: 'Failed to get submission details' },
       { status: 500 }
     );
+  }
+}
+
+// Bulk fetch open-ended answers for multiple attempts
+async function getOpenAnswers(instructorId: string, attemptIds: string[]) {
+  try {
+    if (attemptIds.length === 0 || attemptIds.length > 50) {
+      return NextResponse.json({ error: 'Invalid attempt IDs' }, { status: 400 });
+    }
+
+    // Verify instructor has access to these attempts
+    const accessible = await queryMany<{ attempt_id: string }>(
+      `SELECT a.attempt_id FROM attempts a
+       WHERE a.attempt_id = ANY($1::uuid[])
+         AND a.course_id IN (
+           SELECT course_id FROM instructor_courses WHERE instructor_id = $2
+         )`,
+      [attemptIds, instructorId]
+    );
+
+    const accessibleIds = accessible.map(a => a.attempt_id);
+    if (accessibleIds.length === 0) {
+      return NextResponse.json({ success: true, openAnswers: {} });
+    }
+
+    const answers = await queryMany<{
+      attempt_id: string;
+      item_id: string;
+      subdomain: string;
+      answer: string;
+    }>(
+      `SELECT r.attempt_id, r.item_id, i.subdomain,
+        TRIM(BOTH '"' FROM r.raw_answer::text) as answer
+       FROM responses r
+       JOIN items i ON r.item_id = i.item_id
+       WHERE r.attempt_id = ANY($1::uuid[])
+         AND i.type = 'short_answer'
+       ORDER BY r.attempt_id, r.item_id`,
+      [accessibleIds]
+    );
+
+    // Group by attempt_id
+    const grouped: Record<string, Array<{ itemId: string; subdomain: string; answer: string }>> = {};
+    answers.forEach(a => {
+      if (!grouped[a.attempt_id]) grouped[a.attempt_id] = [];
+      grouped[a.attempt_id].push({
+        itemId: a.item_id,
+        subdomain: a.subdomain,
+        answer: a.answer,
+      });
+    });
+
+    return NextResponse.json({ success: true, openAnswers: grouped });
+  } catch (error) {
+    console.error('Error getting open answers:', error);
+    return NextResponse.json({ error: 'Failed to get open answers' }, { status: 500 });
+  }
+}
+
+async function exportOpenQuestions(instructorId: string, courseId: string | null) {
+  try {
+    // Get instructor's courses
+    const instructorCourses = await queryMany<{ course_id: string }>(
+      `SELECT course_id FROM instructor_courses WHERE instructor_id = $1`,
+      [instructorId]
+    );
+    const courseIds = instructorCourses.map(c => c.course_id);
+    if (courseIds.length === 0) {
+      return NextResponse.json({ success: true, rows: [] });
+    }
+    const targetCourseIds = courseId ? [courseId] : courseIds;
+    if (courseId && !courseIds.includes(courseId)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const rows = await queryMany<{
+      hashed_student_key: string;
+      attempt_id: string;
+      submitted_at: string;
+      item_id: string;
+      subdomain: string;
+      item_type: string;
+      answer: string;
+      anchor_item_id: string;
+      anchor_answer: string;
+      anchor_key: string;
+      anchor_score: string;
+      anchor_confidence: string;
+    }>(`
+      SELECT
+        u.hashed_student_key,
+        a.attempt_id,
+        a.submitted_at::text,
+        r.item_id,
+        i.subdomain,
+        CASE
+          WHEN r.item_id LIKE '%_Open_Diagnose' THEN 'diagnose'
+          WHEN r.item_id LIKE '%_Open_Confirm' THEN 'confirm'
+          ELSE 'other'
+        END as item_type,
+        TRIM(BOTH '"' FROM r.raw_answer::text) as answer,
+        -- Join the anchor item for context
+        anchor_q.item_id as anchor_item_id,
+        TRIM(BOTH '"' FROM anchor_r.raw_answer::text) as anchor_answer,
+        COALESCE(anchor_q.key, '') as anchor_key,
+        COALESCE(anchor_r.score::text, '') as anchor_score,
+        COALESCE(anchor_r.confidence::text, '') as anchor_confidence
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      JOIN attempts a ON r.attempt_id = a.attempt_id
+      JOIN users u ON u.user_id = a.user_id
+      -- Get the corresponding anchor item (e.g. Q7_Open_Diagnose → Q7)
+      LEFT JOIN items anchor_q ON anchor_q.item_id = SPLIT_PART(r.item_id, '_', 1)
+        AND anchor_q.is_anchor = true
+      LEFT JOIN responses anchor_r ON anchor_r.attempt_id = a.attempt_id
+        AND anchor_r.item_id = anchor_q.item_id
+      WHERE i.type = 'short_answer'
+        AND a.submitted_at IS NOT NULL
+        AND a.course_id = ANY($1::uuid[])
+      ORDER BY u.hashed_student_key, r.item_id
+    `, [targetCourseIds]);
+
+    return NextResponse.json({ success: true, rows });
+  } catch (error) {
+    console.error('Error exporting open questions:', error);
+    return NextResponse.json({ error: 'Failed to export' }, { status: 500 });
   }
 }

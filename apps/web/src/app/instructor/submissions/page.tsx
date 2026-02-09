@@ -4,15 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search,
-  Filter,
   Download,
   Eye,
-  Clock,
-  User,
-  FileText,
   ArrowLeft,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 type Submission = {
@@ -306,6 +305,51 @@ export default function InstructorSubmissionsPage() {
     }
   };
 
+  const handleExportOpenQuestions = async () => {
+    const btn = document.getElementById('export-open-btn');
+    if (btn) btn.textContent = 'Exporting...';
+
+    try {
+      const token = localStorage.getItem('instructor-token');
+      if (!token) return;
+
+      const courseParam = filters.courseId ? `&courseId=${filters.courseId}` : '';
+      const res = await fetch(`/api/instructor/submissions?exportOpen=true${courseParam}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+
+      if (!data.rows || data.rows.length === 0) {
+        alert('No open-ended responses found');
+        return;
+      }
+
+      const escape = (v: string) => `"${(v || '').replace(/"/g, '""')}"`;
+      const header = 'student_hash,attempt_id,submitted_at,item_id,subdomain,type,answer,anchor_item,anchor_answer,anchor_key,anchor_score,anchor_confidence';
+      const csvRows = data.rows.map((r: any) =>
+        [r.hashed_student_key, r.attempt_id, r.submitted_at, r.item_id, r.subdomain, r.item_type,
+         escape(r.answer), r.anchor_item_id || '', r.anchor_answer || '', r.anchor_key, r.anchor_score, r.anchor_confidence].join(',')
+      );
+
+      const csv = [header, ...csvRows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const now = new Date();
+      const ts = `${now.toISOString().split('T')[0]}_${now.toTimeString().slice(0,8).replace(/:/g, '')}`;
+      link.download = `open_questions_${ts}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting open questions:', error);
+      alert('Failed to export open questions');
+    } finally {
+      if (btn) btn.textContent = 'Export Open Questions';
+    }
+  };
+
   const filteredSubmissions = submissions.filter(submission => {
     if (filters.courseId && submission.course_id !== filters.courseId) return false;
     if (filters.attemptType && submission.attempt_type !== filters.attemptType) return false;
@@ -321,6 +365,13 @@ export default function InstructorSubmissionsPage() {
 
     return true;
   });
+
+  // Auto-flag: submissions with duration under 10 minutes (600s)
+  const FLAG_DURATION_THRESHOLD = 600;
+  const flaggedSubmissions = filteredSubmissions.filter(
+    s => (s.duration_s ?? 0) > 0 && (s.duration_s ?? 0) < FLAG_DURATION_THRESHOLD
+  );
+  const flaggedIds = new Set(flaggedSubmissions.map(s => s.attempt_id));
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -491,15 +542,34 @@ export default function InstructorSubmissionsPage() {
           <p className="text-loyola-gray-600">
             Showing {filteredSubmissions.length} of {submissions.length} submissions
           </p>
-          <button
-            id="export-detailed-btn"
-            onClick={handleExportDetailedCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-light transition"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              id="export-open-btn"
+              onClick={handleExportOpenQuestions}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-ink text-ink rounded-lg hover:bg-ink hover:text-white transition"
+            >
+              <Download className="w-4 h-4" />
+              Export Open Questions
+            </button>
+            <button
+              id="export-detailed-btn"
+              onClick={handleExportDetailedCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-light transition"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
         </div>
+
+        {/* Flagged Submissions Warning */}
+        {flaggedSubmissions.length > 0 && (
+          <FlaggedBanner
+            flagged={flaggedSubmissions}
+            threshold={FLAG_DURATION_THRESHOLD}
+            onView={loadSubmissionDetail}
+          />
+        )}
 
         {/* Submissions Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -535,15 +605,22 @@ export default function InstructorSubmissionsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-loyola-gray-200">
                 {filteredSubmissions.map((submission) => (
-                  <tr key={submission.attempt_id} className="hover:bg-loyola-gray-50">
+                  <tr key={submission.attempt_id} className={flaggedIds.has(submission.attempt_id) ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-loyola-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => loadSubmissionDetail(submission)}
-                        className="text-ink hover:text-ink-light transition"
-                        title="View details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => loadSubmissionDetail(submission)}
+                          className="text-ink hover:text-ink-light transition"
+                          title="View details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {flaggedIds.has(submission.attempt_id) && (
+                          <span title="Flagged: low duration">
+                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-loyola-gray-600">
                       {formatDate(submission.submitted_at)}
@@ -812,6 +889,148 @@ export default function InstructorSubmissionsPage() {
               )}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Flagged Submissions Banner
+type OpenAnswer = { itemId: string; subdomain: string; answer: string };
+
+function FlaggedBanner({
+  flagged,
+  threshold,
+  onView,
+}: {
+  flagged: Submission[];
+  threshold: number;
+  onView: (s: Submission) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [openAnswers, setOpenAnswers] = useState<Record<string, OpenAnswer[]>>({});
+  const [loadingAnswers, setLoadingAnswers] = useState(false);
+
+  const fetchOpenAnswers = async () => {
+    if (Object.keys(openAnswers).length > 0) return; // already loaded
+    setLoadingAnswers(true);
+    try {
+      const token = localStorage.getItem('instructor-token');
+      const ids = flagged.map(s => s.attempt_id).join(',');
+      const res = await fetch(`/api/instructor/submissions?openAnswers=${ids}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOpenAnswers(data.openAnswers || {});
+      }
+    } catch (e) {
+      console.error('Failed to fetch open answers:', e);
+    } finally {
+      setLoadingAnswers(false);
+    }
+  };
+
+  const handleExpand = () => {
+    const next = !expanded;
+    setExpanded(next);
+    if (next) fetchOpenAnswers();
+  };
+
+  const sorted = [...flagged].sort((a, b) => (a.duration_s ?? 0) - (b.duration_s ?? 0));
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-5 mb-6 border-l-4 border-amber-400">
+      <button
+        className="w-full flex items-center justify-between"
+        onClick={handleExpand}
+      >
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-amber-500" />
+          <span className="font-bold text-loyola-gray-800">
+            Flagged Submissions ({flagged.length})
+          </span>
+          <span className="text-sm text-loyola-gray-500">
+            — duration &lt; {Math.round(threshold / 60)} min
+          </span>
+        </div>
+        {expanded ? (
+          <ChevronDown className="w-5 h-5 text-gray-400" />
+        ) : (
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="mt-4 space-y-2">
+          {sorted.map((s) => {
+            const mins = Math.floor((s.duration_s ?? 0) / 60);
+            const secs = (s.duration_s ?? 0) % 60;
+            const isOpen = expandedRow === s.attempt_id;
+            const answers = openAnswers[s.attempt_id] || [];
+
+            return (
+              <div key={s.attempt_id} className="border border-amber-200 rounded-lg overflow-hidden">
+                {/* Row header */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 bg-amber-50 cursor-pointer hover:bg-amber-100 transition-colors"
+                  onClick={() => setExpandedRow(isOpen ? null : s.attempt_id)}
+                >
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {isOpen ? (
+                      <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    )}
+                    <span className="font-semibold text-amber-700 text-sm">{mins}m {secs}s</span>
+                    <span className="text-sm font-medium text-gray-800">{Math.round(s.overall_score ?? 0)}%</span>
+                    <span className="text-xs text-gray-500">OC: {Number(s.overconfidence_index ?? 0).toFixed(2)}</span>
+                    <span className="text-xs text-gray-400">
+                      {s.submitted_at
+                        ? new Date(s.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                        : ''}
+                    </span>
+                    <span className="text-xs font-mono text-gray-400">
+                      {(s.hashed_student_key ?? '').slice(0, 12)}...
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onView(s); }}
+                    className="text-ink hover:text-ink-light ml-2 flex-shrink-0"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Expanded: open-ended answers */}
+                {isOpen && (
+                  <div className="px-4 py-3 bg-white border-t border-amber-200">
+                    {loadingAnswers ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Loading answers...
+                      </div>
+                    ) : answers.length > 0 ? (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Open-ended Answers</h4>
+                        {answers.map((oa, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded p-3">
+                            <span className="text-xs font-medium text-gray-500 block mb-1">
+                              {oa.subdomain} ({oa.itemId})
+                            </span>
+                            <p className="text-sm text-gray-800">&ldquo;{oa.answer}&rdquo;</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic">No open-ended answers</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

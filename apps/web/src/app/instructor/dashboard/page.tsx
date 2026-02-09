@@ -13,13 +13,15 @@ import {
   LogOut,
   RefreshCw,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Map,
 } from 'lucide-react';
 
 type DashboardStats = {
   totalStudents: number;
   submitted: number;
   inProgress: number;
+  activeNow: number;
   notStarted: number;
   avgScore: number;
   avgDuration: number;
@@ -38,6 +40,7 @@ type DashboardStats = {
   studentStatus: Array<{
     status: string;
     count: number;
+    active_count: number;
     avg_score: number | null;
     avg_responses: number;
     min_hours_stale: number | null;
@@ -157,6 +160,13 @@ export default function InstructorDashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <button
+                onClick={() => router.push('/instructor/status' as any)}
+                className="p-2 text-loyola-gray-600 hover:text-ink transition"
+                title="Gameboard Status"
+              >
+                <Map className="w-5 h-5" />
+              </button>
+              <button
                 onClick={handleRefresh}
                 className="p-2 text-loyola-gray-600 hover:text-ink transition"
                 title="Refresh data"
@@ -218,6 +228,7 @@ export default function InstructorDashboardPage() {
                 icon={<Activity className="w-6 h-6" />}
                 title="In Progress"
                 value={stats.inProgress}
+                subtitle={`${stats.activeNow} active now`}
               />
               <StatCard
                 icon={<Clock className="w-6 h-6" />}
@@ -237,10 +248,6 @@ export default function InstructorDashboardPage() {
             </div>
 
             {/* Domain Performance Section */}
-            {stats.domainAverages && stats.domainAverages.length > 0 && (
-              <DomainPerformance data={stats.domainAverages} />
-            )}
-
             {/* Student Status Table */}
             {stats.studentStatus && stats.studentStatus.length > 0 && (
               <StatusTable data={stats.studentStatus} />
@@ -330,93 +337,6 @@ function ActionCard({
   );
 }
 
-// Domain Performance Component
-function DomainPerformance({ data }: { data: DashboardStats['domainAverages'] }) {
-  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
-
-  // Color coding for score ranges
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-50';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
-  };
-
-  const getBarColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-      <h2 className="text-xl font-bold text-loyola-gray-800 flex items-center gap-2 mb-6">
-        <BarChart3 className="w-6 h-6 text-ink" />
-        Performance by Section
-      </h2>
-      <div className="space-y-4">
-        {data.map((domain) => (
-          <div key={domain.domain} className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Domain Header - Clickable */}
-            <div
-              className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => setExpandedDomain(expandedDomain === domain.domain ? null : domain.domain)}
-            >
-              <div className="flex items-center gap-3">
-                {expandedDomain === domain.domain ? (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-500" />
-                )}
-                <div>
-                  <h3 className="font-semibold text-loyola-gray-800">{domain.shortName}</h3>
-                  <p className="text-xs text-gray-500">{domain.count} responses</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-32 bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className={`h-2.5 rounded-full ${getBarColor(domain.average)}`}
-                    style={{ width: `${Math.min(domain.average, 100)}%` }}
-                  />
-                </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getScoreColor(domain.average)}`}>
-                  {domain.average}%
-                </span>
-              </div>
-            </div>
-
-            {/* Subdomain Details - Expandable */}
-            {expandedDomain === domain.domain && domain.subdomains.length > 0 && (
-              <div className="p-4 bg-white border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-600 mb-3">Subsections</h4>
-                <div className="space-y-2">
-                  {domain.subdomains.map((sub, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
-                      <span className="text-sm text-gray-700">{sub.name}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500">{sub.count} responses</span>
-                        <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className={`h-1.5 rounded-full ${getBarColor(sub.avgScore)}`}
-                            style={{ width: `${Math.min(sub.avgScore, 100)}%` }}
-                          />
-                        </div>
-                        <span className={`text-sm font-medium ${sub.avgScore >= 80 ? 'text-green-600' : sub.avgScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {sub.avgScore}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // Status Table Component
 function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
   const [showSubmittedDetails, setShowSubmittedDetails] = useState(false);
@@ -499,7 +419,7 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
                   </td>
                   <td className="py-3 px-4 text-right font-semibold">{submittedSummary.count}</td>
                   <td className="py-3 px-4 text-right">{submittedSummary.avg_score ? `${submittedSummary.avg_score}%` : '—'}</td>
-                  <td className="py-3 px-4 text-right">{submittedSummary.avg_responses}</td>
+                  <td className="py-3 px-4 text-right">—</td>
                   <td className="py-3 px-4 text-right">—</td>
                   <td className="py-3 px-4 text-right">—</td>
                 </tr>
@@ -512,7 +432,7 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
                     </td>
                     <td className="py-2 px-4 text-right text-gray-600">{row.count}</td>
                     <td className="py-2 px-4 text-right text-gray-600">{row.avg_score ? `${row.avg_score}%` : '—'}</td>
-                    <td className="py-2 px-4 text-right text-gray-600">{row.avg_responses}</td>
+                    <td className="py-2 px-4 text-right text-gray-600">—</td>
                     <td className="py-2 px-4 text-right text-gray-600">—</td>
                     <td className="py-2 px-4 text-right text-gray-600">—</td>
                   </tr>
@@ -527,7 +447,12 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
                   <span className="status-badge status-badge--warning mr-2">●</span>
                   {row.status}
                 </td>
-                <td className="py-3 px-4 text-right">{row.count}</td>
+                <td className="py-3 px-4 text-right">
+                  {row.count}
+                  {row.active_count > 0 && (
+                    <span className="text-status-success text-xs ml-1">({row.active_count} active)</span>
+                  )}
+                </td>
                 <td className="py-3 px-4 text-right">
                   {row.avg_score ? `${row.avg_score}%` : '—'}
                 </td>
@@ -588,3 +513,4 @@ function StatusTable({ data }: { data: DashboardStats['studentStatus'] }) {
     </div>
   );
 }
+

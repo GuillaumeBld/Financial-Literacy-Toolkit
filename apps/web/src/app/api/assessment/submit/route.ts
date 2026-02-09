@@ -301,22 +301,28 @@ export async function POST(request: NextRequest) {
       const item = itemsMap.get(response.itemId);
       if (!item) continue;
 
-      // Skip non-anchor items (SDM) and non-scored items (preference Q15-Q28)
-      // Per source of truth: only 26 anchor knowledge items contribute to grade
-      if (item.is_anchor === false || (hasIsScoredColumn && item.is_scored === false)) {
+      // Skip non-scored items (preference Q15-Q28) — they have no key
+      if (hasIsScoredColumn && item.is_scored === false) {
         continue;
       }
+
+      // Score ALL scored items (anchor + SDM), but only anchor items count toward grade
+      const isAnchor = item.is_anchor !== false;
 
       if (item.type === 'multiple_choice' && item.key) {
         const score = response.answer === item.key ? 100 : 0;
         scoreUpdates.push({ itemId: response.itemId, score });
-        totalScore += score;
-        scoredItems++;
+        if (isAnchor) {
+          totalScore += score;
+          scoredItems++;
+        }
       } else if (item.type !== 'multiple_choice') {
         // For short answers and other types, placeholder score
         scoreUpdates.push({ itemId: response.itemId, score: 50 });
-        totalScore += 50;
-        scoredItems++;
+        if (isAnchor) {
+          totalScore += 50;
+          scoredItems++;
+        }
       }
       // MC items without key: score remains null (pending AI/manual review)
     }

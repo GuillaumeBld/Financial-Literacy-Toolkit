@@ -118,15 +118,23 @@ export async function POST(request: NextRequest) {
         const itemIds = validResponses.map((r: any) => r.itemId);
         const rawAnswers = validResponses.map((r: any) => JSON.stringify(r.answer));
         const confidences = validResponses.map((r: any) => r.confidence || null);
-        const scores = validResponses.map((r: any) => r.score ?? null);
+        // Check if the attempt is already submitted - reject stale auto-saves
+        const submittedCheck = await client.query(
+          `SELECT submitted_at FROM attempts WHERE attempt_id = $1`,
+          [activeAttemptId]
+        );
+        if (submittedCheck.rows[0]?.submitted_at) {
+          return { attemptId: activeAttemptId, saved: 0, message: 'Attempt already submitted' };
+        }
 
         // Single bulk upsert using UNNEST
+        // DO NOT overwrite score - scoring is done by the submit route
         await client.query(
-          `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence, score, created_at)
-           SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[]), unnest($5::numeric[]), NOW()
+          `INSERT INTO responses (attempt_id, item_id, raw_answer, confidence, created_at)
+           SELECT $1, unnest($2::text[]), unnest($3::jsonb[]), unnest($4::int[]), NOW()
            ON CONFLICT (attempt_id, item_id)
-           DO UPDATE SET raw_answer = EXCLUDED.raw_answer, confidence = EXCLUDED.confidence, score = EXCLUDED.score`,
-          [activeAttemptId, itemIds, rawAnswers, confidences, scores]
+           DO UPDATE SET raw_answer = EXCLUDED.raw_answer, confidence = EXCLUDED.confidence`,
+          [activeAttemptId, itemIds, rawAnswers, confidences]
         );
       }
 

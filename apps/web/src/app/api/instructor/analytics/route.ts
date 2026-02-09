@@ -162,6 +162,83 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Calculate domain and subdomain performance from responses (dynamic calculation)
+    const domainSubdomainPerformance = await queryMany<{
+      domain: string;
+      subdomain: string;
+      total_responses: number;
+      correct_responses: number;
+      avg_score: number;
+      item_count: number;
+    }>(`
+      SELECT
+        i.domain,
+        i.subdomain,
+        COUNT(r.response_id)::int as total_responses,
+        COUNT(CASE WHEN r.score = 100 THEN 1 END)::int as correct_responses,
+        ROUND(AVG(r.score)::numeric, 1) as avg_score,
+        COUNT(DISTINCT i.item_id)::int as item_count
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      JOIN attempts a ON r.attempt_id = a.attempt_id
+      WHERE a.course_id = $1
+        AND a.submitted_at IS NOT NULL
+        AND i.is_scored = true
+        AND i.is_anchor = true
+        AND r.score IS NOT NULL
+      GROUP BY i.domain, i.subdomain
+      ORDER BY i.domain, i.subdomain
+    `, [targetCourseId]);
+
+    // Group by domain for summary with subdomains
+    const domainSummary: Record<string, {
+      total: number;
+      correct: number;
+      avgScore: number;
+      subdomains: Array<{ name: string; avgScore: number; count: number; itemCount: number }>;
+    }> = {};
+
+    domainSubdomainPerformance.forEach(row => {
+      if (!domainSummary[row.domain]) {
+        domainSummary[row.domain] = {
+          total: 0,
+          correct: 0,
+          avgScore: 0,
+          subdomains: []
+        };
+      }
+      domainSummary[row.domain].total += row.total_responses;
+      domainSummary[row.domain].correct += row.correct_responses;
+      domainSummary[row.domain].subdomains.push({
+        name: row.subdomain,
+        avgScore: Number(row.avg_score) || 0,
+        count: row.total_responses,
+        itemCount: row.item_count
+      });
+    });
+
+    // Calculate domain averages with short names
+    const domainAverages = Object.entries(domainSummary).map(([domain, data]) => {
+      const weightedSum = data.subdomains.reduce((sum, s) => sum + (s.avgScore * s.count), 0);
+      const totalCount = data.subdomains.reduce((sum, s) => sum + s.count, 0);
+      const avgScore = totalCount > 0 ? weightedSum / totalCount : 0;
+
+      const shortNames: Record<string, string> = {
+        'Borrowing, Interest Rates, and Financial Numeracy Knowledge': 'Borrowing & Credit',
+        'Behavioral and Risk Management Knowledge': 'Risk Management',
+        'Risk and Return Knowledge': 'Investment & Risk'
+      };
+
+      return {
+        domain,
+        shortName: shortNames[domain] || domain,
+        average: Math.round(avgScore * 10) / 10,
+        count: totalCount,
+        correctRate: data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0,
+        subdomains: data.subdomains.sort((a, b) => b.avgScore - a.avgScore)
+      };
+    });
+
     // Calculate score distribution
     // Note: scores are stored as percentages (0-100), not decimals (0-1)
     const scoreRanges = [
@@ -913,6 +990,7 @@ export async function GET(request: NextRequest) {
         avgDuration: Math.round(avgDuration)
       },
       domainPerformance,
+      domainAverages,
       scoreDistribution,
       timeAnalysis,
       studentProgress,

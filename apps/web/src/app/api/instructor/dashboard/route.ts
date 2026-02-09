@@ -198,6 +198,7 @@ export async function GET(request: NextRequest) {
     const studentStatus = await queryMany<{
       status: string;
       count: number;
+      active_count: number;
       avg_score: number | null;
       avg_responses: number;
       min_hours_stale: number | null;
@@ -235,6 +236,7 @@ export async function GET(request: NextRequest) {
             ELSE 'In Progress: SDM (41-50)'
           END as status,
           COUNT(*)::int as count,
+          COUNT(CASE WHEN submitted_at IS NULL AND hours_stale < 0.25 THEN 1 END)::int as active_count,
           ROUND(AVG(overall)::numeric, 1) as avg_score,
           ROUND(AVG(resp_count))::int as avg_responses,
           -- Min/Max hours stale (only for in-progress, NULL for submitted)
@@ -249,6 +251,7 @@ export async function GET(request: NextRequest) {
         SELECT
           'Onboarded' as status,
           COUNT(*)::int as count,
+          0::int as active_count,
           NULL::numeric as avg_score,
           0 as avg_responses,
           -- Min/Max hours since onboarding
@@ -271,10 +274,24 @@ export async function GET(request: NextRequest) {
         avg_responses DESC NULLS LAST
     `, [targetCourseId]);
 
+    // Count active students (in-progress with activity in the last 15 minutes)
+    const activeResult = await queryOne<{ count: number }>(`
+      SELECT COUNT(DISTINCT a.user_id)::int as count
+      FROM attempts a
+      LEFT JOIN LATERAL (
+        SELECT MAX(r.created_at) as last_resp FROM responses r WHERE r.attempt_id = a.attempt_id
+      ) lr ON true
+      WHERE a.course_id = $1
+        AND a.submitted_at IS NULL
+        AND COALESCE(lr.last_resp, a.started_at) > NOW() - INTERVAL '15 minutes'
+    `, [targetCourseId]);
+    const activeNow = activeResult?.count || 0;
+
     const stats = {
       totalStudents,
       submitted: completedAttempts.length,
       inProgress: inProgressAttempts.length,
+      activeNow,
       notStarted,
       avgScore: Math.round(avgScore * 100) / 100,
       avgDuration: Math.round(avgDuration),

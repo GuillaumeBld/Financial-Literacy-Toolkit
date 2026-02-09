@@ -52,6 +52,19 @@ type AnalyticsData = {
     attemptCount: number;
     improvement: number;
   }>;
+  domainAverages?: Array<{
+    domain: string;
+    shortName: string;
+    average: number;
+    count: number;
+    correctRate: number;
+    subdomains: Array<{
+      name: string;
+      avgScore: number;
+      count: number;
+      itemCount: number;
+    }>;
+  }>;
   scoreDistribution: Array<{
     range: string;
     count: number;
@@ -206,6 +219,7 @@ export default function InstructorAnalyticsPage() {
   const [instructorName, setInstructorName] = useState('');
   const [activeTab, setActiveTab] = useState<'performance' | 'baseline' | 'risk' | 'learning' | 'psychometrics' | 'heterogeneity'>('performance');
   const [expandedSection, setExpandedSection] = useState<string | null>('demographics');
+  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -487,12 +501,12 @@ export default function InstructorAnalyticsPage() {
             {/* Performance Tab */}
             {activeTab === 'performance' && (
               <>
-                {/* Domain Performance */}
+                {/* Domain Performance with Subdomains */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                       <PieChart className="w-6 h-6 text-ink" />
-                      Domain Performance Analysis
+                      Performance by Section
                     </h2>
                     <button className="flex items-center gap-2 px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink-light transition">
                       <Download className="w-4 h-4" />
@@ -500,32 +514,111 @@ export default function InstructorAnalyticsPage() {
                     </button>
                   </div>
 
-                  <div className="space-y-4">
-                    {analytics.domainPerformance.map((domain) => (
-                      <div key={domain.domain}>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-gray-700">
-                            {domain.domain}
-                          </span>
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>Score: {Math.round(domain.avgScore)}%</span>
-                            <span>Attempts: {domain.attemptCount}</span>
-                            <span className={`font-medium ${
-                              domain.improvement > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
-                              {domain.improvement > 0 ? '+' : ''}{Math.round(domain.improvement)}%
+                  {analytics.domainAverages && analytics.domainAverages.length > 0 ? (
+                    <div className="space-y-4">
+                      {analytics.domainAverages.map((domain) => {
+                        const getScoreColor = (score: number) => {
+                          if (score >= 80) return 'text-green-600 bg-green-50';
+                          if (score >= 60) return 'text-yellow-600 bg-yellow-50';
+                          return 'text-red-600 bg-red-50';
+                        };
+                        const getBarColor = (score: number) => {
+                          if (score >= 80) return 'bg-green-500';
+                          if (score >= 60) return 'bg-yellow-500';
+                          return 'bg-red-500';
+                        };
+
+                        return (
+                          <div key={domain.domain} className="border border-gray-200 rounded-lg overflow-hidden">
+                            {/* Domain Header - Clickable */}
+                            <div
+                              className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                              onClick={() => setExpandedDomain(expandedDomain === domain.domain ? null : domain.domain)}
+                            >
+                              <div className="flex items-center gap-3">
+                                {expandedDomain === domain.domain ? (
+                                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                                ) : (
+                                  <ChevronRight className="w-5 h-5 text-gray-500" />
+                                )}
+                                <div>
+                                  <h3 className="font-semibold text-gray-800">{domain.shortName}</h3>
+                                  <p className="text-xs text-gray-500">{domain.count} responses</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="w-32 bg-gray-200 rounded-full h-2.5">
+                                  <div
+                                    className={`h-2.5 rounded-full ${getBarColor(domain.average)}`}
+                                    style={{ width: `${Math.min(domain.average, 100)}%` }}
+                                  />
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getScoreColor(domain.average)}`}>
+                                  {domain.average}%
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Subdomain Details - Expandable */}
+                            {expandedDomain === domain.domain && domain.subdomains.length > 0 && (
+                              <div className="p-4 bg-white border-t border-gray-200">
+                                <h4 className="text-sm font-medium text-gray-600 mb-3">Subsections</h4>
+                                <div className="space-y-2">
+                                  {domain.subdomains.map((sub, idx) => (
+                                    <div key={idx} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-700">{sub.name}</span>
+                                        <span className="text-xs text-gray-400">({sub.itemCount} {sub.itemCount === 1 ? 'question' : 'questions'})</span>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-xs text-gray-500">{sub.count} responses</span>
+                                        <div className="w-20 bg-gray-200 rounded-full h-1.5">
+                                          <div
+                                            className={`h-1.5 rounded-full ${getBarColor(sub.avgScore)}`}
+                                            style={{ width: `${Math.min(sub.avgScore, 100)}%` }}
+                                          />
+                                        </div>
+                                        <span className={`text-sm font-medium ${sub.avgScore >= 80 ? 'text-green-600' : sub.avgScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                          {sub.avgScore}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {analytics.domainPerformance.map((domain) => (
+                        <div key={domain.domain}>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium text-gray-700">
+                              {domain.domain}
                             </span>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span>Score: {Math.round(domain.avgScore)}%</span>
+                              <span>Attempts: {domain.attemptCount}</span>
+                              <span className={`font-medium ${
+                                domain.improvement > 0 ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {domain.improvement > 0 ? '+' : ''}{Math.round(domain.improvement)}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-3">
+                            <div
+                              className="bg-ink h-3 rounded-full transition-all duration-500"
+                              style={{ width: `${domain.avgScore}%` }}
+                            />
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div
-                            className="bg-ink h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${domain.avgScore}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Score Distribution & Average OC */}
