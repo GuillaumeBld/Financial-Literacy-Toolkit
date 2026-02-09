@@ -1,66 +1,497 @@
-# Introduction
+# Pre-Course Financial Literacy Assessment: Baseline Measurement for QUINN 102 (Financial Literacy), Spring 2026
+
+**Loyola University Chicago**
+**Independent Study -- Spring 2026**
+
+---
+
+## Table of Contents
+
+1. [Introduction](#1-introduction)
+2. [Research Questions](#2-research-questions)
+3. [Methodology](#3-methodology)
+   - 3.1 [Study Design](#31-study-design)
+   - 3.2 [Assessment Structure](#32-assessment-structure)
+     - 3.2.1 [Demographic and Socioeconomic Baseline Questionnaire](#321-demographic-and-socioeconomic-baseline-questionnaire)
+     - 3.2.2 [Fixed Core Assessment (40 Items)](#322-fixed-core-assessment-40-items)
+     - 3.2.3 [Supplemental Diagnostic Module (SDM-10)](#323-supplemental-diagnostic-module-sdm-10)
+   - 3.3 [Platform and Data Collection](#33-platform-and-data-collection)
+   - 3.4 [Privacy and FERPA Compliance](#34-privacy-and-ferpa-compliance)
+   - 3.5 [Analytical Framework](#35-analytical-framework)
+     - 3.5.1 [RQ1: Learning Gains](#351-rq1-learning-gains)
+     - 3.5.2 [RQ2: Heterogeneity](#352-rq2-heterogeneity)
+     - 3.5.3 [Psychometric Validation](#353-psychometric-validation)
+4. [Pre-Course Assessment Results](#4-pre-course-assessment-results)
+   - 4.1 [Participation and Completion](#41-participation-and-completion)
+   - 4.2 [Sample Demographics](#42-sample-demographics)
+   - 4.3 [Financial Background and Context](#43-financial-background-and-context)
+   - 4.4 [Overall Score Distribution](#44-overall-score-distribution)
+   - 4.5 [Domain-Level Performance](#45-domain-level-performance)
+   - 4.6 [Subdomain Analysis and Item Difficulty](#46-subdomain-analysis-and-item-difficulty)
+   - 4.7 [Confidence Calibration (Overconfidence Index)](#47-confidence-calibration-overconfidence-index)
+   - 4.8 [SDM-10 Diagnostic Summary](#48-sdm-10-diagnostic-summary)
+   - 4.9 [Assessment Duration](#49-assessment-duration)
+5. [Discussion of Pre-Course Baseline](#5-discussion-of-pre-course-baseline)
+6. [Limitations and Pending Items](#6-limitations-and-pending-items)
+7. [Next Steps (Post-Course Assessment)](#7-next-steps-post-course-assessment)
+- [Appendix A: SDM-10 Selection and Burden Controls](#appendix-a-sdm-10-selection-and-burden-controls)
+- [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
+
+---
+
+## 1. Introduction
+
 Financial literacy is commonly defined as the ability to understand and use financial concepts and quantitative information to make informed decisions about saving, borrowing, investing, and managing risk. In the human capital framework, these competencies influence participation in credit and asset markets, portfolio choice, and resilience to shocks. For university students, financial literacy is immediately consequential because many begin managing debt, credit, and consumption decisions under limited experience and imperfect information. Small misunderstandings in compounding, interest-rate mechanics, inflation, diversification, and insurance can translate into persistent debt burdens, fragile liquidity positions, and suboptimal portfolio choices.
 
-Recent policy debate on consumer credit highlights why financial literacy matters for borrowing outcomes. Creditworthiness is partly a function of financial literacy education, and improving consumers’ understanding of borrowing mechanics can reduce delinquency and compounding penalty dynamics that raise effective borrowing costs. From this perspective, expanding access to bona fide financial literacy education is not only consumer protection but also a market-relevant intervention, because stronger credit profiles can reduce risk-based pricing pressure and contribute to lower rates over time for both borrowers and lenders.
+Recent policy debate on consumer credit highlights why financial literacy matters for borrowing outcomes. Creditworthiness is partly a function of financial literacy education, and improving consumers' understanding of borrowing mechanics can reduce delinquency and compounding penalty dynamics that raise effective borrowing costs. From this perspective, expanding access to bona fide financial literacy education is not only consumer protection but also a market-relevant intervention, because stronger credit profiles can reduce risk-based pricing pressure and contribute to lower rates over time for both borrowers and lenders.
 
 Despite broad recognition of its importance, financial literacy is unevenly distributed across student populations. Students arrive with heterogeneous prior exposure to personal finance concepts, differences in numeracy, and unequal access to credible guidance through households, schools, employers, and digital sources. Learning is further shaped by behavioral and contextual constraints, including time scarcity, employment intensity, financial stress, risk preferences, and prior exposure to financial products. Consequently, evaluation of financial literacy instruction should address both average learning gains and the determinants of variation in learning across students.
 
-This independent study evaluates learning outcomes in Quinn 102 (Financial Literacy) during the 2026 offering through a structured questionnaire administered respectively in the second week and the last week of the course. The purpose of administering the questionnaire for Quinn 102 in 2026 is twofold. First, it is designed to measure the overall level of learning achieved, and its distribution across different categories of financial literacy, demographics, and socio-economic characteristics of the sample. Second, it is designed to determine which factors affect the level and magnitude of learning in order to inform the development of more effective courses in the future. In specifying the determinants of learning, the study emphasizes behavioral and contextual variables that affect students’ learning in domains such as borrowing, investment, and risk management.
+This independent study evaluates learning outcomes in Quinn 102 (Financial Literacy) during the Spring 2026 offering through a structured questionnaire administered respectively in the second week and the last week of the course. The purpose of administering the questionnaire for Quinn 102 in 2026 is twofold. First, it is designed to measure the overall level of learning achieved, and its distribution across different categories of financial literacy, demographics, and socio-economic characteristics of the sample. Second, it is designed to determine which factors affect the level and magnitude of learning in order to inform the development of more effective courses in the future. In specifying the determinants of learning, the study emphasizes behavioral and contextual variables that affect students' learning in domains such as borrowing, investment, and risk management.
 
-More specifically, the study is organized around two research questions.
+Collectively, this independent study contributes an empirically grounded evaluation of QUINN 102's association with student financial literacy gains, a structured approach to diagnosing domain-level strengths and weaknesses, and an operational infrastructure for repeatable, privacy-aware measurement. The results are intended to support continuous course improvement and to provide evidence on which student characteristics and constraints are most predictive of learning gains in borrowing, investment, and risk management.
 
-### Research Questions
+This paper presents the pre-course baseline assessment results. The pre-course assessment was administered during the second week of the Spring 2026 semester (February 2--9, 2026). Post-course results and pre-post comparisons will be reported following the end-of-semester assessment administration.
 
-* RQ1 (Learning gains): What is the magnitude of student learning in Quinn 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre to post changes in knowledge?
-* RQ2 (Heterogeneity): Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
+---
 
-Collectively, this independent study contributes an empirically grounded evaluation of QUINN 102’s association with student financial literacy gains, a structured approach to diagnosing domain-level strengths and weaknesses, and an operational infrastructure for repeatable, privacy-aware measurement. The results are intended to support continuous course improvement and to provide evidence on which student characteristics and constraints are most predictive of learning gains in borrowing, investment, and risk management.
+## 2. Research Questions
 
-Completion of the financial literacy assessment is a required course assignment in Quinn 102 (Financial Literacy) and includes two administrations, a pre-course assessment (second week of class) and a post-course assessment (last day of class). The assessment supports instructional goals by providing baseline and post-instruction measures of students’ financial literacy knowledge. Separately, students will be offered the opportunity to allow their assessment data to be used for an independent research study evaluating learning outcomes in the 2026 offering of Quinn 102. Consent to research use of data is voluntary. Students may decline research participation without penalty and without any impact on course standing or grades.
+The study is organized around two research questions:
 
-The pre to post design supports a clear estimate of course-associated learning gains at the student level. Because the design does not include a randomized control group, results are interpreted as evidence of learning associated with course participation under standardized measurement conditions. This framing preserves analytic credibility while still producing actionable evidence for instructional refinement and for building subsequent, more strongly identified evaluations.
+- **RQ1 (Learning gains):** What is the magnitude of student learning in Quinn 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre- to post-course changes in knowledge?
 
-Beyond average effects, the study is designed to explain heterogeneity in outcomes. Baseline measures collected alongside in the second week of the course capture student characteristics and circumstances plausibly associated with learning trajectories, including demographic and socioeconomic background, prior exposure to financial products and experiences, and behavioral indicators such as confidence, financial stress, and time constraints. The questionnaire results administered in the last week of the course enable analysis of baseline disparities, differential learning gains, and whether the course narrows or widens gaps in domain mastery.
+- **RQ2 (Heterogeneity):** Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
-The platform selects only from pre-written items and does not generate new questions or provide personalized feedback during active assessment windows. For the supplemental item bank, each anchor assessment concept is paired with pre-written variants across two dimensions: response format (True/False, multiple choice, short open-ended response) and level of understanding (lower-level foundational, same-level comparable, higher-level applied). This structure enables targeted diagnostic follow-ups while preserving standardized measurement of the fixed 40-item anchor assessment.
+---
 
-To ensure standardized delivery and data integrity at scale, the questionnaire is administered through a dedicated web platform developed for this study, the Financial Literacy Toolkit (platform reference available in the project documentation). After reviewing the IRB-approved information and consent screen, students enter the course code and their student ID and complete a brief onboarding process. Students authenticate using their university email address through institutional single sign-on. The platform does not collect or store passwords. Student identifiers are transformed into coded keys prior to storage so that identities are not directly accessible in the research dataset, while still allowing pre-course and post-course responses to be linked. Identifiable information needed for course administration is stored separately with restricted access. The research dataset used for analysis contains only coded identifiers, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis.
+## 3. Methodology
 
-## Assessment Structure
+### 3.1 Study Design
 
-This study uses:
+Completion of the financial literacy assessment is a required course assignment in Quinn 102 (Financial Literacy) and included two planned administrations: a pre-course assessment (second week of class) and a post-course assessment (last week of class). The assessment supports instructional goals by providing baseline and post-instruction measures of students' financial literacy knowledge. Separately, students were offered the opportunity to allow their assessment data to be used for an independent research study evaluating learning outcomes in the 2026 offering of Quinn 102. Consent to research use of data was voluntary. Students could decline research participation without penalty and without any impact on course standing or grades.
 
-* (1) a demographic and socioeconomic baseline questionnaire
-* (2) a 40-item assessment covering financial knowledge and attitudes (a fixed 40-item core (anchor) assessment)
-* (3) a 10-item Supplemental Diagnostic Module (SDM-10) selected from a pre-written item bank based on students’ prior responses (correctness and confidence) to the core items
+The pre-to-post design supports a clear estimate of course-associated learning gains at the student level. Because the design does not include a randomized control group, results will be interpreted as evidence of learning associated with course participation under standardized measurement conditions. This framing preserves analytic credibility while still producing actionable evidence for instructional refinement and for building subsequent, more strongly identified evaluations.
 
-Out of the 40 assessment items, 26 are knowledge items (Q1–Q14, Q29–Q40) scored as correct/incorrect and used to compute learning gains. The remaining 14 are preference items (Q15–Q28) that assess behavioral tendencies and serve as unscored covariates for heterogeneity analysis.
+Beyond average effects, the study is designed to explain heterogeneity in outcomes. Baseline measures collected during the second week of the course captured student characteristics and circumstances plausibly associated with learning trajectories, including demographic and socioeconomic background, prior exposure to financial products and experiences, and behavioral indicators such as confidence, financial stress, and time constraints. The post-course questionnaire results will enable analysis of baseline disparities, differential learning gains, and whether the course narrows or widens gaps in domain mastery.
 
-### Demographic and Socioeconomic Baseline Questionnaire
+### 3.2 Assessment Structure
 
-The assessment begins with a brief set of demographics, socioeconomic, and debt-status baseline questions administered during the onboarding flow at the start of the pre-course assessment. These items provide contextual covariates used to describe the study sample and to examine heterogeneity in learning gains (RQ2). The baseline set includes standard demographics (gender, racial/ethnic background, age range, first language, and work experience), financial background and context items (prior use of common financial products such as credit cards, student loans, auto loans, investment accounts, and insurance; self-rated financial knowledge; and frequency of financial stress), and student loan debt items (current student loan debt status and, if applicable, an estimated interest-rate bracket), with “Prefer not to answer” options where appropriate. Where applicable, students who indicate student debt may be asked a brief follow-up (for example, an estimated interest-rate bracket), with “Prefer not to answer” options provided where appropriate.
+This study uses three assessment components:
 
-Students access the assessment through the platform onboarding flow. After reviewing the IRB-approved information and consent screen, students enter the course code and student ID, then authenticate using their university email address via institutional single sign-on or a passwordless email link. The platform does not collect or store passwords. The platform assigns each student a coded study identifier that links pre-course and post-course responses. Identifiable information, if collected for course administration (for example, verified university email), is stored separately from the research dataset with restricted access. The research dataset used for analysis is de-identified and contains only the coded identifier, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis. Only authorized instructional personnel may access identifiable information for course-related purposes (for example, confirming assignment completion). Research analyses use the de-identified dataset and follow institutional privacy and FERPA requirements.
+1. A demographic and socioeconomic baseline questionnaire
+2. A 40-item assessment covering financial knowledge and attitudes (a fixed 40-item core anchor assessment)
+3. A 10-item Supplemental Diagnostic Module (SDM-10) selected from a pre-written item bank based on students' prior responses (correctness and confidence) to the core items
 
-Baseline onboarding items are collected once and are not re-administered at the post-course administration except where students are invited to confirm or update selected background variables (for example, work status). During onboarding, students are informed that completing the assessment is a required course assignment, and they are asked whether they consent to the use of a de-identified version of their responses for research. Declining consent has no impact on grades or course standing.
+Out of the 40 assessment items, 26 are knowledge items (Q1--Q14, Q29--Q40) scored as correct/incorrect and used to compute learning gains. The remaining 14 are preference items (Q15--Q28) that assess behavioral tendencies and serve as unscored covariates for heterogeneity analysis.
 
-### Fixed Core Assessment
+#### 3.2.1 Demographic and Socioeconomic Baseline Questionnaire
 
-Following onboarding, students complete a 40-item anchor assessment that is identical across participants in both the pre- and post-course administrations. Each anchor item is paired with a brief confidence rating on a 1–3 scale. The combination of correctness and confidence is used to determine whether additional diagnostic measurement is warranted in the supplemental module.
+The assessment began with a brief set of demographics, socioeconomic, and debt-status baseline questions administered during the onboarding flow at the start of the pre-course assessment. These items provide contextual covariates used to describe the study sample and to examine heterogeneity in learning gains (RQ2). The baseline set included standard demographics (gender, racial/ethnic background, age range, first language, and work experience), financial background and context items (prior use of common financial products such as credit cards, student loans, auto loans, investment accounts, and insurance; self-rated financial knowledge; and frequency of financial stress), and student loan debt items (current student loan debt status and, if applicable, an estimated interest-rate bracket), with "Prefer not to answer" options where appropriate. Where applicable, students who indicated student debt were asked a brief follow-up (for example, an estimated interest-rate bracket), with "Prefer not to answer" options provided where appropriate.
 
-Core knowledge items are mapped to domains (borrowing, investing, risk management) and administered in a consistent sequence for all students. For each core item, the platform records two signals: (1) the selected answer and (2) a confidence rating (1–3).
+Baseline onboarding items were collected once and will not be re-administered at the post-course administration except where students are invited to confirm or update selected background variables (for example, work status). During onboarding, students were informed that completing the assessment was a required course assignment, and they were asked whether they consented to the use of a de-identified version of their responses for research. Declining consent has no impact on grades or course standing.
 
-The core questionnaire is mapped to the three instructional domains in Quinn 102, enabling domain-specific reporting of learning gains. Borrowing and credit (Borrowing, Interest Rates, and Financial Numeracy Knowledge) assesses students’ understanding of compound interest, borrowing and mortgages, inflation, borrowing interest, saving behavior, general borrowing concepts, earning, and borrowing and credit fundamentals. Risk management (Behavioral and Risk Management Knowledge) includes two item types. Knowledge items (Q11–Q14) assess understanding of diversification and insurance. Preference items (Q15–Q28) assess risk attitudes, decision-making tendencies, and behavioral responses; these are analyzed as covariates, not scored outcomes.
+#### 3.2.2 Fixed Core Assessment (40 Items)
 
-Items are classified into two types for analytic purposes. Knowledge items (Q1–Q14, Q29–Q40) assess factual understanding and are scored as correct/incorrect. These items contribute to learning gain calculations (RQ1) and trigger SDM-10 follow-up based on correctness and confidence. Preference items (Q15–Q28) assess financial attitudes, risk tolerance, and behavioral tendencies. These items are not scored as correct/incorrect; they serve as baseline covariates for heterogeneity analysis (RQ2) and do not trigger SDM-10 selection.
+Following onboarding, students completed a 40-item anchor assessment that was identical across participants and will be identical in both the pre- and post-course administrations. Each anchor item was paired with a brief confidence rating on a 1--3 scale. The combination of correctness and confidence was used to determine whether additional diagnostic measurement was warranted in the supplemental module.
 
-### Supplemental Diagnostic Module
+Core knowledge items are mapped to domains (borrowing, investing, risk management) and were administered in a consistent sequence for all students. For each core item, the platform recorded two signals: (1) the selected answer and (2) a confidence rating (1--3).
 
-In addition to the 40 anchor items, the assessment includes a fixed-length Supplemental Diagnostic Module (SDM-10) consisting of 10 additional items selected from a pre-written item bank. The SDM-10 select follow-up questions along two dimensions based of the combination of confidence rating. The first dimension is response format (True/False, multiple choice, or short open-ended response). The second dimension is level of understanding, defined relative to the anchor item’s subcategory (lower-level foundational, base level comparable, or higher-level applied). Items are selected to clarify whether incorrect or low-confidence responses reflect uncertainty, guessing, or misconceptions. To limit burden, the SDM-10 length is fixed (10 items) and open-ended items are capped.
+The core questionnaire is mapped to the three instructional domains in Quinn 102, enabling domain-specific reporting of learning gains:
 
-The SDM-10 draws only from knowledge items (Q1–Q14, Q29–Q40). Preference items (Q15–Q28) do not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
+- **Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1--Q10, 10 items):** Assesses students' understanding of compound interest, borrowing and mortgages, inflation, borrowing interest, saving behavior, general borrowing concepts, earning, and borrowing and credit fundamentals.
 
-### Table 1: SDM-10 Selection and Burden Controls
+- **Behavioral and Risk Management Knowledge (Q11--Q28, 18 items):** Includes two item types. Knowledge items (Q11--Q14) assess understanding of diversification and insurance. Preference items (Q15--Q28) assess risk attitudes, decision-making tendencies, and behavioral responses; these are analyzed as covariates, not scored outcomes.
+
+- **Risk and Return Knowledge (Q29--Q40, 12 items):** Assesses investing knowledge, crisis awareness, and statistical numeracy including probability reasoning and expected value calculations.
+
+Items are classified into two types for analytic purposes:
+
+- **Knowledge items (Q1--Q14, Q29--Q40):** Assess factual understanding and are scored as correct/incorrect. These items contribute to learning gain calculations (RQ1) and trigger SDM-10 follow-up based on correctness and confidence.
+
+- **Preference items (Q15--Q28):** Assess financial attitudes, risk tolerance, and behavioral tendencies. These items are not scored as correct/incorrect; they serve as baseline covariates for heterogeneity analysis (RQ2) and do not trigger SDM-10 selection.
+
+#### 3.2.3 Supplemental Diagnostic Module (SDM-10)
+
+In addition to the 40 anchor items, the assessment included a fixed-length Supplemental Diagnostic Module (SDM-10) consisting of 10 additional items selected from a pre-written item bank. The SDM-10 selected follow-up questions along two dimensions based on the combination of correctness and confidence rating. The first dimension was response format (True/False, multiple choice, or short open-ended response). The second dimension was level of understanding, defined relative to the anchor item's subcategory (lower-level foundational, base-level comparable, or higher-level applied). Items were selected to clarify whether incorrect or low-confidence responses reflected uncertainty, guessing, or misconceptions. To limit burden, the SDM-10 length was fixed (10 items) and open-ended items were capped.
+
+The SDM-10 drew only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) did not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
+
+The platform selected only from pre-written items and did not generate new questions or provide personalized feedback during the active assessment window. For the supplemental item bank, each anchor assessment concept was paired with pre-written variants across two dimensions: response format (True/False, multiple choice, short open-ended response) and level of understanding (lower-level foundational, same-level comparable, higher-level applied). This structure enabled targeted diagnostic follow-ups while preserving standardized measurement of the fixed 40-item anchor assessment.
+
+### 3.3 Platform and Data Collection
+
+To ensure standardized delivery and data integrity at scale, the questionnaire was administered through a dedicated web platform developed for this study: the Financial Literacy Toolkit. After reviewing the IRB-approved information and consent screen, students entered the course code and their student ID and completed a brief onboarding process. Students authenticated using their university email address through institutional single sign-on. The platform did not collect or store passwords.
+
+The questions bank was developed by adapting and synthesizing items from established financial literacy and numeracy instruments and large-scale surveys, including the Berlin Numeracy Test (BNT), Lipkus Numeracy Scale, Schwartz Numeracy Scale, the 'Big Three' (Lusardi and Mitchell), the FINRA National Financial Capability Study (NFCS) item sets including the NFCS extension 'Big Five,' the OECD/INFE Toolkit (2022), the P-Fin Index (including Retirement Fluency; TIAA and GFLEC), and related decision science and medical decision-making research instruments, as well as RAND American Life Panel and RAND/NBER survey modules. An initial pool of approximately 80 candidate items was curated and refined to a 40-item anchor assessment. Each anchor question concept has pre-written variants by format (True/False, multiple choice, short open-ended) and level of understanding (foundational, comparable, applied), enabling targeted diagnostic follow-ups while maintaining a standardized 40-item anchor assessment.
+
+### 3.4 Privacy and FERPA Compliance
+
+Student identifiers were transformed into coded keys prior to storage so that identities are not directly accessible in the research dataset, while still allowing pre-course and post-course responses to be linked. Identifiable information needed for course administration is stored separately with restricted access. The research dataset used for analysis contains only coded identifiers, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis.
+
+Students accessed the assessment through the platform onboarding flow. After reviewing the IRB-approved information and consent screen, students entered the course code and student ID, then authenticated using their university email address via institutional single sign-on or a passwordless email link. The platform did not collect or store passwords. The platform assigned each student a coded study identifier that links pre-course and post-course responses. Identifiable information, if collected for course administration (for example, verified university email), is stored separately from the research dataset with restricted access. The research dataset used for analysis is de-identified and contains only the coded identifier, assessment responses, baseline onboarding responses, and limited metadata necessary for analysis. Only authorized instructional personnel may access identifiable information for course-related purposes (for example, confirming assignment completion). Research analyses use the de-identified dataset and follow institutional privacy and FERPA requirements.
+
+### 3.5 Analytical Framework
+
+The primary learning outcomes are computed from the 26 knowledge items (Q1--Q14, Q29--Q40). Each knowledge item is scored as correct/incorrect and aggregated into (a) an overall percent-correct score and (b) domain-level percent-correct scores for borrowing and credit, investment, and risk management. Confidence ratings are recorded for each anchor item and used for secondary analyses (calibration and diagnostic interpretation), but do not change the primary scoring of the anchor items.
+
+#### 3.5.1 RQ1: Learning Gains
+
+For each student, learning gain will be defined as the difference between post-course and pre-course anchor scores (overall and by domain). The study will report mean gains, standard deviations, and 95% confidence intervals. Inference will use paired comparisons at the student level (for example, paired t-tests or equivalent nonparametric tests if assumptions are violated) and standardized effect sizes (for example, within-student Cohen's d). Domain-level results will be reported in parallel to identify where gains are concentrated or limited. The primary learning outcomes will be computed from the 26 knowledge items (Q1--Q14, Q29--Q40). Preference items are excluded from learning gain calculations.
+
+#### 3.5.2 RQ2: Heterogeneity
+
+Heterogeneity analyses will model learning gains as a function of baseline covariates collected during onboarding, including demographic and socioeconomic indicators, prior exposure to financial products, debt status, self-rated financial knowledge, financial stress, and selected time-constraint measures (for example, work status). Models will be estimated for overall gains and domain-level gains. The analysis will use multivariable regression (or mixed-effects models when pooling domains) and will assess whether predictors differ by domain through interaction terms or domain-specific models. The study will report coefficient estimates with confidence intervals and will use appropriate adjustments or transparency practices for multiple comparisons (for example, pre-specifying a small set of primary predictors and treating others as exploratory). Preference items (Q15--Q28) will be analyzed as baseline covariates. These include measures of risk tolerance, loss aversion, allocation preferences, decision-making style, and confidence. The analysis will test whether these behavioral characteristics predict differential learning gains across students.
+
+#### 3.5.3 Psychometric Validation
+
+Exploratory Factor Analysis (EFA) and internal consistency reliability metrics such as Cronbach's alpha will provide classical evidence that questionnaire items measure coherent and reliable constructs. EFA will be used to verify that items within each domain load on intended latent factors and to assess dimensionality -- that is, how many underlying constructs the item set appears to measure. Cronbach's alpha will evaluate internal consistency, indicating whether items intended to measure the same construct exhibit adequate correlation. Together, these methods will identify items or domains requiring refinement, support reliability across different student populations and assessment occasions, and establish replicable benchmarks that facilitate future research and institutional comparisons.
+
+The SDM-10 will be analyzed as secondary diagnostic evidence and is not used to compute the primary pre-post learning gains. SDM-10 outputs will be summarized by (a) the subcategories most frequently selected for follow-up, (b) the distribution of follow-up levels (lower, same, higher) and formats (True/False, multiple choice, open-ended), and (c) rubric-based scores for open-ended explanations. When open-ended items are used, rubric scores and misconception tags will be aggregated to estimate misconception prevalence by domain and to identify common reasoning gaps. The analysis will also evaluate confidence calibration by comparing confidence ratings to correctness (for example, underconfidence/overconfidence rates and calibration curves). SDM-10 metrics may be used as predictors or moderators in exploratory models to test whether misconception patterns or confidence calibration relate to subsequent gains, while keeping anchor assessment-based gains as the primary outcome.
+
+Item-level summaries (difficulty, missingness, and response distributions) will be used to flag items for refinement in future administrations. These psychometric results are used to support measurement quality and comparability across cohorts rather than to change scores within the 2026 administration.
+
+---
+
+## 4. Pre-Course Assessment Results
+
+This section reports the pre-course baseline results from the assessment administered during February 2--9, 2026. All data reflect the pre-course administration only; post-course results will be reported following the end-of-semester assessment.
+
+### 4.1 Participation and Completion
+
+The pre-course assessment window was open from February 2 through February 9, 2026. A total of 433 students onboarded onto the platform, of whom 421 submitted completed assessments, yielding a completion rate of 97.2%. Seven students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure.
+
+**Table 4.1: Daily Enrollment and Completion**
+
+| Date | Enrolled | Completed |
+| --- | --- | --- |
+| Feb 2 | 98 | 93 |
+| Feb 3 | 51 | 47 |
+| Feb 4 | 47 | 46 |
+| Feb 5 | 37 | 36 |
+| Feb 6 | 43 | 43 |
+| Feb 7 | 38 | 38 |
+| Feb 8 | 56 | 56 |
+| Feb 9 | 63 | 62 |
+| **Total** | **433** | **421** |
+
+Enrollment was highest on the first day of the window (Feb 2, n = 98), consistent with students responding to the initial course announcement, and showed a secondary uptick in the final two days (Feb 8--9, n = 119 combined), reflecting deadline-driven engagement.
+
+### 4.2 Sample Demographics
+
+Demographic data were collected from all 433 onboarded students during the onboarding flow (N = 433 unless otherwise noted).
+
+**Table 4.2a: Gender**
+
+| Gender | n | % |
+| --- | --- | --- |
+| Female | 253 | 58.4% |
+| Male | 174 | 40.2% |
+| Prefer not to say | 6 | 1.4% |
+
+**Table 4.2b: Age Range**
+
+| Age Range | n | % |
+| --- | --- | --- |
+| 20 or under | 368 | 87.4% |
+| Above 20 | 60 | 14.3% |
+| Prefer not to answer | 5 | 1.2% |
+
+Note: Percentages do not sum to 100.0% due to rounding of the "Above 20" and "Prefer not to answer" categories across the N = 421 denominator.
+
+**Table 4.2c: Race/Ethnicity**
+
+| Race/Ethnicity | n | % |
+| --- | --- | --- |
+| White or Caucasian | 208 | 49.4% |
+| Hispanic or Latino | 94 | 22.3% |
+| Asian | 56 | 13.3% |
+| Black or African American | 29 | 6.9% |
+| Two or more | 28 | 6.7% |
+| Prefer not to say | 9 | 2.1% |
+| Other | 7 | 1.7% |
+| Blank | 2 | 0.5% |
+
+**Table 4.2d: Work Experience**
+
+| Work Status | n | % |
+| --- | --- | --- |
+| Part-time employment | 304 | 72.2% |
+| No work experience | 63 | 15.0% |
+| Full-time employment | 57 | 13.5% |
+| Prefer not to answer | 9 | 2.1% |
+
+**Table 4.2e: First-Generation College Student**
+
+| First-Generation | n | % |
+| --- | --- | --- |
+| No | 298 | 70.8% |
+| Yes | 120 | 28.5% |
+| Prefer not to say | 13 | 3.1% |
+| Blank | 2 | 0.5% |
+
+The sample was predominantly traditional-age (87.4% aged 20 or under), majority female (58.4%), and racially diverse, with approximately half of respondents identifying as White or Caucasian (49.4%) and meaningful representation from Hispanic/Latino (22.3%), Asian (13.3%), and Black/African American (6.9%) students. Nearly three in ten students (28.5%) identified as first-generation college students.
+
+### 4.3 Financial Background and Context
+
+**Table 4.3a: Student Loan Debt Status**
+
+| Student Loan Debt | n | % |
+| --- | --- | --- |
+| No | 269 | 63.9% |
+| Yes | 103 | 24.5% |
+| Prefer not to say | 59 | 14.0% |
+| Blank | 2 | 0.5% |
+
+**Table 4.3b: Estimated Loan Interest Rate (among n = 103 with debt)**
+
+| Interest Rate | n | % |
+| --- | --- | --- |
+| Don't know | 46 | 44.7% |
+| 5--10% | 34 | 33.0% |
+| Less than 5% | 14 | 13.6% |
+| Above 10% | 5 | 4.9% |
+| Prefer not to say | 4 | 3.9% |
+
+**Table 4.3c: Frequency of Financial Stress**
+
+| Financial Stress | n | % |
+| --- | --- | --- |
+| Sometimes | 188 | 44.7% |
+| Rarely | 94 | 22.3% |
+| Often | 82 | 19.5% |
+| Never | 46 | 10.9% |
+| Always | 18 | 4.3% |
+| Prefer not to answer | 5 | 1.2% |
+
+**Table 4.3d: Self-Rated Financial Knowledge**
+
+| Self-Rated Knowledge | n | % |
+| --- | --- | --- |
+| Moderate | 253 | 60.1% |
+| Low | 106 | 25.2% |
+| High | 54 | 12.8% |
+| Very low | 9 | 2.1% |
+| Very high | 7 | 1.7% |
+| Prefer not to answer | 4 | 1.0% |
+
+**Table 4.3e: Prior Financial Product Experience (select all that apply)**
+
+| Financial Product | n | % |
+| --- | --- | --- |
+| Credit card | 278 | 66.0% |
+| Investment account | 162 | 38.5% |
+| Student loan | 157 | 37.3% |
+| None of the above | 53 | 12.6% |
+| Insurance policy | 43 | 10.2% |
+| Prefer not to answer | 22 | 5.2% |
+| Auto loan | 18 | 4.3% |
+
+Nearly a quarter of respondents (23.8%) reported experiencing financial stress often or always, and a quarter (24.5%) reported carrying student loan debt. Among those with student loans, nearly half (44.7%) did not know the interest rate on their debt -- a finding that underscores the relevance of the course's borrowing literacy content. The majority of students rated their own financial knowledge as moderate (60.1%) or low (25.2%), while only 14.5% rated it as high or very high. Two-thirds (66.0%) reported prior experience with a credit card, and over a third had experience with investment accounts (38.5%) or student loans (37.3%).
+
+### 4.4 Overall Score Distribution
+
+Scores are computed from the 26 knowledge items (Q1--Q14, Q29--Q40) for the 421 students who submitted completed assessments.
+
+**Table 4.4a: Overall Score Summary Statistics**
+
+| Statistic | Value |
+| --- | --- |
+| N | 421 |
+| Mean | 66.55% |
+| Standard Deviation | 17.38% |
+| Minimum | 7.69% |
+| Maximum | 100.00% |
+
+**Table 4.4b: Score Distribution by Decile**
+
+| Score Range | n |
+| --- | --- |
+| 0--9% | 1 |
+| 10--19% | 8 |
+| 20--29% | 9 |
+| 30--39% | 12 |
+| 40--49% | 24 |
+| 50--59% | 73 |
+| 60--69% | 120 |
+| 70--79% | 82 |
+| 80--89% | 58 |
+| 90--99% | 23 |
+| 100% | 11 |
+
+The distribution was roughly bell-shaped with a slight left skew. The modal decile was 60--69% (n = 120), and the majority of students (67.2%) scored between 50% and 89%. Eleven students achieved perfect scores (100%), while 18 students (4.3%) scored below 30%, suggesting a small group with substantial baseline knowledge gaps.
+
+### 4.5 Domain-Level Performance
+
+Domain-level scores were computed by averaging percent correct across items within each domain.
+
+**Table 4.5: Domain-Level Performance**
+
+| Domain | Items | n Items | Avg % Correct | SD |
+| --- | --- | --- | --- | --- |
+| Behavioral and Risk Management Knowledge | Q11--Q14 | 4 | 73.46% | 44.17 |
+| Borrowing, Interest Rates, and Financial Numeracy | Q1--Q10 | 10 | 69.33% | 46.12 |
+| Risk and Return Knowledge | Q29--Q40 | 12 | 63.97% | 48.01 |
+
+Behavioral and Risk Management Knowledge (Q11--Q14) yielded the highest average score (73.46%), driven by strong performance on diversification concepts. Borrowing, Interest Rates, and Financial Numeracy (Q1--Q10) followed at 69.33%. Risk and Return Knowledge (Q29--Q40) was the weakest domain overall at 63.97%, reflecting conceptual difficulty with bond pricing, inflation protection, and crisis-related items.
+
+### 4.6 Subdomain Analysis and Item Difficulty
+
+Item-level percent correct is reported below, ordered from strongest to weakest performance.
+
+**Table 4.6: Item-Level Percent Correct (Ranked)**
+
+| Rank | Subdomain / Item | Q# | % Correct |
+| --- | --- | --- | --- |
+| 1 | Borrowing/Interest | Q4 | 92.87% |
+| 2 | Risk-Return Relationship | Q35 | 91.69% |
+| 3 | Compound Interest | Q1 | 91.45% |
+| 4 | Diversification Principle | Q36 | 87.17% |
+| 5 | Inflation basics | Q3 | 85.75% |
+| 6 | Diversification Effect | Q34 | 81.24% |
+| 7 | Risk Diversification | Q11, Q14 | 80.17% |
+| 8 | Earning | Q9 | 75.06% |
+| 9 | Asset Class Risk | Q39 | 73.87% |
+| 10 | Basic Probability | Q33 | 71.97% |
+| 11 | Saving | Q5 | 69.12% |
+| 12 | Insurance/Liability | Q37 | 69.36% |
+| 13 | Insurance | Q12, Q13 | 66.75% |
+| 14 | Borrowing/Mortgages | Q2 | 66.27% |
+| 15 | Crisis/Systemic Risk | Q40 | 59.38% |
+| 16 | Borrowing general | Q8 | 57.24% |
+| 17 | Investing (Q29--Q32) | Q29--Q32 | ~55--70% |
+| 18 | Credit Reports | Q10 | 52.73% |
+| 19 | Interest Rates and Bonds | Q29 | 36.82% |
+| 20 | Inflation/Lowering | Q6 | 32.78% |
+| 21 | Inflation Protection | Q38 | 23.99% |
+
+Students demonstrated strong baseline knowledge in fundamental concepts: borrowing/interest (Q4, 92.87%), risk-return relationships (Q35, 91.69%), compound interest (Q1, 91.45%), and diversification principles (Q36, 87.17%). These items involve widely taught, conceptually accessible ideas.
+
+By contrast, three items emerged as notably difficult. Inflation protection (Q38, 23.99%) was the hardest item, requiring students to identify which investment type best preserves purchasing power during inflation -- a concept that demands applied reasoning about asset classes. The question on lowering inflation (Q6, 32.78%) required distinguishing between a decrease in prices and a slower rate of price increase, a nuance that many students missed. Interest rates and bond pricing (Q29, 36.82%) tested the inverse relationship between interest rates and bond prices, a concept that is foundational to fixed-income investing but often not encountered until formal coursework.
+
+Other items in the lower-performing range included credit reports (Q10, 52.73%) and general borrowing concepts (Q8, 57.24%), suggesting gaps in practical knowledge of credit systems and negotiation in lending.
+
+### 4.7 Confidence Calibration (Overconfidence Index)
+
+The overconfidence index (OC) was computed as the difference between average confidence (rescaled to a 0--1 probability) and actual percent correct for each student. Positive values indicate overconfidence; negative values indicate underconfidence.
+
+**Table 4.7a: Overconfidence Index Summary**
+
+| Statistic | Value |
+| --- | --- |
+| Mean OC Index | -0.0167 |
+| Standard Deviation | 0.2187 |
+
+**Table 4.7b: Calibration Categories**
+
+| Category | OC Range | n | % |
+| --- | --- | --- | --- |
+| Underconfident | < -10% | 138 | 32.8% |
+| Well-calibrated | -10% to +10% | 173 | 41.1% |
+| Moderately overconfident | +10% to +30% | 80 | 19.0% |
+| Highly overconfident | > +30% | 30 | 7.1% |
+
+The mean OC index was slightly negative (-0.017), indicating that on average students were marginally underconfident relative to their actual performance. The largest group was well-calibrated (41.1%), followed by underconfident (32.8%). Moderately overconfident students represented 19.0% of the sample, and 7.1% were highly overconfident (OC > +30%). The overconfidence index will serve as a covariate in post-course analyses to examine whether calibration at baseline predicts differential learning gains.
+
+### 4.8 SDM-10 Diagnostic Summary
+
+All 421 students who submitted the assessment completed the SDM-10 module (100% SDM completion among submitters). The platform collected a total of 3,985 SDM responses.
+
+**Table 4.8a: SDM-10 Summary Statistics**
+
+| Metric | Value |
+| --- | --- |
+| Students completing SDM-10 | 421 (100% of submitted) |
+| Total SDM responses | 3,985 |
+| Average SDM score | 58.92% |
+| Average anchor score (comparison) | 66.55% |
+
+**Table 4.8b: Submission Types**
+
+| Submission Type | n | % |
+| --- | --- | --- |
+| Normal | 338 | 80.3% |
+| partial_legacy | 46 | 10.9% |
+| complete_legacy | 22 | 5.2% |
+| incomplete_sdm_legacy | 15 | 3.6% |
+
+The average SDM-10 score (58.92%) was approximately 7.6 percentage points lower than the average anchor score (66.55%). This gap was expected and confirms that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance on the anchor assessment. The SDM-10 was designed to probe areas of uncertainty and potential misconception rather than to replicate overall difficulty.
+
+Among submission types, 80.3% were classified as normal completions. The remaining 19.7% included legacy submission types (partial_legacy, complete_legacy, incomplete_sdm_legacy) that resulted from early technical adjustments to the platform during the first days of the assessment window.
+
+### 4.9 Assessment Duration
+
+**Table 4.9: Assessment Duration**
+
+| Statistic | Value |
+| --- | --- |
+| Median | 18.4 minutes |
+| Mean | 195.4 minutes |
+| Maximum | 7,721 minutes |
+
+The median assessment duration was 18.4 minutes, which is the more representative measure of typical completion time. The mean duration (195.4 minutes) was heavily skewed by a small number of sessions that were left open without being completed or submitted, including one session that remained idle for 7,721 minutes (approximately 5.4 days). These idle sessions correspond to the 7 abandoned assessments identified in Section 4.1 and do not reflect active assessment time.
+
+---
+
+## 5. Discussion of Pre-Course Baseline
+
+The pre-course assessment results establish a detailed baseline of financial literacy knowledge among QUINN 102 students at the start of the Spring 2026 semester. Several patterns merit discussion.
+
+**Strong baseline in foundational concepts.** Students demonstrated strong pre-existing knowledge of compound interest (91.45%), basic borrowing mechanics (92.87%), risk-return relationships (91.69%), and diversification principles (87.17%). These results suggest that fundamental financial concepts are well-covered in prior education or are sufficiently intuitive to be understood without formal instruction. These high-performing items may show limited room for pre-to-post improvement (ceiling effects), which will be considered in the learning gains analysis.
+
+**Significant gaps in applied financial reasoning.** The most difficult items -- inflation protection (23.99%), lowering inflation (32.78%), and interest rates and bond pricing (36.82%) -- represent key learning opportunities for the course. These concepts require applied reasoning about how financial instruments and macroeconomic dynamics interact. The low baseline performance on these items suggests that students enter the course with meaningful misconceptions or gaps in understanding of inflation mechanics and fixed-income investing.
+
+**Generally well-calibrated confidence.** The majority of students were either well-calibrated (41.1%) or underconfident (32.8%), with only 7.1% classified as highly overconfident. The slightly negative mean OC index (-0.017) indicates that, on average, students' self-assessed confidence slightly underestimated their actual performance. This is a constructive starting point, as overconfidence can impede learning by reducing engagement with material perceived as already mastered.
+
+**Financial stress as a relevant covariate.** Nearly a quarter of respondents (23.8%) reported experiencing financial stress often or always. Financial stress may affect engagement, study time allocation, and the practical relevance students attach to course content. This variable will be an important predictor in the heterogeneity analysis (RQ2).
+
+**Meaningful heterogeneity for RQ2 analysis.** The sample provides meaningful variation across several dimensions relevant to the heterogeneity analysis. First-generation college students (28.5%), students carrying student loan debt (24.5%), and students with varying levels of work intensity (72.2% part-time, 13.5% full-time) represent subgroups whose learning trajectories may differ. The racial and ethnic diversity of the sample (49.4% White, 22.3% Hispanic, 13.3% Asian, 6.9% Black) supports analysis of whether baseline disparities narrow or widen.
+
+**SDM-10 adaptive targeting confirmed.** The average SDM-10 score of 58.92%, compared to 66.55% on the anchor assessment, confirms that the adaptive selection algorithm appropriately identified and probed areas of relative weakness. The SDM-10 is intended as a diagnostic complement to the fixed anchor assessment, and the lower average score demonstrates that it fulfilled this role.
+
+**High completion rate reflects platform reliability and student engagement.** The 97.2% completion rate (421 of 433 onboarded) demonstrates both strong student engagement with the assessment and reliable platform performance during the assessment window. The seven non-completions were all idle sessions exceeding 45 hours, suggesting abandonment rather than technical failure.
+
+---
+
+## 6. Limitations and Pending Items
+
+Several limitations and pending items should be noted when interpreting these pre-course baseline results.
+
+1. **Open-ended SDM responses pending manual scoring.** The SDM-10 module included up to three open-ended items per student. Rubric-based scoring and misconception tagging for these open-ended responses have not yet been completed and will be finalized by the course instructor. Until scoring is complete, SDM-10 analysis is limited to closed-format items.
+
+2. **Pre-post comparison not yet available.** This paper reports pre-course baseline results only. The post-course assessment has not yet been administered. Learning gains (RQ1) and heterogeneity analysis (RQ2) require paired pre-post data and will be reported following the end-of-semester assessment.
+
+3. **No randomized control group.** The study uses an observational pre-post design without a randomized control group. Results will be interpreted as course-associated gains rather than causal effects of instruction. This framing is standard for course evaluations but limits the strength of causal inference.
+
+4. **Duration data skewed by idle sessions.** The mean assessment duration (195.4 minutes) is not representative of typical completion time due to extreme outliers from sessions left open without completion. The median duration (18.4 minutes) is the more appropriate measure of active assessment time.
+
+5. **Legacy submission types from early technical issues.** Legacy submission types (partial_legacy, complete_legacy, incomplete_sdm_legacy) account for 19.7% of submissions and resulted from technical adjustments to the platform during the first days of the assessment window. These submissions were reviewed and retained in the dataset, but the presence of multiple submission types is a limitation that may affect comparability for a subset of respondents.
+
+6. **Self-reported demographic and financial data.** All baseline covariates (demographics, financial background, stress, self-rated knowledge) are self-reported and subject to the standard limitations of survey data, including social desirability bias and inaccurate recall (for example, the 44.7% of loan holders who did not know their interest rate).
+
+---
+
+## 7. Next Steps (Post-Course Assessment)
+
+The following analyses are planned following the post-course assessment administration:
+
+1. **Post-course assessment administration.** The post-course assessment will be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module.
+
+2. **Pre-post paired t-tests for RQ1.** Learning gains will be computed as the difference between post-course and pre-course scores for each student, overall and by domain. Paired t-tests (or nonparametric equivalents) will assess the statistical significance of mean gains. Standardized effect sizes (within-student Cohen's d) will be reported.
+
+3. **Multivariable regression for RQ2.** Heterogeneity in learning gains will be modeled as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Domain-specific models and interaction terms will be used to identify whether predictors of learning gains differ across borrowing, investment, and risk management.
+
+4. **EFA and Cronbach's alpha for psychometric validation.** Exploratory Factor Analysis will assess dimensionality within and across domains. Cronbach's alpha will evaluate internal consistency. Item-level statistics will be used to identify items for refinement in future administrations.
+
+5. **SDM-10 open-ended scoring and misconception analysis.** Rubric-based scoring of open-ended SDM responses will be completed. Misconception prevalence will be estimated by domain and subcategory.
+
+6. **Integration of pre-post results into final paper.** The final paper will combine the pre-course baseline reported here with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUINN 102's association with student financial literacy outcomes.
+
+---
+
+## Appendix A: SDM-10 Selection and Burden Controls
+
+### Table A.1: SDM-10 Selection and Burden Controls
 
 | Control | Rule |
 | --- | --- |
@@ -72,119 +503,102 @@ The SDM-10 draws only from knowledge items (Q1–Q14, Q29–Q40). Preference ite
 | Item source | Pre-written item bank only, no generated questions |
 | Primary outcomes | RQ1/RQ2 use 26 knowledge items only; SDM-10 is secondary diagnostic output |
 
-### Post-Assessment Analysis
+### Table A.2: Format x Level of Understanding Grid
 
-Exploratory Factor Analysis (EFA) and internal consistency reliability metrics such as Cronbach’s alpha (α) will provide classical evidence that questionnaire items measure coherent and reliable constructs. In this study, EFA is used to verify that items within each domain load on intended latent factors and to assess dimensionality, that is, how many underlying constructs the item set appears to measure. Cronbach’s alpha is used to evaluate internal consistency, indicating whether items intended to measure the same construct exhibit adequate correlation. Together, these methods identify items or domains requiring refinement, support reliability across different student populations and assessment occasions, and establish replicable benchmarks that facilitate future research and institutional comparisons.
-
-The primary learning outcomes are computed from the 26 knowledge items (Q1–Q14, Q29–Q40). Each knowledge item is scored as correct/incorrect and aggregated into (a) an overall percent-correct score and (b) domain-level percent-correct scores for borrowing and credit, investment, and risk management. Confidence ratings are recorded for each anchor item and used for secondary analyses (calibration and diagnostic interpretation), but do not change the primary scoring of the anchor items.
-
-### RQ1 (Learning Gains)
-
-For each student, learning gain is defined as the difference between post-course and pre-course anchor scores (overall and by domain). The study will report mean gains, standard deviations, and 95% confidence intervals. Inference will use paired comparisons at the student level (for example, paired t-tests or equivalent nonparametric tests if assumptions are violated) and standardized effect sizes (for example, within-student Cohen’s d). Domain-level results will be reported in parallel to identify where gains are concentrated or limited. As previously mentioned, the primary learning outcomes are computed from the 26 knowledge items (Q1–Q14, Q29–Q40). Preference items are excluded from learning gain calculations.
-
-### RQ2 (Heterogeneity)
-
-Heterogeneity analyses will model learning gains as a function of baseline covariates collected during onboarding, including demographic and socioeconomic indicators, prior exposure to financial products, debt status, self-rated financial knowledge, financial stress, and selected time-constraint measures (for example, work status). Models will be estimated for overall gains and domain-level gains. The analysis will use multivariable regression (or mixed-effects models when pooling domains) and will assess whether predictors differ by domain through interaction terms or domain-specific models. The study will report coefficient estimates with confidence intervals and will use appropriate adjustments or transparency practices for multiple comparisons (for example, pre-specifying a small set of primary predictors and treating others as exploratory). Preference items (Q15–Q28) are analyzed as baseline covariates. These include measures of risk tolerance, loss aversion, allocation preferences, decision-making style, and confidence. The analysis tests whether these behavioral characteristics predict differential learning gains across students.
-
-The SDM-10 is analyzed as secondary diagnostic evidence and is not used to compute the primary pre–post learning gains. SDM-10 outputs will be summarized by (a) the subcategories most frequently selected for follow-up, (b) the distribution of follow-up levels (lower, same, higher) and formats (True/False, multiple choice, open-ended), and (c) rubric-based scores for open-ended explanations. When open-ended items are used, rubric scores and misconception tags will be aggregated to estimate misconception prevalence by domain and to identify common reasoning gaps. The analysis will also evaluate confidence calibration by comparing confidence ratings to correctness (for example, underconfidence/overconfidence rates and calibration curves). SDM-10 metrics may be used as predictors or moderators in exploratory models to test whether misconception patterns or confidence calibration relate to subsequent gains, while keeping anchor assessment-based gains as the primary outcome.
-
-As mentioned, EFA will be used to assess dimensionality within and across domains and to verify that items load on intended factors. Internal consistency reliability will be evaluated using Cronbach’s alpha (α) within domains and for the overall anchor assessment set. Item-level summaries (difficulty, missingness, and response distributions) will be used to flag items for refinement in future administrations. These psychometric results are used to support measurement quality and comparability across cohorts rather than to change scores within the 2026 administration.
-
-## Appendix
-
-### Supplemental Diagnostic Module
-
-#### Table 2: Format × Level of Understanding Grid
-
-|  | True/False | Multiple Choice (MCQ) | Open-ended (1–2 sentences) |
+|  | True/False | Multiple Choice (MCQ) | Open-ended (1--2 sentences) |
 | --- | --- | --- | --- |
-| Lower level of understanding | Basic recognition, confirm a single fact or rule | Simplified MCQ, one-step reasoning | Use sparingly, only if you need to confirm a guess |
+| Lower level of understanding | Basic recognition, confirm a single fact or rule | Simplified MCQ, one-step reasoning | Use sparingly, only if needed to confirm a guess |
 | Base level of understanding | Quick confirmation of same concept | Parallel MCQ, same difficulty | Explain reasoning to verify understanding and reduce guessing |
 | Higher level of understanding | Avoid or use rarely | Transfer or multi-part MCQ, applied scenario | Diagnose misconceptions, cap frequency |
 
-By collecting correctness and a 1–3 confidence rating, the platform applies predetermined update rules to compute two indices for the relevant subcategory: a mastery update (Mastery Δ) used to select easier, same, or harder follow-up items, and a need update (Need Δ) used to rank subcategories for inclusion in the 10-item supplemental module. Automated NLP techniques will be used only to support rubric-aligned scoring and misconception tagging for open-ended responses, with human review for low-confidence classifications. To reduce latency, the platform may preload upcoming items once selected.
+By collecting correctness and a 1--3 confidence rating, the platform applied predetermined update rules to compute two indices for the relevant subcategory: a mastery update (Mastery delta) used to select easier, same, or harder follow-up items, and a need update (Need delta) used to rank subcategories for inclusion in the 10-item supplemental module. Automated NLP techniques will be used only to support rubric-aligned scoring and misconception tagging for open-ended responses, with human review for low-confidence classifications.
 
-#### Table 3: Mastery Δ and Need Δ Update Rules
+### Table A.3: Mastery and Need Update Rules
 
-| Confidence | Correct: Mastery Δ | Correct: Need Δ | Incorrect: Mastery Δ | Incorrect: Need Δ |
+| Confidence | Correct: Mastery delta | Correct: Need delta | Incorrect: Mastery delta | Incorrect: Need delta |
 | --- | --- | --- | --- | --- |
 | 1 (Low) | 0 | +2 | 0 | +1 |
 | 2 (Mid) | +1 | 0 | -1 | +2 |
 | 3 (High) | +2 | -1 | -2 | +3 |
 
-#### Interpretation
+**Interpretation:**
+- Mastery delta controls the targeted level of understanding for SDM-10 follow-ups (lower, same, higher).
+- Need delta ranks which subcategories are prioritized for inclusion in the fixed 10-item SDM.
 
-* Mastery Δ controls the targeted level of understanding for SDM-10 follow-ups (lower, same, higher).
-* Need Δ ranks which subcategories are prioritized for inclusion in the fixed 10-item SDM.
-
-#### Table 4: SDM-10 Action Rules by Confidence and Accuracy
+### Table A.4: SDM-10 Action Rules by Confidence and Accuracy
 
 | Confidence | If Correct, queue in SDM-10 | If Incorrect, queue in SDM-10 |
 | --- | --- | --- |
-| 1 (Low) | Open-ended (1–2 sentences) to confirm understanding, then same-level check if needed | Lower level of understanding item in same subcategory, prefer True/False or simplified MCQ |
+| 1 (Low) | Open-ended (1--2 sentences) to confirm understanding, then same-level check if needed | Lower level of understanding item in same subcategory, prefer True/False or simplified MCQ |
 | 2 (Mid) | Same level of understanding item in same subcategory, prefer MCQ | Lower level of understanding item in same subcategory, MCQ or True/False |
 | 3 (High) | Optional higher level of understanding item (transfer or multi-step MCQ) | Open-ended to diagnose misconception, then lower or same level based on rubric score |
 
-#### Legend
+**Legend:**
+- Lower level (Foundational): one-step, direct.
+- Same level (Comparable): parallel complexity.
+- Higher level (Applied): multi-part and/or new scenario.
 
-* Lower level (Foundational): one-step, direct.
-* Same level (Comparable): parallel complexity.
-* Higher level (Applied): multi-part and/or new scenario.
+---
 
-### Assessment Structure
+## Appendix B: Assessment Items (Full Question Bank)
 
-The platform selects only from pre-written items and does not generate new questions or provide personalized feedback during active assessment windows. The questions bank was developed by adapting and synthesizing items from established financial literacy and numeracy instruments and large-scale surveys, including the Berlin Numeracy Test (BNT), Lipkus Numeracy Scale, Schwartz Numeracy Scale, the ‘Big Three’ (Lusardi and Mitchell), the FINRA National Financial Capability Study (NFCS) item sets including the NFCS extension ‘Big Five,’ the OECD/INFE Toolkit (2022), the P-Fin Index (including Retirement Fluency; TIAA and GFLEC), and related decision science and medical decision-making research instruments, as well as RAND American Life Panel and RAND/NBER survey modules. An initial pool of approximately 80 candidate items was curated and refined to a 40-item anchor assessment. Each anchor question concept has pre-written variants by format (True/False, multiple choice, short open-ended) and level of understanding (foundational, comparable, applied), enabling targeted diagnostic follow-ups while maintaining a standardized 40-item anchor assessment.
+### Table B.1: Assessment Questions with Categories and Subcategories
 
-#### Table 5: Assessment Questions with Categories and Subcategories (Q15–Q28 are preference items (unscored))
+Q15--Q28 are preference items (unscored).
 
-| Category | Subcategory | Count | Q# | ScoredQ# |
+| Category | Subcategory | Count | Q# | Scored |
 | --- | --- | --- | --- | --- |
-| Baseline Covariates (120 items) | Demographic Characteristics | 5 | — | — |
-| Baseline Covariates (120 items) | Financial Background & Context | 5 | — | — |
-| Baseline Covariates (120 items) | Debt status | 2 | — | — |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Compound Interest | 1 | 1 | Yes1 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Borrowing/Mortgages | 1 | 2 | Yes2 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Inflation | 3 | 3, 6, 7 | Yes3, 6, 7 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Borrowing/Interest | 1 | 4 | Yes4 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Saving | 1 | 5 | Yes5 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Borrowing | 1 | 8 | Yes8 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Earning | 1 | 9 | Yes9 |
-| Borrowing, Interest Rates, and Financial Numeracy Knowledge (10 items) | Borrowing/Credit | 1 | 10 | Yes10 |
-| Behavioral and Risk Management Knowledge (18 items) | Risk Diversification | 2 | 11, 14 | Yes11, 14 |
-| Behavioral and Risk Management Knowledge (18 items) | Insurance | 2 | 12, 13 | Yes12, 13 |
-| Behavioral and Risk Management Knowledge (18 items) | Allocation Preference | 1 | 15 | No15 |
-| Behavioral and Risk Management Knowledge (18 items) | Loss Aversion | 1 | 16 | No16 |
-| Behavioral and Risk Management Knowledge (18 items) | Risk Perception | 1 | 17 | No17 |
-| Behavioral and Risk Management Knowledge (18 items) | Social Influence and Herding | 1 | 18 | No18 |
-| Behavioral and Risk Management Knowledge (18 items) | Retirement Risk Planning | 1 | 19 | No19 |
-| Behavioral and Risk Management Knowledge (18 items) | Emotional Response to Loss | 1 | 20 | No20 |
-| Behavioral and Risk Management Knowledge (18 items) | Decision Process | 1 | 21 | No21 |
-| Behavioral and Risk Management Knowledge (18 items) | Risk Confidence | 1 | 22 | No22 |
-| Behavioral and Risk Management Knowledge (18 items) | Risk Attitude | 1 | 23 | No23 |
-| Behavioral and Risk Management Knowledge (18 items) | Reaction to Underperformance | 1 | 24 | No24 |
-| Behavioral and Risk Management Knowledge (18 items) | Definition of Success | 1 | 25 | No25 |
-| Behavioral and Risk Management Knowledge (18 items) | Downside Awareness | 1 | 26 | No26 |
-| Behavioral and Risk Management Knowledge (18 items) | Risk Preference in Income | 1 | 27 | No27 |
-| Behavioral and Risk Management Knowledge (18 items) | Scam Skepticism | 1 | 28 | No28 |
-| Risk and Return Knowledge (12 items) | Investing | 4 | 29, 30, 31, 32 | Yes29, 30, 31, 32 |
-| Risk and Return Knowledge (12 items) | Basic Probability - Percentage to Frequency | 1 | 33 | Yes33 |
-| Risk and Return Knowledge (12 items) | Investment Risk - Diversification Effect | 1 | 34 | Yes34 |
-| Risk and Return Knowledge (12 items) | Investment Risk - Risk-Return Relationship | 1 | 35 | Yes35 |
-| Risk and Return Knowledge (12 items) | Risk Management - Diversification Principle | 1 | 36 | Yes36 |
-| Risk and Return Knowledge (12 items) | Risk Management - Insurance | 1 | 37 | Yes37 |
-| Risk and Return Knowledge (12 items) | Investment Risk - Inflation Risk | 1 | 38 | Yes38 |
-### Baseline Covariates (Not Scored)
+| Baseline Covariates | Demographic Characteristics | 5 | B1--B5 | -- |
+| Baseline Covariates | Financial Background & Context | 5 | B6--B10 | -- |
+| Baseline Covariates | Debt status | 2 | B11--B13 | -- |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Compound Interest | 1 | Q1 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Borrowing/Mortgages | 1 | Q2 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Inflation | 3 | Q3, Q6, Q7 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Borrowing/Interest | 1 | Q4 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Saving | 1 | Q5 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Borrowing | 1 | Q8 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Earning | 1 | Q9 | Yes |
+| Borrowing, Interest Rates, and Financial Numeracy Knowledge | Borrowing/Credit | 1 | Q10 | Yes |
+| Behavioral and Risk Management Knowledge | Risk Diversification | 2 | Q11, Q14 | Yes |
+| Behavioral and Risk Management Knowledge | Insurance | 2 | Q12, Q13 | Yes |
+| Behavioral and Risk Management Knowledge | Allocation Preference | 1 | Q15 | No |
+| Behavioral and Risk Management Knowledge | Loss Aversion | 1 | Q16 | No |
+| Behavioral and Risk Management Knowledge | Risk Perception | 1 | Q17 | No |
+| Behavioral and Risk Management Knowledge | Social Influence and Herding | 1 | Q18 | No |
+| Behavioral and Risk Management Knowledge | Retirement Risk Planning | 1 | Q19 | No |
+| Behavioral and Risk Management Knowledge | Emotional Response to Loss | 1 | Q20 | No |
+| Behavioral and Risk Management Knowledge | Decision Process | 1 | Q21 | No |
+| Behavioral and Risk Management Knowledge | Risk Confidence | 1 | Q22 | No |
+| Behavioral and Risk Management Knowledge | Risk Attitude | 1 | Q23 | No |
+| Behavioral and Risk Management Knowledge | Reaction to Underperformance | 1 | Q24 | No |
+| Behavioral and Risk Management Knowledge | Definition of Success | 1 | Q25 | No |
+| Behavioral and Risk Management Knowledge | Downside Awareness | 1 | Q26 | No |
+| Behavioral and Risk Management Knowledge | Risk Preference in Income | 1 | Q27 | No |
+| Behavioral and Risk Management Knowledge | Scam Skepticism | 1 | Q28 | No |
+| Risk and Return Knowledge | Investing | 4 | Q29, Q30, Q31, Q32 | Yes |
+| Risk and Return Knowledge | Basic Probability -- Percentage to Frequency | 1 | Q33 | Yes |
+| Risk and Return Knowledge | Investment Risk -- Diversification Effect | 1 | Q34 | Yes |
+| Risk and Return Knowledge | Investment Risk -- Risk-Return Relationship | 1 | Q35 | Yes |
+| Risk and Return Knowledge | Risk Management -- Diversification Principle | 1 | Q36 | Yes |
+| Risk and Return Knowledge | Risk Management -- Insurance | 1 | Q37 | Yes |
+| Risk and Return Knowledge | Investment Risk -- Inflation Risk | 1 | Q38 | Yes |
+| Risk and Return Knowledge | Investment Risk -- Asset Class Risk | 1 | Q39 | Yes |
+| Risk and Return Knowledge | Crisis/Systemic Risk | 1 | Q40 | Yes |
+
+---
+
+### B.1 Baseline Covariates (Not Scored)
 
 These questions collect demographic and background information for heterogeneity analysis. They are not scored.
 
-#### Demographic Characteristics (Q1–Q5)
+#### Demographic Characteristics (B1--B5)
 
-Question B1. What is your gender? [Demographic Characteristics]
+**Question B1.** What is your gender? [Demographic Characteristics]
 - A) Female
 - B) Male
 - C) Prefer not to say
 
-Question B2. Which category best describes your racial or ethnic background? [Demographic Characteristics]
+**Question B2.** Which category best describes your racial or ethnic background? [Demographic Characteristics]
 - A) White or Caucasian
 - B) Asian
 - C) Black or African American
@@ -195,11 +609,11 @@ Question B2. Which category best describes your racial or ethnic background? [De
 - H) Other
 - I) Prefer not to say
 
-Question B3. What is your age range? [Demographic Characteristics]
+**Question B3.** What is your age range? [Demographic Characteristics]
 - A) 20 or under
 - B) Above 20
 
-Question B4. What is your first language? [Demographic Characteristics]
+**Question B4.** What is your first language? [Demographic Characteristics]
 - A) English
 - B) Spanish
 - C) Chinese (any dialect)
@@ -208,14 +622,14 @@ Question B4. What is your first language? [Demographic Characteristics]
 - F) Dutch
 - G) Other (please specify): ________
 
-Question B5. Do you have work experience? [Demographic Characteristics]
+**Question B5.** Do you have work experience? [Demographic Characteristics]
 - A) No work experience
 - B) Part-time employment
 - C) Full-time employment
 
-#### Financial Background & Context (Q6–Q10)
+#### Financial Background & Context (B6--B10)
 
-Question B6. Prior to enrolling in this course, had you personally used any of the following financial products? (Select all that apply) [Financial Background & Context]
+**Question B6.** Prior to enrolling in this course, had you personally used any of the following financial products? (Select all that apply) [Financial Background & Context]
 - A) Credit card
 - B) Student loan
 - C) Auto loan
@@ -223,348 +637,338 @@ Question B6. Prior to enrolling in this course, had you personally used any of t
 - E) Insurance policy in your own name
 - F) None of the above
 
-Question B7. Before enrolling in this course, how would you rate your overall financial knowledge? [Financial Background & Context]
+**Question B7.** Before enrolling in this course, how would you rate your overall financial knowledge? [Financial Background & Context]
 - A) Very low
 - B) Low
 - C) Moderate
 - D) High
 - E) Very high
 
-Question B8. How often do you feel financially stressed? [Financial Background & Context]
+**Question B8.** How often do you feel financially stressed? [Financial Background & Context]
 - A) Never
 - B) Rarely
 - C) Sometimes
 - D) Often
 - E) Always
 
-Question B9. Highest Level of Parental Education [Financial Background & Context][Student loan debt status]
+**Question B9.** Highest Level of Parental Education [Financial Background & Context]
 - A) Less than high school
 - B) High school diploma or GED
 - C) Some college, no degree
 - D) Associate degree (AA/AS)
-- E) Bachelor’s degree (BA/BS)
+- E) Bachelor's degree (BA/BS)
 - F) Graduate or professional degree (MA/MS/MBA/PhD/MD/JD, etc.)
-- G) Don’t know
+- G) Don't know
 - H) Prefer not to answer
 
-Question B10. Are you a first-generation college student? [Financial Background & Context][Student loan debt status]
+**Question B10.** Are you a first-generation college student? [Financial Background & Context]
 - A) Yes
 - B) No
 - C) Prefer not to say
 
-#### Student loan debt status (Q11–Q13)
+#### Student Loan Debt Status (B11--B13)
 
-Question B11. Do you currently have any student loan debt? [Student loan debt status]
+**Question B11.** Do you currently have any student loan debt? [Student Loan Debt Status]
 - A) Yes
 - B) No
 - C) Prefer not to say
 
-Question B12. If yes, what is the interest rate on your student loan debt (best estimate)? [Student loan debt status]
+**Question B12.** If yes, what is the interest rate on your student loan debt (best estimate)? [Student Loan Debt Status]
 - A) Less than 5%
 - B) Between 5% and 10%
 - C) Above 10%
 - D) I do not know
 - E) Prefer not to say
 
-Question B13. If yes, what is the maturity of your student loan (time until fully repaid) (best estimate)? [Student loan debt status]
+**Question B13.** If yes, what is the maturity of your student loan (time until fully repaid) (best estimate)? [Student Loan Debt Status]
 - A) Less than 5 years
-- B) 5 to 10years
+- B) 5 to 10 years
 - C) More than 10 years
-- D) do not know
+- D) Do not know
 - E) Prefer not to say
 
-### Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1–Q10, 10 items)
+---
+
+### B.2 Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1--Q10, 10 items)
 
 These questions assess knowledge of compound interest, inflation, borrowing, saving, and basic numeracy.
 
-Question 1. Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow? [Compound Interest]
+**Question 1.** Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow? [Compound Interest]
 - A) More than $102
 - B) Exactly $102
 - C) Less than $102
 - D) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 2. A 15-year mortgage typically requires higher monthly payments than a 30-year mortgage, but the total interest paid over the life of the loan will be less. True or false? [Borrowing/Mortgages]
+**Question 2.** A 15-year mortgage typically requires higher monthly payments than a 30-year mortgage, but the total interest paid over the life of the loan will be less. True or false? [Borrowing/Mortgages]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 3. High inflation means that the cost of living is increasing rapidly. True or false? [Inflation]
+**Question 3.** High inflation means that the cost of living is increasing rapidly. True or false? [Inflation]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 4. You lend $25 to a friend one evening and he gives you $25 back the next day. How much interest has he paid on this loan? [Borrowing/Interest]
+**Question 4.** You lend $25 to a friend one evening and he gives you $25 back the next day. How much interest has he paid on this loan? [Borrowing/Interest]
 - A) $25
 - B) $0
 - C) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-Question 5. Lyle has a good job and earns enough to pay his bills comfortably each month. In terms of his emergency savings, how much should he have set aside? [Saving]
+**Question 5.** Lyle has a good job and earns enough to pay his bills comfortably each month. In terms of his emergency savings, how much should he have set aside? [Saving]
 - A) $200 or so
 - B) Money equal to his share of one month's rent/mortgage
 - C) The equivalent of three or more months of living expenses
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 6. A successful effort to lower inflation would likely be accompanied by which of the following? [Inflation]
+**Question 6.** A successful effort to lower inflation would likely be accompanied by which of the following? [Inflation]
 - A) A decrease in the general level of prices
 - B) A slower increase in prices
 - C) An increase in employment
 - D) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-Question 7. Inflation can cause difficulty in many ways. Which group would have the greatest problem during periods of high inflation? [Inflation]
+**Question 7.** Inflation can cause difficulty in many ways. Which group would have the greatest problem during periods of high inflation? [Inflation]
 - A) Young couples with no children who both work
 - B) Older, working couples saving for retirement
 - C) Retirees living on a fixed income
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 8. Jayden is shopping for an auto loan. Which of the following can he likely negotiate with the lender? [Borrowing]
+**Question 8.** Jayden is shopping for an auto loan. Which of the following can he likely negotiate with the lender? [Borrowing]
 - A) The interest rate
 - B) The required down payment
 - C) Both
 - D) Neither
 - E) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 9. Considering the strategy of allocating income, what is the PRIMARY advantage to your household of making a budget? [Earning]
+**Question 9.** Considering the strategy of allocating income, what is the PRIMARY advantage to your household of making a budget? [Earning]
 - A) Ensures funds are available for bill paying and saving
 - B) Reduces your taxes
 - C) Increases rate of return on your investments
 - D) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 10. Which of the following statements regarding credit reports is FALSE? [Borrowing/Credit]
+**Question 10.** Which of the following statements regarding credit reports is FALSE? [Borrowing/Credit]
 - A) Credit reports are used by employers to screen job applicants
 - B) A credit report includes an assessment of your worthiness to receive credit
 - C) Your credit report is provided by a single source
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-### Behavioral and Risk Management Knowledge (Q11–Q28, 18 items)
+---
 
-This section contains two item types. Q11–Q14 assess factual knowledge of diversification and insurance and are scored as correct/incorrect. Q15–Q28 assess financial attitudes, risk tolerance, and behavioral tendencies; these items are not scored and serve as baseline covariates for heterogeneity analysis (RQ2).
+### B.3 Behavioral and Risk Management Knowledge (Q11--Q28, 18 items)
 
-#### Factual knowledge (Q11–Q14)
+This section contains two item types. Q11--Q14 assess factual knowledge of diversification and insurance and are scored as correct/incorrect. Q15--Q28 assess financial attitudes, risk tolerance, and behavioral tendencies; these items are not scored and serve as baseline covariates for heterogeneity analysis (RQ2).
 
-Question 11. Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund. [Risk Diversification]
+#### Factual Knowledge (Q11--Q14, Scored)
+
+**Question 11.** Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund. [Risk Diversification]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-Question 12. Which of the following best describes the PRIMARY function of health insurance? [Insurance]
+**Question 12.** Which of the following best describes the PRIMARY function of health insurance? [Insurance]
 - A) Protect against the possibility of large unexpected medical bills
 - B) Cover the cost of routine health care expenses
 - C) Pay for elective medical procedures
 - D) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 13. What does a home insurance deductible represent? [Insurance]
+**Question 13.** What does a home insurance deductible represent? [Insurance]
 - A) Amount you pay before insurance covers damages
 - B) Monthly premium for coverage
 - C) Maximum amount insurance will pay
 - D) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 14. When an investor spreads money among different assets, the risk of losing money usually: [Risk Diversification]
+**Question 14.** When an investor spreads money among different assets, the risk of losing money usually: [Risk Diversification]
 - A) Increases
 - B) Decreases
 - C) Stays the same
 - D) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-#### Financial Attitudes and Preferences (Q15–Q28)
+#### Financial Attitudes and Preferences (Q15--Q28, Unscored)
 
 These items assess behavioral tendencies and risk preferences. They are not scored as correct/incorrect and do not trigger SDM-10 follow-up. Responses are used as covariates for heterogeneity analysis.
 
-Question 15. You receive a $10,000 bonus. What would you most likely do with it? [Allocation Preference]
+**Question 15.** You receive a $10,000 bonus. What would you most likely do with it? [Allocation Preference]
 - A) Put it in a high-interest savings account for safety
 - B) Invest it in mutual funds or ETFs for steady growth
 - C) Buy individual stocks with potential for high return
 - D) Spend most of it and save the rest later
-Correct Answer: B
 
-Question 16. Your retirement account drops 20% due to a market downturn. How do you react? [Loss Aversion]
+**Question 16.** Your retirement account drops 20% due to a market downturn. How do you react? [Loss Aversion]
 - A) Sell everything, I can't risk losing more
 - B) Do nothing, markets recover over time
 - C) Invest more, buy while prices are low
 - D) Move funds to safer options like bonds or cash
 
-Correct Answer: C
-
-Question 17. What does "risk" mean to you when it comes to financial decisions? [Risk Perception]
+**Question 17.** What does "risk" mean to you when it comes to financial decisions? [Risk Perception]
 - A) The chance I could lose money
 - B) The opportunity to earn a higher return
 - C) Something unpredictable that needs to be managed
 - D) I'm not sure
 
-Correct Answer: C
-
-Question 18. You hear that everyone is investing in a new crypto asset. What do you do? [Social Influence and Herding]
+**Question 18.** You hear that everyone is investing in a new crypto asset. What do you do? [Social Influence and Herding]
 - A) Invest quickly, don't miss out
 - B) Put in a small amount just in case
 - C) Research carefully before acting
 - D) Stay out, I avoid hype
-Correct Answer: C
 
-Question 19. When planning for retirement, how do you factor in risk? [Retirement Risk Planning]
+**Question 19.** When planning for retirement, how do you factor in risk? [Retirement Risk Planning]
 - A) I ignore it, retirement is far away
 - B) I aim for high growth regardless
 - C) I diversify and rebalance regularly
 - D) I rely on my advisor to guide me
-Correct Answer: C
 
-Question 20. You lose $1,000 in an investment. What's your emotional reaction? [Emotional Response to Loss]
+**Question 20.** You lose $1,000 in an investment. What's your emotional reaction? [Emotional Response to Loss]
 - A) Angry and anxious
 - B) Concerned but calm
 - C) Indifferent
 - D) Curious to understand why
-Correct Answer: D
 
-Question 21. When faced with a complex financial decision, how do you typically proceed? [Decision Process]
+**Question 21.** When faced with a complex financial decision, how do you typically proceed? [Decision Process]
 - A) Do extensive research and consider all outcomes
 - B) Go with your intuition or gut feeling
 - C) Rely on advice from friends or family
 - D) Delay the decision until you feel more confident
-Correct Answer: A
 
-Question 22. How confident are you in recognizing when an investment is too risky for your situation? [Risk Confidence]
+**Question 22.** How confident are you in recognizing when an investment is too risky for your situation? [Risk Confidence]
 - A) Very confident, I understand my risk limits
 - B) Somewhat confident, I can tell when it's extreme
 - C) Not very confident, I often second-guess
 - D) I usually rely on others to decide for me
-Correct Answer: B or C
 
-Question 23. What best describes your attitude toward risk? [Risk Attitude]
+**Question 23.** What best describes your attitude toward risk? [Risk Attitude]
 - A) I avoid risk as much as possible
 - B) I'm okay with small risks for modest gains
 - C) I take calculated risks for higher rewards
 - D) I actively seek out high-risk, high-reward opportunities
-Correct Answer: C
 
-Question 24. If your long-term investment underperforms for a year, what would you most likely do? [Reaction to Underperformance]
+**Question 24.** If your long-term investment underperforms for a year, what would you most likely do? [Reaction to Underperformance]
 - A) Sell and look for a better option
 - B) Reduce investment but stay in
 - C) Stay the course
 - D) Invest more to lower the average cost
-Correct Answer: D
 
-Question 25. How do you define a "successful" investment? [Definition of Success]
+**Question 25.** How do you define a "successful" investment? [Definition of Success]
 - A) One that doesn't lose money
 - B) One that beats inflation
 - C) One that aligns with my financial goals
 - D) One that produces the highest return, regardless of risk
-Correct Answer: C
 
-Question 26. When making financial decisions, how often do you consider the potential downside risk? [Downside Awareness]
+**Question 26.** When making financial decisions, how often do you consider the potential downside risk? [Downside Awareness]
 - A) Never
 - B) Rarely
 - C) Sometimes
 - D) Always
-Correct Answer: D
 
-Question 27. Imagine you're offered two jobs. Job A pays more but has uncertain income and less security. Job B pays less but is stable. Which do you choose? [Risk Preference in Income]
+**Question 27.** Imagine you're offered two jobs. Job A pays more but has uncertain income and less security. Job B pays less but is stable. Which do you choose? [Risk Preference in Income]
 - A) Definitely Job A
 - B) Probably Job A
 - C) Probably Job B
 - D) Definitely Job B
-Correct Answer: B or C
 
-Question 28. If an investment opportunity promises unusually high returns with little explanation of how, what do you do? [Scam Skepticism]
+**Question 28.** If an investment opportunity promises unusually high returns with little explanation of how, what do you do? [Scam Skepticism]
 - A) Invest a small amount just to test it
 - B) Ask for more details and do research
 - C) Avoid it, it seems too good to be true
 - D) Immediately take advantage before it's gone
-Correct Answer: B
 
-### Risk and Return Knowledge (Q29–Q40, 12 items)
+---
+
+### B.4 Risk and Return Knowledge (Q29--Q40, 12 items)
 
 These questions assess investing knowledge, crisis awareness, and statistical numeracy including probability reasoning and expected value calculations.
 
-Question 29. If interest rates rise, what will typically happen to bond prices? [Investing]
+**Question 29.** If interest rates rise, what will typically happen to bond prices? [Investing]
 - A) They will rise
 - B) They will fall
 - C) They will stay the same
 - D) There is no relationship
 - E) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-Question 30. An investment with a high return is likely to be high risk. True or false? [Investing]
+**Question 30.** An investment with a high return is likely to be high risk. True or false? [Investing]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 31. Which of the following best describes what the stock market does? [Investing]
+**Question 31.** Which of the following best describes what the stock market does? [Investing]
 - A) Results in a gain in wealth for investors
 - B) Creates liquidity by guaranteeing investors a profit
 - C) Brings people who want to buy stocks together with those who want to sell stocks
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 32. Considering a long time period (e.g., 10-20 years), which asset normally gives the highest return? [Investing]
+**Question 32.** Considering a long time period (e.g., 10-20 years), which asset normally gives the highest return? [Investing]
 - A) Savings accounts
 - B) Bonds
 - C) Stocks
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 33. In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket? [Basic Probability - Percentage to Frequency]
+**Question 33.** In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket? [Basic Probability -- Percentage to Frequency]
 - A) 5
 - B) 8
 - C) 10
 - D) 12
 - E) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 34. When an investor spreads money among different assets, does the risk of losing money usually increase, decrease, or stay the same? [Investment Risk - Diversification Effect]
+**Question 34.** When an investor spreads money among different assets, does the risk of losing money usually increase, decrease, or stay the same? [Investment Risk -- Diversification Effect]
 - A) Increase
 - B) Decrease
 - C) Stay the same
 - D) Do not know
-Correct Answer: B
+- Correct Answer: B
 
-Question 35. If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false? [Investment Risk - Risk-Return Relationship]
+**Question 35.** If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false? [Investment Risk -- Risk-Return Relationship]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 36. True or false: It is less likely that you will lose all of your money if you save it in more than one place. [Risk Management - Diversification Principle]
+**Question 36.** True or false: It is less likely that you will lose all of your money if you save it in more than one place. [Risk Management -- Diversification Principle]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 37. Which of the following insurance policies is most likely to protect you if you cause an accident that injures someone? [Risk Management - Insurance]
+**Question 37.** Which of the following insurance policies is most likely to protect you if you cause an accident that injures someone? [Risk Management -- Insurance]
 - A) Health insurance
 - B) Homeowner's or renter's insurance
 - C) Auto insurance liability coverage
 - D) Do not know
-Correct Answer: C
+- Correct Answer: C
 
-Question 38. Which of the following types of investment would best protect the purchasing power of a family's savings in the event of a sudden increase in inflation? [Investment Risk - Inflation Risk]
+**Question 38.** Which of the following types of investment would best protect the purchasing power of a family's savings in the event of a sudden increase in inflation? [Investment Risk -- Inflation Risk]
 - A) A 10-year bond paying a fixed rate of interest
 - B) A certificate of deposit at a bank
 - C) A 25-year home mortgage at a fixed rate
 - D) A house financed with a fixed-rate mortgage
 - E) Do not know
-Correct Answer: D
+- Correct Answer: D
 
-Question 39. True or false: Stocks are generally riskier than bonds. [Investment Risk - Asset Class Risk]
+**Question 39.** True or false: Stocks are generally riskier than bonds. [Investment Risk -- Asset Class Risk]
 - A) True
 - B) False
 - C) Do not know
-Correct Answer: A
+- Correct Answer: A
 
-Question 40. What was a key factor contributing to the 2007 to 2008 financial crisis? [Crisis/Systemic Risk]
+**Question 40.** What was a key factor contributing to the 2007 to 2008 financial crisis? [Crisis/Systemic Risk]
 - A) Strong regulation of mortgage lending
 - B) Widespread failure to properly assess and manage financial risk
 - C) High household savings rates
 - D) Low levels of borrowing by households
-Correct Answer: B
+- Correct Answer: B

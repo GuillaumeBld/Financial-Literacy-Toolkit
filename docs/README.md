@@ -43,16 +43,16 @@ The platform is designed to support two primary research questions:
 
 ## Data Collection Status
 
-**Assessment Window**: February 2-8, 2026
+**Assessment Window**: February 2–9, 2026
 
-| Metric | Current |
-|--------|---------|
-| Total Enrolled | 200 |
-| Completed | 172 |
-| Completion Rate | 86% |
-| Average Score | 65.79% |
+| Metric | Final |
+|--------|-------|
+| Total Enrolled | 433 |
+| Completed | 421 |
+| Completion Rate | 97.2% |
+| Average Score | 66.55% |
 
-*Data auto-updates every 6 hours*
+*Pre-course assessment complete. Post-course assessment pending.*
 
 ## Technology Stack
 

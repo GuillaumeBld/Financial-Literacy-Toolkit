@@ -1,8 +1,8 @@
 # Financial Literacy Assessment Platform: Technical Documentation
 
-**Version**: 1.0
-**Last Updated**: February 5, 2026
-**Assessment Window**: February 2-8, 2026
+**Version**: 1.1
+**Last Updated**: February 9, 2026
+**Assessment Window**: February 2–9, 2026
 
 ---
 

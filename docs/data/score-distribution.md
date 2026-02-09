@@ -1,70 +1,74 @@
 # Score Distribution
 
-This page displays the distribution of overall assessment scores.
+This page displays the final distribution of overall assessment scores for the pre-course assessment.
 
 ## Summary Statistics
 
 | Metric | Value |
 |--------|-------|
-| **Mean Score** | 65.79% |
-| **Total Submissions** | 172 |
-| **Passing (≥60%)** | 118 (68.6%) |
+| **Mean Score** | 66.55% |
+| **Std Deviation** | 17.38% |
+| **Median Score** | ~65% |
+| **Min Score** | 7.69% |
+| **Max Score** | 100.00% |
+| **Total Submissions** | 421 |
+| **Passing (>=60%)** | 294 (69.8%) |
 
 ## Distribution Table
 
 | Score Range | Count | Percentage |
 |-------------|-------|------------|
-| 10-19% | 2 | 1.16% |
-| 20-29% | 5 | 2.91% |
-| 30-39% | 0 | 0.00% |
-| 40-49% | 11 | 6.40% |
-| 50-59% | 36 | 20.93% |
-| 60-69% | 50 | 29.07% |
-| 70-79% | 38 | 22.09% |
-| 80-89% | 24 | 13.95% |
-| 90-99% | 4 | 2.33% |
-| 100% | 2 | 1.16% |
+| 0-9% | 1 | 0.24% |
+| 10-19% | 8 | 1.90% |
+| 20-29% | 9 | 2.14% |
+| 30-39% | 12 | 2.85% |
+| 40-49% | 24 | 5.70% |
+| 50-59% | 73 | 17.34% |
+| 60-69% | 120 | 28.50% |
+| 70-79% | 82 | 19.48% |
+| 80-89% | 58 | 13.78% |
+| 90-99% | 23 | 5.46% |
+| 100% | 11 | 2.61% |
 
 ## Visual Distribution
 
 ```
-10-19%: ██ (2)
-20-29%: █████ (5)
-30-39%: (0)
-40-49%: ███████████ (11)
-50-59%: ████████████████████████████████████ (36)
-60-69%: ██████████████████████████████████████████████████ (50)
-70-79%: ██████████████████████████████████████ (38)
-80-89%: ████████████████████████ (24)
-90-99%: ████ (4)
-  100%: ██ (2)
+ 0-9%:  █ (1)
+10-19%: ████████ (8)
+20-29%: █████████ (9)
+30-39%: ████████████ (12)
+40-49%: ████████████████████████ (24)
+50-59%: █████████████████████████████████████████████████████████████████████████ (73)
+60-69%: ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████ (120)
+70-79%: ██████████████████████████████████████████████████████████████████████████████████████ (82)
+80-89%: ██████████████████████████████████████████████████████████████ (58)
+90-99%: ███████████████████████ (23)
+  100%: ███████████ (11)
 ```
 
 ## Distribution Characteristics
 
-- **Mode**: 60-69% range (29.07% of students)
+- **Mode**: 60-69% range (28.50% of students)
 - **Shape**: Approximately normal, slight negative skew
-- **Concentration**: 72% of scores fall between 50-79%
-- **High Performers**: 17.4% scored 80% or above
-- **Low Performers**: 10.5% scored below 50%
+- **Concentration**: 65% of scores fall between 50-79%
+- **High Performers**: 21.9% scored 80% or above
+- **Low Performers**: 12.8% scored below 50%
 
-## Domain Comparison
+## Domain Performance Comparison
 
-Scores are calculated across three knowledge domains:
-
-| Domain | Items | Focus |
-|--------|-------|-------|
-| Borrowing & Credit | Q1-Q10 (10 items) | Interest, inflation, credit |
-| Risk Management | Q11-Q14 (4 items) | Diversification, insurance |
-| Investment & Risk | Q29-Q40 (12 items) | Investing, probability |
+| Domain | Items | Avg Score | Focus |
+|--------|-------|-----------|-------|
+| Behavioral & Risk Management | Q11-Q14 (4 items) | 73.46% | Diversification, insurance |
+| Borrowing & Credit | Q1-Q10 (10 items) | 69.33% | Interest, inflation, credit |
+| Investment & Risk | Q29-Q40 (12 items) | 63.97% | Investing, probability, risk |
 
 ## Notes
 
-- Scores are based on 26 knowledge items only
+- Scores are based on 26 knowledge items only (Q1-Q14, Q29-Q40)
 - Preference items (Q15-Q28) are not included in scoring
-- Data is automatically updated every 6 hours
+- SDM-10 adaptive items are not included in the overall score
 - Raw CSV data available at [domain-score-distribution.csv](domain-score-distribution.csv)
 
 ---
 
-*Last updated: February 5, 2026*
+*Last updated: February 9, 2026*
