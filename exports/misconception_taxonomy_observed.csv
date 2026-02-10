@@ -1,0 +1,63 @@
+layer1_code,layer2_tag,item,subdomain,n,classification
+INF-01,lower_inflation_means_lower_prices,Q6,Inflation (Lowering),30,misconception
+INS-01,routine_care_primary,Q12,Health Insurance Purpose,15,misconception
+INF-03,older_workers_worst,Q7,Inflation (Fixed Income),15,misconception
+INT-05,down_payment_only,Q8,Auto Loans,13,misconception
+BORROW-03,employer_use_confusion,Q10,Credit Reports,12,misconception
+RISK-02,exceptions_disprove_rule,Q30,Risk-Return Tradeoff,12,misconception
+INF-05,young_couples_worst,Q7,Inflation (Fixed Income),12,misconception
+INF-01,employment_link,Q6,Inflation (Lowering),11,misconception
+BORROW-05,one_month_sufficient,Q5,Emergency Fund,10,misconception
+INT-06,positive_correlation_belief,Q29,Interest Rates & Bonds,9,misconception
+INS-03,deductible_is_max_payout,Q13,Insurance Deductible,6,misconception
+INF-05,young_because_building,Q7,Inflation (Fixed Income),5,misconception
+INS-02,frequency_over_severity,Q12,Health Insurance Purpose,5,misconception
+RISK-10,real_world_counterexample,Q35,Risk-Return Relationship,5,misconception
+INS-04,health_insurance_for_injuries,Q37,Insurance Types,5,misconception
+RISK-01,bonds_safest_therefore_best,Q32,Long-Term Asset Returns,5,misconception
+INF-04,fixed_bond_best,Q38,Inflation Protection,5,misconception
+INT-05,interest_rate_only,Q8,Auto Loans,4,misconception
+RISK-07,wealth_creation_primary,Q31,Stock Market Function,4,misconception
+RISK-05,single_stock_safer_belief,Q11,Diversification (Stock vs Fund),4,misconception
+BORROW-01,credit_score_confusion,Q10,Credit Reports,4,misconception
+BORROW-05,fixed_dollar_amount,Q5,Emergency Fund,4,misconception
+INT-03,monthly_vs_total_confusion,Q2,Borrowing/Mortgages,4,misconception
+RISK-04,correct_reasoning_wrong_answer,Q36,Diversification Principle,3,misconception
+INS-01,insurance_doesnt_cover_large_bills,Q12,Health Insurance Purpose,3,misconception
+INS-03,deductible_is_premium,Q13,Insurance Deductible,3,misconception
+RISK-08,some_bonds_risky_too,Q39,Stocks vs Bonds Risk,3,misconception
+RISK-03,more_assets_more_risk,Q14,Diversification Principle,2,misconception
+INT-05,interest_rate_fixed_by_fed,Q8,Auto Loans,2,misconception
+INF-02,inflation_not_prices,Q3,Inflation,2,misconception
+RISK-01,savings_safest_therefore_best,Q32,Long-Term Asset Returns,2,misconception
+INT-01,interest_as_fee,Q1,Compound Interest,2,misconception
+INT-04,shorter_means_higher_rate,Q2,Borrowing/Mortgages,2,misconception
+INF-02,inflation_is_gradual_not_rapid,Q3,Inflation,2,misconception
+RISK-02,prediction_negates_risk,Q30,Risk-Return Tradeoff,2,misconception
+INF-03,fixed_income_misunderstood,Q7,Inflation (Fixed Income),2,misconception
+RISK-08,bonds_contain_stocks,Q39,Stocks vs Bonds Risk,2,misconception
+RISK-03,all_places_can_fail,Q36,Diversification Principle,2,misconception
+INS-04,auto_liability_for_self,Q37,Insurance Types,2,misconception
+RISK-02,exceptions_disprove_rule,Q35,Risk-Return Relationship,1,misconception
+RISK-02,trust_based_reasoning,Q35,Risk-Return Relationship,1,misconception
+RISK-03,more_complexity_more_risk,Q34,Diversification Effect,1,misconception
+RISK-03,more_exposure_more_risk,Q34,Diversification Effect,1,misconception
+RISK-03,not_guaranteed,Q36,Diversification Principle,1,misconception
+CRISIS-01,regulation_caused_crisis,Q40,2008 Financial Crisis,1,misconception
+CRISIS-01,low_borrowing_caused_crash,Q40,2008 Financial Crisis,1,misconception
+RISK-07,capital_raising_primary,Q31,Stock Market Function,1,misconception
+RISK-07,guarantees_profit,Q31,Stock Market Function,1,misconception
+BORROW-06,purpose_misunderstanding,Q9,Budgeting,1,misconception
+BORROW-04,income_based_not_expense_based,Q5,Emergency Fund,1,misconception
+INS-03,partial_understanding,Q13,Insurance Deductible,1,misconception
+INF-04,mortgage_not_house,Q38,Inflation Protection,1,misconception
+INT-02,simple_interest_only,Q1,Compound Interest,1,misconception
+INF-04,cd_benefits_from_inflation,Q38,Inflation Protection,1,misconception
+INT-03,time_irrelevant,Q2,Borrowing/Mortgages,1,misconception
+INT-06,inflation_drives_all_up,Q29,Interest Rates & Bonds,1,misconception
+INT-06,no_relationship_belief,Q29,Interest Rates & Bonds,1,misconception
+INT-07,principal_is_interest,Q4,Borrowing/Interest,1,misconception
+NUM-01,probability_misunderstanding,Q33,Probability (% to Count),1,misconception
+INF-01,deflation_confusion,Q6,Inflation (Lowering),1,misconception
+RISK-01,stocks_too_risky_for_returns,Q32,Long-Term Asset Returns,1,misconception
+CRISIS-02,high_savings_risk,Q40,2008 Financial Crisis,1,misconception

@@ -1,0 +1,27 @@
+item,subdomain,n,misconception,misconception_pct,knowledge_gap,knowledge_gap_pct,selection_error,selection_error_pct,top_layer1_code,top_layer2_tag
+Q7,Inflation (Fixed Income),54,34,63,5,9,14,26,INF-03,older_workers_worst
+Q6,Inflation (Lowering),53,42,79,4,8,6,11,INF-01,lower_inflation_means_lower_prices
+Q36,Diversification Principle,42,6,14,2,5,34,81,correct_reasoning_wrong_answer,SE-reversal
+Q10,Credit Reports,39,16,41,7,18,16,41,SE-selfcorrect,SE-selfcorrect
+Q8,Auto Loans,34,19,56,4,12,10,29,INT-05,down_payment_only
+Q5,Emergency Fund,31,15,48,1,3,8,26,BORROW-05,one_month_sufficient
+Q12,Health Insurance Purpose,28,23,82,1,4,4,14,INS-01,routine_care_primary
+Q29,Interest Rates & Bonds,24,11,46,8,33,4,17,INT-06,positive_correlation_belief
+Q2,Borrowing/Mortgages,22,7,32,8,36,7,32,KG-idk,KG-idk
+Q13,Insurance Deductible,19,10,53,6,32,3,16,INS-03,deductible_is_max_payout
+Q30,Risk-Return Tradeoff,17,14,82,1,6,0,0,RISK-02,exceptions_disprove_rule
+Q37,Insurance Types,17,7,41,3,18,7,41,INS-04,SE-selfcorrect
+Q38,Inflation Protection,14,7,50,2,14,5,36,INF-04,fixed_bond_best
+Q11,Diversification (Stock vs Fund),13,4,31,7,54,2,15,KG-idk,KG-idk
+Q3,Inflation,13,4,31,3,23,6,46,INF-02,SE-reversal
+Q32,Long-Term Asset Returns,11,8,73,1,9,2,18,RISK-01,bonds_safest_therefore_best
+Q31,Stock Market Function,10,6,60,1,10,3,30,RISK-07,wealth_creation_primary
+Q39,Stocks vs Bonds Risk,9,5,56,2,22,2,22,RISK-08,some_bonds_risky_too
+Q35,Risk-Return Relationship,9,7,78,0,0,2,22,RISK-10,real_world_counterexample
+Q14,Diversification Principle,7,2,29,0,0,5,71,SE-selfcorrect,SE-selfcorrect
+Q9,Budgeting,6,1,17,0,0,5,83,SE-selfcorrect,SE-selfcorrect
+Q40,2008 Financial Crisis,6,3,50,1,17,2,33,CRISIS-01,SE-reversal
+Q1,Compound Interest,5,3,60,1,20,0,0,INT-01,interest_as_fee
+Q4,Borrowing/Interest,4,1,25,0,0,3,75,SE-selfcorrect,SE-selfcorrect
+Q34,Diversification Effect,4,2,50,0,0,2,50,RISK-03,""
+Q33,Probability (% to Count),2,1,50,0,0,1,50,NUM-01,probability_misunderstanding

@@ -1,0 +1,12 @@
+model,provider,schema_violations,errors,time_20_responses_s,uses_credit_50,confidence_high,confidence_medium,estimated_cost_full_corpus,verdict
+GPT-4.1,OpenAI,0,0,41,Yes,19,1,$2.86,Selected
+DeepSeek V3.2,DeepSeek,0,0,266,Yes,18,2,$0.24,Too slow (~3.5h)
+Grok 4.1 Fast,xAI,0,1,144,Yes,18,1,$0.22,5% error rate
+Qwen3-235B,Alibaba,0,0,84,No,20,0,$0.07,No partial credit
+GPT-4o-mini,OpenAI,0,0,37,No,18,2,$0.22,Overly strict
+Claude Haiku 4.5,Anthropic,0,0,56,No,20,0,$1.58,Over-detects SE
+Gemini 3 Flash,Google,1,1,42,Yes,18,1,$0.80,Schema violation
+Claude Sonnet 4.5,Anthropic,1,0,71,Yes,19,1,$4.72,Schema violation
+Gemini 2.0 Flash,Google,2,0,34,No,20,0,$0.15,Disqualified
+Minimax M2.1,Minimax,,19,83,,,,Disqualified
+Kimi K2.5,Moonshot AI,,20,173,,,,Disqualified

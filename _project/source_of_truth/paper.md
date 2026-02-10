@@ -1,4 +1,4 @@
-# Developing a Risk Literacy Diagnostic for QUINN 102: Instrument Design, Platform Implementation, and SDM-10 Diagnostic Findings
+# Developing a Risk Literacy Diagnostic for QUIN 102: Instrument Design, Platform Implementation, and SDM-10 Diagnostic Findings
 
 **Loyola University Chicago**
 **Independent Study -- Spring 2026**
@@ -57,11 +57,11 @@ Recent policy debate on consumer credit highlights why financial literacy matter
 
 Despite broad recognition of its importance, financial literacy is unevenly distributed across student populations. Students arrive with heterogeneous prior exposure to personal finance concepts, differences in numeracy, and unequal access to credible guidance through households, schools, employers, and digital sources. Learning is further shaped by behavioral and contextual constraints, including time scarcity, employment intensity, financial stress, risk preferences, and prior exposure to financial products. Consequently, evaluation of financial literacy instruction should address both average learning gains and the determinants of variation in learning across students.
 
-This independent study develops and pilots a diagnostic instrument for evaluating financial and risk literacy in Quinn 102 (Financial Literacy) during the Spring 2026 offering. The instrument comprises a 40-item anchor assessment covering financial knowledge and attitudes, paired with a 10-item Supplemental Diagnostic Module (SDM-10) that adaptively probes areas of weakness identified in the anchor responses. The assessment is administered through a purpose-built web platform with coded student identifiers and structured consent mechanics.
+This independent study develops and pilots a diagnostic instrument for evaluating financial and risk literacy in QUIN 102 (Financial Literacy) during the Spring 2026 offering. The instrument comprises a 40-item anchor assessment covering financial knowledge and attitudes, paired with a 10-item Supplemental Diagnostic Module (SDM-10) that adaptively probes areas of weakness identified in the anchor responses. The assessment is administered through a purpose-built web platform with coded student identifiers and structured consent mechanics.
 
 More specifically, the independent study is organized around two research questions that frame the overall project:
 
-- **RQ1 (Learning gains):** What is the magnitude of student learning in Quinn 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre- to post-course changes in knowledge?
+- **RQ1 (Learning gains):** What is the magnitude of student learning in QUIN 102, overall and within the domains of borrowing and credit, investment, and risk management, as measured by pre- to post-course changes in knowledge?
 
 - **RQ2 (Heterogeneity):** Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
@@ -91,7 +91,7 @@ Among college students specifically, Akers and Chingos (2014) found striking lev
 
 ### 2.3 Confidence Calibration and Overconfidence
 
-The relationship between perceived and actual financial literacy has emerged as a critical dimension of financial competence. Allgood and Walstad (2016) demonstrated, using a national survey of 28,146 U.S. adults, that both actual (objective) and perceived (subjective) financial literacy independently influence financial behaviors across five domains. The combined measure of both perceived and actual literacy provides greater explanatory power than either alone, supporting the QUINN 102 assessment's design that generates an overconfidence index from both measures.
+The relationship between perceived and actual financial literacy has emerged as a critical dimension of financial competence. Allgood and Walstad (2016) demonstrated, using a national survey of 28,146 U.S. adults, that both actual (objective) and perceived (subjective) financial literacy independently influence financial behaviors across five domains. The combined measure of both perceived and actual literacy provides greater explanatory power than either alone, supporting the QUIN 102 assessment's design that generates an overconfidence index from both measures.
 
 Robb and Woodyard (2011) found that subjective financial knowledge had a larger relative impact on financial behavior than objective knowledge, underscoring the importance of measuring confidence calibration. Porto and Xiao (2016) found that over 11% of respondents in a nationally representative sample displayed financial literacy overconfidence -- scoring above average on perceived knowledge but failing basic literacy questions -- and that these overconfident consumers were less likely to seek professional financial advice in domains where they most needed it.
 
@@ -140,7 +140,7 @@ Confidence ratings are recorded for each anchor item and used for secondary anal
 
 The instrument emphasizes risk literacy as a core construct, consistent with the independent study's objectives. Risk literacy encompasses not only factual knowledge of diversification, insurance, and risk-return tradeoffs (assessed through scored knowledge items) but also students' self-assessed confidence in recognizing and managing risk (assessed through confidence ratings and preference items). The SDM-10 module provides a deeper diagnostic layer by probing whether incorrect answers on risk-related items reflect misconceptions (specific wrong mental models), knowledge gaps (absence of knowledge), or selection errors (correct understanding with wrong answer choice). This three-level diagnostic architecture -- knowledge score, confidence calibration, and open-ended classification -- enables measurement of both quantitative and qualitative dimensions of risk literacy.
 
-The instrument is designed to be internally consistent and transferable: piloted first with Loyola University Chicago students in QUINN 102, the item bank, scoring framework, and diagnostic module are intended for adaptation to broader student populations in future work.
+The instrument is designed to be internally consistent and transferable: piloted first with Loyola University Chicago students in QUIN 102, the item bank, scoring framework, and diagnostic module are intended for adaptation to broader student populations in future work.
 
 ---
 
@@ -370,7 +370,7 @@ Five dominant patterns emerged across the assessment:
 
 ### 5.1 Technology Stack
 
-The assessment is administered through a dedicated web platform -- the Financial Literacy Toolkit -- developed for this study. The platform is built on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The complete source code is publicly available in the project repository (Boulaid, 2026).
+The assessment is administered through a dedicated web platform -- the Financial Literacy Toolkit -- developed for this study. The platform is built on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The complete source code is publicly available in the project repository (Bolivard, 2026).
 
 ### 5.2 Student Authentication and Data Minimization
 
@@ -452,7 +452,7 @@ The SDM-10 diagnostic findings reveal that standard multiple-choice assessment s
 
 **"False correct" guesses inflate anchor scores.** On the confirm side, 13.4% of students who answered correctly but with low confidence were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. This validates the SDM-10's approach of probing low-confidence correct answers rather than assuming they reflect genuine understanding. Anchor scores alone overestimate true comprehension by approximately 13% on items with high guessing rates.
 
-**Misconception patterns are domain-specific and instructionally actionable.** The five dominant misconception clusters (inflation mechanics confusion, risk-return reasoning from exceptions, insurance purpose confusion, empathy-driven reasoning, and format-induced errors) are specific enough to inform targeted instructional interventions. For example, the finding that students systematically confuse "lower inflation" with "falling prices" (INF-01, the most frequent misconception) suggests that Quinn 102 should dedicate explicit instructional time to distinguishing rate of change from level -- a distinction that is foundational to understanding monetary policy but counter-intuitive to many students.
+**Misconception patterns are domain-specific and instructionally actionable.** The five dominant misconception clusters (inflation mechanics confusion, risk-return reasoning from exceptions, insurance purpose confusion, empathy-driven reasoning, and format-induced errors) are specific enough to inform targeted instructional interventions. For example, the finding that students systematically confuse "lower inflation" with "falling prices" (INF-01, the most frequent misconception) suggests that QUIN 102 should dedicate explicit instructional time to distinguishing rate of change from level -- a distinction that is foundational to understanding monetary policy but counter-intuitive to many students.
 
 **The three-way classification adds diagnostic value beyond MCQ scores.** Traditional MCQ instruments classify responses into only two categories (correct/incorrect). The SDM-10's three-way classification (misconception/knowledge gap/selection error for diagnose; verified/partial/likely guess for confirm) provides the diagnostic specificity needed to differentiate students who need conceptual correction from those who need format remediation or foundational instruction. This distinction is not available from the anchor score alone and represents the instrument's primary contribution to measurement methodology in financial literacy evaluation.
 
@@ -500,7 +500,7 @@ The following analyses are planned for Paper 2, contingent on institutional revi
 
 6. **SDM-10 pre-post comparison.** Pre-post changes in misconception prevalence, selection error rates, and the distribution of three-way classifications will be analyzed to assess whether instruction reduces specific misconception clusters and improves the alignment between student knowledge and item responses.
 
-Paper 2 will combine the pre-course baseline with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUINN 102's association with student financial literacy outcomes.
+Paper 2 will combine the pre-course baseline with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUIN 102's association with student financial literacy outcomes.
 
 ---
 
@@ -562,7 +562,7 @@ Yavuz, F. (2025). Utilizing large language models for EFL essay grading: An exam
 
 This study employed AI tools in three capacities, disclosed here in accordance with current best-practice guidelines for transparency in academic publishing.
 
-1. **Assessment platform development.** AI-assisted coding tools (GitHub Copilot, Claude Code) were used during development of the web-based assessment platform to accelerate implementation of the user interface, data collection logic, and adaptive routing algorithm. All platform functionality was independently tested and validated by the research team prior to deployment. The complete source code is publicly available for inspection in the project repository (Boulaid, 2026).
+1. **Assessment platform development.** AI-assisted coding tools (GitHub Copilot, Claude Code) were used during development of the web-based assessment platform to accelerate implementation of the user interface, data collection logic, and adaptive routing algorithm. All platform functionality was independently tested and validated by the research team prior to deployment. The complete source code is publicly available for inspection in the project repository (Bolivard, 2026).
 
 2. **Open-ended response scoring.** GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.3.
 
