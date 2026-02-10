@@ -42,7 +42,7 @@ function OnboardingContent() {
   const [studentLoanMaturity, setStudentLoanMaturity] = useState(''); // B13
   // Consent & acknowledgments
   const [courseRequirementAcknowledged, setCourseRequirementAcknowledged] = useState(false);
-  const [researchConsent, setResearchConsent] = useState(true);
+  const [researchConsent, setResearchConsent] = useState<boolean | null>(null);
   // Plan B fallback
   const [planBRedirect, setPlanBRedirect] = useState<string | null>(null);
 
@@ -67,6 +67,10 @@ function OnboardingContent() {
       // Step 1: Consent and Data Use
       if (!courseRequirementAcknowledged) {
         setError('Please acknowledge the course requirement to continue');
+        return;
+      }
+      if (researchConsent === null) {
+        setError('Please select whether you consent to research participation');
         return;
       }
     } else if (currentStep === 2) {

@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       demographic,
       financial_background,
       financial_background_extended, // B9-B13: parental_education, first_generation_college, has_student_loan_debt, student_loan_interest_rate, student_loan_maturity
-      socioeconomic, // Additional optional fields: household_income, financial_aid_recipient, living_situation, work_study
+      socioeconomic, // Additional optional fields: household_income
     } = body;
 
     // Validate required fields (password removed - no longer collecting passwords)
@@ -103,9 +103,8 @@ export async function POST(request: NextRequest) {
       const profileData = {
         user_id: userId,
         course_id: courseData.course_id,
-        email: null, // Email not collected (password-free authentication via hashed student key)
         // Research consent (Step 0)
-        research_consent: research_consent || null,
+        research_consent: research_consent ?? null,
         research_consent_timestamp: research_consent_timestamp || null,
         research_consent_version: research_consent_version || null,
         // Baseline B1-B5 (Demographics)
@@ -130,41 +129,33 @@ export async function POST(request: NextRequest) {
         student_loan_maturity: financial_background_extended?.student_loan_maturity || null, // B13
         // Additional optional socioeconomic data
         household_income: socioeconomic?.household_income || null,
-        financial_aid_recipient: socioeconomic?.financial_aid_recipient ?? null,
-        living_situation: socioeconomic?.living_situation || null,
-        work_study: socioeconomic?.work_study ?? null,
       };
 
       if (existingProfile.rows && existingProfile.rows.length > 0) {
         // Update existing profile
         await client.query(
           `UPDATE student_profiles SET
-            email = $1,
-            research_consent = $2,
-            research_consent_timestamp = $3,
-            research_consent_version = $4,
-            age_range = $5,
-            gender = $6,
-            race_ethnicity = $7,
-            first_language = $8,
-            first_language_other = $9,
-            work_experience = $10,
-            prior_financial_products = $11,
-            self_rated_financial_knowledge = $12,
-            financial_stress_frequency = $13,
-            household_income = $14,
-            parental_education = $15,
-            first_generation_college = $16,
-            financial_aid_recipient = $17,
-            has_student_loan_debt = $18,
-            student_loan_interest_rate = $19,
-            student_loan_maturity = $20,
-            living_situation = $21,
-            work_study = $22,
+            research_consent = $1,
+            research_consent_timestamp = $2,
+            research_consent_version = $3,
+            age_range = $4,
+            gender = $5,
+            race_ethnicity = $6,
+            first_language = $7,
+            first_language_other = $8,
+            work_experience = $9,
+            prior_financial_products = $10,
+            self_rated_financial_knowledge = $11,
+            financial_stress_frequency = $12,
+            household_income = $13,
+            parental_education = $14,
+            first_generation_college = $15,
+            has_student_loan_debt = $16,
+            student_loan_interest_rate = $17,
+            student_loan_maturity = $18,
             updated_at = NOW()
-          WHERE user_id = $23 AND course_id = $24`,
+          WHERE user_id = $19 AND course_id = $20`,
           [
-            profileData.email,
             profileData.research_consent,
             profileData.research_consent_timestamp,
             profileData.research_consent_version,
@@ -180,12 +171,9 @@ export async function POST(request: NextRequest) {
             profileData.household_income,
             profileData.parental_education,
             profileData.first_generation_college,
-            profileData.financial_aid_recipient,
             profileData.has_student_loan_debt,
             profileData.student_loan_interest_rate,
             profileData.student_loan_maturity,
-            profileData.living_situation,
-            profileData.work_study,
             userId,
             courseData.course_id,
           ]
@@ -194,19 +182,17 @@ export async function POST(request: NextRequest) {
         // Insert new profile
         await client.query(
           `INSERT INTO student_profiles (
-            user_id, course_id, email, research_consent, research_consent_timestamp, research_consent_version,
+            user_id, course_id, research_consent, research_consent_timestamp, research_consent_version,
             age_range, gender, race_ethnicity,
             first_language, first_language_other, work_experience,
             prior_financial_products, self_rated_financial_knowledge, financial_stress_frequency,
             household_income, parental_education,
-            first_generation_college, financial_aid_recipient,
-            has_student_loan_debt, student_loan_interest_rate, student_loan_maturity,
-            living_situation, work_study
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+            first_generation_college,
+            has_student_loan_debt, student_loan_interest_rate, student_loan_maturity
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
           [
             profileData.user_id,
             profileData.course_id,
-            profileData.email,
             profileData.research_consent,
             profileData.research_consent_timestamp,
             profileData.research_consent_version,
@@ -222,12 +208,9 @@ export async function POST(request: NextRequest) {
             profileData.household_income,
             profileData.parental_education,
             profileData.first_generation_college,
-            profileData.financial_aid_recipient,
             profileData.has_student_loan_debt,
             profileData.student_loan_interest_rate,
             profileData.student_loan_maturity,
-            profileData.living_situation,
-            profileData.work_study,
           ]
         );
       }
@@ -252,4 +235,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
