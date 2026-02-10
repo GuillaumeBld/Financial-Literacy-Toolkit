@@ -540,14 +540,31 @@ All 421 students who submitted the anchor assessment also completed the SDM-10 m
 | Average anchor score (comparison) | 66.55% |
 | Students receiving open-ended items | 367 (87.2%) |
 | Total open-ended responses | 931 |
+| Open-ended responses scored by AI | 953 (incl. abandoned sessions) |
 | Diagnose responses (after filtering) | 556 |
 | Confirm responses (after filtering) | 336 |
+| AI scoring model | GPT-4.1 (OpenAI via OpenRouter) |
+| AI scoring error rate | 0 / 953 (0%) |
 
 #### 5.8.1 Open-Ended Response Overview
 
-Of the 421 completers, 367 students (87.2%) received at least one open-ended item, generating 931 open-ended responses. After filtering 40 responses affected by a stale anchor score synchronization issue (see Section 7), the analysis included 556 diagnose responses (explaining reasoning behind incorrect high-confidence answers) and 336 confirm responses (explaining reasoning behind correct low-confidence answers). The maximum number of open-ended items per student was 3, by design.
+Of the 421 completers, 367 students (87.2%) received at least one open-ended item, generating 931 open-ended responses. All open-ended responses were scored using GPT-4.1 (OpenAI) via the OpenRouter API, applying the three-way classification taxonomy and item-specific rubrics described in Section 4.2.3 and Appendix D. A total of 953 responses were processed by the scoring pipeline (including 22 from abandoned sessions); after filtering 40 responses affected by a stale anchor score synchronization issue (see Section 7), the analysis sample comprised 556 diagnose responses (explaining reasoning behind incorrect high-confidence answers) and 336 confirm responses (explaining reasoning behind correct low-confidence answers). The maximum number of open-ended items per student was 3, by design.
 
 **Response Quality.** Among diagnose responses, 89.2% were substantive (providing reasoning beyond "I don't know" or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module from the anchor assessment and received no grade incentive to provide detailed explanations.
+
+**Table 4.8a-2: AI Classification Distribution (Scored Responses)**
+
+| Classification | Diagnose (n = 584) | % | Confirm (n = 369) | % |
+| --- | --- | --- | --- | --- |
+| Misconception / Verified | 314 | 53.8% | 177 | 48.0% |
+| Selection error / Partial | 184 | 31.5% | 143 | 38.8% |
+| Knowledge gap / Likely guess | 86 | 14.7% | 49 | 13.3% |
+
+| Credit Score | n | % of all scored (953) |
+| --- | --- | --- |
+| 100 (full diagnostic value) | 664 | 69.7% |
+| 50 (partial diagnostic value) | 154 | 16.2% |
+| 0 (no diagnostic value) | 135 | 14.2% |
 
 #### 5.8.2 Misconception Analysis by Domain
 
@@ -621,7 +638,7 @@ The pre-course assessment results establish a detailed baseline of financial lit
 
 Several limitations and pending items should be noted when interpreting these pre-course baseline results.
 
-1. **Open-ended SDM responses pending manual scoring.** The SDM-10 module included up to three open-ended items per student. Rubric-based scoring and misconception tagging for these open-ended responses have not yet been completed and will be finalized by the course instructor. Until scoring is complete, SDM-10 analysis is limited to closed-format items.
+1. **AI-assisted scoring of open-ended SDM responses.** The 953 open-ended SDM-10 responses were classified using GPT-4.1 (OpenAI) via the OpenRouter API, following the three-way taxonomy (misconception, knowledge gap, selection error) and the scoring rubric described in Section 4.2.3. The model was selected through the 11-model concordance protocol documented in Appendix D. While GPT-4.1 achieved zero schema violations and zero parse errors across the full corpus, automated classification introduces potential misalignment with human judgment, particularly on borderline cases (e.g., distinguishing partial misconceptions from knowledge gaps). The model assigned "high" confidence to 97.1% of classifications (n = 925) and "medium" to 2.9% (n = 28), with no "low" confidence flags, which may indicate that the model underutilizes the uncertainty channel. Low-confidence or ambiguous classifications were flagged for potential human adjudication by the course instructor. The scoring results reported in Section 5.8 should be interpreted with this methodological caveat.
 
 2. **Pre-post comparison not yet available.** This paper reports pre-course baseline results only. The post-course assessment has not yet been administered. Learning gains (RQ1) and heterogeneity analysis (RQ2) require paired pre-post data and will be reported following the end-of-semester assessment.
 
@@ -657,7 +674,7 @@ The following analyses are planned following the post-course assessment administ
 
 4. **EFA and Cronbach's alpha for psychometric validation.** Exploratory Factor Analysis will assess dimensionality within and across domains. Cronbach's alpha will evaluate internal consistency. Item-level statistics will be used to identify items for refinement in future administrations.
 
-5. **SDM-10 open-ended scoring and misconception analysis.** Rubric-based scoring of open-ended SDM responses will be completed. Misconception prevalence will be estimated by domain and subcategory.
+5. **SDM-10 open-ended scoring and misconception analysis (completed).** AI-assisted scoring of all 953 open-ended SDM responses was completed using GPT-4.1, selected through the 11-model concordance protocol (Appendix D). The three-way classification yielded 314 misconceptions (53.8%), 184 selection errors (31.5%), and 86 knowledge gaps (14.7%) among diagnose responses, and 177 verified (48.0%), 143 partial (38.8%), and 49 likely guesses (13.3%) among confirm responses. Misconception prevalence by domain and the misconception taxonomy are reported in Section 5.8 and Appendix C. The automated scoring pipeline was subsequently integrated into the assessment platform for real-time classification on submission.
 
 6. **Integration of pre-post results into final paper.** The final paper will combine the pre-course baseline reported here with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUINN 102's association with student financial literacy outcomes.
 
