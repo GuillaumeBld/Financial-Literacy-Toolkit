@@ -65,7 +65,7 @@ More specifically, the independent study is organized around two research questi
 
 - **RQ2 (Heterogeneity):** Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
-RQ1 and RQ2 require paired pre-post data and will be addressed following the post-course assessment administration at the end of the Spring 2026 semester. This paper (Paper 1) focuses on the instrument design, platform implementation, and diagnostic findings from the SDM-10 module administered during the pre-course assessment (February 2--9, 2026). The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture -- in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
+RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent study contingent on institutional review board approval (see Section 9). This paper (Paper 1) is an independent study deliverable that documents instrument design, platform implementation, and descriptive diagnostic findings from the pre-course assessment (February 2--9, 2026). It reports no learning gains, no inferential statistics, and no subgroup comparisons. All pre-course results are presented as operational baseline context for the planned validation study, not as standalone research findings. The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture -- in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
 
 ---
 
@@ -382,13 +382,15 @@ The platform implements a two-part consent flow before data collection:
 
 1. **Course requirement acknowledgment (mandatory).** Students review and acknowledge that the assessment is a required course assignment and that their answers are not graded for correctness.
 
-2. **Research consent (voluntary).** Students are presented with a separate research consent screen asking whether their de-identified responses may be used for research evaluating course learning outcomes. The screen explicitly states that declining has no impact on grades, course standing, or access to feedback. The consent decision, timestamp, and version identifier are recorded. Students may withdraw research consent at any time; withdrawn data are excluded from subsequent analyses.
+2. **Research consent (voluntary).** Students are presented with a separate research consent screen asking whether their de-identified responses may be used for research evaluating course learning outcomes. The screen explicitly states that declining has no impact on grades, course standing, or access to feedback. The consent decision, timestamp, and version identifier are recorded. Students may withdraw research consent at any time by contacting the course instructor; withdrawn data are excluded from subsequent analyses.
 
 The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
 
 **Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
 
 **Representativeness check.** The consented subsample (n = 354) closely mirrors the full cohort (N = 431). The consented group has a mean anchor score of 65.8% (full cohort: 66.3%), and diagnostic classification distributions within 1 percentage point of the full-cohort values across all categories. The 77 non-consented students are not systematically different on observable assessment characteristics, indicating that the NULL-consent cohort reflects deployment timing rather than a self-selected subgroup.
+
+**Default selection.** The consent screen presented "Yes, I consent" as the default selection. While the 0% explicit decline rate is consistent with students having no objection to de-identified research use, the default-yes design may have inflated the consent rate through status quo bias. Paper 2 will mitigate this by implementing a forced active choice (no default selection) in the post-assessment consent screen.
 
 All analyses in this paper use only the research-consented subset (n = 354). For instructional purposes, all 431 students receive SDM-10 diagnostics and dashboard feedback regardless of consent status; consent governs only research publication, not educational use.
 
@@ -488,6 +490,8 @@ Several limitations should be noted when interpreting these findings.
 
 8. **Variant assignment mismatch.** A software defect caused 40 mismatched SDM variant assignments across 36 students due to a stale anchor score synchronization issue. The mismatched responses were identified and filtered from the analysis using an anchor_score and confidence cross-check. The bug was subsequently fixed, and the misconception taxonomy is unaffected because all analyzed responses were verified to correspond to correctly triggered variants.
 
+9. **Default consent selection.** The research consent screen presented "Yes, I consent" as the default selection. While zero students explicitly declined, the default-yes design may have inflated the consent rate through status quo bias. The consent rate (82.1%) should be interpreted with this limitation in mind. Paper 2 will use a forced active choice design with no default selection.
+
 ---
 
 ## 9. Planned Validation Study (Paper 2 Protocol Preview)
@@ -500,7 +504,7 @@ The pilot deployment reported in Sections 4--6 produced several outputs that dir
 
 - **Instrument revision targets.** The SDM-10 diagnostic findings identified items requiring revision before the post-assessment. Q36 (81% selection error) will be rewritten in multiple-choice format; Q10's "which is FALSE" framing will be reconsidered; and items with high guess rates (Q32, Q29) will receive improved distractor sets. These revisions will be completed before the post-assessment window.
 - **Misconception taxonomy as outcome framework.** The 62-entry misconception taxonomy (Appendix C) provides a pre-registered coding scheme for the post-assessment open-ended responses, enabling direct pre-post comparison of misconception prevalence within specific clusters.
-- **Governance and consent infrastructure.** The consent mechanics, data minimization architecture, and FERPA-compliant authentication documented in Section 5 will carry forward unchanged, ensuring consistent data governance across both assessments.
+- **Governance and consent infrastructure.** The consent mechanics, data minimization architecture, and privacy-preserving authentication documented in Section 5 will carry forward unchanged, ensuring consistent data governance across both assessments.
 - **Baseline coverage estimates.** Item-level SDM coverage rates (Table 4.5) inform the statistical power available for pre-post misconception comparisons. Items with coverage below 30% may require alternative analysis strategies.
 
 ### 9.2 Planned Study Design
@@ -522,6 +526,8 @@ We plan to submit an IRB application to Loyola University Chicago to evaluate th
 ### 9.3 Consent and Privacy
 
 The publishable evaluation will be conducted only on IRB-consented data. The existing consent infrastructure (Section 5.3) separates instructional use from research use; this separation will be maintained in the post-assessment. All student data will remain de-identified using the one-way hashing architecture described in Section 5.2. No raw student identifiers will appear in any dataset or publication.
+
+**Suppression rules.** To protect student privacy in subgroup analyses, Paper 2 will suppress any demographic cell with fewer than 10 observations. Intersectional cells (e.g., gender x race/ethnicity) that fall below this threshold will be reported only in aggregate or omitted. These thresholds follow standard practices for small-sample educational research and are consistent with FERPA de-identification guidance.
 
 ### 9.4 Intended Use and Prohibited Use
 
