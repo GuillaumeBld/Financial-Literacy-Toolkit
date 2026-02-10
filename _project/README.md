@@ -5,16 +5,14 @@ This folder is the single source of truth and control center for the Financial L
 ## Purpose
 
 1. **Centralize** all authoritative research documents
-2. **Guide** AI agents working on the project
-3. **Track** all changes via changelog
-4. **Prioritize** work via todo list
+2. **Track** all changes via changelog
+3. **Prioritize** work via todo list
 
 ## Structure
 
 ```
 _project/
 ├── README.md                 ← You are here
-├── AGENT_GUIDELINES.md       ← Rules for AI agents
 ├── CHANGELOG.md              ← History of all changes
 ├── TODO.md                   ← Current tasks & priorities
 │
@@ -29,17 +27,16 @@ _project/
     ├── FORM_DESIGN.md
     ├── SCORING_AND_ANALYTICS.md
     ├── DATA_MODEL.md
-    ├── AI_SCORING_RUBRICS.md
+    ├── SCORING_RUBRICS.md
     ├── ONBOARDING_IMPLEMENTATION.md
     └── QUESTION_IMPORT_SETUP.md
 ```
 
-## Quick Start for Agents
+## Quick Start
 
-1. **Read** `AGENT_GUIDELINES.md` first
-2. **Check** `TODO.md` for current priorities
-3. **Reference** `source_of_truth/` for requirements
-4. **Update** `CHANGELOG.md` after completing work
+1. **Check** `TODO.md` for current priorities
+2. **Reference** `source_of_truth/` for requirements
+3. **Update** `CHANGELOG.md` after completing work
 
 ## Assessment Structure Summary
 

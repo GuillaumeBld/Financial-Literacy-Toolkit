@@ -287,7 +287,6 @@ Types: `FEAT` (feature), `FIX` (bug fix), `DOCS` (documentation), `REFACTOR`, `C
 
 **Changes**:
 - Added `_project/` folder for centralized project control
-- Created `AGENT_GUIDELINES.md` for AI agent behavior standards
 - Created `CHANGELOG.md` (this file) for change tracking
 - Created `TODO.md` for task management
 

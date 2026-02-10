@@ -68,19 +68,9 @@ All deployment-related guides and workflows:
 
 Issue resolution and fix documentation:
 - `VPS_TROUBLESHOOTING.md` - VPS and infrastructure issues
-- `VPS_AGENT_PROMPT.md` - AI agent prompts for VPS management
 - `STATIC_FILES_FIX.md` - CSS/JS serving issues
 - `ASSESSMENT_*.md` - Application-specific fixes
 - `CRITICAL_FIX_*.md` - Critical issue resolutions
-
-### Archive (`archive/`)
-
-Historical documentation kept for reference:
-- `migration/` - Old migration notes and setup guides
-- Test results and summaries
-- Old planning documents
-- Temporary setup files
-- Superseded documentation
 
 ## File Naming Conventions
 

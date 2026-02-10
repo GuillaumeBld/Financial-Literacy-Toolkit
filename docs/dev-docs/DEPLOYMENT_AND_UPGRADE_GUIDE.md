@@ -1,6 +1,6 @@
 # Deployment & Upgrade Guide
 
-## ⚠️ Critical Architecture Warning for AI Agents
+## ⚠️ Critical Architecture Note
 **READ THIS FIRST:** This project runs on a **hybrid setup**. 
 - **Code Repository:** Hosted on GitHub (`https://github.com/GuillaumeBld/Financial-Literacy-Toolkit`).
 - **Runtime:** Hosted on a VPS (`srv850639`) using **Docker Compose** directly.

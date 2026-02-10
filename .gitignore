@@ -88,3 +88,9 @@ backups/
 # Project context files
 CLAUDE.md
 **/CLAUDE.md
+
+# Development archives and agent prompts
+docs/dev-docs/archive/
+docs/dev-docs/troubleshooting/VPS_AGENT_PROMPT.md
+infra/ai-agent-prompt.md
+infra/ai-agent-quick-reference.md
