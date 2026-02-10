@@ -677,6 +677,9 @@ const doc = new Document({
         bodyParagraph(
           "A supplemental adaptive module (SDM-10) accompanies each administration. The SDM-10 targets each student\u2019s weakest domain as identified by the fixed core, providing finer-grained diagnostic information without extending total assessment time beyond approximately 15 minutes."
         ),
+        bodyParagraph(
+          "Research consent was voluntary and administered through a structured two-part consent process described in Section 4.4.3; students could decline research participation without penalty and without any impact on course standing or grades. The study protocol has been prepared for institutional review (see Section 4.4.1)."
+        ),
 
         // 4.2 Assessment Structure
         new Paragraph({
@@ -808,7 +811,7 @@ const doc = new Document({
 
         boldLeadParagraph(
           "AI-Assisted Scoring Pipeline. ",
-          "Open-ended responses are scored using a large language model (Claude 3.5 Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications (approximately 5\u201310% of responses) are flagged for human review and adjudication by the course instructor. Prior work on LLM-based grading in business education found limited reliability when applying generic prompts to domain-specific content (Flod\u00e9n, 2025). To address this, our pipeline uses item-specific prompts with calibration examples, a structured misconception taxonomy, and explicit decision trees, following the collaborative human-AI scoring model in which the LLM serves as a second rater whose low-confidence outputs are flagged for instructor adjudication (Olivos, Kamelski, & Ascui-Gac, 2025). This approach follows established practices for LLM-based assessment scoring (Mizumoto & Eguchi, 2024; Yavuz, 2025). All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification."
+          "Open-ended responses are scored using a large language model (GPT-4.1, OpenAI) accessed via the OpenRouter API. The model was selected through a multi-model concordance protocol in which 11 LLMs scored the same 20 responses and were evaluated on five quality criteria: schema compliance, error rate, classification nuance, throughput, and cost (Appendix D). Each response is processed with an item-specific prompt containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications (approximately 5\u201310% of responses) are flagged for human review and adjudication by the course instructor. Prior work on LLM-based grading in business education found limited reliability when applying generic prompts to domain-specific content (Flod\u00e9n, 2025). To address this, our pipeline uses item-specific prompts with calibration examples, a structured misconception taxonomy, and explicit decision trees, following the collaborative human-AI scoring model in which the LLM serves as a second rater whose low-confidence outputs are flagged for instructor adjudication (Olivos, Kamelski, & Ascui-Gac, 2025). This approach follows established practices for LLM-based assessment scoring (Mizumoto & Eguchi, 2024; Yavuz, 2025). All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification."
         ),
 
         // 4.3 Platform and Data Collection
@@ -821,20 +824,130 @@ const doc = new Document({
           ],
         }),
         bodyParagraph(
-          "The assessment is administered through a custom-built Next.js web application deployed on a secure virtual private server. The platform handles student authentication via anonymous access codes, enforces one-attempt-per-student logic, implements the adaptive SDM-10 routing algorithm, and stores all response data in a PostgreSQL database. Timestamped response logs enable computation of item-level and section-level duration metrics for quality control and engagement analysis. The complete platform source code, assessment instruments, and data processing scripts are publicly available in the project repository (Boulaid, 2026)."
+          "To ensure standardized delivery and data integrity at scale, the questionnaire was administered through a dedicated web platform developed for this study: the Financial Literacy Toolkit. Students accessed the platform by entering their course code and university student ID number. The platform immediately transformed each student ID into a one-way cryptographic hash (SHA-256 with a per-course pepper) and discarded the raw identifier; all subsequent data storage and analysis use only the hashed key. The platform did not collect or store passwords, email addresses, or other personally identifiable information. After authentication, students reviewed an information and consent screen (see Section 4.4.3) and completed a brief onboarding process."
+        ),
+        bodyParagraph(
+          "The question bank was developed by adapting and synthesizing items from established financial literacy and numeracy instruments and large-scale surveys, including the Berlin Numeracy Test (BNT), Lipkus Numeracy Scale, Schwartz Numeracy Scale, the \u2018Big Three\u2019 (Lusardi and Mitchell), the FINRA National Financial Capability Study (NFCS) item sets including the NFCS extension \u2018Big Five,\u2019 the OECD/INFE Toolkit (2022), the P-Fin Index (including Retirement Fluency; TIAA and GFLEC), and related decision science and medical decision-making research instruments. An initial pool of approximately 80 candidate items was curated and refined to a 40-item anchor assessment. Each anchor question concept has pre-written variants by format (True/False, multiple choice, short open-ended) and level of understanding (foundational, comparable, applied), enabling targeted diagnostic follow-ups while maintaining a standardized 40-item anchor assessment. The complete platform source code, assessment instruments, and data processing scripts are publicly available in the project repository (Boulaid, 2026)."
         ),
 
-        // 4.4 Privacy and FERPA Compliance
+        // 4.4 Human Subjects Protections, Privacy, and FERPA Compliance
         new Paragraph({
           heading: HeadingLevel.HEADING_2,
           children: [
             new TextRun({
-              text: "4.4 Privacy and FERPA Compliance",
+              text: "4.4 Human Subjects Protections, Privacy, and FERPA Compliance",
+            }),
+          ],
+        }),
+
+        // 4.4.1 Ethical Review and Regulatory Classification
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.1 Ethical Review and Regulatory Classification",
             }),
           ],
         }),
         bodyParagraph(
-          "No personally identifiable information (PII) is collected or stored. Students access the assessment via anonymous codes that cannot be linked to university records. All data are stored on an encrypted server with access restricted to the research team. The study design was reviewed for compliance with FERPA and Loyola University Chicago\u2019s institutional data policies. Because no PII is collected and participation is embedded within normal course requirements, the study qualifies for exempt status under federal human subjects regulations."
+          "This study constitutes research with human subjects under federal regulations (45 CFR 46.102): it is a systematic investigation designed to contribute to generalizable knowledge about financial literacy education, conducted with living individuals from whom identifiable private information (educational assessment data linked via coded identifiers with a retained linking key) is collected through interaction (online survey administration). Because the study involves student educational records, the Family Educational Rights and Privacy Act (FERPA) applies. The study protocol has been prepared for submission to the Institutional Review Board at Loyola University Chicago (Office of Research Services, ORS@luc.edu). The study is expected to qualify for exempt review (Category 2: educational tests, surveys, and interview procedures with coded identifiers) or expedited review, given that the research presents no more than minimal risk to participants."
+        ),
+
+        // 4.4.2 Dual-Role Disclosure and Mitigation
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.2 Dual-Role Disclosure and Mitigation",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Members of the research team hold instructional roles in Quinn 102, creating a potential conflict of interest. Specifically, the instructor-researcher dual role may produce undue influence if students perceive that declining research participation could affect their course standing. Three safeguards address this concern. First, the assessment is a required course assignment for all enrolled students regardless of research participation; the research consent decision pertains only to whether a student\u2019s data may be used for analysis beyond course purposes. Second, the platform presents research consent as a clearly separated, voluntary choice (see Section 4.4.3) with explicit language stating that declining has no impact on grades, course standing, or the student\u2019s relationship with the instructor. Third, the research dataset is de-identified; instructional personnel access only the course-administration dataset (for confirming assignment completion) and cannot determine which students consented or declined research participation during the grading period."
+        ),
+
+        // 4.4.3 Informed Consent
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.3 Informed Consent",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The platform\u2019s onboarding flow presented a two-part consent screen before any data collection:"
+        ),
+        boldLeadParagraph(
+          "Course requirement acknowledgment (mandatory). ",
+          "Students reviewed the statement: \u201CThis assessment is a required course assignment in [course code]. Completion affects course credit, but your answers are not graded for correctness.\u201D Students checked a required acknowledgment box: \u201CI understand this assessment is required for the course.\u201D"
+        ),
+        boldLeadParagraph(
+          "Research consent (voluntary). ",
+          "Below the course acknowledgment, students read: \u201CYou may choose whether your responses are used for research evaluating course learning outcomes. Declining has no impact on grades.\u201D Students selected one of two options: \u201CYes, I consent\u201D or \u201CNo, I do not consent.\u201D The default selection was \u201CYes, I consent.\u201D"
+        ),
+        bodyParagraph(
+          "Each student\u2019s research consent decision, along with a timestamp and consent version identifier (version 1.0), was recorded in the database. Of the 421 students who submitted completed assessments, 353 (83.8%) consented to research use of their data and 68 (16.2%) declined. Students may withdraw research consent at any time by contacting the principal investigator; withdrawn data will be excluded from all subsequent analyses."
+        ),
+        bodyParagraph(
+          "A privacy notice was also displayed during onboarding: \u201CYour Student ID is converted to a coded identifier before storage. Identifiable information, if collected for course administration, is stored separately from the research dataset and access is restricted. Research analysis uses de-identified data and is governed by your consent choice.\u201D"
+        ),
+
+        // 4.4.4 De-identification and Data Security
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.4 De-identification and Data Security",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Student identifiers were transformed into coded keys using a one-way cryptographic hash function (SHA-256) with a per-course pepper prior to storage. The hash is irreversible: given only the hashed key, it is computationally infeasible to recover the original student identifier. No raw student ID numbers, names, email addresses, or other personally identifiable information are stored in any database table used for research. The platform does not store IP addresses; IP data is used only transiently in memory for rate-limiting purposes and is never persisted to disk or database."
+        ),
+        bodyParagraph(
+          "The research dataset contains only the hashed identifier, assessment responses (answer selections, confidence ratings, open-ended text), baseline onboarding survey responses, scoring metadata, and timestamps. Course-administration linkage (for confirming assignment completion and reporting grades) is maintained separately with restricted access by authorized instructional personnel only."
+        ),
+        bodyParagraph(
+          "All sensitive demographic and financial fields in the baseline survey (household income, parental education, first-generation college status, financial aid status, debt level, financial stress) include a \u201CPrefer not to answer\u201D option, allowing students to participate without disclosing information they consider private. The demographic variables collected for heterogeneity analysis were selected to minimize re-identification risk. The survey collects age as a categorical range (e.g., \u201C20 or under,\u201D \u201Cabove 20\u201D) rather than exact date of birth, and does not collect geographic identifiers such as zip code or home address. Research has demonstrated that 87% of the U.S. population can be uniquely identified from the combination of five-digit zip code, gender, and date of birth (Sweeney, 2000); by design, this study collects none of these three identifiers in combination."
+        ),
+
+        // 4.4.5 Data Retention and Destruction
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.5 Data Retention and Destruction",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Research data will be retained for a minimum of three years following study completion, consistent with the Common Rule retention requirements, or longer if required by Loyola University Chicago institutional policy. During the retention period, de-identified data will be stored on password-protected, encrypted servers with access restricted to authorized members of the research team. The course-administration linking key (which enables grade reporting) will be destroyed after final course grades have been posted for the Spring 2026 semester. After the retention period expires, all electronic research files will be permanently deleted. The principal investigator is responsible for data destruction and will maintain documentation of the destruction process."
+        ),
+
+        // 4.4.6 Ethical Framework
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "4.4.6 Ethical Framework",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The study design addresses the three principles of the Belmont Report (National Commission, 1979):"
+        ),
+        boldLeadParagraph(
+          "Respect for Persons. ",
+          "Research participation is voluntary and clearly separated from the required course assignment. Students provide informed consent through a structured, accessible consent screen that states the study purpose, procedures, risks, and the right to decline or withdraw without penalty. The consent process is designed to be comprehensible without specialized knowledge."
+        ),
+        boldLeadParagraph(
+          "Beneficence. ",
+          "The study presents minimal risk: the assessment covers standard financial literacy content encountered in normal educational practice, and the primary risk \u2014 breach of confidentiality \u2014 is mitigated through one-way cryptographic hashing, de-identified datasets, separate key storage, restricted access controls, and the absence of direct identifiers in the research file. Sensitive survey items include \u201CPrefer not to answer\u201D options to reduce discomfort. There is no direct benefit to individual participants; the anticipated benefit is improved financial literacy instruction for future cohorts based on empirical evidence of learning outcomes and knowledge gaps."
+        ),
+        boldLeadParagraph(
+          "Justice. ",
+          "Participants are selected on the basis of research relevance \u2014 enrollment in Quinn 102 (Financial Literacy) \u2014 rather than convenience or vulnerability. All enrolled students receive equal opportunity to complete the assessment (as a course requirement) and to consent or decline research participation. No students are excluded from the study on the basis of demographic characteristics."
         ),
 
         // 4.5 Analytical Framework
@@ -1485,6 +1598,28 @@ const doc = new Document({
             }),
           ],
           numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Members of the research team hold instructional roles in Quinn 102, creating a potential conflict of interest. The 16.2% decline rate (68 of 421 submitted students declined research consent) provides evidence that students exercised genuine choice. The dual role was mitigated through separated consent, de-identified research dataset, and voluntary research consent with explicit no-penalty language (see Section 4.4.2).",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Analyses using the research-consented subset (n = 353, 83.8% of completers) may not be fully representative of the complete student population if consent propensity correlates with assessment performance, demographics, or engagement. Pre-post comparisons will report whether the consented and declined subsamples differ on observable baseline characteristics.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
           spacing: { line: 360, after: 200 },
         }),
 
@@ -1593,12 +1728,14 @@ const doc = new Document({
         bodyParagraph("Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. Journal of Economic Literature, 52(1), 5\u201344."),
         bodyParagraph("Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. Journal of Pension Economics and Finance, 14(4), 332\u2013368."),
         bodyParagraph("Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. Journal of Financial Counseling and Planning, 20(1), 15\u201324."),
+        bodyParagraph("National Commission for the Protection of Human Subjects of Biomedical and Behavioral Research. (1979). The Belmont Report: Ethical principles and guidelines for the protection of human subjects of research. U.S. Department of Health and Human Services."),
         bodyParagraph("Mizumoto, A., & Eguchi, M. (2024). Large language models and automated essay scoring of English language learner writing: Insights into validity and reliability. Computers and Education: Artificial Intelligence, 6, 100208."),
         bodyParagraph("OECD. (2022). OECD/INFE toolkit for measuring financial literacy and financial inclusion 2022. OECD Publishing."),
         bodyParagraph("Olivos, F., Kamelski, T., & Ascui-Gac, S. (2025). Assessing instructor-AI cooperation for grading essay-type questions in an introductory sociology course. Teaching Sociology. Advance online publication. https://doi.org/10.1177/0092055X251397371"),
         bodyParagraph("Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. Journal of Financial Service Professionals, 70(4), 78\u201388."),
         bodyParagraph("Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. Journal of Financial Counseling and Planning, 22(1), 60\u201370."),
         bodyParagraph("Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. Journal of Finance, 64(6), 2807\u20132849."),
+        bodyParagraph("Sweeney, L. (2000). Simple demographics often identify people uniquely (Carnegie Mellon University Data Privacy Working Paper No. 3)."),
         bodyParagraph("van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. Journal of Financial Economics, 101(2), 449\u2013472."),
         bodyParagraph("Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. Journal of Consumer Affairs, 53(1), 234\u2013259."),
         bodyParagraph("Willis, L. E. (2011). The financial education fallacy. American Economic Review, 101(3), 429\u2013434."),
@@ -1625,7 +1762,7 @@ const doc = new Document({
         ),
         boldLeadParagraph(
           "2. Open-ended response scoring. ",
-          "Claude 3.5 Sonnet (Anthropic), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of 931 student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.2.3."
+          "GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of 931 student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.2.3."
         ),
         boldLeadParagraph(
           "3. Manuscript preparation. ",
@@ -2007,6 +2144,93 @@ const doc = new Document({
         ),
         bodyParagraph(
           "These cross-cutting codes combine with category codes: INF-01 = inflation misconception, INF-KG = inflation knowledge gap, INF-SE = inflation selection error."
+        ),
+
+        // ── Appendix D: AI Scorer Model Selection Protocol ──────────────
+        pageBreakParagraph(),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "Appendix D: AI Scorer Model Selection Protocol",
+              font: "Times New Roman",
+              size: 28,
+              bold: true,
+            }),
+          ],
+        }),
+
+        boldLeadParagraph(
+          "Methodology. ",
+          "To select the scoring model for the AI-assisted classification pipeline (Section 4.2.3), we conducted a multi-model concordance evaluation. Twenty identical open-ended student responses (11 diagnose, 9 confirm) were scored by 11 large language models from seven providers, accessed via the OpenRouter API. Models were evaluated on five criteria: (1) JSON schema compliance (whether diagnose items returned the correct diagnose-format output), (2) parse/API error rate, (3) classification nuance (use of partial credit, confidence variation, and balanced classification distributions), (4) throughput (wall-clock time for 20 responses), and (5) estimated cost for the full corpus of 953 responses."
+        ),
+
+        // Table D.1 title
+        new Paragraph({
+          spacing: { before: 240, after: 120 },
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: "Table D.1: Multi-Model Concordance Results (n = 20 identical responses)",
+              font: "Times New Roman",
+              size: 22,
+              bold: true,
+              italics: true,
+            }),
+          ],
+        }),
+
+        buildTable(
+          ["Model", "Provider", "Schema Err", "Errors", "Time", "credit=50", "Conf. Var.", "Cost (953)", "Verdict"],
+          [
+            ["GPT-4.1", "OpenAI", "0", "0", "41 s", "Yes", "19H / 1M", "$2.86", "Selected"],
+            ["DeepSeek V3.2", "DeepSeek", "0", "0", "266 s", "Yes", "18H / 2M", "$0.24", "Too slow"],
+            ["Grok 4.1 Fast", "xAI", "0", "1 parse", "144 s", "Yes", "18H / 1M", "$0.22", "5% errors"],
+            ["Qwen3-235B", "Alibaba", "0", "0", "84 s", "No", "20H / 0M", "$0.07", "No partial"],
+            ["GPT-4o-mini", "OpenAI", "0", "0", "37 s", "No", "18H / 2M", "$0.22", "Overly strict"],
+            ["Haiku 4.5", "Anthropic", "0", "0", "56 s", "No", "20H / 0M", "$1.58", "Over-detects SE"],
+            ["Gemini 3 Flash", "Google", "1", "1 (429)", "42 s", "Yes", "18H / 1M", "$0.80", "Schema err"],
+            ["Sonnet 4.5", "Anthropic", "1", "0", "71 s", "Yes", "19H / 1M", "$4.72", "Schema err"],
+            ["Gemini 2.0 Flash", "Google", "2", "0", "34 s", "No", "20H / 0M", "$0.15", "Disqualified"],
+            ["Minimax M2.1", "Minimax", "\u2014", "19/20", "83 s", "\u2014", "\u2014", "\u2014", "Disqualified"],
+            ["Kimi K2.5", "Moonshot", "\u2014", "20/20", "173 s", "\u2014", "\u2014", "\u2014", "Disqualified"],
+          ],
+          [1200, 800, 700, 700, 600, 700, 900, 800, 960]
+        ),
+
+        bodyParagraph(
+          "Schema violations occur when a diagnose item returns the confirm-format JSON (e.g., understanding_level instead of diagnosis_type). Three models were disqualified: Minimax M2.1 and Kimi K2.5 returned empty or unparseable responses on nearly all items; Gemini 2.0 Flash produced two schema violations and lacked any partial-credit classifications."
+        ),
+
+        // Table D.2 title
+        new Paragraph({
+          spacing: { before: 240, after: 120 },
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: "Table D.2: Inter-Model Agreement on Disputed Classifications",
+              font: "Times New Roman",
+              size: 22,
+              bold: true,
+              italics: true,
+            }),
+          ],
+        }),
+
+        buildTable(
+          ["Response", "Student Text", "GPT-4.1", "DeepSeek V3.2", "Grok 4.1 Fast", "Haiku 4.5", "Qwen3-235B"],
+          [
+            ["Q9 Diagnose", "\u201Csafety net\u2026 preventing interest rates\u201D", "SE (selfcorrect)", "SE (selfcorrect)", "misconc. (BORROW-06)", "SE (selfcorrect)", "misconc. (BORROW-06)"],
+            ["Q5 Diagnose", "\u201Chaving a little extra cash is safe enough\u201D", "misconc., cr=50", "misconc., cr=50", "misconc., cr=100", "KG (idk), cr=0", "KG (idk), cr=0"],
+            ["Q13 Diagnose", "\u201Cdeductible is $500\u2026 insurance pays rest\u201D", "SE (selfcorrect)", "misconc. (INS-03), cr=50", "SE (selfcorrect)", "SE (INS-03)", "misconc. (INS-03)"],
+            ["Q37 Confirm", "\u201CLiability coverage protects you\u2026\u201D", "verified, cr=100", "verified, cr=100", "verified, cr=100", "partial, cr=50", "verified, cr=100"],
+          ],
+          [900, 1260, 1200, 1200, 1200, 1200, 1200]
+        ),
+
+        boldLeadParagraph(
+          "Selection Rationale. ",
+          "GPT-4.1 was selected as the production scorer based on the following criteria: (a) zero schema violations across all 20 test items, (b) zero parse or API errors, (c) appropriate use of credit=50 for borderline misconceptions (e.g., Q5, where the student\u2019s reasoning was directionally aligned with a misconception but lacked specificity), (d) balanced classification distributions that were neither overly lenient (as with Gemini 2.0 Flash, which classified 66.7% of confirm items as \u201Cverified\u201D) nor overly strict (as with GPT-4o-mini, which classified only 11.1% as \u201Cverified\u201D), and (e) reasonable throughput and cost for the full corpus (~33 minutes, ~$2.86 for 953 responses). On the disputed items, GPT-4.1\u2019s classifications aligned with the majority of the zero-error models in three of four cases (Q9, Q5, Q37), supporting its position as a concordant central scorer."
         ),
       ],
     },
