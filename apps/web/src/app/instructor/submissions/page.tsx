@@ -86,6 +86,7 @@ export default function InstructorSubmissionsPage() {
   const [submissionDetail, setSubmissionDetail] = useState<SubmissionDetail | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<'responses' | 'profile' | 'metadata'>('responses');
+  const [dashboardPath, setDashboardPath] = useState('/instructor/dashboard');
   const router = useRouter();
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function InstructorSubmissionsPage() {
     }
 
     setInstructorName(name || 'Instructor');
+    setDashboardPath(localStorage.getItem('active-portal') === 'admin' ? '/admin' : '/instructor/dashboard');
     loadSubmissions(token);
   }, [router]);
 
@@ -473,7 +475,7 @@ export default function InstructorSubmissionsPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/instructor/dashboard')}
+                onClick={() => router.push(dashboardPath as any)}
                 className="flex items-center gap-2 text-loyola-gray-600 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />

@@ -40,6 +40,7 @@ export default function InstructorLoginPage() {
 
       // Redirect based on mode — admin only for gbolivard
       const isAdmin = dashboardMode === 'admin' && data.instructor.name === 'gbolivard';
+      localStorage.setItem('active-portal', isAdmin ? 'admin' : 'instructor');
       router.push(isAdmin ? '/admin' : '/instructor/dashboard');
     } catch (err) {
       setError('An error occurred. Please try again.');

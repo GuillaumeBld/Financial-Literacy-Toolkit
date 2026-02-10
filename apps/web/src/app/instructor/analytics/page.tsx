@@ -220,6 +220,7 @@ export default function InstructorAnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'performance' | 'baseline' | 'risk' | 'learning' | 'psychometrics' | 'heterogeneity'>('performance');
   const [expandedSection, setExpandedSection] = useState<string | null>('demographics');
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
+  const [dashboardPath, setDashboardPath] = useState('/instructor/dashboard');
   const router = useRouter();
 
   useEffect(() => {
@@ -232,6 +233,7 @@ export default function InstructorAnalyticsPage() {
     }
 
     setInstructorName(name || 'Instructor');
+    setDashboardPath(localStorage.getItem('active-portal') === 'admin' ? '/admin' : '/instructor/dashboard');
     loadAnalytics(token);
   }, [router]);
 
@@ -316,7 +318,7 @@ export default function InstructorAnalyticsPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/instructor/dashboard')}
+                onClick={() => router.push(dashboardPath as any)}
                 className="flex items-center gap-2 text-gray-500 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />

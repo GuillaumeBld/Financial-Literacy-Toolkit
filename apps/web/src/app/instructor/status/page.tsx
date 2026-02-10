@@ -72,6 +72,7 @@ export default function GameboardStatusPage() {
   const [secondsAgo, setSecondsAgo] = useState(0);
   const [selectedTile, setSelectedTile] = useState<number | null>(null);
   const [instructorName, setInstructorName] = useState('');
+  const [dashboardPath, setDashboardPath] = useState('/instructor/dashboard');
   const router = useRouter();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -110,6 +111,7 @@ export default function GameboardStatusPage() {
     const name = localStorage.getItem('instructor-name');
     if (!token) { router.push('/instructor'); return; }
     setInstructorName(name || 'Instructor');
+    setDashboardPath(localStorage.getItem('active-portal') === 'admin' ? '/admin' : '/instructor/dashboard');
     fetchData();
   }, [router, fetchData]);
 
@@ -174,7 +176,7 @@ export default function GameboardStatusPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <button onClick={() => router.push('/instructor/dashboard' as any)} className="p-2 text-loyola-gray-600 hover:text-ink transition" title="Back to Dashboard">
+              <button onClick={() => router.push(dashboardPath as any)} className="p-2 text-loyola-gray-600 hover:text-ink transition" title="Back to Dashboard">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <button onClick={handleRefresh} className="p-2 text-loyola-gray-600 hover:text-ink transition" title="Refresh">

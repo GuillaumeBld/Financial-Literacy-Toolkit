@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   LogOut,
   ChevronDown,
@@ -28,75 +27,128 @@ import {
 
 // ── Hardcoded Test 1 Data ──────────────────────────────────
 const DATA = {
-  overall: { students: 421, meanScore: 66.6, medianScore: 68.0, totalDiagnose: 556, totalConfirm: 336, scoreDist: [1,7,10,12,24,70,123,79,61,34] },
+  overall: { students: 431, meanScore: 66.44, medianScore: 68.06, totalDiagnose: 603, totalConfirm: 353, scoreDist: [1,8,10,12,24,75,125,82,60,34] },
   domains: [
-    { name: "Borrowing & Credit", pctCorrect: 69.3, totalConfErrors: 327, itemCount: 10 },
-    { name: "Risk Management", pctCorrect: 73.5, totalConfErrors: 79, itemCount: 4 },
-    { name: "Investment & Risk", pctCorrect: 64.0, totalConfErrors: 407, itemCount: 12 },
+    { name: "Borrowing & Credit", pctCorrect: 69.2, totalConfErrors: 397, itemCount: 10 },
+    { name: "Risk Management", pctCorrect: 73.3, totalConfErrors: 97, itemCount: 4 },
+    { name: "Investment & Risk", pctCorrect: 63.8, totalConfErrors: 558, itemCount: 12 },
   ],
   items: [
-    { id:"Q1", subdomain:"Compound Interest", domain:"Borrowing & Credit", total:421, correct:385, incorrect:36, pctCorrect:91.4, pctIncorrect:8.6, confidentErrors:7, pctConfErrors:1.7, uncertainCorrect:13, diagnoseN:5, confirmN:11, distractors:{B:20,C:13,D:3} as Record<string,number>, confDist:{low:12,med:17,high:7}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q2", subdomain:"Mortgages", domain:"Borrowing & Credit", total:421, correct:307, incorrect:114, pctCorrect:72.9, pctIncorrect:27.1, confidentErrors:26, pctConfErrors:6.2, uncertainCorrect:31, diagnoseN:26, confirmN:31, distractors:{B:61,C:53} as Record<string,number>, confDist:{low:27,med:61,high:26}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q3", subdomain:"Inflation (Definition)", domain:"Borrowing & Credit", total:421, correct:361, incorrect:60, pctCorrect:85.7, pctIncorrect:14.3, confidentErrors:16, pctConfErrors:3.8, uncertainCorrect:18, diagnoseN:16, confirmN:18, distractors:{B:34,C:26} as Record<string,number>, confDist:{low:15,med:29,high:16}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q4", subdomain:"Interest on Loans", domain:"Borrowing & Credit", total:421, correct:399, incorrect:22, pctCorrect:94.8, pctIncorrect:5.2, confidentErrors:3, pctConfErrors:0.7, uncertainCorrect:5, diagnoseN:3, confirmN:5, distractors:{A:15,C:7} as Record<string,number>, confDist:{low:5,med:14,high:3}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q5", subdomain:"Emergency Fund", domain:"Borrowing & Credit", total:421, correct:306, incorrect:115, pctCorrect:72.7, pctIncorrect:27.3, confidentErrors:36, pctConfErrors:8.6, uncertainCorrect:16, diagnoseN:30, confirmN:16, distractors:{A:10,B:74,D:31} as Record<string,number>, confDist:{low:25,med:54,high:36}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q6", subdomain:"Inflation (Lowering)", domain:"Borrowing & Credit", total:421, correct:138, incorrect:283, pctCorrect:32.8, pctIncorrect:67.2, confidentErrors:88, pctConfErrors:20.9, uncertainCorrect:16, diagnoseN:64, confirmN:4, distractors:{A:215,C:32,D:36} as Record<string,number>, confDist:{low:56,med:139,high:88}, misconceptions:[
-      {tag:"lower_inflation_means_lower_prices",label:"Lower inflation = falling prices",pct:78,n:50},
-      {tag:"employment_link",label:"Links to employment changes",pct:8,n:5},
-      {tag:"KG-idk",label:"Knowledge gap (IDK/blank)",pct:6,n:4}
+    { id:"Q1", subdomain:"Compound Interest", domain:"Borrowing & Credit", total:431, correct:394, incorrect:37, pctCorrect:91.4, pctIncorrect:8.6, confidentErrors:8, pctConfErrors:1.9, uncertainCorrect:132, diagnoseN:6, confirmN:11, distractors:{B:20,C:13,D:4} as Record<string,number>, confDist:{low:12,med:17,high:8}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q2", subdomain:"Borrowing/Mortgages", domain:"Borrowing & Credit", total:431, correct:313, incorrect:118, pctCorrect:72.6, pctIncorrect:27.4, confidentErrors:27, pctConfErrors:6.3, uncertainCorrect:136, diagnoseN:28, confirmN:32, distractors:{B:63,C:55} as Record<string,number>, confDist:{low:28,med:63,high:27}, misconceptions:[
+      {tag:"KG-idk",label:"Knowledge gap",pct:37,n:10},
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:22,n:6},
+      {tag:"monthly_vs_total_confusion",label:"Monthly vs total payment confusion",pct:19,n:5}
     ]},
-    { id:"Q7", subdomain:"Inflation & Fixed Income", domain:"Borrowing & Credit", total:421, correct:255, incorrect:166, pctCorrect:60.6, pctIncorrect:39.4, confidentErrors:50, pctConfErrors:11.9, uncertainCorrect:24, diagnoseN:54, confirmN:16, distractors:{A:53,B:67,D:46} as Record<string,number>, confDist:{low:39,med:77,high:50}, misconceptions:[
-      {tag:"young_couples_worst",label:"Young couples suffer most",pct:35,n:19},
-      {tag:"older_workers_worst",label:"Older workers suffer most",pct:30,n:16},
-      {tag:"fixed_income_misunderstood",label:'Does not understand "fixed income"',pct:19,n:10},
-      {tag:"KG-idk",label:"Knowledge gap",pct:6,n:3}
+    { id:"Q3", subdomain:"Inflation", domain:"Borrowing & Credit", total:431, correct:370, incorrect:61, pctCorrect:85.8, pctIncorrect:14.2, confidentErrors:16, pctConfErrors:3.7, uncertainCorrect:170, diagnoseN:17, confirmN:19, distractors:{B:34,C:27} as Record<string,number>, confDist:{low:16,med:29,high:16}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q4", subdomain:"Borrowing/Interest", domain:"Borrowing & Credit", total:431, correct:400, incorrect:31, pctCorrect:92.8, pctIncorrect:7.2, confidentErrors:7, pctConfErrors:1.6, uncertainCorrect:95, diagnoseN:4, confirmN:5, distractors:{A:20,C:11} as Record<string,number>, confDist:{low:10,med:14,high:7}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q5", subdomain:"Emergency Fund", domain:"Borrowing & Credit", total:431, correct:309, incorrect:122, pctCorrect:71.7, pctIncorrect:28.3, confidentErrors:38, pctConfErrors:8.8, uncertainCorrect:138, diagnoseN:35, confirmN:16, distractors:{B:82,D:24,A:16} as Record<string,number>, confDist:{low:28,med:56,high:38}, misconceptions:[
+      {tag:"one_month_sufficient",label:"One month emergency fund sufficient",pct:31,n:11},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:8},
+      {tag:"fixed_dollar_amount",label:"Fixed dollar amount (not expense-based)",pct:14,n:5}
     ]},
-    { id:"Q8", subdomain:"Auto Loans", domain:"Borrowing & Credit", total:421, correct:264, incorrect:157, pctCorrect:62.7, pctIncorrect:37.3, confidentErrors:42, pctConfErrors:10.0, uncertainCorrect:16, diagnoseN:34, confirmN:15, distractors:{A:42,B:57,D:12,E:46} as Record<string,number>, confDist:{low:34,med:81,high:42}, misconceptions:[
-      {tag:"down_payment_only",label:"Only down payment negotiable",pct:44,n:15},
-      {tag:"interest_rate_fixed_by_fed",label:"Fed sets rates, not negotiable",pct:18,n:6},
-      {tag:"SE-reversal",label:"Selection error",pct:15,n:5},
-      {tag:"KG-idk",label:"Knowledge gap",pct:12,n:4}
+    { id:"Q6", subdomain:"Inflation (Lowering)", domain:"Borrowing & Credit", total:431, correct:142, incorrect:289, pctCorrect:32.9, pctIncorrect:67.1, confidentErrors:102, pctConfErrors:23.7, uncertainCorrect:82, diagnoseN:66, confirmN:5, distractors:{A:163,C:82,D:44} as Record<string,number>, confDist:{low:54,med:133,high:102}, misconceptions:[
+      {tag:"lower_inflation_means_lower_prices",label:"Lower inflation = falling prices",pct:55,n:36},
+      {tag:"employment_link",label:"Links to employment changes",pct:22,n:14},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:12,n:8},
+      {tag:"KG-idk",label:"Knowledge gap",pct:6,n:4}
     ]},
-    { id:"Q9", subdomain:"Budgeting", domain:"Borrowing & Credit", total:421, correct:363, incorrect:58, pctCorrect:86.2, pctIncorrect:13.8, confidentErrors:13, pctConfErrors:3.1, uncertainCorrect:7, diagnoseN:7, confirmN:6, distractors:{B:12,C:32,D:14} as Record<string,number>, confDist:{low:10,med:35,high:13}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q10", subdomain:"Credit Reports", domain:"Borrowing & Credit", total:421, correct:222, incorrect:199, pctCorrect:52.7, pctIncorrect:47.3, confidentErrors:52, pctConfErrors:12.4, uncertainCorrect:22, diagnoseN:48, confirmN:17, distractors:{A:79,B:64,D:56} as Record<string,number>, confDist:{low:54,med:93,high:52}, misconceptions:[
-      {tag:"employer_use_confusion",label:"Employers can't check credit",pct:33,n:16},
-      {tag:"SE-reversal",label:"Selection error (understood C)",pct:29,n:14},
-      {tag:"credit_score_confusion",label:"Credit report vs. score confusion",pct:19,n:9},
-      {tag:"KG-idk",label:"Knowledge gap",pct:10,n:5}
+    { id:"Q7", subdomain:"Inflation (Fixed Income)", domain:"Borrowing & Credit", total:431, correct:259, incorrect:172, pctCorrect:60.1, pctIncorrect:39.9, confidentErrors:62, pctConfErrors:14.4, uncertainCorrect:118, diagnoseN:60, confirmN:16, distractors:{B:93,A:48,D:31} as Record<string,number>, confDist:{low:32,med:78,high:62}, misconceptions:[
+      {tag:"older_workers_worst",label:"Older workers suffer most",pct:27,n:16},
+      {tag:"young_couples_worst",label:"Young couples suffer most",pct:25,n:15},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:14},
+      {tag:"young_because_building",label:"Young because building wealth",pct:8,n:5},
+      {tag:"fixed_income_misunderstood",label:'Does not understand "fixed income"',pct:3,n:2}
     ]},
-    { id:"Q11", subdomain:"Stock vs. Mutual Fund", domain:"Risk Management", total:421, correct:298, incorrect:123, pctCorrect:70.8, pctIncorrect:29.2, confidentErrors:25, pctConfErrors:5.9, uncertainCorrect:33, diagnoseN:14, confirmN:32, distractors:{A:52,C:71} as Record<string,number>, confDist:{low:32,med:66,high:25}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q12", subdomain:"Health Insurance", domain:"Risk Management", total:421, correct:276, incorrect:145, pctCorrect:65.6, pctIncorrect:34.4, confidentErrors:33, pctConfErrors:7.8, uncertainCorrect:14, diagnoseN:33, confirmN:14, distractors:{B:102,C:18,D:25} as Record<string,number>, confDist:{low:29,med:83,high:33}, misconceptions:[
-      {tag:"routine_care_primary",label:"Insurance is for routine care",pct:64,n:21},
+    { id:"Q8", subdomain:"Auto Loans", domain:"Borrowing & Credit", total:431, correct:248, incorrect:183, pctCorrect:57.5, pctIncorrect:42.5, confidentErrors:52, pctConfErrors:12.1, uncertainCorrect:129, diagnoseN:40, confirmN:17, distractors:{B:89,E:39,A:38,D:17} as Record<string,number>, confDist:{low:44,med:87,high:52}, misconceptions:[
+      {tag:"down_payment_only",label:"Only down payment negotiable",pct:35,n:14},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:9},
+      {tag:"KG-idk",label:"Knowledge gap",pct:15,n:6},
+      {tag:"interest_rate_only",label:"Only interest rate negotiable",pct:13,n:5},
+      {tag:"interest_rate_fixed_by_fed",label:"Fed sets rates, not negotiable",pct:8,n:3}
+    ]},
+    { id:"Q9", subdomain:"Budgeting", domain:"Borrowing & Credit", total:431, correct:323, incorrect:108, pctCorrect:74.9, pctIncorrect:25.1, confidentErrors:28, pctConfErrors:6.5, uncertainCorrect:121, diagnoseN:7, confirmN:8, distractors:{D:49,C:39,B:20} as Record<string,number>, confDist:{low:35,med:45,high:28}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q10", subdomain:"Credit Reports", domain:"Borrowing & Credit", total:431, correct:226, incorrect:205, pctCorrect:52.4, pctIncorrect:47.6, confidentErrors:57, pctConfErrors:13.2, uncertainCorrect:134, diagnoseN:51, confirmN:18, distractors:{B:89,A:87,D:29} as Record<string,number>, confDist:{low:38,med:110,high:57}, misconceptions:[
+      {tag:"employer_use_confusion",label:"Employers can't check credit",pct:33,n:17},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:31,n:16},
+      {tag:"credit_score_confusion",label:"Credit report vs. score confusion",pct:8,n:4},
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:6,n:3}
+    ]},
+    { id:"Q11", subdomain:"Risk Diversification", domain:"Risk Management", total:431, correct:325, incorrect:106, pctCorrect:75.4, pctIncorrect:24.6, confidentErrors:17, pctConfErrors:3.9, uncertainCorrect:161, diagnoseN:17, confirmN:34, distractors:{C:71,A:35} as Record<string,number>, confDist:{low:43,med:46,high:17}, misconceptions:[
+      {tag:"KG-idk",label:"Knowledge gap",pct:41,n:7},
+      {tag:"single_stock_safer_belief",label:"Single stock is safer",pct:24,n:4}
+    ]},
+    { id:"Q12", subdomain:"Insurance", domain:"Risk Management", total:431, correct:305, incorrect:126, pctCorrect:70.8, pctIncorrect:29.2, confidentErrors:38, pctConfErrors:8.8, uncertainCorrect:156, diagnoseN:34, confirmN:7, distractors:{B:116,C:9,D:1} as Record<string,number>, confDist:{low:17,med:71,high:38}, misconceptions:[
+      {tag:"routine_care_primary",label:"Insurance is for routine care",pct:56,n:19},
       {tag:"frequency_over_severity",label:"Used often = primary function",pct:18,n:6},
-      {tag:"KG-idk",label:"Knowledge gap",pct:9,n:3}
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:15,n:5},
+      {tag:"insurance_doesnt_cover_large_bills",label:"Insurance doesn't cover large bills",pct:9,n:3}
     ]},
-    { id:"Q13", subdomain:"Insurance Deductible", domain:"Risk Management", total:421, correct:290, incorrect:131, pctCorrect:68.9, pctIncorrect:31.1, confidentErrors:15, pctConfErrors:3.6, uncertainCorrect:30, diagnoseN:20, confirmN:29, distractors:{B:37,C:40,D:54} as Record<string,number>, confDist:{low:34,med:82,high:15}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q14", subdomain:"Diversification", domain:"Risk Management", total:421, correct:371, incorrect:50, pctCorrect:88.1, pctIncorrect:11.9, confidentErrors:6, pctConfErrors:1.4, uncertainCorrect:11, diagnoseN:5, confirmN:11, distractors:{A:21,C:17,D:12} as Record<string,number>, confDist:{low:12,med:32,high:6}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q29", subdomain:"Bonds & Interest Rates", domain:"Investment & Risk", total:421, correct:143, incorrect:278, pctCorrect:34.0, pctIncorrect:66.0, confidentErrors:29, pctConfErrors:6.9, uncertainCorrect:34, diagnoseN:29, confirmN:17, distractors:{A:68,C:42,D:60,E:108} as Record<string,number>, confDist:{low:67,med:107,high:29}, misconceptions:[
-      {tag:"positive_correlation_belief",label:"Rates up = prices up",pct:38,n:11},
-      {tag:"KG-idk",label:"Knowledge gap (unfamiliar)",pct:45,n:13},
-      {tag:"SE-selfcorrect",label:"Selection error",pct:10,n:3}
+    { id:"Q13", subdomain:"Insurance", domain:"Risk Management", total:431, correct:269, incorrect:162, pctCorrect:62.4, pctIncorrect:37.6, confidentErrors:31, pctConfErrors:7.2, uncertainCorrect:149, diagnoseN:20, confirmN:31, distractors:{B:64,C:52,D:46} as Record<string,number>, confDist:{low:60,med:71,high:31}, misconceptions:[
+      {tag:"deductible_is_max_payout",label:"Deductible is max payout",pct:30,n:6},
+      {tag:"KG-idk",label:"Knowledge gap",pct:30,n:6},
+      {tag:"deductible_is_premium",label:"Confuses deductible with premium",pct:20,n:4},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:15,n:3}
     ]},
-    { id:"Q30", subdomain:"Risk-Return Tradeoff", domain:"Investment & Risk", total:421, correct:312, incorrect:109, pctCorrect:74.1, pctIncorrect:25.9, confidentErrors:21, pctConfErrors:5.0, uncertainCorrect:19, diagnoseN:21, confirmN:13, distractors:{B:68,C:41} as Record<string,number>, confDist:{low:20,med:68,high:21}, misconceptions:[
+    { id:"Q14", subdomain:"Risk Diversification", domain:"Risk Management", total:431, correct:364, incorrect:67, pctCorrect:84.5, pctIncorrect:15.5, confidentErrors:11, pctConfErrors:2.6, uncertainCorrect:151, diagnoseN:8, confirmN:18, distractors:{A:35,C:18,D:14} as Record<string,number>, confDist:{low:21,med:35,high:11}, misconceptions:[
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:50,n:4},
+      {tag:"more_assets_more_risk",label:"More assets = more risk",pct:38,n:3}
+    ]},
+    { id:"Q29", subdomain:"Interest Rates & Bonds", domain:"Investment & Risk", total:431, correct:156, incorrect:275, pctCorrect:36.2, pctIncorrect:63.8, confidentErrors:84, pctConfErrors:19.5, uncertainCorrect:76, diagnoseN:31, confirmN:12, distractors:{E:129,A:108,D:24,C:14} as Record<string,number>, confDist:{low:83,med:108,high:84}, misconceptions:[
+      {tag:"positive_correlation_belief",label:"Rates up = prices up",pct:35,n:11},
+      {tag:"KG-idk",label:"Knowledge gap",pct:23,n:7},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:19,n:6},
+      {tag:"no_relationship_belief",label:"No relationship between rates and prices",pct:6,n:2}
+    ]},
+    { id:"Q30", subdomain:"Risk-Return Tradeoff", domain:"Investment & Risk", total:431, correct:333, incorrect:98, pctCorrect:77.3, pctIncorrect:22.7, confidentErrors:27, pctConfErrors:6.3, uncertainCorrect:142, diagnoseN:21, confirmN:11, distractors:{B:62,C:36} as Record<string,number>, confDist:{low:21,med:50,high:27}, misconceptions:[
       {tag:"exceptions_disprove_rule",label:"Exceptions invalidate the rule",pct:67,n:14},
-      {tag:"time_horizon_negates_risk",label:"Long time = no risk",pct:14,n:3},
-      {tag:"KG-idk",label:"Knowledge gap",pct:10,n:2}
+      {tag:"prediction_negates_risk",label:"Predictions eliminate risk",pct:10,n:2}
     ]},
-    { id:"Q31", subdomain:"Stock Market Function", domain:"Investment & Risk", total:421, correct:280, incorrect:141, pctCorrect:66.5, pctIncorrect:33.5, confidentErrors:27, pctConfErrors:6.4, uncertainCorrect:20, diagnoseN:14, confirmN:10, distractors:{A:85,B:22,D:34} as Record<string,number>, confDist:{low:30,med:84,high:27}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q32", subdomain:"Long-Term Returns", domain:"Investment & Risk", total:421, correct:262, incorrect:159, pctCorrect:62.2, pctIncorrect:37.8, confidentErrors:22, pctConfErrors:5.2, uncertainCorrect:19, diagnoseN:13, confirmN:11, distractors:{A:51,B:61,D:47} as Record<string,number>, confDist:{low:34,med:103,high:22}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q33", subdomain:"Probability", domain:"Investment & Risk", total:421, correct:299, incorrect:122, pctCorrect:71.0, pctIncorrect:29.0, confidentErrors:22, pctConfErrors:5.2, uncertainCorrect:9, diagnoseN:5, confirmN:5, distractors:{A:30,B:26,D:31,E:35} as Record<string,number>, confDist:{low:23,med:77,high:22}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q34", subdomain:"Diversification Effect", domain:"Investment & Risk", total:421, correct:370, incorrect:51, pctCorrect:87.9, pctIncorrect:12.1, confidentErrors:7, pctConfErrors:1.7, uncertainCorrect:12, diagnoseN:4, confirmN:8, distractors:{A:21,C:17,D:13} as Record<string,number>, confDist:{low:14,med:30,high:7}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q35", subdomain:"Risk-Return", domain:"Investment & Risk", total:421, correct:368, incorrect:53, pctCorrect:87.4, pctIncorrect:12.6, confidentErrors:9, pctConfErrors:2.1, uncertainCorrect:11, diagnoseN:9, confirmN:11, distractors:{B:33,C:20} as Record<string,number>, confDist:{low:14,med:30,high:9}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q36", subdomain:"Diversification (Savings)", domain:"Investment & Risk", total:421, correct:273, incorrect:148, pctCorrect:64.8, pctIncorrect:35.2, confidentErrors:74, pctConfErrors:17.6, uncertainCorrect:16, diagnoseN:50, confirmN:6, distractors:{B:130,C:18} as Record<string,number>, confDist:{low:15,med:59,high:74}, misconceptions:[
-      {tag:"SE-reversal",label:"Selection error (understood, chose wrong)",pct:62,n:31},
-      {tag:"all_places_can_fail",label:"All places can fail simultaneously",pct:20,n:10},
-      {tag:"not_guaranteed",label:"Doesn't completely eliminate risk",pct:10,n:5},
+    { id:"Q31", subdomain:"Stock Market Function", domain:"Investment & Risk", total:431, correct:268, incorrect:163, pctCorrect:62.2, pctIncorrect:37.8, confidentErrors:43, pctConfErrors:10.0, uncertainCorrect:140, diagnoseN:14, confirmN:8, distractors:{B:76,A:55,D:32} as Record<string,number>, confDist:{low:32,med:88,high:43}, misconceptions:[
+      {tag:"wealth_creation_primary",label:"Wealth creation is primary function",pct:29,n:4},
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:21,n:3},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:14,n:2}
+    ]},
+    { id:"Q32", subdomain:"Long-Term Asset Returns", domain:"Investment & Risk", total:431, correct:227, incorrect:204, pctCorrect:52.7, pctIncorrect:47.3, confidentErrors:60, pctConfErrors:13.9, uncertainCorrect:125, diagnoseN:14, confirmN:3, distractors:{B:96,A:57,D:51} as Record<string,number>, confDist:{low:56,med:88,high:60}, misconceptions:[
+      {tag:"bonds_safest_therefore_best",label:"Bonds safest = best returns",pct:43,n:6},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:29,n:4},
+      {tag:"savings_safest_therefore_best",label:"Savings safest = best returns",pct:14,n:2}
+    ]},
+    { id:"Q33", subdomain:"Probability (% to Count)", domain:"Investment & Risk", total:431, correct:340, incorrect:91, pctCorrect:78.9, pctIncorrect:21.1, confidentErrors:20, pctConfErrors:4.6, uncertainCorrect:141, diagnoseN:2, confirmN:9, distractors:{A:36,E:32,B:20,D:3} as Record<string,number>, confDist:{low:34,med:37,high:20}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q34", subdomain:"Diversification Effect", domain:"Investment & Risk", total:431, correct:322, incorrect:109, pctCorrect:74.7, pctIncorrect:25.3, confidentErrors:34, pctConfErrors:7.9, uncertainCorrect:141, diagnoseN:5, confirmN:4, distractors:{A:40,C:38,D:31} as Record<string,number>, confDist:{low:26,med:49,high:34}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q35", subdomain:"Risk-Return Relationship", domain:"Investment & Risk", total:431, correct:337, incorrect:94, pctCorrect:78.2, pctIncorrect:21.8, confidentErrors:25, pctConfErrors:5.8, uncertainCorrect:152, diagnoseN:10, confirmN:11, distractors:{B:63,C:31} as Record<string,number>, confDist:{low:26,med:43,high:25}, misconceptions:[
+      {tag:"real_world_counterexample",label:"Real-world counterexample",pct:50,n:5},
+      {tag:"exceptions_disprove_rule",label:"Exceptions invalidate the rule",pct:20,n:2},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:20,n:2}
+    ]},
+    { id:"Q36", subdomain:"Diversification Principle", domain:"Investment & Risk", total:431, correct:279, incorrect:152, pctCorrect:64.7, pctIncorrect:35.3, confidentErrors:77, pctConfErrors:17.9, uncertainCorrect:105, diagnoseN:53, confirmN:7, distractors:{B:120,C:32} as Record<string,number>, confDist:{low:22,med:53,high:77}, misconceptions:[
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:38,n:20},
+      {tag:"correct_reasoning_wrong_answer",label:"Correct reasoning, wrong answer",pct:28,n:15},
+      {tag:"all_places_can_fail",label:"All places can fail simultaneously",pct:8,n:4},
+      {tag:"SE-misread",label:"Selection error (misread)",pct:8,n:4},
       {tag:"KG-idk",label:"Knowledge gap",pct:4,n:2}
     ]},
-    { id:"Q37", subdomain:"Insurance Types", domain:"Investment & Risk", total:421, correct:320, incorrect:101, pctCorrect:76.0, pctIncorrect:24.0, confidentErrors:18, pctConfErrors:4.3, uncertainCorrect:11, diagnoseN:18, confirmN:10, distractors:{A:64,B:17,D:20} as Record<string,number>, confDist:{low:23,med:60,high:18}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q38", subdomain:"Inflation Protection", domain:"Investment & Risk", total:421, correct:101, incorrect:320, pctCorrect:24.0, pctIncorrect:76.0, confidentErrors:51, pctConfErrors:12.1, uncertainCorrect:25, diagnoseN:19, confirmN:9, distractors:{A:80,B:73,C:38,E:129} as Record<string,number>, confDist:{low:63,med:122,high:51}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q39", subdomain:"Stocks vs. Bonds Risk", domain:"Investment & Risk", total:421, correct:340, incorrect:81, pctCorrect:80.8, pctIncorrect:19.2, confidentErrors:14, pctConfErrors:3.3, uncertainCorrect:19, diagnoseN:10, confirmN:10, distractors:{B:46,C:35} as Record<string,number>, confDist:{low:19,med:48,high:14}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q40", subdomain:"2008 Financial Crisis", domain:"Investment & Risk", total:421, correct:207, incorrect:214, pctCorrect:49.2, pctIncorrect:50.8, confidentErrors:36, pctConfErrors:8.6, uncertainCorrect:27, diagnoseN:17, confirmN:23, distractors:{A:79,C:35,D:100} as Record<string,number>, confDist:{low:47,med:131,high:36}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
+    { id:"Q37", subdomain:"Insurance Types", domain:"Investment & Risk", total:431, correct:329, incorrect:102, pctCorrect:76.3, pctIncorrect:23.7, confidentErrors:47, pctConfErrors:10.9, uncertainCorrect:164, diagnoseN:21, confirmN:11, distractors:{A:62,B:21,D:19} as Record<string,number>, confDist:{low:18,med:37,high:47}, misconceptions:[
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:38,n:8},
+      {tag:"health_insurance_for_injuries",label:"Health insurance for injuries only",pct:33,n:7},
+      {tag:"auto_liability_for_self",label:"Auto liability covers self",pct:14,n:3}
+    ]},
+    { id:"Q38", subdomain:"Inflation Protection", domain:"Investment & Risk", total:431, correct:102, incorrect:329, pctCorrect:23.7, pctIncorrect:76.3, confidentErrors:81, pctConfErrors:18.8, uncertainCorrect:65, diagnoseN:19, confirmN:10, distractors:{A:122,E:112,C:63,B:32} as Record<string,number>, confDist:{low:109,med:139,high:81}, misconceptions:[
+      {tag:"fixed_bond_best",label:"Fixed bonds best for inflation",pct:26,n:5},
+      {tag:"KG-idk",label:"Knowledge gap",pct:21,n:4},
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:16,n:3},
+      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:16,n:3},
+      {tag:"mortgage_not_house",label:"Mortgage, not house value",pct:11,n:2}
+    ]},
+    { id:"Q39", subdomain:"Stocks vs Bonds Risk", domain:"Investment & Risk", total:431, correct:310, incorrect:121, pctCorrect:71.9, pctIncorrect:28.1, confidentErrors:32, pctConfErrors:7.4, uncertainCorrect:145, diagnoseN:11, confirmN:6, distractors:{C:73,B:48} as Record<string,number>, confDist:{low:47,med:42,high:32}, misconceptions:[
+      {tag:"some_bonds_risky_too",label:"Some bonds risky too",pct:27,n:3},
+      {tag:"bonds_contain_stocks",label:"Bonds contain stocks",pct:18,n:2},
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:18,n:2}
+    ]},
+    { id:"Q40", subdomain:"2008 Financial Crisis", domain:"Investment & Risk", total:431, correct:299, incorrect:132, pctCorrect:69.4, pctIncorrect:30.6, confidentErrors:28, pctConfErrors:6.5, uncertainCorrect:182, diagnoseN:9, confirmN:24, distractors:{D:46,A:44,C:42} as Record<string,number>, confDist:{low:48,med:56,high:28}, misconceptions:[
+      {tag:"SE-reversal",label:"Selection error (reversal)",pct:44,n:4},
+      {tag:"high_savings_risk",label:"High savings = high risk",pct:22,n:2}
+    ]},
   ],
 };
 
@@ -156,11 +208,13 @@ export default function InstructorDashboardPage() {
     }
     setInstructorName(name || 'Instructor');
     setIsAdmin(name === 'gbolivard');
+    localStorage.setItem('active-portal', 'instructor');
   }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('instructor-token');
     localStorage.removeItem('instructor-name');
+    localStorage.removeItem('active-portal');
     router.push('/instructor');
   };
 
@@ -210,13 +264,17 @@ export default function InstructorDashboardPage() {
                 ))}
               </div>
               {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="p-2 text-gray-400 hover:text-gray-600 transition"
-                  title="Admin Dashboard"
+                <button
+                  onClick={() => {
+                    localStorage.setItem('active-portal', 'admin');
+                    router.push('/admin');
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-loyola-maroon border border-gray-200 rounded-lg hover:border-loyola-maroon transition"
+                  title="Switch to Admin Portal"
                 >
-                  <Settings className="w-5 h-5" />
-                </Link>
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">Admin Portal</span>
+                </button>
               )}
               <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:text-gray-700 transition text-sm">
                 <LogOut className="w-4 h-4" />
@@ -628,16 +686,16 @@ export default function InstructorDashboardPage() {
 
               {[
                 { priority: 'Critical', dot: 'bg-red-500', title: 'text-red-600', card: 'bg-red-50 border-red-200', items: [
-                  { q: 'Q6', topic: 'Inflation (Lowering)', issue: '78% of diagnosed students believe lower inflation means falling prices. Students confuse the rate of price change with the price level itself.', action: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher, just rising more slowly. A visual timeline of price levels vs. inflation rate would help.' },
+                  { q: 'Q6', topic: 'Inflation (Lowering)', issue: '55% of diagnosed students (n=36) believe lower inflation means falling prices. An additional 22% (n=14) incorrectly link inflation to employment changes. Students confuse the rate of price change with the price level itself.', action: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher, just rising more slowly. A visual timeline of price levels vs. inflation rate would help.' },
                 ]},
                 { priority: 'High', dot: 'bg-amber-500', title: 'text-amber-600', card: 'bg-amber-50 border-amber-200', items: [
-                  { q: 'Q36', topic: 'Diversification (Savings)', issue: '62% of diagnosed students actually understood the concept but chose the wrong answer. The True/False negative phrasing confused them.', action: 'This is a question design issue, not a knowledge gap. Consider rewording for Test 2. No additional teaching needed.' },
-                  { q: 'Q10', topic: 'Credit Reports', issue: '33% did not know employers can check credit reports. 29% were selection errors due to "which is FALSE" framing.', action: 'Brief lesson on credit report access rights. Also consider adjusting the question framing.' },
-                  { q: 'Q12', topic: 'Health Insurance', issue: '64% believe insurance is primarily for routine care. Students confuse frequency of use with primary purpose.', action: 'Teach the catastrophic protection model. Use example: $200 checkup vs. $200,000 surgery. Which one would bankrupt you without insurance?' },
+                  { q: 'Q36', topic: 'Diversification (Savings)', issue: '38% of diagnosed students (n=20) made selection errors (reversal), and 28% (n=15) had correct reasoning but chose the wrong answer. The True/False negative phrasing confused them.', action: 'This is largely a question design issue, not a knowledge gap. Consider rewording for Test 2. No additional teaching needed for most of these students.' },
+                  { q: 'Q10', topic: 'Credit Reports', issue: '33% (n=17) did not know employers can check credit reports. 31% (n=16) were selection errors (self-corrected during SDM follow-up).', action: 'Brief lesson on credit report access rights. The high self-correction rate suggests partial knowledge — a quick review may be sufficient.' },
+                  { q: 'Q12', topic: 'Health Insurance', issue: '56% of diagnosed students (n=19) believe insurance is primarily for routine care. 18% (n=6) judge by frequency of use rather than severity of need.', action: 'Teach the catastrophic protection model. Use example: $200 checkup vs. $200,000 surgery. Which one would bankrupt you without insurance?' },
                 ]},
                 { priority: 'Monitor', dot: 'bg-blue-500', title: 'text-blue-600', card: 'bg-blue-50 border-blue-200', items: [
-                  { q: 'Q30', topic: 'Risk-Return Tradeoff', issue: '67% argue that because exceptions exist, the general principle is false.', action: 'Teach the difference between general principles and universal rules. Use: "Taller people are likely heavier. Is this always true? No. Is it generally true? Yes."' },
-                  { q: 'Q7', topic: 'Inflation & Fixed Income', issue: 'Students split between empathy-driven reasoning and not understanding "fixed income."', action: 'Define "fixed income" explicitly before discussing inflation impact on different groups.' },
+                  { q: 'Q30', topic: 'Risk-Return Tradeoff', issue: '67% of diagnosed students (n=14) argue that because exceptions exist, the general principle is false.', action: 'Teach the difference between general principles and universal rules. Use: "Taller people are likely heavier. Is this always true? No. Is it generally true? Yes."' },
+                  { q: 'Q7', topic: 'Inflation & Fixed Income', issue: '27% (n=16) believe older workers suffer most from inflation, 25% (n=15) believe young couples suffer most. Students split between empathy-driven reasoning and not understanding "fixed income."', action: 'Define "fixed income" explicitly before discussing inflation impact on different groups.' },
                 ]},
               ].map(section => (
                 <div key={section.priority} className="mb-6 last:mb-0">

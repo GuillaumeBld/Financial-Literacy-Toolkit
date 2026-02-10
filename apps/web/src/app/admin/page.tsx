@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   Users,
   UserCheck,
@@ -16,7 +15,7 @@ import {
   ChevronDown,
   ChevronRight,
   Map,
-  ArrowLeft,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 type DashboardStats = {
@@ -82,6 +81,7 @@ export default function AdminDashboardPage() {
     }
 
     setInstructorName(name || 'Instructor');
+    localStorage.setItem('active-portal', 'admin');
     loadDashboardData(token);
   }, [router]);
 
@@ -124,6 +124,7 @@ export default function AdminDashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('instructor-token');
     localStorage.removeItem('instructor-name');
+    localStorage.removeItem('active-portal');
     router.push('/instructor');
   };
 
@@ -161,13 +162,6 @@ export default function AdminDashboardPage() {
           <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Link
-                  href="/instructor/dashboard"
-                  className="text-loyola-gray-600 hover:text-ink transition"
-                  title="Back to Instructor Dashboard"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Link>
                 <h1 className="text-2xl font-bold text-ink">
                   Admin Dashboard
                 </h1>
@@ -177,6 +171,17 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  localStorage.setItem('active-portal', 'instructor');
+                  router.push('/instructor/dashboard');
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-loyola-gray-600 hover:text-ink border border-loyola-gray-300 rounded-lg hover:border-ink transition"
+                title="Switch to Instructor Portal"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Instructor Portal</span>
+              </button>
               <button
                 onClick={() => router.push('/instructor/status' as any)}
                 className="p-2 text-loyola-gray-600 hover:text-ink transition"
@@ -291,6 +296,11 @@ export default function AdminDashboardPage() {
                 title="Plan B Settings"
                 description="Configure Google Forms fallback"
                 href="/instructor/plan-b"
+              />
+              <ActionCard
+                title="Documents"
+                description="Shared files for download"
+                href="/admin/documents"
               />
             </div>
           </>

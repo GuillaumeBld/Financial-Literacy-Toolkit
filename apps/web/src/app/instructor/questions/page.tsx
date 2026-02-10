@@ -107,6 +107,7 @@ export default function InstructorQuestionsPage() {
     searchTerm: '',
     showPreference: false,
   });
+  const [dashboardPath, setDashboardPath] = useState('/instructor/dashboard');
   const router = useRouter();
 
   const normalizeQuestion = (raw: any): Question => {
@@ -136,6 +137,7 @@ export default function InstructorQuestionsPage() {
       router.push('/instructor');
       return;
     }
+    setDashboardPath(localStorage.getItem('active-portal') === 'admin' ? '/admin' : '/instructor/dashboard');
     loadQuestions(token);
   }, [router]);
 
@@ -274,7 +276,7 @@ export default function InstructorQuestionsPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/instructor/dashboard')}
+                onClick={() => router.push(dashboardPath as any)}
                 className="flex items-center gap-2 text-loyola-gray-600 hover:text-ink transition"
               >
                 <ArrowLeft className="w-5 h-5" />
