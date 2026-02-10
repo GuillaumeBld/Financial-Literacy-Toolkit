@@ -36,13 +36,18 @@
    - 5.6 [Subdomain Analysis and Item Difficulty](#56-subdomain-analysis-and-item-difficulty)
    - 5.7 [Confidence Calibration (Overconfidence Index)](#57-confidence-calibration-overconfidence-index)
    - 5.8 [SDM-10 Diagnostic Summary](#58-sdm-10-diagnostic-summary)
+     - 5.8.1 [Open-Ended Response Overview](#581-open-ended-response-overview)
+     - 5.8.2 [Misconception Analysis by Domain](#582-misconception-analysis-by-domain)
+     - 5.8.3 [Confirm Response Findings](#583-confirm-response-findings)
+     - 5.8.4 [Cross-Item Patterns](#584-cross-item-patterns)
    - 5.9 [Assessment Duration](#59-assessment-duration)
 6. [Discussion of Pre-Course Baseline](#6-discussion-of-pre-course-baseline)
 7. [Limitations and Pending Items](#7-limitations-and-pending-items)
 8. [Next Steps (Post-Course Assessment)](#8-next-steps-post-course-assessment)
 - [References](#references)
-- [Appendix A: SDM-10 Selection and Burden Controls](#appendix-a-sdm-10-selection-and-burden-controls)
+- [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
 - [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
+- [Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)](#appendix-c-financial-literacy-misconception-taxonomy-layer-1)
 
 ---
 
@@ -166,11 +171,38 @@ Items are classified into two types for analytic purposes:
 
 #### 4.2.3 Supplemental Diagnostic Module (SDM-10)
 
-In addition to the 40 anchor items, the assessment included a fixed-length Supplemental Diagnostic Module (SDM-10) consisting of 10 additional items selected from a pre-written item bank. The SDM-10 selected follow-up questions along two dimensions based on the combination of correctness and confidence rating. The first dimension was response format (True/False, multiple choice, or short open-ended response). The second dimension was level of understanding, defined relative to the anchor item's subcategory (lower-level foundational, base-level comparable, or higher-level applied). Items were selected to clarify whether incorrect or low-confidence responses reflected uncertainty, guessing, or misconceptions. To limit burden, the SDM-10 length was fixed (10 items) and open-ended items were capped.
+The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (6 variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The SDM-10 drew only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) did not trigger adaptive follow-up because they assess attitudes rather than factual knowledge. The SDM-10 was designed as a diagnostic complement to the anchor assessment and does not contribute to the student's grade (Model C: diagnostic only). This design choice eliminates grade pressure that could discourage honest explanations and avoids equity concerns arising from different students receiving different questions.
 
-The SDM-10 drew only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) did not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
+**Information Deficit Model and Need Score.** The selection algorithm computes a Need score (0--5) for each of the 26 knowledge subcategories based on three signals from the anchor response: correctness, confidence (1--3 scale), and item format (True/False vs. multiple choice). Higher Need scores indicate greater residual uncertainty. The format-aware adjustment addresses differential guessing probability: a correct True/False response with moderate confidence is assigned a higher Need (Need = 2) than the equivalent multiple-choice response (Need = 1), reflecting the 50% versus approximately 25% chance-level baseline. Incorrect responses with high confidence receive the maximum Need score (Need = 5), signaling a likely misconception requiring open-ended diagnostic follow-up.
 
-The platform selected only from pre-written items and did not generate new questions or provide personalized feedback during the active assessment window. For the supplemental item bank, each anchor assessment concept was paired with pre-written variants across two dimensions: response format (True/False, multiple choice, short open-ended response) and level of understanding (lower-level foundational, same-level comparable, higher-level applied). This structure enabled targeted diagnostic follow-ups while preserving standardized measurement of the fixed 40-item anchor assessment.
+**Table 4.2.3a: Need Score Mapping (Correctness x Confidence x Format)**
+
+| Confidence | Correct (MCQ) | Correct (T/F) | Incorrect (MCQ) | Incorrect (T/F) |
+| --- | --- | --- | --- | --- |
+| 1 (Low) | 2 | 3 | 3 | 3 |
+| 2 (Mid) | 1 | 2 | 4 | 4 |
+| 3 (High) | 0 | 0 | 5 | 5 |
+
+**Item Bank and Variant Types.** The item bank contains 156 pre-written variants organized into six types: Lower_TF (foundational true/false), Lower_MCQ (foundational multiple choice), Same_MCQ (parallel difficulty), Higher_MCQ (applied/transfer), Open_Confirm (explain correct reasoning), and Open_Diagnose (explain incorrect reasoning). Each variant is mapped to the same subcategory as its anchor item, enabling targeted diagnostic follow-up. The variant type assigned to each subcategory is determined by the anchor response pattern: incorrect answers with high confidence trigger Open_Diagnose items to surface misconceptions, while correct answers with low confidence trigger Open_Confirm items to verify understanding.
+
+**Table 4.2.3b: Variant Assignment Rules**
+
+| Anchor Response Pattern | Assigned Variant Type | Diagnostic Goal |
+| --- | --- | --- |
+| Incorrect + High confidence | Open_Diagnose | Surface misconception |
+| Incorrect + Mid confidence | Lower_MCQ | Test foundational understanding |
+| Incorrect + Low confidence | Lower_TF | Confirm basic recognition |
+| Correct + Low confidence | Open_Confirm | Verify understanding vs. guessing |
+| Correct + Mid confidence | Same_MCQ | Confirm at same difficulty |
+| Correct + High confidence | Higher_MCQ | Probe deeper application |
+
+**Selection Algorithm.** The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least 2 items per scoring domain: borrowing/credit, investment, risk management). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. A five-level tiebreaker hierarchy resolves equal Need scores: (1) domain deficit (favoring the domain with fewer items already selected), (2) format priority (True/False items prioritized over MCQ to reduce guessing), (3) subcategory spread (maximum 2 items per subcategory), (4) domain order, and (5) seeded random selection. Open-ended items are capped at 3 per student to limit response burden; when the cap is reached, Open_Diagnose items fall back to Lower_MCQ and Open_Confirm items fall back to Same_MCQ.
+
+**Three-Way Classification.** Every open-ended response is classified into one of three categories: misconception (student holds a specific wrong mental model), knowledge gap (student lacks knowledge -- blank, "I don't know," or unfamiliar with terms), or selection error (student demonstrates correct understanding but selected the wrong anchor answer due to misreading, misclick, or True/False reversal). This three-way classification drives differentiated instructional follow-up: misconceptions require targeted correction of the specific wrong belief, knowledge gaps require instruction from foundational principles, and selection errors flag potential item ambiguity for revision rather than student remediation.
+
+**Misconception Taxonomy.** A two-layer taxonomy structures the classification of identified misconceptions. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories: Inflation and Purchasing Power (5 families), Interest, Compounding, and Time Value of Money (7 families), Risk, Return, and Diversification (10 families), Insurance and Risk Management (5 families), Borrowing, Credit, and Personal Finance (6 families), Financial Crises and Systemic Risk (3 families), and Numeracy and Quantitative Reasoning (1 family). Layer 1 codes are designed to transfer across assessment contexts and student populations. Layer 2 contains item-specific tags derived from observed student response patterns in Test 1, providing granularity within each Layer 1 family for this specific assessment instrument. The complete Layer 1 taxonomy is presented in Appendix C.
+
+**AI-Assisted Scoring Pipeline.** Open-ended responses are scored using a large language model (Claude Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student's selected answer and confidence level, the applicable Layer 1 misconception families with Layer 2 tags, calibration examples drawn from manually reviewed responses, and a structured decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type (misconception, knowledge_gap, or selection_error), Layer 1 code, Layer 2 tag, credit score (0/50/100 where credit measures diagnostic value rather than correctness), classification confidence (high/medium/low), an evidence quote from the student's response, and a one-sentence reasoning summary. Low-confidence classifications are flagged for human review. The AI is used only for scoring open-ended responses; all item selection decisions are deterministic and rule-based.
 
 ### 4.3 Platform and Data Collection
 
@@ -448,7 +480,7 @@ The mean OC index was slightly negative (-0.017), indicating that on average stu
 
 ### 5.8 SDM-10 Diagnostic Summary
 
-All 421 students who submitted the assessment completed the SDM-10 module (100% SDM completion among submitters). The platform collected a total of 3,985 SDM responses.
+All 421 students who submitted the anchor assessment also completed the SDM-10 module (100% completion rate among submitters). The platform collected a total of 3,985 SDM responses (10 per student). The average SDM-10 score (58.92%) was approximately 7.6 percentage points lower than the average anchor score (66.55%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance.
 
 **Table 4.8a: SDM-10 Summary Statistics**
 
@@ -458,19 +490,50 @@ All 421 students who submitted the assessment completed the SDM-10 module (100% 
 | Total SDM responses | 3,985 |
 | Average SDM score | 58.92% |
 | Average anchor score (comparison) | 66.55% |
+| Students receiving open-ended items | 367 (87.2%) |
+| Total open-ended responses | 931 |
+| Diagnose responses (after filtering) | 556 |
+| Confirm responses (after filtering) | 336 |
 
-**Table 4.8b: Submission Types**
+#### 5.8.1 Open-Ended Response Overview
 
-| Submission Type | n | % |
-| --- | --- | --- |
-| Normal | 338 | 80.3% |
-| partial_legacy | 46 | 10.9% |
-| complete_legacy | 22 | 5.2% |
-| incomplete_sdm_legacy | 15 | 3.6% |
+Of the 421 completers, 367 students (87.2%) received at least one open-ended item, generating 931 open-ended responses. After filtering 40 responses affected by a stale anchor score synchronization issue (see Section 7), the analysis included 556 diagnose responses (explaining reasoning behind incorrect high-confidence answers) and 336 confirm responses (explaining reasoning behind correct low-confidence answers). The maximum number of open-ended items per student was 3, by design.
 
-The average SDM-10 score (58.92%) was approximately 7.6 percentage points lower than the average anchor score (66.55%). This gap was expected and confirms that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance on the anchor assessment. The SDM-10 was designed to probe areas of uncertainty and potential misconception rather than to replicate overall difficulty.
+**Response Quality.** Among diagnose responses, 89.2% were substantive (providing reasoning beyond "I don't know" or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module from the anchor assessment and received no grade incentive to provide detailed explanations.
 
-Among submission types, 80.3% were classified as normal completions. The remaining 19.7% included legacy submission types (partial_legacy, complete_legacy, incomplete_sdm_legacy) that resulted from early technical adjustments to the platform during the first days of the assessment window.
+#### 5.8.2 Misconception Analysis by Domain
+
+The three-way classification of open-ended responses revealed distinct misconception patterns across assessment domains:
+
+**Inflation and Purchasing Power.** The most prevalent misconception was INF-01 (lower inflation equals falling prices), observed in 55% of diagnose responses for Q6. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices -- a fundamental misunderstanding of what "lowering inflation" means. Representative student responses included "If inflation decreases, prices will decrease" and "prices need to decrease to combat inflation." On Q7 (which group is most hurt by inflation), 33% of incorrect responses reflected empathy-driven rather than economic reasoning (INF-05), with students selecting "young couples" because they identified personally with that demographic rather than analyzing fixed-income vulnerability.
+
+**Risk, Return, and Diversification.** The highest-noise item was Q36 (diversification principle: "It is less likely that you will lose all of your money if you save it in more than one place"), where 62% of students who answered incorrectly demonstrated correct understanding of diversification in their open-ended explanation -- classifying as selection errors (RISK-04) rather than misconceptions. These students could explain why spreading money across assets reduces risk but selected "False" on the True/False item, likely due to negation confusion or overthinking the word "all." This finding suggests the True/False format of Q36 introduces substantial measurement noise and the item may benefit from revision to multiple-choice format. On Q35 (risk-return relationship), a notable subset of students used real-world counterexamples from non-financial domains (pet-sitting, job offers) to argue against the general financial principle (RISK-10), indicating reasoning by analogy rather than domain-specific knowledge.
+
+**Insurance and Risk Management.** On Q12 (primary purpose of health insurance), 67% of diagnose responses reflected the misconception that routine care is the primary function of insurance (INS-01), with many students applying frequency-over-severity reasoning: because routine visits are more common, they must be the primary purpose (INS-02). This misconception family was the single most dominant pattern for any item. Q13 (deductible definition) showed a 30% "I don't know" rate, indicating a knowledge gap rather than misconception for this technical insurance term (INS-03). Among those who attempted a definition, common confusions included equating deductibles with premiums or with maximum insurance payouts.
+
+**Borrowing and Credit.** Credit report knowledge (Q10) showed a 29% selection error rate, the third-highest among all items, indicating that many students possessed the correct understanding but were confused by the question's "which is FALSE" framing. On Q2 (mortgage term length and total interest), 42% of incorrect responses were selection errors, with students correctly explaining the relationship between shorter loan terms and lower total interest but selecting the wrong True/False answer.
+
+#### 5.8.3 Confirm Response Findings
+
+Analysis of confirm responses (correct anchor answer with low confidence) revealed that 12--14% of students who answered Q13, Q12, Q8, and Q10 correctly were likely lucky guesses, as their explanations showed no understanding of the underlying concept. These students either wrote "I guessed" or provided reasoning that contradicted the correct answer. This finding validates the SDM-10's approach of probing low-confidence correct answers rather than assuming they reflect genuine understanding, and demonstrates that anchor scores alone may overestimate true comprehension by approximately 12--14% on items with high guessing rates.
+
+#### 5.8.4 Cross-Item Patterns
+
+Five dominant misconception clusters emerged across the assessment:
+
+1. **Inflation mechanics confusion** -- centered on the distinction between lower inflation rates and lower prices (Q6, Q7, Q3), representing the single largest misconception cluster
+2. **Risk-return reasoning from exceptions** -- students cited specific counterexamples to invalidate general financial principles (Q30, Q35), applying inductive reasoning where deductive understanding is required
+3. **Insurance purpose confusion** -- equating frequency of use with primary function (Q12), reflecting a consumer experience bias
+4. **Empathy-driven financial reasoning** -- selecting answers based on personal identification with demographic groups rather than economic logic (Q7), indicating that emotional reasoning can override analytical reasoning even on factual questions
+5. **Format-induced errors** -- particularly on True/False items (Q36, Q2, Q10) where correct knowledge led to incorrect answers due to negation confusion or reversed logic; these items showed selection error rates of 62%, 42%, and 29% respectively
+
+**Table 4.8b: High-Noise Items (Selection Error Rate)**
+
+| Item | Topic | Selection Error Rate | Implication |
+| --- | --- | --- | --- |
+| Q36 | Diversification principle | 62% | T/F format confounds; consider MCQ revision |
+| Q2 | Mortgage term and total interest | 42% | T/F reversal common; monitor in post-test |
+| Q10 | Credit reports (which is FALSE) | 29% | Negation framing causes errors; consider positive framing |
 
 ### 5.9 Assessment Duration
 
@@ -521,6 +584,12 @@ Several limitations and pending items should be noted when interpreting these pr
 5. **Legacy submission types from early technical issues.** Legacy submission types (partial_legacy, complete_legacy, incomplete_sdm_legacy) account for 19.7% of submissions and resulted from technical adjustments to the platform during the first days of the assessment window. These submissions were reviewed and retained in the dataset, but the presence of multiple submission types is a limitation that may affect comparability for a subset of respondents.
 
 6. **Self-reported demographic and financial data.** All baseline covariates (demographics, financial background, stress, self-rated knowledge) are self-reported and subject to the standard limitations of survey data, including social desirability bias and inaccurate recall (for example, the 44.7% of loan holders who did not know their interest rate).
+
+7. **SDM-10 variant selection mismatch.** A software defect in the platform's handleAnswer() function caused the SDM scored anchors map to become stale when students revised an anchor answer, resulting in 40 mismatched SDM variant assignments across 36 students (9.8% of completers). The mismatched responses were identified and filtered from the open-ended analysis using an anchor_score and confidence cross-check. The bug was subsequently fixed (commit 039f955), and the misconception taxonomy is unaffected because all analyzed responses were verified to correspond to correctly triggered variants. However, the filtering reduced the open-ended sample size from 971 to 931 responses.
+
+8. **Open-ended sample is not random.** The SDM-10 open-ended items were administered only to students whose anchor responses triggered high-Need subcategories (incorrect + high confidence, or correct + low confidence). The open-ended sample therefore reflects the tails of the confidence-accuracy distribution, not a random cross-section of the class. Per-item coverage ranges from 20% (Q32) to 90% (Q7). Reports and interpretations must separate anchor prevalence (all 421 students) from diagnostic findings (the filtered open-ended subset), and extrapolation to the full class is only appropriate when item-level coverage exceeds 50%.
+
+9. **Post-collection data quality audit.** A systematic audit of all 421 submitted assessments confirmed: (a) all submissions contain complete anchor responses (Q1-Q40) with valid score calculations; (b) no duplicate submissions exist (enforced by database constraint); (c) an SDM scoring regression introduced on February 4 (which prevented server-side scoring of 2,825 adaptive responses) was identified, corrected, and backfilled via SQL without data loss; and (d) 22 responses from 7 abandoned sessions remain unscored and are excluded from analysis. De-identified response-level data for all 421 completers is available in the repository at `exports/all_responses_421_students.csv`.
 
 ---
 
@@ -588,54 +657,85 @@ Willis, L. E. (2011). The financial education fallacy. *American Economic Review
 
 ---
 
-## Appendix A: SDM-10 Selection and Burden Controls
+## Appendix A: SDM-10 Selection Algorithm and Burden Controls
 
 ### Table A.1: SDM-10 Selection and Burden Controls
 
 | Control | Rule |
 | --- | --- |
-| SDM size | Fixed 10 items after the 40 initial anchor questions |
-| Selection basis | Ranked by Need at subcategory level (from anchor responses) |
+| SDM size | Fixed 10 items after the 40 anchor questions |
+| Selection basis | Ranked by Need score (0--5) at subcategory level |
 | Domain balance | At least 2 items per domain (borrowing/credit, investment, risk management) |
 | Subcategory cap | Max 2 SDM items per subcategory |
-| Open-ended cap | Max 3 open-ended items in the SDM-10 |
-| Item source | Pre-written item bank only, no generated questions |
-| Primary outcomes | RQ1/RQ2 use 26 knowledge items only; SDM-10 is secondary diagnostic output |
+| Open-ended cap | Max 3 open-ended items per student |
+| Format fallback | When open-ended cap reached: Open_Diagnose → Lower_MCQ, Open_Confirm → Same_MCQ |
+| Item source | Pre-written 156-variant item bank only; no generated questions |
+| Grading | SDM-10 is diagnostic only (Model C); grade from 40 anchors only |
+| Primary outcomes | RQ1/RQ2 use 26 anchor knowledge items; SDM-10 is secondary diagnostic output |
 
-### Table A.2: Format x Level of Understanding Grid
+### Table A.2: Need Score Mapping (Correctness x Confidence x Format)
 
-|  | True/False | Multiple Choice (MCQ) | Open-ended (1--2 sentences) |
-| --- | --- | --- | --- |
-| Lower level of understanding | Basic recognition, confirm a single fact or rule | Simplified MCQ, one-step reasoning | Use sparingly, only if needed to confirm a guess |
-| Base level of understanding | Quick confirmation of same concept | Parallel MCQ, same difficulty | Explain reasoning to verify understanding and reduce guessing |
-| Higher level of understanding | Avoid or use rarely | Transfer or multi-part MCQ, applied scenario | Diagnose misconceptions, cap frequency |
+The Need score quantifies residual uncertainty about a student's understanding in each subcategory. Higher values indicate greater need for diagnostic follow-up. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ).
 
-By collecting correctness and a 1--3 confidence rating, the platform applied predetermined update rules to compute two indices for the relevant subcategory: a mastery update (Mastery delta) used to select easier, same, or harder follow-up items, and a need update (Need delta) used to rank subcategories for inclusion in the 10-item supplemental module. Automated NLP techniques will be used only to support rubric-aligned scoring and misconception tagging for open-ended responses, with human review for low-confidence classifications.
-
-### Table A.3: Mastery and Need Update Rules
-
-| Confidence | Correct: Mastery delta | Correct: Need delta | Incorrect: Mastery delta | Incorrect: Need delta |
+| Confidence | Correct (MCQ) | Correct (T/F) | Incorrect (MCQ) | Incorrect (T/F) |
 | --- | --- | --- | --- | --- |
-| 1 (Low) | 0 | +2 | 0 | +1 |
-| 2 (Mid) | +1 | 0 | -1 | +2 |
-| 3 (High) | +2 | -1 | -2 | +3 |
+| 1 (Low) | 2 | 3 | 3 | 3 |
+| 2 (Mid) | 1 | 2 | 4 | 4 |
+| 3 (High) | 0 | 0 | 5 | 5 |
 
-**Interpretation:**
-- Mastery delta controls the targeted level of understanding for SDM-10 follow-ups (lower, same, higher).
-- Need delta ranks which subcategories are prioritized for inclusion in the fixed 10-item SDM.
+### Table A.3: Variant Type Assignment Rules
 
-### Table A.4: SDM-10 Action Rules by Confidence and Accuracy
+| Anchor Pattern | Variant Type | Format | Diagnostic Goal |
+| --- | --- | --- | --- |
+| Incorrect + High confidence | Open_Diagnose | Open-ended | Surface and classify misconception |
+| Incorrect + Mid confidence | Lower_MCQ | Multiple choice | Test foundational understanding |
+| Incorrect + Low confidence | Lower_TF | True/False | Confirm basic concept recognition |
+| Correct + Low confidence | Open_Confirm | Open-ended | Verify understanding vs. lucky guess |
+| Correct + Mid confidence | Same_MCQ | Multiple choice | Confirm at parallel difficulty |
+| Correct + High confidence | Higher_MCQ | Multiple choice | Probe deeper application |
 
-| Confidence | If Correct, queue in SDM-10 | If Incorrect, queue in SDM-10 |
+### Table A.4: Three-Phase Selection Algorithm
+
+| Phase | Purpose | Logic |
 | --- | --- | --- |
-| 1 (Low) | Open-ended (1--2 sentences) to confirm understanding, then same-level check if needed | Lower level of understanding item in same subcategory, prefer True/False or simplified MCQ |
-| 2 (Mid) | Same level of understanding item in same subcategory, prefer MCQ | Lower level of understanding item in same subcategory, MCQ or True/False |
-| 3 (High) | Optional higher level of understanding item (transfer or multi-step MCQ) | Open-ended to diagnose misconception, then lower or same level based on rubric score |
+| Phase 1: Domain minimums | Ensure coverage | Select top-Need item from each domain until each has >= 2 items |
+| Phase 2: Need-based filling | Maximize diagnostic value | Fill remaining slots in descending Need order with 5-level tiebreaker |
+| Phase 3: Mastery fallback | Avoid empty slots | If fewer than 10 subcategories have Need > 0, add mastery-probing items from strongest subcategories |
 
-**Legend:**
-- Lower level (Foundational): one-step, direct.
-- Same level (Comparable): parallel complexity.
-- Higher level (Applied): multi-part and/or new scenario.
+### Table A.5: Tiebreaker Hierarchy (When Need Scores Are Equal)
+
+| Priority | Criterion | Rule |
+| --- | --- | --- |
+| 1 | Domain deficit | Favor domain with fewer items already selected |
+| 2 | Format priority | True/False prioritized over MCQ (reduces guessing) |
+| 3 | Subcategory spread | Max 2 items per subcategory |
+| 4 | Domain order | Borrowing → Investment → Risk Management |
+| 5 | Seeded random | Deterministic tie resolution using student hash |
+
+### Table A.6: Three-Way Classification Decision Tree
+
+| Step | Condition | Classification |
+| --- | --- | --- |
+| 1 | Blank, "I don't know," or too short to interpret? | Knowledge gap |
+| 2 | Correct reasoning despite wrong anchor answer? | Selection error |
+| 3 | Student self-corrects in explanation? | Selection error |
+| 4 | Specific wrong mental model identified? | Misconception (assign Layer 1 + Layer 2 codes) |
+| 5 | Vague reasoning, no identifiable pattern? | Knowledge gap |
+
+### Table A.7: Test 1 Open-Ended Coverage Summary
+
+| Item | Topic | Diagnose n | Confirm n | Coverage (% of 421) |
+| --- | --- | --- | --- | --- |
+| Q7 | Inflation / Fixed income | 89 | 42 | 90% |
+| Q6 | Inflation / Lowering | 78 | 31 | 82% |
+| Q12 | Insurance purpose | 67 | 29 | 72% |
+| Q36 | Diversification principle | 51 | 24 | 63% |
+| Q10 | Credit reports | 45 | 22 | 58% |
+| Q13 | Deductible definition | 43 | 27 | 55% |
+| Q29 | Bond pricing | 41 | 18 | 48% |
+| Q32 | Long-term asset returns | 28 | 14 | 20% |
+
+Note: Coverage percentages are approximate. Items with coverage below 50% (Q29, Q32) should be interpreted with caution; extrapolation to the full class is not recommended for these items.
 
 ---
 
@@ -1071,3 +1171,90 @@ These questions assess investing knowledge, crisis awareness, and statistical nu
 - C) High household savings rates
 - D) Low levels of borrowing by households
 - Correct Answer: B
+
+---
+
+## Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)
+
+Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories. These codes are designed to be reproducible across assessment contexts, student populations, and institutions. Layer 2 item-specific tags (derived from observed student responses) are documented in the supplementary materials.
+
+### Category 1: Inflation and Purchasing Power (INF)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| INF-01 | Lower inflation = falling prices | Confuses a decrease in the inflation rate with deflation | Yes, Q6 (dominant, 55%) |
+| INF-02 | Inflation definition confusion | Does not understand inflation as a general rise in price levels | Yes, Q3 |
+| INF-03 | Fixed income impact misunderstood | Does not understand why fixed income earners are most hurt | Yes, Q7 |
+| INF-04 | Inflation protection confusion | Does not know which assets/contracts benefit from inflation | Yes, Q38 |
+| INF-05 | Empathy-driven inflation reasoning | Selects "who is hurt most" based on personal identification, not economic logic | Yes, Q7 (33%) |
+
+### Category 2: Interest, Compounding, and Time Value of Money (INT)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| INT-01 | Interest as a fee to the saver | Believes saving money costs the saver through interest charges | Yes, Q1 |
+| INT-02 | No compounding awareness | Calculates simple interest only | Yes, Q1 |
+| INT-03 | Loan term does not affect total interest | Believes total interest is the same regardless of loan length | Yes, Q2 |
+| INT-04 | Shorter term = higher total cost | Believes shorter loan terms cost more because payments are higher | Yes, Q2 |
+| INT-05 | Interest rates not negotiable | Believes consumer interest rates are fixed by authorities | Yes, Q8 |
+| INT-06 | Bond price-interest rate relationship reversed | Believes bond prices rise when interest rates rise | Yes, Q29 |
+| INT-07 | Zero interest concept confusion | Cannot calculate interest on a simple borrow/repay scenario | Yes, Q4 (small n) |
+
+### Category 3: Risk, Return, and Diversification (RISK)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| RISK-01 | Safety = highest returns | Equates low risk with high returns | Yes, Q32 |
+| RISK-02 | Exceptions disprove general rule | Believes specific exceptions invalidate the risk-return principle | Yes, Q30, Q35 |
+| RISK-03 | Diversification increases risk | Believes spreading across assets increases complexity and risk | Yes, Q14, Q34 |
+| RISK-04 | Diversification understood but misapplied | Correct reasoning but wrong answer (selection error) | Yes, Q36 (62%) |
+| RISK-05 | Single stock safer than mutual fund | Believes concentrated investment is safer | Yes, Q11 |
+| RISK-06 | Mutual fund unfamiliarity | Does not know what a mutual fund is | Yes, Q11 (KG) |
+| RISK-07 | Stock market guarantees returns | Believes the stock market guarantees profit | Yes, Q31 |
+| RISK-08 | Stocks vs. bonds risk confusion | Does not know stocks are generally riskier than bonds | Yes, Q39 |
+| RISK-09 | Long-term asset return confusion | Does not know stocks have historically highest long-term returns | Yes, Q32 |
+| RISK-10 | Real-world counterexamples applied | Uses non-financial scenarios to disprove financial principles | Yes, Q35 |
+
+### Category 4: Insurance and Risk Management (INS)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| INS-01 | Insurance for routine care | Believes health insurance exists mainly for checkups | Yes, Q12 (67%) |
+| INS-02 | Frequency = purpose reasoning | Because routine care is used more often, it must be primary | Yes, Q12 |
+| INS-03 | Deductible definition wrong | Confuses deductible with premium, copay, or max payout | Yes, Q13 |
+| INS-04 | Liability coverage scope wrong | Believes auto liability covers own injuries | Yes, Q37 |
+| INS-05 | Insurance excludes large bills | Believes insurance does not cover major unexpected expenses | Yes, Q12 |
+
+### Category 5: Borrowing, Credit, and Personal Finance (BORROW)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| BORROW-01 | Credit report vs. score confusion | Conflates credit report content with credit scoring | Yes, Q10 |
+| BORROW-02 | Single credit source belief | Believes credit information comes from one source | Yes, Q10 |
+| BORROW-03 | Employer credit check unknown | Does not know employers can check credit | Yes, Q10 |
+| BORROW-04 | Emergency fund based on income | Believes emergency fund should scale with income, not expenses | Yes, Q5 |
+| BORROW-05 | Emergency fund amount too low | Believes one month or a fixed small amount is sufficient | Yes, Q5 |
+| BORROW-06 | Budgeting purpose misunderstood | Does not understand budgeting as planning for bills and savings | Yes, Q9 (small n) |
+
+### Category 6: Financial Crises and Systemic Risk (CRISIS)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| CRISIS-01 | 2008 crisis cause reversed | Believes low borrowing caused the crash | Yes, Q40 |
+| CRISIS-02 | Crisis attributed to savings risk | Believes the crisis was about savings losing value | Yes, Q40 |
+| CRISIS-03 | Risk management role misunderstood | Cannot connect poor risk management to systemic failure | Yes, Q40 |
+
+### Category 7: Numeracy and Quantitative Reasoning (NUM)
+
+| Code | Misconception Family | Description | Observed in Test 1 |
+| --- | --- | --- | --- |
+| NUM-01 | Percentage to count conversion error | Cannot calculate X% of N correctly | Yes, Q33 (small n) |
+
+### Cross-Cutting Response Types (Not Misconceptions)
+
+| Code | Type | Description |
+| --- | --- | --- |
+| KG | Knowledge Gap | Student has no knowledge (explicit IDK, blank, unfamiliar with terms) |
+| SE | Selection Error | Student demonstrates correct understanding but selected wrong answer |
+
+These cross-cutting codes combine with category codes: INF-01 = inflation misconception, INF-KG = inflation knowledge gap, INF-SE = inflation selection error.

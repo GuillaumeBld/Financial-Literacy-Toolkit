@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "Financial Literacy Assessment Toolkit"
+message: "If you use this software or data in your research, please cite it as below."
+type: software
+authors:
+  - family-names: Jalilvand
+    given-names: Abol
+    affiliation: "Loyola University Chicago, Quinlan School of Business, Department of Finance"
+  - family-names: Bolivard
+    given-names: Guillaume
+    affiliation: "Loyola University Chicago"
+repository-code: "https://github.com/GuillaumeBld/Financial-Literacy-Toolkit"
+url: "https://financial-literacy.qualiaai.fr"
+license: Apache-2.0
+version: "1.0.0"
+date-released: "2026-02-09"
+keywords:
+  - financial literacy
+  - assessment
+  - higher education
+  - adaptive testing
+  - pre-post design
+  - SDM-10
+  - FERPA compliance
+abstract: >-
+  A web-based assessment platform for measuring financial literacy among
+  university students using a pre-post research design with adaptive
+  diagnostic follow-up (SDM-10). The platform administers a 40-item anchor
+  assessment across three knowledge domains (Borrowing and Credit, Behavioral
+  and Risk Management, Investment and Risk-Return) followed by a 10-item
+  adaptive diagnostic module that targets individual knowledge gaps. Developed
+  for QUINN 102 (Financial Literacy) at Loyola University Chicago, Spring 2026.
+  Pre-course baseline: N=421 completers (97.2% completion rate), M=66.55%,
+  SD=17.38%.

@@ -727,7 +727,88 @@ const doc = new Document({
           ],
         }),
         bodyParagraph(
-          "The SDM-10 is an adaptive extension that selects 10 additional items from the student\u2019s weakest-performing domain on the fixed core. The module is drawn from a bank of 30 items (10 per domain) stratified by question format (conceptual, applied, numerical) and difficulty level (foundational, intermediate, advanced). The SDM-10 provides finer diagnostic resolution in each student\u2019s area of greatest need without increasing total assessment burden."
+          "The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (6 variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student\u2019s understanding. The SDM-10 drew only from knowledge items (Q1\u2013Q14, Q29\u2013Q40); preference items (Q15\u2013Q28) did not trigger adaptive follow-up. The SDM-10 was designed as a diagnostic complement to the anchor assessment and does not contribute to the student\u2019s grade (Model C: diagnostic only), eliminating grade pressure that could discourage honest explanations."
+        ),
+
+        boldLeadParagraph(
+          "Information Deficit Model and Need Score. ",
+          "The selection algorithm computes a Need score (0\u20135) for each of the 26 knowledge subcategories based on three signals from the anchor response: correctness, confidence (1\u20133 scale), and item format (True/False vs. multiple choice). Higher Need scores indicate greater residual uncertainty. The format-aware adjustment addresses differential guessing probability: a correct True/False response with moderate confidence is assigned a higher Need (Need = 2) than the equivalent multiple-choice response (Need = 1), reflecting the 50% versus approximately 25% chance-level baseline. Incorrect responses with high confidence receive the maximum Need score (Need = 5), signaling a likely misconception requiring open-ended diagnostic follow-up."
+        ),
+
+        // Need Score table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 4.2.3a. Need Score Mapping (Correctness \u00D7 Confidence \u00D7 Format)",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Confidence", "Correct (MCQ)", "Correct (T/F)", "Incorrect (MCQ)", "Incorrect (T/F)"],
+          [
+            ["1 (Low)", "2", "3", "3", "3"],
+            ["2 (Mid)", "1", "2", "4", "4"],
+            ["3 (High)", "0", "0", "5", "5"],
+          ],
+          [1872, 1872, 1872, 1872, 1872]
+        ),
+
+        boldLeadParagraph(
+          "Item Bank and Variant Types. ",
+          "The item bank contains 156 pre-written variants organized into six types: Lower_TF (foundational true/false), Lower_MCQ (foundational multiple choice), Same_MCQ (parallel difficulty), Higher_MCQ (applied/transfer), Open_Confirm (explain correct reasoning), and Open_Diagnose (explain incorrect reasoning). Each variant is mapped to the same subcategory as its anchor item. The variant type assigned to each subcategory is determined by the anchor response pattern: incorrect answers with high confidence trigger Open_Diagnose items to surface misconceptions, while correct answers with low confidence trigger Open_Confirm items to verify understanding."
+        ),
+
+        // Variant Assignment table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 4.2.3b. Variant Assignment Rules",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Anchor Pattern", "Variant Type", "Diagnostic Goal"],
+          [
+            ["Incorrect + High conf.", "Open_Diagnose", "Surface misconception"],
+            ["Incorrect + Mid conf.", "Lower_MCQ", "Test foundational understanding"],
+            ["Incorrect + Low conf.", "Lower_TF", "Confirm basic recognition"],
+            ["Correct + Low conf.", "Open_Confirm", "Verify understanding vs. guessing"],
+            ["Correct + Mid conf.", "Same_MCQ", "Confirm at same difficulty"],
+            ["Correct + High conf.", "Higher_MCQ", "Probe deeper application"],
+          ],
+          [3120, 3120, 3120]
+        ),
+
+        boldLeadParagraph(
+          "Selection Algorithm. ",
+          "The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least 2 items per scoring domain). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. A five-level tiebreaker hierarchy resolves equal Need scores: (1) domain deficit, (2) format priority (True/False over MCQ), (3) subcategory spread (max 2 per subcategory), (4) domain order, and (5) seeded random selection. Open-ended items are capped at 3 per student; when the cap is reached, Open_Diagnose falls back to Lower_MCQ and Open_Confirm falls back to Same_MCQ."
+        ),
+
+        boldLeadParagraph(
+          "Three-Way Classification. ",
+          "Every open-ended response is classified into one of three categories: misconception (student holds a specific wrong mental model), knowledge gap (student lacks knowledge\u2014blank, \u201cI don\u2019t know,\u201d or unfamiliar with terms), or selection error (student demonstrates correct understanding but selected the wrong anchor answer due to misreading, misclick, or True/False reversal). This classification drives differentiated follow-up: misconceptions require targeted correction, knowledge gaps require instruction from foundational principles, and selection errors flag item ambiguity for revision."
+        ),
+
+        boldLeadParagraph(
+          "Misconception Taxonomy. ",
+          "A two-layer taxonomy structures misconception classification. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories: Inflation and Purchasing Power (5 families), Interest, Compounding, and Time Value of Money (7 families), Risk, Return, and Diversification (10 families), Insurance and Risk Management (5 families), Borrowing, Credit, and Personal Finance (6 families), Financial Crises and Systemic Risk (3 families), and Numeracy (1 family). Layer 1 codes are designed to transfer across assessment contexts and student populations. Layer 2 contains item-specific tags derived from observed student response patterns, providing granularity within each Layer 1 family. The complete taxonomy is presented in Appendix C."
+        ),
+
+        boldLeadParagraph(
+          "AI-Assisted Scoring Pipeline. ",
+          "Open-ended responses are scored using a large language model (Claude Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications are flagged for human review. The AI is used only for scoring; all item selection decisions are deterministic and rule-based."
         ),
 
         // 4.3 Platform and Data Collection
@@ -740,7 +821,7 @@ const doc = new Document({
           ],
         }),
         bodyParagraph(
-          "The assessment is administered through a custom-built Next.js web application deployed on a secure virtual private server. The platform handles student authentication via anonymous access codes, enforces one-attempt-per-student logic, implements the adaptive SDM-10 routing algorithm, and stores all response data in a PostgreSQL database. Timestamped response logs enable computation of item-level and section-level duration metrics for quality control and engagement analysis."
+          "The assessment is administered through a custom-built Next.js web application deployed on a secure virtual private server. The platform handles student authentication via anonymous access codes, enforces one-attempt-per-student logic, implements the adaptive SDM-10 routing algorithm, and stores all response data in a PostgreSQL database. Timestamped response logs enable computation of item-level and section-level duration metrics for quality control and engagement analysis. The complete platform source code, assessment instruments, and data processing scripts are publicly available in the project repository (Boulaid, 2026)."
         ),
 
         // 4.4 Privacy and FERPA Compliance
@@ -1125,7 +1206,132 @@ const doc = new Document({
           ],
         }),
         bodyParagraph(
-          "The Supplemental Diagnostic Module (SDM-10) was administered to all 421 completers, with each student receiving 10 additional items from their weakest-performing domain on the fixed core. The routing algorithm assigned 42.3% of students to the Risk and Return module, 33.5% to the Borrowing module, and 24.2% to the Behavioral and Risk Management module. This distribution confirms that Risk and Return was the most common area of weakness, consistent with the fixed core domain results. Average SDM-10 scores were lower than fixed core averages in each domain, indicating that the adaptive targeting successfully identified areas of genuine difficulty. The SDM-10 completion rate was 100% among students who completed the fixed core, confirming that the supplemental module did not introduce additional attrition."
+          "All 421 students who completed the anchor assessment also completed the SDM-10 module (100% completion rate). The platform collected 3,985 total SDM responses (10 per student). The average SDM-10 score (58.92%) was approximately 7.6 percentage points lower than the average anchor score (66.55%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance."
+        ),
+
+        // SDM Summary table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 5.3. SDM-10 Summary Statistics",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Metric", "Value"],
+          [
+            ["Students completing SDM-10", "421 (100%)"],
+            ["Total SDM responses", "3,985"],
+            ["Average SDM score", "58.92%"],
+            ["Average anchor score", "66.55%"],
+            ["Students receiving open-ended items", "367 (87.2%)"],
+            ["Total open-ended responses", "931"],
+            ["Diagnose responses (filtered)", "556"],
+            ["Confirm responses (filtered)", "336"],
+          ],
+          [4680, 4680]
+        ),
+
+        // 5.8.1 Open-Ended Response Overview
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "5.8.1 Open-Ended Response Overview",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Of the 421 completers, 367 students (87.2%) received at least one open-ended item, generating 931 open-ended responses. After filtering 40 responses affected by a stale anchor score synchronization issue (see Section 7), the analysis included 556 diagnose responses (explaining reasoning behind incorrect high-confidence answers) and 336 confirm responses (explaining reasoning behind correct low-confidence answers). The maximum number of open-ended items per student was 3, by design."
+        ),
+        boldLeadParagraph(
+          "Response Quality. ",
+          "Among diagnose responses, 89.2% were substantive (providing reasoning beyond \u201cI don\u2019t know\u201d or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module and received no grade incentive to provide detailed explanations."
+        ),
+
+        // 5.8.2 Misconception Analysis by Domain
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "5.8.2 Misconception Analysis by Domain",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "The three-way classification of open-ended responses revealed distinct misconception patterns across assessment domains."
+        ),
+        boldLeadParagraph(
+          "Inflation and Purchasing Power. ",
+          "The most prevalent misconception was INF-01 (lower inflation equals falling prices), observed in 55% of diagnose responses for Q6. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices. Representative responses included \u201cIf inflation decreases, prices will decrease\u201d and \u201cprices need to decrease to combat inflation.\u201d On Q7 (which group is most hurt by inflation), 33% of incorrect responses reflected empathy-driven rather than economic reasoning (INF-05), with students selecting \u201cyoung couples\u201d because they identified personally with that demographic rather than analyzing fixed-income vulnerability."
+        ),
+        boldLeadParagraph(
+          "Risk, Return, and Diversification. ",
+          "The highest-noise item was Q36 (diversification principle), where 62% of students who answered incorrectly demonstrated correct understanding of diversification in their open-ended explanation\u2014classifying as selection errors (RISK-04) rather than misconceptions. These students could explain why spreading money across assets reduces risk but selected \u201cFalse\u201d on the True/False item, likely due to negation confusion. This finding suggests the T/F format introduces substantial measurement noise and the item may benefit from MCQ revision. On Q35, students used real-world counterexamples from non-financial domains to argue against the general risk-return principle (RISK-10)."
+        ),
+        boldLeadParagraph(
+          "Insurance and Risk Management. ",
+          "On Q12 (primary purpose of health insurance), 67% of diagnose responses reflected the misconception that routine care is the primary function (INS-01), with many students applying frequency-over-severity reasoning (INS-02). This was the single most dominant misconception for any item. Q13 (deductible definition) showed a 30% \u201cI don\u2019t know\u201d rate, indicating a knowledge gap rather than misconception for this technical insurance term."
+        ),
+        boldLeadParagraph(
+          "Borrowing and Credit. ",
+          "Credit report knowledge (Q10) showed a 29% selection error rate, the third-highest among all items, indicating many students possessed correct understanding but were confused by the \u201cwhich is FALSE\u201d framing. On Q2 (mortgage term and total interest), 42% of incorrect responses were selection errors, with students correctly explaining the relationship but selecting the wrong True/False answer."
+        ),
+
+        // 5.8.3 Confirm Response Findings
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "5.8.3 Confirm Response Findings",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Analysis of confirm responses (correct anchor answer with low confidence) revealed that 12\u201314% of students who answered Q13, Q12, Q8, and Q10 correctly were likely lucky guesses, as their explanations showed no understanding of the underlying concept. This finding validates the SDM-10\u2019s approach of probing low-confidence correct answers and demonstrates that anchor scores alone may overestimate true comprehension by approximately 12\u201314% on items with high guessing rates."
+        ),
+
+        // 5.8.4 Cross-Item Patterns
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [
+            new TextRun({
+              text: "5.8.4 Cross-Item Patterns",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Five dominant misconception clusters emerged across the assessment: (1) inflation mechanics confusion, centered on the distinction between lower inflation rates and lower prices; (2) risk-return reasoning from exceptions, where students cited specific counterexamples to invalidate general financial principles; (3) insurance purpose confusion, equating frequency of use with primary function; (4) empathy-driven financial reasoning, selecting answers based on personal identification rather than economic logic; and (5) format-induced errors, particularly on True/False items where correct knowledge led to incorrect answers due to negation confusion."
+        ),
+
+        // High-noise items table
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table 5.4. High-Noise Items (Selection Error Rate)",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Item", "Topic", "SE Rate", "Implication"],
+          [
+            ["Q36", "Diversification principle", "62%", "T/F confounds; consider MCQ"],
+            ["Q2", "Mortgage term / interest", "42%", "T/F reversal; monitor post-test"],
+            ["Q10", "Credit reports (FALSE)", "29%", "Negation framing causes errors"],
+          ],
+          [1560, 2808, 1560, 3432]
         ),
 
         // ── 5.9 Assessment Duration ─────────────────────────────────────────
@@ -1257,6 +1463,28 @@ const doc = new Document({
             }),
           ],
           numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "A software defect in the platform\u2019s handleAnswer() function caused the SDM scored anchors map to become stale when students revised an anchor answer, resulting in 40 mismatched SDM variant assignments across 36 students (9.8%). The mismatched responses were filtered from the open-ended analysis using an anchor_score and confidence cross-check, and the bug was subsequently fixed (commit 039f955). The filtering reduced the open-ended sample from 971 to 931 responses.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
+          spacing: { line: 360, after: 120 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "The SDM-10 open-ended sample is not random: items were administered only to students whose anchor responses triggered high-Need subcategories. Per-item coverage ranges from 20% (Q32) to 90% (Q7). Extrapolation to the full class is appropriate only when item-level coverage exceeds 50%.",
+              font: "Times New Roman",
+              size: 24,
+            }),
+          ],
+          numbering: { reference: "numbered-list", level: 0 },
           spacing: { line: 360, after: 200 },
         }),
 
@@ -1351,6 +1579,7 @@ const doc = new Document({
         }),
         bodyParagraph("Akers, B., & Chingos, M. M. (2014). Are college students borrowing blindly? Brookings Institution."),
         bodyParagraph("Allgood, S., & Walstad, W. B. (2016). The effects of perceived and actual financial literacy on financial behaviors. Economic Inquiry, 54(1), 675\u2013697."),
+        bodyParagraph("Boulaid, G. (2026). Financial Literacy Toolkit: Assessment platform for QUINN 102 [Source code]. GitHub. https://github.com/GuillaumeBld/Financial-Literacy-Toolkit"),
         bodyParagraph("Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. Financial Services Review, 7(2), 107\u2013128."),
         bodyParagraph("Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. Management Science, 60(8), 1861\u20131883."),
         bodyParagraph("Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. International Journal of Consumer Studies, 45(1), 80\u2013105."),
@@ -1379,15 +1608,15 @@ const doc = new Document({
           heading: HeadingLevel.HEADING_1,
           children: [
             new TextRun({
-              text: "Appendix A: SDM-10 Selection and Burden Controls",
+              text: "Appendix A: SDM-10 Selection Algorithm and Burden Controls",
             }),
           ],
         }),
         bodyParagraph(
-          "The SDM-10 module uses a rule-based selection algorithm to target each student\u2019s weakest domain. Table A.1 summarizes the burden control rules applied during item selection."
+          "The SDM-10 module uses a deterministic, rule-based selection algorithm to choose 10 diagnostic items for each student. This appendix presents the complete specification of burden controls, scoring, variant assignment, selection phases, and classification rules."
         ),
 
-        // Table A.1
+        // Table A.1: Burden Controls
         new Paragraph({
           children: [
             new TextRun({
@@ -1404,43 +1633,23 @@ const doc = new Document({
         buildTable(
           ["Control", "Rule"],
           [
-            [
-              "Maximum items",
-              "10 items per student, drawn from weakest domain only",
-            ],
-            [
-              "Time limit",
-              "No separate time limit; included in overall 45-minute maximum",
-            ],
-            [
-              "Format balance",
-              "Items sampled across conceptual, applied, and numerical formats",
-            ],
-            [
-              "Difficulty balance",
-              "Items span foundational, intermediate, and advanced levels",
-            ],
-            [
-              "No repetition",
-              "SDM-10 items are distinct from fixed core items",
-            ],
-            [
-              "Completion requirement",
-              "All 10 items must be answered; no skip option",
-            ],
+            ["SDM size", "Fixed 10 items after 40 anchor questions"],
+            ["Selection basis", "Ranked by Need score (0\u20135) at subcategory level"],
+            ["Domain balance", "At least 2 items per scoring domain"],
+            ["Subcategory cap", "Max 2 SDM items per subcategory"],
+            ["Open-ended cap", "Max 3 open-ended items per student"],
+            ["Format fallback", "Open_Diagnose \u2192 Lower_MCQ; Open_Confirm \u2192 Same_MCQ"],
+            ["Item source", "Pre-written 156-variant bank only"],
+            ["Grading", "Diagnostic only (Model C); grade from 40 anchors only"],
           ],
           [3120, 6240]
         ),
 
-        bodyParagraph(
-          "Table A.2 presents the item bank structure showing the distribution of SDM-10 items across question format and difficulty level for each domain."
-        ),
-
-        // Table A.2
+        // Table A.2: Need Score
         new Paragraph({
           children: [
             new TextRun({
-              text: "Table A.2. SDM-10 Item Bank Structure (Format x Difficulty Level)",
+              text: "Table A.2. Need Score Mapping (Correctness \u00D7 Confidence \u00D7 Format)",
               bold: true,
               italics: true,
               font: "Times New Roman",
@@ -1451,13 +1660,119 @@ const doc = new Document({
           spacing: { before: 240, after: 120 },
         }),
         buildTable(
-          ["Format / Level", "Foundational", "Intermediate", "Advanced"],
+          ["Confidence", "Correct (MCQ)", "Correct (T/F)", "Incorrect (MCQ)", "Incorrect (T/F)"],
           [
-            ["Conceptual", "1 per domain", "1 per domain", "1-2 per domain"],
-            ["Applied", "1 per domain", "1 per domain", "1 per domain"],
-            ["Numerical", "0-1 per domain", "1 per domain", "1 per domain"],
+            ["1 (Low)", "2", "3", "3", "3"],
+            ["2 (Mid)", "1", "2", "4", "4"],
+            ["3 (High)", "0", "0", "5", "5"],
           ],
-          [2340, 2340, 2340, 2340]
+          [1872, 1872, 1872, 1872, 1872]
+        ),
+        bodyParagraph(
+          "The format-aware adjustment reflects differential guessing probability: True/False items have a 50% chance-level baseline versus approximately 25% for MCQ, so correct T/F responses at moderate confidence receive higher Need scores than equivalent MCQ responses."
+        ),
+
+        // Table A.3: Variant Assignment
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.3. Variant Type Assignment Rules",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Anchor Pattern", "Variant Type", "Diagnostic Goal"],
+          [
+            ["Incorrect + High conf.", "Open_Diagnose", "Surface misconception"],
+            ["Incorrect + Mid conf.", "Lower_MCQ", "Test foundational understanding"],
+            ["Incorrect + Low conf.", "Lower_TF", "Confirm basic recognition"],
+            ["Correct + Low conf.", "Open_Confirm", "Verify understanding vs. guessing"],
+            ["Correct + Mid conf.", "Same_MCQ", "Confirm at same difficulty"],
+            ["Correct + High conf.", "Higher_MCQ", "Probe deeper application"],
+          ],
+          [3120, 3120, 3120]
+        ),
+
+        // Table A.4: Three-Phase Selection
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.4. Three-Phase Selection Algorithm",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Phase", "Purpose", "Logic"],
+          [
+            ["1: Domain minimums", "Ensure coverage", "Top-Need item from each domain until each has \u2265 2"],
+            ["2: Need-based filling", "Maximize diagnostic value", "Fill remaining slots in descending Need order"],
+            ["3: Mastery fallback", "Avoid empty slots", "Add mastery items from strongest subcategories"],
+          ],
+          [2340, 2340, 4680]
+        ),
+
+        // Table A.5: Tiebreaker
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.5. Tiebreaker Hierarchy (Equal Need Scores)",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Priority", "Criterion", "Rule"],
+          [
+            ["1", "Domain deficit", "Favor domain with fewer items selected"],
+            ["2", "Format priority", "T/F prioritized over MCQ (reduces guessing)"],
+            ["3", "Subcategory spread", "Max 2 items per subcategory"],
+            ["4", "Domain order", "Borrowing \u2192 Investment \u2192 Risk Mgmt"],
+            ["5", "Seeded random", "Deterministic using student hash"],
+          ],
+          [1560, 3120, 4680]
+        ),
+
+        // Table A.6: Three-Way Classification
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Table A.6. Three-Way Classification Decision Tree",
+              bold: true,
+              italics: true,
+              font: "Times New Roman",
+              size: 22,
+            }),
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+        }),
+        buildTable(
+          ["Step", "Condition", "Classification"],
+          [
+            ["1", "Blank, IDK, or too short?", "Knowledge gap"],
+            ["2", "Correct reasoning despite wrong answer?", "Selection error"],
+            ["3", "Student self-corrects?", "Selection error"],
+            ["4", "Specific wrong mental model?", "Misconception (Layer 1 + 2)"],
+            ["5", "Vague, no identifiable pattern?", "Knowledge gap"],
+          ],
+          [1560, 4680, 3120]
         ),
 
         // =====================================================================
