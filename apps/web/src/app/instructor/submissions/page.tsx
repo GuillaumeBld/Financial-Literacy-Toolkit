@@ -350,6 +350,53 @@ export default function InstructorSubmissionsPage() {
     }
   };
 
+  const handleExportAiScoring = async () => {
+    const btn = document.getElementById('export-ai-btn');
+    if (btn) btn.textContent = 'Exporting...';
+
+    try {
+      const token = localStorage.getItem('instructor-token');
+      if (!token) return;
+
+      const courseParam = filters.courseId ? `&courseId=${filters.courseId}` : '';
+      const res = await fetch(`/api/instructor/submissions?exportAiScoring=true${courseParam}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+
+      if (!data.rows || data.rows.length === 0) {
+        alert('No AI scoring results found');
+        return;
+      }
+
+      const escape = (v: string) => `"${(v || '').replace(/"/g, '""')}"`;
+      const header = 'student_hash,attempt_id,submitted_at,course,item_id,subdomain,variant_type,answer,diagnosis_type,understanding_level,credit,classification_confidence,reasoning_quality,reasoning_summary,evidence_quote,layer1_code,layer2_tag,model,scored_at,anchor_item_id,anchor_answer,anchor_key,anchor_score,anchor_confidence';
+      const csvRows = data.rows.map((r: any) =>
+        [r.hashed_student_key, r.attempt_id, r.submitted_at, r.course_name, r.item_id, r.subdomain, r.variant_type,
+         escape(r.answer), r.diagnosis_type, r.understanding_level, r.credit, r.classification_confidence,
+         r.reasoning_quality, escape(r.reasoning_summary), escape(r.evidence_quote), r.layer1_code, r.layer2_tag,
+         r.model, r.scored_at, r.anchor_item_id, escape(r.anchor_answer || ''), r.anchor_key, r.anchor_score, r.anchor_confidence].join(',')
+      );
+
+      const csv = [header, ...csvRows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const now = new Date();
+      const ts = `${now.toISOString().split('T')[0]}_${now.toTimeString().slice(0,8).replace(/:/g, '')}`;
+      link.download = `ai_scoring_results_${ts}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting AI scoring results:', error);
+      alert('Failed to export AI scoring results');
+    } finally {
+      if (btn) btn.textContent = 'Export AI Scoring';
+    }
+  };
+
   const filteredSubmissions = submissions.filter(submission => {
     if (filters.courseId && submission.course_id !== filters.courseId) return false;
     if (filters.attemptType && submission.attempt_type !== filters.attemptType) return false;
@@ -543,6 +590,14 @@ export default function InstructorSubmissionsPage() {
             Showing {filteredSubmissions.length} of {submissions.length} submissions
           </p>
           <div className="flex items-center gap-2">
+            <button
+              id="export-ai-btn"
+              onClick={handleExportAiScoring}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-ink text-ink rounded-lg hover:bg-ink hover:text-white transition"
+            >
+              <Download className="w-4 h-4" />
+              Export AI Scoring
+            </button>
             <button
               id="export-open-btn"
               onClick={handleExportOpenQuestions}

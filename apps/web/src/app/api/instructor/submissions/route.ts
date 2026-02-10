@@ -40,9 +40,15 @@ export async function GET(request: NextRequest) {
       return await getOpenAnswers(instructorId, openAnswersParam.split(','));
     }
 
+    // Export AI scoring results as flat CSV-ready array
+    const exportAiScoring = searchParams.get('exportAiScoring');
+    const courseFilter = searchParams.get('courseId');
+    if (exportAiScoring === 'true') {
+      return await exportAiScoringResults(instructorId, courseFilter);
+    }
+
     // Export ALL open-ended responses as flat CSV-ready array
     const exportOpen = searchParams.get('exportOpen');
-    const courseFilter = searchParams.get('courseId');
     if (exportOpen === 'true') {
       return await exportOpenQuestions(instructorId, courseFilter);
     }
@@ -402,6 +408,106 @@ async function exportOpenQuestions(instructorId: string, courseId: string | null
     return NextResponse.json({ success: true, rows });
   } catch (error) {
     console.error('Error exporting open questions:', error);
+    return NextResponse.json({ error: 'Failed to export' }, { status: 500 });
+  }
+}
+
+async function exportAiScoringResults(instructorId: string, courseId: string | null) {
+  try {
+    const instructorCourses = await queryMany<{ course_id: string }>(
+      `SELECT course_id FROM instructor_courses WHERE instructor_id = $1`,
+      [instructorId]
+    );
+    const courseIds = instructorCourses.map(c => c.course_id);
+    if (courseIds.length === 0) {
+      return NextResponse.json({ success: true, rows: [] });
+    }
+    const targetCourseIds = courseId ? [courseId] : courseIds;
+    if (courseId && !courseIds.includes(courseId)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const rows = await queryMany<{
+      hashed_student_key: string;
+      attempt_id: string;
+      submitted_at: string;
+      course_name: string;
+      item_id: string;
+      subdomain: string;
+      variant_type: string;
+      answer: string;
+      ai_flags: any;
+      anchor_item_id: string;
+      anchor_answer: string;
+      anchor_key: string;
+      anchor_score: string;
+      anchor_confidence: string;
+    }>(`
+      SELECT
+        u.hashed_student_key,
+        a.attempt_id,
+        a.submitted_at::text,
+        c.name as course_name,
+        r.item_id,
+        i.subdomain,
+        CASE WHEN r.item_id LIKE '%Diagnose' THEN 'diagnose' ELSE 'confirm' END as variant_type,
+        TRIM(BOTH '"' FROM r.raw_answer::text) as answer,
+        r.ai_flags,
+        anchor_q.item_id as anchor_item_id,
+        TRIM(BOTH '"' FROM anchor_r.raw_answer::text) as anchor_answer,
+        COALESCE(anchor_q.key, '') as anchor_key,
+        COALESCE(anchor_r.score::text, '') as anchor_score,
+        COALESCE(anchor_r.confidence::text, '') as anchor_confidence
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      JOIN attempts a ON r.attempt_id = a.attempt_id
+      JOIN users u ON u.user_id = a.user_id
+      JOIN courses c ON a.course_id = c.course_id
+      LEFT JOIN items anchor_q ON anchor_q.item_id = SPLIT_PART(r.item_id, '_', 1)
+        AND anchor_q.is_anchor = true
+      LEFT JOIN responses anchor_r ON anchor_r.attempt_id = a.attempt_id
+        AND anchor_r.item_id = anchor_q.item_id
+      WHERE r.ai_flags IS NOT NULL
+        AND r.ai_flags->>'error' IS NULL
+        AND a.submitted_at IS NOT NULL
+        AND a.course_id = ANY($1::uuid[])
+      ORDER BY u.hashed_student_key, r.item_id
+    `, [targetCourseIds]);
+
+    // Flatten ai_flags into each row
+    const flatRows = rows.map(r => {
+      const flags = r.ai_flags || {};
+      return {
+        hashed_student_key: r.hashed_student_key,
+        attempt_id: r.attempt_id,
+        submitted_at: r.submitted_at,
+        course_name: r.course_name,
+        item_id: r.item_id,
+        subdomain: r.subdomain,
+        variant_type: r.variant_type,
+        answer: r.answer,
+        diagnosis_type: flags.diagnosis_type || '',
+        understanding_level: flags.understanding_level || '',
+        credit: flags.credit ?? '',
+        classification_confidence: flags.classification_confidence || '',
+        reasoning_quality: flags.reasoning_quality || '',
+        reasoning_summary: flags.reasoning_summary || '',
+        evidence_quote: flags.evidence_quote || '',
+        layer1_code: flags.layer1_code || '',
+        layer2_tag: flags.layer2_tag || '',
+        model: flags.model || '',
+        scored_at: flags.scored_at || '',
+        anchor_item_id: r.anchor_item_id || '',
+        anchor_answer: r.anchor_answer || '',
+        anchor_key: r.anchor_key,
+        anchor_score: r.anchor_score,
+        anchor_confidence: r.anchor_confidence,
+      };
+    });
+
+    return NextResponse.json({ success: true, rows: flatRows });
+  } catch (error) {
+    console.error('Error exporting AI scoring results:', error);
     return NextResponse.json({ error: 'Failed to export' }, { status: 500 });
   }
 }
