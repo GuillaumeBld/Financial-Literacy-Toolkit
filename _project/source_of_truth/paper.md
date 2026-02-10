@@ -42,11 +42,11 @@
 9. [Planned Validation Study (Paper 2 Protocol Preview)](#9-planned-validation-study-paper-2-protocol-preview)
 - [References](#references)
 - [Declaration of AI and AI-Assisted Technologies](#declaration-of-ai-and-ai-assisted-technologies)
-- [Supplementary Materials](#supplementary-materials)
 - [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
 - [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
 - [Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)](#appendix-c-financial-literacy-misconception-taxonomy-layer-1)
 - [Appendix D: AI Scorer Model Selection Protocol](#appendix-d-ai-scorer-model-selection-protocol)
+- [Appendix E: Supplementary Materials](#appendix-e-supplementary-materials)
 
 ---
 
@@ -386,7 +386,7 @@ The platform implements a two-part consent flow before data collection:
 
 2. **Research consent (voluntary).** Students are presented with a separate research consent screen asking whether their de-identified responses may be used for research evaluating course learning outcomes. The screen explicitly states that declining has no impact on grades, course standing, or access to feedback. The consent decision, timestamp, and version identifier are recorded. Students may withdraw research consent at any time by contacting the course instructor; withdrawn data are excluded from subsequent analyses.
 
-The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. Before the consent flow, students view a short orientation video explaining the purpose, structure, and non-graded nature of the assessment (see Supplementary Materials). A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
+The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. Before the consent flow, students view a short orientation video explaining the purpose, structure, and non-graded nature of the assessment (see Appendix E). A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
 
 **Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
 
@@ -631,12 +631,6 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 ---
 
-## Supplementary Materials
-
-- **Introductory orientation video.** Before beginning the assessment, each student views a short orientation video explaining the purpose, structure, and non-graded nature of the assessment. The video is available at: [https://financial-literacy.qualiaai.fr/intro-video.mp4](https://financial-literacy.qualiaai.fr/intro-video.mp4)
-
----
-
 ## Appendix A: SDM-10 Selection Algorithm and Burden Controls
 
 ### Table A.1: SDM-10 Selection and Burden Controls
@@ -872,3 +866,13 @@ Four responses produced substantive disagreement among the eight non-disqualifie
 | Q37 Confirm | "Liability coverage protects you from large payments..." | verified, credit=100 | verified, credit=100 | verified, credit=100 | partial, credit=50 | verified, credit=100 |
 
 **Selection Rationale.** GPT-4.1 was selected as the production scorer based on: (a) zero schema violations across all 20 test items, (b) zero parse or API errors, (c) appropriate use of credit=50 for borderline misconceptions, (d) balanced classification distributions, and (e) reasonable throughput and cost (~33 minutes, ~$2.86 for the full corpus). On the disputed items, GPT-4.1's classifications aligned with the majority of the zero-error models in three of four cases, supporting its position as a concordant central scorer.
+
+---
+
+## Appendix E: Supplementary Materials
+
+- **Introductory orientation video.** Before beginning the assessment, each student views a short orientation video explaining the purpose, structure, and non-graded nature of the assessment. The video is available at: [https://financial-literacy.qualiaai.fr/intro-video.mp4](https://financial-literacy.qualiaai.fr/intro-video.mp4)
+
+- **Source code repository.** The complete platform source code, data export scripts, and reproducible verification script (`verify_paper_tables.py`) are publicly available in the project repository (Bolivard, 2026).
+
+- **De-identified data exports.** Consented response data (`consented_responses_354.csv`), diagnose classification results (`diagnose_by_item.csv`), confirm classification results (`confirm_by_item.csv`), and the SDM-10 item bank (`sdm10_item_bank.xlsx`) are available for download at: [https://financial-literacy.qualiaai.fr/admin/documents](https://financial-literacy.qualiaai.fr/admin/documents)
