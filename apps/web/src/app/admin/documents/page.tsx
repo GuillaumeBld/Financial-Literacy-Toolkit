@@ -19,7 +19,7 @@ type DocumentFile = {
   modified: string;
 };
 
-const ADMIN_USER = 'gbolivard';
+const ADMIN_USERS = ['gbolivard', 'ajalilv'];
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -74,7 +74,7 @@ export default function DocumentsPage() {
       return;
     }
 
-    if (name !== ADMIN_USER) {
+    if (!name || !ADMIN_USERS.includes(name)) {
       router.push('/instructor/dashboard');
       return;
     }

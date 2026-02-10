@@ -42,6 +42,7 @@
 9. [Planned Validation Study (Paper 2 Protocol Preview)](#9-planned-validation-study-paper-2-protocol-preview)
 - [References](#references)
 - [Declaration of AI and AI-Assisted Technologies](#declaration-of-ai-and-ai-assisted-technologies)
+- [Supplementary Materials](#supplementary-materials)
 - [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
 - [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
 - [Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)](#appendix-c-financial-literacy-misconception-taxonomy-layer-1)
@@ -385,7 +386,7 @@ The platform implements a two-part consent flow before data collection:
 
 2. **Research consent (voluntary).** Students are presented with a separate research consent screen asking whether their de-identified responses may be used for research evaluating course learning outcomes. The screen explicitly states that declining has no impact on grades, course standing, or access to feedback. The consent decision, timestamp, and version identifier are recorded. Students may withdraw research consent at any time by contacting the course instructor; withdrawn data are excluded from subsequent analyses.
 
-The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
+The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. Before the consent flow, students view a short orientation video explaining the purpose, structure, and non-graded nature of the assessment (see Supplementary Materials). A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
 
 **Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
 
@@ -627,6 +628,12 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 2. **Open-ended response scoring.** GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.3.
 
 3. **Manuscript preparation.** Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the authors, who take full responsibility for the accuracy and integrity of the publication.
+
+---
+
+## Supplementary Materials
+
+- **Introductory orientation video.** Before beginning the assessment, each student views a short orientation video explaining the purpose, structure, and non-graded nature of the assessment. The video is available at: [https://financial-literacy.qualiaai.fr/intro-video.mp4](https://financial-literacy.qualiaai.fr/intro-video.mp4)
 
 ---
 

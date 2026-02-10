@@ -56,7 +56,7 @@ type Course = {
   accessLevel: string;
 };
 
-const ADMIN_USER = 'gbolivard';
+const ADMIN_USERS = ['gbolivard', 'ajalilv'];
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -75,7 +75,7 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    if (name !== ADMIN_USER) {
+    if (!name || !ADMIN_USERS.includes(name)) {
       router.push('/instructor/dashboard');
       return;
     }

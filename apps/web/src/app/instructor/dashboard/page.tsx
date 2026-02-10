@@ -207,7 +207,7 @@ export default function InstructorDashboardPage() {
       return;
     }
     setInstructorName(name || 'Instructor');
-    setIsAdmin(name === 'gbolivard');
+    setIsAdmin(name === 'gbolivard' || name === 'ajalilv');
     localStorage.setItem('active-portal', 'instructor');
   }, [router]);
 

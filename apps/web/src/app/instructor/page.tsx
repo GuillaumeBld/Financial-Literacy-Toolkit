@@ -38,8 +38,8 @@ export default function InstructorLoginPage() {
       localStorage.setItem('instructor-token', data.token);
       localStorage.setItem('instructor-name', data.instructor.name);
 
-      // Redirect based on mode — admin only for gbolivard
-      const isAdmin = dashboardMode === 'admin' && data.instructor.name === 'gbolivard';
+      // Redirect based on mode — admin only for authorized users
+      const isAdmin = dashboardMode === 'admin' && ['gbolivard', 'ajalilv'].includes(data.instructor.name);
       localStorage.setItem('active-portal', isAdmin ? 'admin' : 'instructor');
       router.push(isAdmin ? '/admin' : '/instructor/dashboard');
     } catch (err) {
