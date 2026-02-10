@@ -1380,8 +1380,8 @@ const doc = new Document({
           "The sample exhibits meaningful variation across demographics (gender, race/ethnicity, first-generation status), financial context (employment, stress, self-rated knowledge), and baseline performance (SD = 17.38%). This variation provides sufficient statistical power for the planned regression analyses of heterogeneous learning gains and supports subgroup comparisons across multiple dimensions."
         ),
         boldLeadParagraph(
-          "SDM-10 adaptive targeting confirmed. ",
-          "The SDM-10 routing algorithm correctly directed students to their weakest domain, with Risk and Return receiving the largest share of assignments (42.3%), consistent with it being the lowest-scoring domain on the fixed core. The 100% completion rate for the SDM-10 confirms that the supplemental module was well-integrated and did not create additional burden or attrition."
+          "SDM-10 diagnostic findings reveal actionable misconception patterns. ",
+          "The three-way classification of 931 open-ended responses identified five dominant misconception clusters: inflation mechanics confusion (55% of Q6 diagnoses), insurance purpose confusion (67% of Q12 diagnoses), empathy-driven financial reasoning (33% of Q7 diagnoses), risk-return reasoning from exceptions, and format-induced selection errors. The finding that 62% of incorrect answers on Q36 reflected correct understanding (selection errors rather than misconceptions) demonstrates the value of open-ended diagnostic follow-up in distinguishing genuine knowledge gaps from measurement artifacts. The 12\u201314% lucky-guess rate identified through confirm responses further validates the information deficit model\u2019s approach of probing low-confidence correct answers."
         ),
         boldLeadParagraph(
           "High completion rate reflects platform reliability. ",
@@ -1789,6 +1789,192 @@ const doc = new Document({
         }),
         bodyParagraph(
           "See attached question bank for complete item listing with answer keys."
+        ),
+
+        // =====================================================================
+        // APPENDIX C: MISCONCEPTION TAXONOMY
+        // =====================================================================
+        pageBreakParagraph(),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories. These codes are designed to be reproducible across assessment contexts, student populations, and institutions. Layer 2 item-specific tags (derived from observed student responses) are documented in the supplementary materials."
+        ),
+
+        // Category 1: INF
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.1 Inflation and Purchasing Power (INF)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["INF-01", "Lower inflation = falling prices", "Q6 (55%)"],
+            ["INF-02", "Inflation definition confusion", "Q3"],
+            ["INF-03", "Fixed income impact misunderstood", "Q7"],
+            ["INF-04", "Inflation protection confusion", "Q38"],
+            ["INF-05", "Empathy-driven inflation reasoning", "Q7 (33%)"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 2: INT
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.2 Interest, Compounding, and Time Value of Money (INT)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["INT-01", "Interest as a fee to the saver", "Q1"],
+            ["INT-02", "No compounding awareness", "Q1"],
+            ["INT-03", "Loan term does not affect total interest", "Q2"],
+            ["INT-04", "Shorter term = higher total cost", "Q2"],
+            ["INT-05", "Interest rates not negotiable", "Q8"],
+            ["INT-06", "Bond price-rate relationship reversed", "Q29"],
+            ["INT-07", "Zero interest concept confusion", "Q4 (small n)"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 3: RISK
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.3 Risk, Return, and Diversification (RISK)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["RISK-01", "Safety = highest returns", "Q32"],
+            ["RISK-02", "Exceptions disprove general rule", "Q30, Q35"],
+            ["RISK-03", "Diversification increases risk", "Q14, Q34"],
+            ["RISK-04", "Diversification understood but misapplied", "Q36 (62%)"],
+            ["RISK-05", "Single stock safer than mutual fund", "Q11"],
+            ["RISK-06", "Mutual fund unfamiliarity", "Q11 (KG)"],
+            ["RISK-07", "Stock market guarantees returns", "Q31"],
+            ["RISK-08", "Stocks vs. bonds risk confusion", "Q39"],
+            ["RISK-09", "Long-term asset return confusion", "Q32"],
+            ["RISK-10", "Real-world counterexamples applied", "Q35"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 4: INS
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.4 Insurance and Risk Management (INS)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["INS-01", "Insurance for routine care", "Q12 (67%)"],
+            ["INS-02", "Frequency = purpose reasoning", "Q12"],
+            ["INS-03", "Deductible definition wrong", "Q13"],
+            ["INS-04", "Liability coverage scope wrong", "Q37"],
+            ["INS-05", "Insurance excludes large bills", "Q12"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 5: BORROW
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.5 Borrowing, Credit, and Personal Finance (BORROW)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["BORROW-01", "Credit report vs. score confusion", "Q10"],
+            ["BORROW-02", "Single credit source belief", "Q10"],
+            ["BORROW-03", "Employer credit check unknown", "Q10"],
+            ["BORROW-04", "Emergency fund based on income", "Q5"],
+            ["BORROW-05", "Emergency fund amount too low", "Q5"],
+            ["BORROW-06", "Budgeting purpose misunderstood", "Q9 (small n)"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 6: CRISIS
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.6 Financial Crises and Systemic Risk (CRISIS)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["CRISIS-01", "2008 crisis cause reversed", "Q40"],
+            ["CRISIS-02", "Crisis attributed to savings risk", "Q40"],
+            ["CRISIS-03", "Risk management role misunderstood", "Q40"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Category 7: NUM
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.7 Numeracy and Quantitative Reasoning (NUM)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Misconception Family", "Observed"],
+          [
+            ["NUM-01", "Percentage to count conversion error", "Q33 (small n)"],
+          ],
+          [1560, 5460, 2340]
+        ),
+
+        // Cross-cutting types
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [
+            new TextRun({
+              text: "C.8 Cross-Cutting Response Types (Not Misconceptions)",
+            }),
+          ],
+        }),
+        buildTable(
+          ["Code", "Type", "Description"],
+          [
+            ["KG", "Knowledge Gap", "No knowledge (IDK, blank, unfamiliar with terms)"],
+            ["SE", "Selection Error", "Correct understanding but wrong answer selected"],
+          ],
+          [1560, 2340, 5460]
+        ),
+        bodyParagraph(
+          "These cross-cutting codes combine with category codes: INF-01 = inflation misconception, INF-KG = inflation knowledge gap, INF-SE = inflation selection error."
         ),
       ],
     },
