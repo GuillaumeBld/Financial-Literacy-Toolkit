@@ -248,6 +248,17 @@ export default function InstructorDashboardPage() {
         {/* ── OVERVIEW TAB ── */}
         {view === 'overview' && (
           <>
+            {/* Guide Banner */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
+              <h2 className="text-sm font-bold text-indigo-900 mb-1">How to Use This Dashboard</h2>
+              <p className="text-xs text-indigo-700 leading-relaxed">
+                This dashboard summarizes your students&apos; performance on the pre-assessment, powered by the SDM-10 diagnostic model.
+                Use <strong>Overview</strong> to see where your class stands overall.
+                Use <strong>Item Analysis</strong> to drill into specific questions and see which answer choices students picked and why.
+                Use <strong>Misconceptions</strong> to identify the specific wrong beliefs your students hold so you can address them directly in your teaching.
+              </p>
+            </div>
+
             {/* KPI Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-white rounded-xl p-5 border border-gray-200">
@@ -256,6 +267,7 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-3xl font-bold text-loyola-maroon">{DATA.overall.meanScore}%</div>
                 <div className="text-xs text-gray-400 mt-0.5">Median: {DATA.overall.medianScore}%</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.</p>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -263,6 +275,7 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-3xl font-bold text-gray-900">{DATA.overall.students}</div>
                 <div className="text-xs text-gray-400 mt-0.5">Completed Test 1</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).</p>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -270,6 +283,7 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-3xl font-bold text-red-600">{totalConfidentErrors}</div>
                 <div className="text-xs text-gray-400 mt-0.5">Incorrect + high confidence</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Students who answered incorrectly AND reported high confidence. These are the hardest to correct because students believe they already know the answer.</p>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -277,13 +291,15 @@ export default function InstructorDashboardPage() {
                 </div>
                 <div className="text-3xl font-bold text-green-600">{DATA.overall.totalDiagnose + DATA.overall.totalConfirm}</div>
                 <div className="text-xs text-gray-400 mt-0.5">{DATA.overall.totalDiagnose} diagnose / {DATA.overall.totalConfirm} confirm</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">SDM-10 follow-up responses that reveal <em>why</em> students got items wrong (diagnose) or <em>confirm</em> uncertain correct answers. These power the misconception data.</p>
               </div>
             </div>
 
             {/* Score Distribution + Domain Performance */}
             <div className="grid lg:grid-cols-3 gap-4 mb-6">
               <div className="lg:col-span-2 bg-white rounded-xl p-5 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Score Distribution</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Score Distribution</h3>
+                <p className="text-xs text-gray-400 mb-4">How student scores are spread across the class. Red bars (left) indicate students who may need the most support. Green bars (right) indicate strong performers. A left-skewed distribution suggests the class may need more foundational review.</p>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={scoreDistData}>
                     <XAxis dataKey="range" tick={{ fontSize: 11, fill: '#6b7280' }} />
@@ -304,7 +320,8 @@ export default function InstructorDashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Domain Performance</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Domain Performance</h3>
+                <p className="text-xs text-gray-400 mb-4">Average correct rate for each content domain. Red (&lt;65%) = significant gaps to address. Amber (65-74%) = room for improvement. Green (75%+) = generally well understood. Focus your teaching time on red and amber domains.</p>
                 <div className="space-y-5">
                   {DATA.domains.map((d, i) => (
                     <div key={i}>
@@ -363,6 +380,20 @@ export default function InstructorDashboardPage() {
         {/* ── ITEMS TAB ── */}
         {view === 'items' && (
           <>
+            {/* Guide */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+              <h2 className="text-sm font-bold text-indigo-900 mb-1">Item Analysis Guide</h2>
+              <p className="text-xs text-indigo-700 leading-relaxed mb-2">
+                Each row is one assessment question. Click any row to expand it and see detailed diagnostics.
+              </p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-[11px] text-indigo-700">
+                <div><strong>Status badges:</strong> Based on % incorrect. <span className="text-red-600">Critical</span> (50%+), <span className="text-amber-600">Needs Attention</span> (25-49%), <span className="text-blue-600">Monitor</span> (10-24%), <span className="text-green-600">Strong</span> (&lt;10%).</div>
+                <div><strong>Conf. Errors:</strong> Students who got it wrong AND were confident they were right. These reflect deep-seated misconceptions that simple review won&apos;t fix.</div>
+                <div><strong>Diagnose:</strong> Number of students who received a follow-up question to identify <em>why</em> they answered incorrectly. Higher = more diagnostic data available.</div>
+                <div><strong>Confirm:</strong> Number of students who were correct but uncertain, and received a follow-up to verify their understanding. Helps distinguish lucky guesses from true knowledge.</div>
+              </div>
+            </div>
+
             {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-4 items-center">
               <span className="text-xs font-semibold text-gray-500 uppercase">Domain:</span>
@@ -440,7 +471,8 @@ export default function InstructorDashboardPage() {
                                   <div className="grid md:grid-cols-3 gap-5 mb-4">
                                     {/* Error Confidence */}
                                     <div>
-                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Error Confidence Distribution</h4>
+                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Error Confidence Distribution</h4>
+                                      <p className="text-[10px] text-gray-400 mb-2">How confident were students who got this wrong? High-confidence errors indicate misconceptions; low-confidence errors may self-correct with review.</p>
                                       <div className="flex gap-4">
                                         {[
                                           { label: 'Low', val: item.confDist.low, color: 'text-green-600' },
@@ -456,7 +488,8 @@ export default function InstructorDashboardPage() {
                                     </div>
                                     {/* Distractors */}
                                     <div>
-                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Distractor Distribution</h4>
+                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Distractor Distribution</h4>
+                                      <p className="text-[10px] text-gray-400 mb-2">Which wrong answers did students choose? The most popular distractor often reveals a common reasoning pattern or misconception you can address in class.</p>
                                       <div className="flex flex-wrap gap-2">
                                         {Object.entries(item.distractors).sort((a, b) => b[1] - a[1]).map(([opt, n]) => (
                                           <div key={opt} className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs">
@@ -467,7 +500,8 @@ export default function InstructorDashboardPage() {
                                     </div>
                                     {/* SDM Coverage */}
                                     <div>
-                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">SDM Coverage</h4>
+                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">SDM Coverage</h4>
+                                      <p className="text-[10px] text-gray-400 mb-2">How many eligible students received a diagnostic follow-up? Higher coverage = more reliable misconception data for this item.</p>
                                       <div className="text-xs text-gray-600 space-y-1">
                                         <div>Diagnose: {item.diagnoseN} / {item.confidentErrors} eligible ({item.confidentErrors > 0 ? (item.diagnoseN / item.confidentErrors * 100).toFixed(0) : 0}%)</div>
                                         <div>Confirm: {item.confirmN} / {item.uncertainCorrect} eligible ({item.uncertainCorrect > 0 ? (item.confirmN / item.uncertainCorrect * 100).toFixed(0) : 0}%)</div>
@@ -475,9 +509,10 @@ export default function InstructorDashboardPage() {
                                     </div>
                                   </div>
                                   {/* Misconceptions */}
-                                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Misconception Breakdown</h4>
+                                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Misconception Breakdown</h4>
+                                  <p className="text-[10px] text-gray-400 mb-2">Specific wrong beliefs identified through diagnostic follow-ups. <span className="text-red-500 font-medium">Red</span> = active misconception (student holds a wrong belief). <span className="text-purple-500 font-medium">Purple</span> = selection error (student understood but chose wrong). <span className="text-gray-500 font-medium">Gray</span> = knowledge gap (student didn&apos;t know).</p>
                                   {item.misconceptions.length === 0 ? (
-                                    <p className="text-xs text-gray-400 italic">No misconception data for this item yet.</p>
+                                    <p className="text-xs text-gray-400 italic">No diagnostic follow-up data for this item. This means few students were flagged for follow-up, so the error rate is likely low or confidence was low.</p>
                                   ) : (
                                     <div className="space-y-1">
                                       {item.misconceptions.map((m, mi) => (
@@ -514,11 +549,34 @@ export default function InstructorDashboardPage() {
         {/* ── MISCONCEPTIONS TAB ── */}
         {view === 'misconceptions' && (
           <>
+            {/* Guide */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
+              <h2 className="text-sm font-bold text-indigo-900 mb-1">Understanding Misconceptions</h2>
+              <p className="text-xs text-indigo-700 leading-relaxed mb-2">
+                This tab shows the specific wrong beliefs your students hold, identified through SDM-10 diagnostic follow-up questions.
+                Unlike a simple &quot;% incorrect&quot; metric, these reveal <em>why</em> students are getting questions wrong, so you can tailor your instruction to directly address those beliefs.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
+                <div className="flex items-start gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 shrink-0" />
+                  <span className="text-indigo-700"><strong>Misconception</strong> &mdash; The student holds an active wrong belief (e.g., &quot;lower inflation means prices fall&quot;). These require targeted instruction to correct.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-purple-500 mt-0.5 shrink-0" />
+                  <span className="text-indigo-700"><strong>Selection Error</strong> &mdash; The student understood the concept but chose the wrong answer (e.g., confused by negative phrasing). May indicate a question design issue rather than a knowledge gap.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-gray-400 mt-0.5 shrink-0" />
+                  <span className="text-indigo-700"><strong>Knowledge Gap</strong> &mdash; The student simply didn&apos;t know the answer (e.g., &quot;I don&apos;t know&quot;). These respond well to standard instruction and are filtered from the list below.</span>
+                </div>
+              </div>
+            </div>
+
             {/* Class-wide misconceptions */}
             <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Class-Wide Misconception Prevalence</h3>
               <p className="text-xs text-gray-400 mb-5">
-                Top misconceptions from SDM-10 diagnostic responses. <span className="text-red-500 font-medium">Red</span> = active misconception. <span className="text-purple-500 font-medium">Purple</span> = selection error. <span className="text-gray-500 font-medium">Gray</span> = knowledge gap.
+                Ranked by number of students affected. The progress bar shows what fraction of the class holds each belief. Focus your teaching on items near the top of this list for maximum impact.
               </p>
               <div className="space-y-0.5">
                 {(() => {
@@ -561,7 +619,12 @@ export default function InstructorDashboardPage() {
             {/* Instructional Recommendations */}
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Instructional Recommendations</h3>
-              <p className="text-xs text-gray-400 mb-5">Generated from diagnostic data. Focus teaching time on items with high misconception rates.</p>
+              <p className="text-xs text-gray-400 mb-2">Actionable teaching suggestions generated from the diagnostic data. Each recommendation includes what the data shows and a concrete strategy you can use in class.</p>
+              <div className="text-[11px] text-gray-400 mb-5 flex flex-wrap gap-4">
+                <span><span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1" />Critical = widespread misconception, address immediately</span>
+                <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />High = significant issue, plan a lesson segment</span>
+                <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />Monitor = worth watching, brief mention may suffice</span>
+              </div>
 
               {[
                 { priority: 'Critical', dot: 'bg-red-500', title: 'text-red-600', card: 'bg-red-50 border-red-200', items: [

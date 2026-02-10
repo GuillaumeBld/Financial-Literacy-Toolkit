@@ -9,6 +9,7 @@ export default function InstructorLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dashboardMode, setDashboardMode] = useState<'instructor' | 'admin'>('instructor');
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -37,8 +38,9 @@ export default function InstructorLoginPage() {
       localStorage.setItem('instructor-token', data.token);
       localStorage.setItem('instructor-name', data.instructor.name);
 
-      // Redirect to dashboard
-      router.push('/instructor/dashboard');
+      // Redirect based on mode — admin only for gbolivard
+      const isAdmin = dashboardMode === 'admin' && data.instructor.name === 'gbolivard';
+      router.push(isAdmin ? '/admin' : '/instructor/dashboard');
     } catch (err) {
       setError('An error occurred. Please try again.');
       setIsLoading(false);
@@ -55,6 +57,34 @@ export default function InstructorLoginPage() {
           <p className="text-loyola-gray-600">
             Financial Literacy Assessment Dashboard
           </p>
+        </div>
+
+        {/* Dashboard mode toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-loyola-gray-100 rounded-lg p-1 flex">
+            <button
+              type="button"
+              onClick={() => setDashboardMode('instructor')}
+              className={`px-5 py-2 rounded-md text-sm font-medium transition ${
+                dashboardMode === 'instructor'
+                  ? 'bg-white text-loyola-maroon shadow-sm'
+                  : 'text-loyola-gray-500 hover:text-loyola-gray-700'
+              }`}
+            >
+              Instructor
+            </button>
+            <button
+              type="button"
+              onClick={() => setDashboardMode('admin')}
+              className={`px-5 py-2 rounded-md text-sm font-medium transition ${
+                dashboardMode === 'admin'
+                  ? 'bg-white text-loyola-maroon shadow-sm'
+                  : 'text-loyola-gray-500 hover:text-loyola-gray-700'
+              }`}
+            >
+              Admin
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">

@@ -1,0 +1,139 @@
+ 
+Financial Literacy Toolkit – Walkthrough Narration Script
+
+(No fixed timestamps; suggested durations only)
+ 
+Screen 0: Research Context and Innovation
+
+Suggested duration: ~15–30 seconds
+
+Welcome to the Financial Literacy Toolkit for QUIN 102.
+
+This assessment is part of an academic project focused on how students learn, understand, and apply financial concepts in real-world situations.
+We measure learning by giving a pre-assessment at the start of the class and a post-assessment at the end of the course.
+
+To our knowledge, this is the first scientific, interactive, online financial literacy assessment developed to measure financial literacy across key areas, including borrowing and credit, interest rates and numeracy, risk and return, insurance and risk management, plus financial decision-making behavior. It also uses confidence-based, adaptive follow-up to distinguish real understanding from uncertainty and common misconceptions
+ 
+Screen 0A: Prior Research and Motivation
+ 
+Screen 0B: How the Questionnaire Was Created
+
+Suggested duration: ~20–25 seconds
+
+All of the questions you will see in this assessment are pre-written. The question bank was developed by adapting and synthesizing items from established financial literacy and numeracy instruments and from large-scale surveys that have been widely used in prior research.
+
+Please complete the assessment between Monday, February 2nd at 12:01 AM and Sunday, February 8th, 2026 at 11:59 PM. The assessment closes at 11:59 PM on Sunday even if you started earlier, so be sure to start before then.
+
+
+
+ 
+Screen 0C: From Research Instruments to This Assessment
+
+Suggested duration: ~15–18 seconds
+
+From this work, an initial pool of roughly eighty candidate questions was carefully curated and refined into a standardized forty-question core assessment with multiple variants per concept.
+
+This structure allows the assessment to identify not just whether an answer is correct, but what that response reveals about how you understand the concept.
+ 
+Screen 1: Landing Page
+
+Suggested duration: ~8 seconds
+
+Now let's walk through the assessment website.
+
+This is the landing page where you will begin.
+
+When you are ready, click Start Assessment to continue.
+ 
+Screen 2: Registration
+
+Suggested duration: ~6 seconds
+
+If this is your first time using the platform, click Start Onboarding on the left.
+
+You will answer a few brief questions before the assessment begins.
+ 
+Screen 3: Consent
+
+Suggested duration: ~16–25 seconds
+
+First, please check the box confirming that this assessment is a course requirement.
+
+Next, you will see an optional research consent choice. Whether or not you choose to participate, your grade, standing in the course, and overall learning experience will be exactly the same.
+
+If you do choose to consent, your responses are fully anonymized and used only for research purposes. Your name, Student ID, and identity are never stored with your answers.
+
+By participating, you help us better understand how students learn financial concepts, how understanding changes over time, and where instruction can be improved.
+
+This also gives you a way to see how your own financial knowledge develops over the course of the class, from the beginning to the end.
+
+There is no additional time required, and you may withdraw your consent at any point.
+ 
+Screen 4: Identity
+
+Suggested duration: ~15 seconds
+
+Here, you will be asked to enter your Student ID.
+
+Your ID is immediately converted into a random, anonymous code and is never stored in identifiable form.
+
+This allows us to match your pre- and post-assessments so we can study learning over time, without ever knowing who you are.
+
+Neither your instructors nor the researchers can link your responses back to you.
+ 
+Screen 5: Demographics
+
+Suggested duration: ~8 seconds
+
+Next, you will answer a few demographic questions.
+
+This section is brief.
+
+The information helps us better understand the diverse learning backgrounds of students in the course.
+ 
+Screen 6: Financial Background
+
+Suggested duration: ~8 seconds
+
+You will be asked to select any financial products you have used before.
+
+Then, you will rate your current level of financial knowledge.
+
+There is no judgment here. We are simply interested in understanding your starting point.
+ 
+Screen 7: Ready to Begin
+
+Suggested duration: ~14–16 seconds
+
+There is no strict time limit, but please complete all fifty questions in one sitting if possible. Otherwise, you can always save, exit, and come back to finish later.
+
+For each question, you will select an answer and then rate how confident you feel about that answer.
+
+Please complete the assessment on your own, without external help or AI tools. This is about measuring what you know right now, not getting a perfect score.
+
+When you are ready, click I Agree to begin.
+ 
+Screen 8: Multiple Choice Questions
+
+Suggested duration: ~14 seconds
+
+Read each question carefully and choose the answer that best reflects your understanding.
+
+If you are unsure, it is completely okay to select I don’t know.
+
+Being honest helps us better understand which topics to focus on.
+
+After each question, you will also rate your confidence as Low, Medium, or High.
+ 
+Screen 9: Open-Response Questions
+
+Suggested duration: ~12 seconds
+
+Some questions will ask you to briefly explain your thinking in your own words.
+
+One or two sentences are more than enough.
+
+We are interested in your reasoning, not perfect grammar or length.
+
+That’s it. Good luck, and thank you for participating.
+ 

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, User, Info, Calendar } from 'lucide-react';
+import { Settings, User, Info, Calendar, ShieldCheck } from 'lucide-react';
 
 type Course = {
   id: string;
@@ -71,6 +71,10 @@ export default function StartPage() {
   const [isLoadingAttempt, setIsLoadingAttempt] = useState(true);
   const [windowStatus, setWindowStatus] = useState(isWithinAssessmentWindow());
   const [planBRedirect, setPlanBRedirect] = useState<string | null>(null);
+  const [researchConsent, setResearchConsent] = useState<boolean | null>(null);
+  const [isLoadingConsent, setIsLoadingConsent] = useState(true);
+  const [isUpdatingConsent, setIsUpdatingConsent] = useState(false);
+  const [showConsentConfirm, setShowConsentConfirm] = useState(false);
   const router = useRouter();
 
   // Update window status every minute
@@ -156,6 +160,60 @@ export default function StartPage() {
       })
       .catch(() => {});
   }, [courseCode]);
+
+  // Fetch current research consent status
+  useEffect(() => {
+    if (isCheckingAuth || !sessionData?.userId || !sessionData?.courseId) {
+      setIsLoadingConsent(false);
+      return;
+    }
+
+    const fetchConsent = async () => {
+      try {
+        const params = new URLSearchParams({
+          userId: sessionData.userId!,
+          courseId: sessionData.courseId!,
+        });
+        const response = await fetch(`/api/student/research-consent?${params}`);
+        const data = await response.json();
+        if (data.success) {
+          setResearchConsent(data.research_consent);
+        }
+      } catch (err) {
+        console.error('Error fetching consent status:', err);
+      } finally {
+        setIsLoadingConsent(false);
+      }
+    };
+
+    fetchConsent();
+  }, [isCheckingAuth, sessionData?.userId, sessionData?.courseId]);
+
+  // Handle consent update
+  const handleConsentUpdate = async (newConsent: boolean) => {
+    if (!sessionData?.userId || !sessionData?.courseId) return;
+    setIsUpdatingConsent(true);
+    try {
+      const response = await fetch('/api/student/research-consent', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: sessionData.userId,
+          courseId: sessionData.courseId,
+          research_consent: newConsent,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setResearchConsent(data.research_consent);
+      }
+    } catch (err) {
+      console.error('Error updating consent:', err);
+    } finally {
+      setIsUpdatingConsent(false);
+      setShowConsentConfirm(false);
+    }
+  };
 
   // Check for in-progress attempt
   useEffect(() => {
@@ -385,6 +443,61 @@ export default function StartPage() {
                 <p>• Your student ID is hashed for privacy</p>
                 <p>• Internet connection required for submission</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-white rounded-lg shadow-sm p-6 border border-loyola-gray-200">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <ShieldCheck className="w-5 h-5 text-loyola-maroon" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-loyola-gray-900 mb-1">Research Consent</h3>
+              <p className="text-sm text-loyola-gray-600 mb-3">
+                Your assessment is a required course assignment regardless of this choice. Research consent only controls whether your anonymized responses are included in academic research.
+              </p>
+              {isLoadingConsent ? (
+                <p className="text-sm text-loyola-gray-500">Loading...</p>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Status:{' '}
+                    <span className={researchConsent ? 'text-green-700' : 'text-red-700'}>
+                      {researchConsent ? 'Consented' : 'Declined'}
+                    </span>
+                  </span>
+                  {!showConsentConfirm ? (
+                    <button
+                      onClick={() => setShowConsentConfirm(true)}
+                      className="text-sm text-loyola-maroon hover:text-loyola-maroon-dark underline transition"
+                    >
+                      Change
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleConsentUpdate(!researchConsent)}
+                        disabled={isUpdatingConsent}
+                        className="text-sm px-3 py-1 bg-loyola-maroon text-white rounded-md hover:bg-loyola-maroon-dark transition disabled:opacity-50"
+                      >
+                        {isUpdatingConsent
+                          ? 'Updating...'
+                          : researchConsent
+                            ? 'Withdraw Consent'
+                            : 'Give Consent'}
+                      </button>
+                      <button
+                        onClick={() => setShowConsentConfirm(false)}
+                        disabled={isUpdatingConsent}
+                        className="text-sm px-3 py-1 border border-loyola-gray-300 text-loyola-gray-700 rounded-md hover:bg-loyola-gray-50 transition disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
