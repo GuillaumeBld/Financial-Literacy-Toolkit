@@ -45,6 +45,7 @@
 7. [Limitations and Pending Items](#7-limitations-and-pending-items)
 8. [Next Steps (Post-Course Assessment)](#8-next-steps-post-course-assessment)
 - [References](#references)
+- [Declaration of AI and AI-Assisted Technologies](#declaration-of-ai-and-ai-assisted-technologies)
 - [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
 - [Appendix B: Assessment Items (Full Question Bank)](#appendix-b-assessment-items-full-question-bank)
 - [Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)](#appendix-c-financial-literacy-misconception-taxonomy-layer-1)
@@ -202,7 +203,7 @@ The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administere
 
 **Misconception Taxonomy.** A two-layer taxonomy structures the classification of identified misconceptions. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories: Inflation and Purchasing Power (5 families), Interest, Compounding, and Time Value of Money (7 families), Risk, Return, and Diversification (10 families), Insurance and Risk Management (5 families), Borrowing, Credit, and Personal Finance (6 families), Financial Crises and Systemic Risk (3 families), and Numeracy and Quantitative Reasoning (1 family). Layer 1 codes are designed to transfer across assessment contexts and student populations. Layer 2 contains item-specific tags derived from observed student response patterns in Test 1, providing granularity within each Layer 1 family for this specific assessment instrument. The complete Layer 1 taxonomy is presented in Appendix C.
 
-**Automated Scoring Pipeline.** Open-ended responses are scored using a rubric-based classification system. Each response is processed with an item-specific rubric containing the anchor question context, the student's selected answer and confidence level, the applicable Layer 1 misconception families with Layer 2 tags, calibration examples drawn from manually reviewed responses, and a structured decision tree for three-way classification. The system returns a structured classification including diagnosis type (misconception, knowledge_gap, or selection_error), Layer 1 code, Layer 2 tag, credit score (0/50/100 where credit measures diagnostic value rather than correctness), classification confidence (high/medium/low), an evidence quote from the student's response, and a one-sentence reasoning summary. Low-confidence classifications are flagged for human review. Automated scoring is used only for open-ended responses; all item selection decisions are deterministic and rule-based.
+**AI-Assisted Scoring Pipeline.** Open-ended responses are scored using a large language model (Claude 3.5 Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student's selected answer and confidence level, the applicable Layer 1 misconception families with Layer 2 tags, calibration examples drawn from manually reviewed responses, and a structured decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type (misconception, knowledge_gap, or selection_error), Layer 1 code, Layer 2 tag, credit score (0/50/100 where credit measures diagnostic value rather than correctness), classification confidence (high/medium/low), an evidence quote from the student's response, and a one-sentence reasoning summary. Low-confidence classifications (approximately 5--10% of responses) are flagged for human review and adjudication by the course instructor. Prior work on LLM-based grading in business education found limited reliability when applying generic prompts to domain-specific content (Flodén, 2025). To address this, our pipeline uses item-specific prompts with calibration examples drawn from manually reviewed student responses, a structured misconception taxonomy, and explicit decision trees, following the collaborative human-AI scoring model in which the LLM serves as a second rater whose low-confidence outputs are flagged for instructor adjudication (Olivos, Kamelski, & Ascui-Gac, 2025). This approach to LLM-based assessment scoring follows established practices for validating automated scoring systems in educational measurement (Mizumoto & Eguchi, 2024; Yavuz, 2025). All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification.
 
 ### 4.3 Platform and Data Collection
 
@@ -621,6 +622,8 @@ Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy amon
 
 Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. *Management Science*, *60*(8), 1861--1883.
 
+Flodén, J. (2025). Grading exams using large language models: A comparison between human and AI grading of exams in higher education using ChatGPT. *British Educational Research Journal*, *51*(1), 201--224.
+
 Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. *International Journal of Consumer Studies*, *45*(1), 80--105.
 
 Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. *Annual Review of Economics*, *5*, 347--373.
@@ -641,7 +644,11 @@ Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and over
 
 Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. *Journal of Financial Counseling and Planning*, *20*(1), 15--24.
 
+Mizumoto, A., & Eguchi, M. (2024). Large language models and automated essay scoring of English language learner writing: Insights into validity and reliability. *Computers and Education: Artificial Intelligence*, *6*, 100208.
+
 OECD. (2022). *OECD/INFE toolkit for measuring financial literacy and financial inclusion 2022*. OECD Publishing.
+
+Olivos, F., Kamelski, T., & Ascui-Gac, S. (2025). Assessing instructor-AI cooperation for grading essay-type questions in an introductory sociology course. *Teaching Sociology*. Advance online publication. https://doi.org/10.1177/0092055X251397371
 
 Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. *Journal of Financial Service Professionals*, *70*(4), 78--88.
 
@@ -654,6 +661,20 @@ van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock m
 Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. *Journal of Consumer Affairs*, *53*(1), 234--259.
 
 Willis, L. E. (2011). The financial education fallacy. *American Economic Review*, *101*(3), 429--434.
+
+Yavuz, F. (2025). Utilizing large language models for EFL essay grading: An examination of reliability and validity in rubric-based assessments. *British Journal of Educational Technology*, *56*(2), 487--506.
+
+---
+
+## Declaration of AI and AI-Assisted Technologies
+
+This study employed AI tools in three capacities, disclosed here in accordance with current best-practice guidelines for transparency in academic publishing (COPE, 2023; AMEE Guide No. 192, 2025).
+
+1. **Assessment platform development.** AI-assisted coding tools (GitHub Copilot, Claude Code) were used during development of the web-based assessment platform to accelerate implementation of the user interface, data collection logic, and adaptive routing algorithm. All platform functionality was independently tested and validated by the research team prior to deployment. The complete source code is publicly available for inspection in the project repository (Boulaid, 2026).
+
+2. **Open-ended response scoring.** Claude 3.5 Sonnet (Anthropic), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of 931 student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.2.3.
+
+3. **Manuscript preparation.** Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the authors, who take full responsibility for the accuracy and integrity of the publication.
 
 ---
 

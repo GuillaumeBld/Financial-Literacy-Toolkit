@@ -807,8 +807,8 @@ const doc = new Document({
         ),
 
         boldLeadParagraph(
-          "Automated Scoring Pipeline. ",
-          "Open-ended responses are scored using a rubric-based classification system. Each response is processed with an item-specific rubric containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The system returns a structured classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications are flagged for human review. Automated scoring is used only for classification; all item selection decisions are deterministic and rule-based."
+          "AI-Assisted Scoring Pipeline. ",
+          "Open-ended responses are scored using a large language model (Claude 3.5 Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications (approximately 5\u201310% of responses) are flagged for human review and adjudication by the course instructor. Prior work on LLM-based grading in business education found limited reliability when applying generic prompts to domain-specific content (Flod\u00e9n, 2025). To address this, our pipeline uses item-specific prompts with calibration examples, a structured misconception taxonomy, and explicit decision trees, following the collaborative human-AI scoring model in which the LLM serves as a second rater whose low-confidence outputs are flagged for instructor adjudication (Olivos, Kamelski, & Ascui-Gac, 2025). This approach follows established practices for LLM-based assessment scoring (Mizumoto & Eguchi, 2024; Yavuz, 2025). All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification."
         ),
 
         // 4.3 Platform and Data Collection
@@ -1582,6 +1582,7 @@ const doc = new Document({
         bodyParagraph("Boulaid, G. (2026). Financial Literacy Toolkit: Assessment platform for QUINN 102 [Source code]. GitHub. https://github.com/GuillaumeBld/Financial-Literacy-Toolkit"),
         bodyParagraph("Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. Financial Services Review, 7(2), 107\u2013128."),
         bodyParagraph("Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. Management Science, 60(8), 1861\u20131883."),
+        bodyParagraph("Flod\u00e9n, J. (2025). Grading exams using large language models: A comparison between human and AI grading of exams in higher education using ChatGPT. British Educational Research Journal, 51(1), 201\u2013224."),
         bodyParagraph("Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. International Journal of Consumer Studies, 45(1), 80\u2013105."),
         bodyParagraph("Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. Annual Review of Economics, 5, 347\u2013373."),
         bodyParagraph("Huston, S. J. (2010). Measuring financial literacy. Journal of Consumer Affairs, 44(2), 296\u2013316."),
@@ -1592,13 +1593,44 @@ const doc = new Document({
         bodyParagraph("Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. Journal of Economic Literature, 52(1), 5\u201344."),
         bodyParagraph("Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. Journal of Pension Economics and Finance, 14(4), 332\u2013368."),
         bodyParagraph("Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. Journal of Financial Counseling and Planning, 20(1), 15\u201324."),
+        bodyParagraph("Mizumoto, A., & Eguchi, M. (2024). Large language models and automated essay scoring of English language learner writing: Insights into validity and reliability. Computers and Education: Artificial Intelligence, 6, 100208."),
         bodyParagraph("OECD. (2022). OECD/INFE toolkit for measuring financial literacy and financial inclusion 2022. OECD Publishing."),
+        bodyParagraph("Olivos, F., Kamelski, T., & Ascui-Gac, S. (2025). Assessing instructor-AI cooperation for grading essay-type questions in an introductory sociology course. Teaching Sociology. Advance online publication. https://doi.org/10.1177/0092055X251397371"),
         bodyParagraph("Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. Journal of Financial Service Professionals, 70(4), 78\u201388."),
         bodyParagraph("Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. Journal of Financial Counseling and Planning, 22(1), 60\u201370."),
         bodyParagraph("Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. Journal of Finance, 64(6), 2807\u20132849."),
         bodyParagraph("van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. Journal of Financial Economics, 101(2), 449\u2013472."),
         bodyParagraph("Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. Journal of Consumer Affairs, 53(1), 234\u2013259."),
         bodyParagraph("Willis, L. E. (2011). The financial education fallacy. American Economic Review, 101(3), 429\u2013434."),
+        bodyParagraph("Yavuz, F. (2025). Utilizing large language models for EFL essay grading: An examination of reliability and validity in rubric-based assessments. British Journal of Educational Technology, 56(2), 487\u2013506."),
+
+        // =====================================================================
+        // DECLARATION OF AI AND AI-ASSISTED TECHNOLOGIES
+        // =====================================================================
+        pageBreakParagraph(),
+        new Paragraph({
+          heading: HeadingLevel.HEADING_1,
+          children: [
+            new TextRun({
+              text: "Declaration of AI and AI-Assisted Technologies",
+            }),
+          ],
+        }),
+        bodyParagraph(
+          "This study employed AI tools in three capacities, disclosed here in accordance with current best-practice guidelines for transparency in academic publishing (COPE, 2023; AMEE Guide No. 192, 2025)."
+        ),
+        boldLeadParagraph(
+          "1. Assessment platform development. ",
+          "AI-assisted coding tools (GitHub Copilot, Claude Code) were used during development of the web-based assessment platform to accelerate implementation of the user interface, data collection logic, and adaptive routing algorithm. All platform functionality was independently tested and validated by the research team prior to deployment. The complete source code is publicly available for inspection in the project repository (Boulaid, 2026)."
+        ),
+        boldLeadParagraph(
+          "2. Open-ended response scoring. ",
+          "Claude 3.5 Sonnet (Anthropic), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of 931 student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.2.3."
+        ),
+        boldLeadParagraph(
+          "3. Manuscript preparation. ",
+          "Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the authors, who take full responsibility for the accuracy and integrity of the publication."
+        ),
 
         // =====================================================================
         // APPENDIX A
