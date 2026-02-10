@@ -85,6 +85,6 @@ __pycache__
 # Database backups
 backups/
 
-# Claude Code context files
+# Project context files
 CLAUDE.md
 **/CLAUDE.md

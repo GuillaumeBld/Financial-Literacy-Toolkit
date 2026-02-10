@@ -33,7 +33,7 @@ Production (https://financial-literacy.qualiaai.fr)
 
 ### 1. Make Your Changes
 
-On the VPS, edit files directly or use Claude Code:
+On the VPS, edit files directly:
 ```bash
 cd /root/Financial-Literacy-Toolkit
 # Make changes to code, docs, etc.

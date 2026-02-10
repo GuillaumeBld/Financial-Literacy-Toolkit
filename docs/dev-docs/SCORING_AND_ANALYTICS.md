@@ -77,7 +77,7 @@ The SDM-10 is **secondary diagnostic output** and does NOT contribute to primary
 - **No Credit (0)**: No explanation or incorrect reasoning
 
 ### Misconception Tagging
-- AI-assisted classification of common error patterns
+- Automated classification of common error patterns
 - Low-confidence classifications flagged for human review
 - Aggregated for prevalence analysis by domain
 

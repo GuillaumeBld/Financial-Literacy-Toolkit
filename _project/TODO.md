@@ -12,12 +12,12 @@ Last updated: 2026-01-28
 
 ## REMAINING TASKS
 
-### 1. AI Scoring for Short Answer Evaluation
+### 1. Automated Scoring for Short Answer Evaluation
 
-- [ ] Integrate LLM API for rubric-based scoring
+- [ ] Integrate rubric-based scoring pipeline
   - Schema ready: `rubric JSONB` field exists in items table
   - Placeholder scoring in place (50% pending review)
-  - Need: Actual LLM call to evaluate open-ended responses
+  - Need: Scoring engine to evaluate open-ended responses
 
 - [ ] Implement scoring rubric logic
   - Full Credit (2): Demonstrates mechanism understanding
@@ -26,10 +26,10 @@ Last updated: 2026-01-28
 
 - [ ] Add misconception tagging system
   - Predefined tags per question
-  - Low-confidence AI classifications flagged for instructor review
+  - Low-confidence classifications flagged for instructor review
 
-- [ ] Build instructor review queue for AI-scored responses
-  - Allow override of AI scores
+- [ ] Build instructor review queue for scored responses
+  - Allow override of automated scores
   - Track inter-rater reliability
 
 ### 2. LTI 1.3 Integration for Canvas/Blackboard

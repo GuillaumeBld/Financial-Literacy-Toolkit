@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Financial Literacy Toolkit',
-  description: 'AI-assisted financial literacy assessment by Dr. Abol Jalilvand and Guillaume Bolivard',
+  description: 'Financial literacy assessment platform for university students',
 }
 
 export const viewport: Viewport = {

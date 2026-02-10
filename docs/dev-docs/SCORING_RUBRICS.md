@@ -1,12 +1,12 @@
-# AI Scoring Rubrics
+# Scoring Rubrics
 
 ## Overview
 
-AI-assisted scoring is used for open-ended responses in the SDM-10 module. The scoring follows pre-specified rubrics with misconception tagging for diagnostic purposes.
+Rubric-based scoring is used for open-ended responses in the SDM-10 module. The scoring follows pre-specified rubrics with misconception tagging for diagnostic purposes.
 
 ## When AI Scoring Applies
 
-AI scoring is used ONLY for:
+Rubric scoring is used ONLY for:
 - **Open_Confirm variants**: Verify reasoning for correct + low confidence responses
 - **Open_Diagnose variants**: Identify misconceptions for incorrect + high confidence responses
 
@@ -91,7 +91,7 @@ Each Open_Diagnose variant includes predefined misconception tags for classifica
 
 ## Implementation Notes
 
-1. AI scoring runs asynchronously after submission
+1. Rubric scoring runs asynchronously after submission
 2. Raw responses stored immediately; scores populated after AI processing
 3. Misconception tags stored as JSONB array
 4. All AI classifications include confidence score

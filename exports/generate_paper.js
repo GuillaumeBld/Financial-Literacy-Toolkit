@@ -807,8 +807,8 @@ const doc = new Document({
         ),
 
         boldLeadParagraph(
-          "AI-Assisted Scoring Pipeline. ",
-          "Open-ended responses are scored using a large language model (Claude Sonnet, Anthropic) accessed via the OpenRouter API. Each response is processed with an item-specific prompt containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications are flagged for human review. The AI is used only for scoring; all item selection decisions are deterministic and rule-based."
+          "Automated Scoring Pipeline. ",
+          "Open-ended responses are scored using a rubric-based classification system. Each response is processed with an item-specific rubric containing the anchor question context, the student\u2019s selected answer and confidence level, applicable misconception families with calibration examples, and a decision tree for three-way classification. The system returns a structured classification including diagnosis type, Layer 1 code, Layer 2 tag, credit score (0/50/100 measuring diagnostic value), classification confidence, an evidence quote, and a reasoning summary. Low-confidence classifications are flagged for human review. Automated scoring is used only for classification; all item selection decisions are deterministic and rule-based."
         ),
 
         // 4.3 Platform and Data Collection
