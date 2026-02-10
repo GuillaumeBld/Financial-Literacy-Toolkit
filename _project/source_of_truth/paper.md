@@ -39,7 +39,7 @@
    - 6.3 [Assessment Duration](#63-assessment-duration)
 7. [Discussion](#7-discussion)
 8. [Limitations](#8-limitations)
-9. [Paper 2: IRB-Approved Pre-Post Study Protocol](#9-paper-2-irb-approved-pre-post-study-protocol)
+9. [Planned Validation Study (Paper 2 Protocol Preview)](#9-planned-validation-study-paper-2-protocol-preview)
 - [References](#references)
 - [Declaration of AI and AI-Assisted Technologies](#declaration-of-ai-and-ai-assisted-technologies)
 - [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
@@ -396,7 +396,7 @@ All analyses in this paper use only the research-consented subset (n = 354). For
 
 ## 6. Pilot Operations and Descriptive Statistics
 
-This section reports operational statistics from the pre-course assessment window (February 2--9, 2026) as quality assurance context for interpreting the SDM-10 diagnostic findings. These are descriptive operational summaries of assessment administration, not inferential research results. No subgroup comparisons, hypothesis tests, or claims about population parameters are made in this section. Subgroup analyses require IRB approval and are deferred to Paper 2.
+This section reports operational statistics from the pre-course assessment window (February 2--9, 2026) as quality assurance context for interpreting the SDM-10 diagnostic findings. These are descriptive operational summaries of assessment administration, not inferential research results. No subgroup comparisons, hypothesis tests, or claims about population parameters are made in this section. Subgroup analyses are deferred to Paper 2, contingent on institutional review board approval for human-subjects research.
 
 ### 6.1 Participation and Completion
 
@@ -478,7 +478,7 @@ Several limitations should be noted when interpreting these findings.
 
 3. **Single scoring model.** All open-ended responses were classified by a single LLM (GPT-4.1). While the model was selected through an 11-model concordance protocol (Appendix D) and achieved zero schema violations and zero parse errors across 778 consented responses, automated classification may diverge from human judgment on borderline cases. The model assigned "high" confidence to 96.8% of classifications, which may indicate underutilization of the uncertainty channel. A human-AI agreement study on a stratified subsample would strengthen reliability evidence.
 
-4. **No publishable subgroup claims.** The pre-course assessment collected demographic and financial background data, but subgroup analyses (e.g., by gender, race/ethnicity, first-generation status) are deferred to Paper 2. Paper 1 does not report subgroup comparisons because the study has not yet received institutional review board approval for human-subjects research.
+4. **No publishable subgroup claims.** The pre-course assessment collected demographic and financial background data, but subgroup analyses (e.g., by gender, race/ethnicity, first-generation status) are deferred to Paper 2. We plan to submit an IRB application for human-subjects research; until approval is obtained, no subgroup comparisons or inferential claims are reported.
 
 5. **Possible lookup between anchor and SDM.** The SDM-10 is administered immediately after the anchor assessment in the same session. Students may look up answers between the anchor and SDM items, potentially inflating SDM scores. The 100% SDM completion rate and the lower SDM mean score (64.37% vs. 65.8% anchor) provide some evidence against widespread lookup behavior, but the possibility cannot be excluded.
 
@@ -490,23 +490,55 @@ Several limitations should be noted when interpreting these findings.
 
 ---
 
-## 9. Paper 2: IRB-Approved Pre-Post Study Protocol
+## 9. Planned Validation Study (Paper 2 Protocol Preview)
 
-The following analyses are planned for Paper 2, contingent on institutional review board approval for human-subjects research:
+**Scope boundary.** This independent study paper documents instrument and platform development and pilot operations. Confirmatory evaluation and publishable analyses are planned for a subsequent IRB-reviewed study. Nothing in this section should be read as asserting that IRB approval has been obtained or that the described analyses will necessarily be conducted.
 
-1. **Post-course assessment administration.** The post-course assessment will be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module.
+### 9.1 How Paper 1 Informs the Planned Study
 
-2. **Pre-post paired analyses for RQ1.** Learning gains will be computed as the difference between post-course and pre-course scores for each student, overall and by domain. Paired t-tests (or nonparametric equivalents) will assess the statistical significance of mean gains. Standardized effect sizes (within-student Cohen's d) will be reported.
+The pilot deployment reported in Sections 4--6 produced several outputs that directly shape the Paper 2 design:
 
-3. **Multivariable regression for RQ2.** Heterogeneity in learning gains will be modeled as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Domain-specific models will identify whether predictors of learning gains differ across borrowing, investment, and risk management.
+- **Instrument revision targets.** The SDM-10 diagnostic findings identified items requiring revision before the post-assessment. Q36 (81% selection error) will be rewritten in multiple-choice format; Q10's "which is FALSE" framing will be reconsidered; and items with high guess rates (Q32, Q29) will receive improved distractor sets. These revisions will be completed before the post-assessment window.
+- **Misconception taxonomy as outcome framework.** The 62-entry misconception taxonomy (Appendix C) provides a pre-registered coding scheme for the post-assessment open-ended responses, enabling direct pre-post comparison of misconception prevalence within specific clusters.
+- **Governance and consent infrastructure.** The consent mechanics, data minimization architecture, and FERPA-compliant authentication documented in Section 5 will carry forward unchanged, ensuring consistent data governance across both assessments.
+- **Baseline coverage estimates.** Item-level SDM coverage rates (Table 4.5) inform the statistical power available for pre-post misconception comparisons. Items with coverage below 30% may require alternative analysis strategies.
+
+### 9.2 Planned Study Design
+
+We plan to submit an IRB application to Loyola University Chicago to evaluate the association between QUIN 102 instruction and changes in student financial literacy. If approved, the following analyses are planned:
+
+1. **Post-course assessment administration.** The post-course assessment will be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module. If approved, the post-assessment will include an IRB-reviewed consent process for human-subjects research.
+
+2. **Pre-post paired analyses.** Learning gains will be computed as the difference between post-course and pre-course scores for each student, overall and by domain. Paired t-tests (or nonparametric equivalents) will assess the statistical significance of mean gains. Standardized effect sizes (within-student Cohen's d) will be reported.
+
+3. **Multivariable regression.** Heterogeneity in learning gains will be modeled as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Domain-specific models will identify whether predictors of learning gains differ across borrowing, investment, and risk management.
 
 4. **Psychometric validation.** Exploratory Factor Analysis will assess dimensionality within and across domains. Cronbach's alpha will evaluate internal consistency. Item-level statistics will identify items for refinement in future administrations.
 
-5. **Subgroup analyses.** Demographic and financial background subgroup comparisons (by gender, race/ethnicity, first-generation status, work experience, financial stress) will be reported with appropriate transparency practices for multiple comparisons.
+5. **Subgroup analyses.** If IRB-approved, demographic and financial background subgroup comparisons (by gender, race/ethnicity, first-generation status, work experience, financial stress) will be reported with appropriate transparency practices for multiple comparisons.
 
-6. **SDM-10 pre-post comparison.** Pre-post changes in misconception prevalence, selection error rates, and the distribution of three-way classifications will be analyzed to assess whether instruction reduces specific misconception clusters and improves the alignment between student knowledge and item responses.
+6. **SDM-10 pre-post comparison.** Pre-post changes in misconception prevalence, selection error rates, and the distribution of three-way classifications will be analyzed to assess whether instruction reduces specific misconception clusters and improves the alignment between student knowledge and item responses. Paper 2 will pre-specify which misconception codes from the taxonomy are expected to change, based on QUIN 102 curriculum coverage.
 
-Paper 2 will combine the pre-course baseline with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUIN 102's association with student financial literacy outcomes.
+### 9.3 Consent and Privacy
+
+The publishable evaluation will be conducted only on IRB-consented data. The existing consent infrastructure (Section 5.3) separates instructional use from research use; this separation will be maintained in the post-assessment. All student data will remain de-identified using the one-way hashing architecture described in Section 5.2. No raw student identifiers will appear in any dataset or publication.
+
+### 9.4 Intended Use and Prohibited Use
+
+The instrument and platform described in this paper are designed for educational assessment and learning outcome measurement within QUIN 102. The following uses are intended and supported:
+
+- Pre-post measurement of financial literacy knowledge gains
+- Identification of domain-specific misconceptions for instructional targeting
+- Adaptive diagnostic follow-up for students with confidence-accuracy misalignment
+
+The following uses are explicitly outside the scope of this instrument and are not supported by the evidence presented:
+
+- Credit, lending, or financial eligibility decisions
+- Employment screening or hiring decisions
+- High-stakes individual assessment with consequences beyond course feedback
+- Population-level claims about financial literacy without appropriate sampling
+
+Paper 2 will combine the pre-course baseline with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUIN 102's association with student financial literacy outcomes -- contingent on IRB approval and successful post-assessment administration.
 
 ---
 
