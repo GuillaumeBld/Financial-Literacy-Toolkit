@@ -5,6 +5,7 @@ import { findCourseByName } from '@/lib/course-utils';
 import { submissionBreaker } from '@/lib/circuit-breaker';
 import { checkStudentRateLimit, checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { randomUUID } from 'crypto';
+import { scoreOpenEndedResponses } from '@/lib/ai-scorer';
 
 export async function POST(request: NextRequest) {
   console.log('=== API SUBMISSION START ===');
@@ -392,6 +393,11 @@ export async function POST(request: NextRequest) {
         overallScore
       };
     }));
+
+    // Fire-and-forget: score open-ended SDM-10 responses via AI
+    scoreOpenEndedResponses(result.attemptId).catch(err =>
+      console.error('[AI Scorer] Background scoring failed for attempt', result.attemptId, err)
+    );
 
     return NextResponse.json({
       success: true,
