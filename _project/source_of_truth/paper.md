@@ -211,8 +211,8 @@ Of the 354 consented students who submitted the assessment, 306 (86.4%) received
 | Students receiving open-ended items | 306 (86.4%) |
 | Total open-ended responses | 781 |
 | Responses scored by AI | 778 |
-| Diagnose responses scored | 479 |
-| Confirm responses scored | 299 |
+| Diagnose responses scored | 493 |
+| Confirm responses scored | 285 |
 | AI scoring model | GPT-4.1 (OpenAI via OpenRouter) |
 | AI scoring error rate | 0 / 778 (0%) |
 
@@ -220,15 +220,16 @@ Of the 354 consented students who submitted the assessment, 306 (86.4%) received
 
 #### 4.4.2 Diagnose Classification Results
 
-**Table 4.4: Diagnose Three-Way Classification (Consented, n = 479)**
+**Table 4.4: Diagnose Three-Way Classification (Consented, n = 493 scored, 479 classified)**
 
-| Classification | n | % | Interpretation |
+| Classification | n | % of classified | Interpretation |
 | --- | --- | --- | --- |
 | Misconception | 258 | 53.9% | Active incorrect belief confirmed |
 | Selection error | 153 | 31.9% | Correct understanding, wrong answer |
 | Knowledge gap | 68 | 14.2% | Acknowledged uncertainty, no model |
+| Unclassified | 14 | --- | Ambiguous or insufficient for three-way |
 
-Over half of diagnose responses (53.9%) reflected identifiable misconceptions -- specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 4.4 caveat).
+Of the 493 AI-scored diagnose responses, 479 (97.2%) were classified into the three-way taxonomy. Over half of classified responses (53.9%) reflected identifiable misconceptions -- specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. The 14 unclassified responses had ambiguous explanations that did not clearly fit any category. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 4.4 caveat).
 
 **Table 4.5: Diagnose Classification by Item (Consented, items with n >= 5, sorted by diagnose volume)**
 
@@ -262,15 +263,15 @@ Items with the highest misconception density (> 70%) are Q12 (Health Insurance, 
 
 #### 4.4.3 Confirm Classification Results
 
-**Table 4.6: Confirm Three-Way Classification (Consented, n = 299)**
+**Table 4.6: Confirm Three-Way Classification (Consented, n = 285)**
 
 | Classification | n | % |
 | --- | --- | --- |
-| Verified | 140 | 46.8% |
-| Partial | 119 | 39.8% |
-| Likely guess | 40 | 13.4% |
+| Verified | 127 | 44.6% |
+| Partial | 119 | 41.8% |
+| Likely guess | 39 | 13.7% |
 
-Among students who answered correctly but with low confidence (the SDM-10 confirm trigger condition), 46.8% demonstrated genuine understanding in their explanation (verified), 39.8% showed partial understanding, and 13.4% were classified as likely guesses -- their explanations showed no understanding of the underlying concept despite selecting the correct answer. Because confirm items are triggered only for low-confidence correct answers, the 13.4% guess rate applies to that conditioned subsample, not to all correct responses. Nonetheless, this finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
+Among students who answered correctly but with low confidence (the SDM-10 confirm trigger condition), 44.6% demonstrated genuine understanding in their explanation (verified), 41.8% showed partial understanding, and 13.7% were classified as likely guesses -- their explanations showed no understanding of the underlying concept despite selecting the correct answer. Because confirm items are triggered only for low-confidence correct answers, the 13.7% guess rate applies to that conditioned subsample, not to all correct responses. Nonetheless, this finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
 
 **Table 4.7: Confirm Items with Highest Likely-Guess Rates (Consented, confirm n >= 5)**
 
@@ -388,7 +389,7 @@ The consent flow structurally separates the course requirement from the research
 
 **Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
 
-**Representativeness check.** The consented subsample (n = 354) closely mirrors the full cohort (N = 431). The consented group has a mean anchor score of 65.8% (full cohort: 66.3%), and diagnostic classification distributions within 1 percentage point of the full-cohort values across all categories. The 77 non-consented students are not systematically different on observable assessment characteristics, indicating that the NULL-consent cohort reflects deployment timing rather than a self-selected subgroup.
+**Representativeness check.** The consented subsample (n = 354) closely mirrors the full cohort (N = 431). The consented group has a mean anchor score of 67.0% (full cohort: 67.4%), and diagnostic classification distributions within 1 percentage point of the full-cohort values across all categories. The 77 non-consented students are not systematically different on observable assessment characteristics, indicating that the NULL-consent cohort reflects deployment timing rather than a self-selected subgroup.
 
 **Default selection.** The consent screen presented "Yes, I consent" as the default selection. While the 0% explicit decline rate is consistent with students having no objection to de-identified research use, the default-yes design may have inflated the consent rate through status quo bias. Paper 2 will mitigate this by implementing a forced active choice (no default selection) in the post-assessment consent screen.
 
@@ -402,7 +403,22 @@ This section reports operational statistics from the pre-course assessment windo
 
 ### 6.1 Participation and Completion
 
-A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment also completed the SDM-10 module (100% SDM completion rate among submitters).
+A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment received SDM-10 items. Of these, 300 consented students (84.7%) received the full 10-item module; 54 received between 5 and 9 items due to insufficient high-Need subcategories in their anchor profile (the algorithm could not fill all 10 slots when a student's anchor performance was uniformly strong or weak across subcategories).
+
+**Table 6.0: Counts and Inclusion Rules**
+
+| Stage | n | Rule |
+| --- | --- | --- |
+| Enrolled (onboarded) | 443 | Created platform account with hashed ID |
+| Completed (submitted) | 431 | Submitted anchor + SDM-10 before window close |
+| Abandoned | 12 | Onboarded but did not submit; idle > 45 hours |
+| Consented (research) | 354 | Affirmative "Yes" on research consent screen |
+| Declined | 0 | Explicit "No" on research consent screen |
+| NULL consent | 77 | Completed before consent screen deployed; treated as non-consented |
+| Withdrawn | 0 | No withdrawals received during the study period |
+| **Research-consented analysis set** | **354** | **Inclusion rule: research_consent = true AND submitted_at IS NOT NULL** |
+
+All tables and statistics in Sections 4 and 6 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
 
 The following demographic summary describes the composition of the consented sample for operational context only. No subgroup performance comparisons are reported in Paper 1.
 
@@ -421,15 +437,15 @@ The following demographic summary describes the composition of the consented sam
 
 The following score summaries provide operational context for interpreting SDM-10 diagnostic patterns. They are not inferential claims about population-level financial literacy.
 
-For the consented subset (n = 354), the mean anchor score was 65.8% (SD = 16.4%, median = 66.7%) across 26 scored knowledge items. Domain-level means were:
+For the consented subset (n = 354), the mean anchor score was 67.0% (SD = 17.9%, median = 69.2%) across 26 scored knowledge items. Domain-level means were:
 
 **Table 6.2: Mean Accuracy by Domain (Consented, n = 354)**
 
 | Domain | Items | Mean % Correct |
 | --- | --- | --- |
-| Behavioral and Risk Management Knowledge | 4 | 72.2% |
+| Behavioral and Risk Management Knowledge | 4 | 72.4% |
 | Borrowing, Interest Rates, and Financial Numeracy Knowledge | 10 | 69.2% |
-| Risk and Return Knowledge | 12 | 63.5% |
+| Risk and Return Knowledge | 12 | 63.4% |
 
 Investment and Risk was the weakest domain, driven primarily by low performance on Q38 (Inflation Protection) and Q6 (Inflation Lowering). However, Investment and Risk also has the highest selection error count (56), suggesting some of this weakness is artefactual.
 
@@ -437,14 +453,14 @@ Investment and Risk was the weakest domain, driven primarily by low performance 
 
 | Band | n | % of Sample | Status |
 | --- | --- | --- | --- |
-| Below 50% | 38 | 10.7% | At risk |
-| 50--69% | 186 | 52.5% | Developing |
-| 70--79% | 65 | 18.4% | Proficient |
-| 80% and above | 65 | 18.4% | Strong |
+| Below 50% | 45 | 12.7% | At risk |
+| 50--69% | 161 | 45.5% | Developing |
+| 70--79% | 60 | 16.9% | Proficient |
+| 80% and above | 88 | 24.9% | Strong |
 
-The largest segment (52.5%) falls in the 50--69% band, indicating that over half the consented sample has partial but incomplete financial literacy knowledge.
+The largest segment (45.5%) falls in the 50--69% band. Combined with the 12.7% below 50%, over half the consented sample has partial or incomplete financial literacy knowledge.
 
-The consented SDM-10 mean score (64.37% across 3,340 responses) was lower than the anchor mean, confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
+The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than the anchor mean (67.0%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
 
 ### 6.3 Assessment Duration
 
@@ -456,9 +472,9 @@ The median assessment duration was 18.1 minutes (consented subset). The mean dur
 
 The SDM-10 diagnostic findings reveal that standard multiple-choice assessment scores both overstate and understate student financial literacy knowledge in systematic, measurable ways. As noted in Section 4.4, all SDM-10 prevalence rates reported below reflect conditioned subsamples -- diagnose items target students who answered incorrectly with high confidence, and confirm items target students who answered correctly with low confidence -- not random cross-sections of the class. The rates characterize what happens within those tails, not class-wide misconception prevalence.
 
-**Selection errors materially distort MCQ scoring.** The most striking finding is the magnitude of selection errors: among students who answered incorrectly with high confidence, 31.9% demonstrated correct understanding of the underlying concept in their open-ended explanation. On individual items, selection error rates reached 81% (Q36, diversification principle), 41% (Q10, credit reports), and 32% (Q2, mortgages). These students would receive a score of zero on the anchor assessment despite possessing the targeted knowledge. Without the open-ended diagnostic follow-up, these errors would be indistinguishable from genuine misconceptions, leading to misallocation of instructional resources toward remediation that students do not need. The pattern is concentrated on True/False items and negation-framed MCQ items, suggesting that item format rather than student knowledge drives the errors. This finding has direct implications for instrument revision: Q36 should be rewritten in multiple-choice format, and Q10's "which is FALSE" framing should be reconsidered.
+**Selection errors materially distort MCQ scoring.** The most striking finding is the magnitude of selection errors: among students who answered incorrectly with high confidence, 31.9% of classified responses demonstrated correct understanding of the underlying concept in their open-ended explanation. On individual items, selection error rates reached 81% (Q36, diversification principle), 41% (Q10, credit reports), and 32% (Q2, mortgages). These students would receive a score of zero on the anchor assessment despite possessing the targeted knowledge. Without the open-ended diagnostic follow-up, these errors would be indistinguishable from genuine misconceptions, leading to misallocation of instructional resources toward remediation that students do not need. The pattern is concentrated on True/False items and negation-framed MCQ items, suggesting that item format rather than student knowledge drives the errors. This finding has direct implications for instrument revision: Q36 should be rewritten in multiple-choice format, and Q10's "which is FALSE" framing should be reconsidered.
 
-**"False correct" guesses inflate anchor scores.** On the confirm side, among students who answered correctly but with low confidence (the SDM-10 confirm trigger), 13.4% were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. This rate applies to the low-confidence-correct tail, not to all correct responses, but it demonstrates that a non-trivial fraction of ostensibly correct answers do not reflect genuine understanding. On individual items with high guessing probability, anchor scores overestimate true comprehension.
+**"False correct" guesses inflate anchor scores.** On the confirm side, among students who answered correctly but with low confidence (the SDM-10 confirm trigger), 13.7% were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. This rate applies to the low-confidence-correct tail, not to all correct responses, but it demonstrates that a non-trivial fraction of ostensibly correct answers do not reflect genuine understanding. On individual items with high guessing probability, anchor scores overestimate true comprehension.
 
 **Misconception patterns are domain-specific and instructionally actionable.** Within the high-confidence-incorrect subsample targeted by the SDM-10, five dominant misconception clusters emerged (inflation mechanics confusion, risk-return reasoning from exceptions, insurance purpose confusion, empathy-driven reasoning, and format-induced errors). These clusters are specific enough to inform targeted instructional interventions. For example, the finding that students who were confident and wrong on Q6 systematically confuse "lower inflation" with "falling prices" (INF-01, the most frequent misconception) suggests that QUIN 102 should dedicate explicit instructional time to distinguishing rate of change from level -- a distinction that is foundational to understanding monetary policy but counter-intuitive to many students. Because the SDM-10 selects for high-Need responses, these misconception rates should not be extrapolated to the full class without adjusting for item-level coverage (see Limitation 2).
 
@@ -478,11 +494,11 @@ Several limitations should be noted when interpreting these findings.
 
 2. **SDM subsample conditioning.** The SDM-10 open-ended items are administered only to students whose anchor responses triggered high-Need subcategories (incorrect + high confidence, or correct + low confidence). Misconception prevalence estimates reflect the tails of the confidence-accuracy distribution, not a random cross-section. Per-item coverage ranges from approximately 20% (Q32) to 90% (Q7). Extrapolation to the full cohort is only appropriate when item-level coverage exceeds 50%.
 
-3. **Single scoring model.** All open-ended responses were classified by a single LLM (GPT-4.1). While the model was selected through an 11-model concordance protocol (Appendix D) and achieved zero schema violations and zero parse errors across 778 consented responses, automated classification may diverge from human judgment on borderline cases. The model assigned "high" confidence to 96.8% of classifications, which may indicate underutilization of the uncertainty channel. A human-AI agreement study on a stratified subsample would strengthen reliability evidence.
+3. **Single scoring model.** All open-ended responses were classified by a single LLM (GPT-4.1). While the model was selected through an 11-model concordance protocol (Appendix D) and achieved zero schema violations and zero parse errors across the 778 scored consented responses, automated classification may diverge from human judgment on borderline cases. The model assigned "high" confidence to 96.8% of classifications, which may indicate underutilization of the uncertainty channel. A human-AI agreement study on a stratified subsample would strengthen reliability evidence.
 
 4. **No publishable subgroup claims.** The pre-course assessment collected demographic and financial background data, but subgroup analyses (e.g., by gender, race/ethnicity, first-generation status) are deferred to Paper 2. We plan to submit an IRB application for human-subjects research; until approval is obtained, no subgroup comparisons or inferential claims are reported.
 
-5. **Possible lookup between anchor and SDM.** The SDM-10 is administered immediately after the anchor assessment in the same session. Students may look up answers between the anchor and SDM items, potentially inflating SDM scores. The 100% SDM completion rate and the lower SDM mean score (64.37% vs. 65.8% anchor) provide some evidence against widespread lookup behavior, but the possibility cannot be excluded.
+5. **Possible lookup between anchor and SDM.** The SDM-10 is administered immediately after the anchor assessment in the same session. Students may look up answers between the anchor and SDM items, potentially inflating SDM scores. The 100% SDM completion rate and the lower SDM mean score (64.4% vs. 67.0% anchor) provide some evidence against widespread lookup behavior, but the possibility cannot be excluded.
 
 6. **Consent attrition.** Seventy-seven students (17.9% of the cohort) have NULL consent status because they completed the assessment before the research consent screen was deployed. Zero students explicitly declined. The NULL cohort is excluded from all research analyses per standard practice (absence of affirmative consent is treated as non-consent). A representativeness check (Section 5.3) shows the consented sample is similar to the full cohort on score distribution and classification distributions, so consent-related selection bias is unlikely. However, the reduction from 431 to 354 students slightly reduces statistical power for item-level analyses with small cell sizes.
 
