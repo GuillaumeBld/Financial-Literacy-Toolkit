@@ -105,8 +105,8 @@ function createImageElements(imagePath, captionText) {
 const PAGE_WIDTH = 9360;
 const CELL_BORDER = {
   style: BorderStyle.SINGLE,
-  size: 1,
-  color: "CCCCCC",
+  size: 4,
+  color: "000000",
 };
 const TABLE_BORDERS = {
   top: CELL_BORDER,
@@ -341,6 +341,12 @@ function headerCell(text, width) {
     shading: HEADER_SHADING,
     width: { size: width, type: WidthType.DXA },
     verticalAlign: VerticalAlign.CENTER,
+    borders: {
+      top: CELL_BORDER,
+      bottom: CELL_BORDER,
+      left: CELL_BORDER,
+      right: CELL_BORDER,
+    },
   });
 }
 
@@ -355,6 +361,12 @@ function bodyCell(text, width, alignment) {
     ],
     width: { size: width, type: WidthType.DXA },
     verticalAlign: VerticalAlign.CENTER,
+    borders: {
+      top: CELL_BORDER,
+      bottom: CELL_BORDER,
+      left: CELL_BORDER,
+      right: CELL_BORDER,
+    },
   });
 }
 
