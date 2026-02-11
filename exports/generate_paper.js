@@ -1,9 +1,11 @@
 const fs = require("fs");
+const path = require("path");
 const {
   Document,
   Packer,
   Paragraph,
   TextRun,
+  ImageRun,
   HeadingLevel,
   AlignmentType,
   Table,
@@ -26,6 +28,76 @@ const {
 const EXPORTS_DIR = "/root/Financial-Literacy-Toolkit/exports";
 const PAPER_MD = "/root/Financial-Literacy-Toolkit/_project/source_of_truth/paper.md";
 const OUTPUT_PATH = `${EXPORTS_DIR}/paper.docx`;
+
+// ─── Image helpers ───────────────────────────────────────────────────────────
+const MAX_IMAGE_WIDTH_EMU = 5486400; // 6 inches (914400 EMU/inch × 6)
+
+function getPngDimensions(buffer) {
+  // PNG IHDR chunk: 8-byte signature + 4-byte length + 4-byte "IHDR" + width + height
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  };
+}
+
+function createImageElements(imagePath, captionText) {
+  const fullPath = path.resolve(EXPORTS_DIR, imagePath);
+  if (!fs.existsSync(fullPath)) {
+    console.warn(`WARNING: Image not found: ${fullPath}`);
+    return [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `[Missing image: ${imagePath}]`,
+            italics: true,
+            font: "Times New Roman",
+            size: 24,
+            color: "FF0000",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      }),
+    ];
+  }
+
+  const imgBuffer = fs.readFileSync(fullPath);
+  const { width, height } = getPngDimensions(imgBuffer);
+  const aspectRatio = height / width;
+  const displayWidth = MAX_IMAGE_WIDTH_EMU;
+  const displayHeight = Math.round(displayWidth * aspectRatio);
+
+  const elements = [
+    new Paragraph({
+      children: [
+        new ImageRun({
+          data: imgBuffer,
+          transformation: { width: displayWidth, height: displayHeight },
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 360, after: 120 },
+    }),
+  ];
+
+  if (captionText) {
+    elements.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: captionText,
+            italics: true,
+            font: "Times New Roman",
+            size: 22,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 360 },
+      })
+    );
+  }
+
+  return elements;
+}
 
 // ─── Reusable constants ──────────────────────────────────────────────────────
 const PAGE_WIDTH = 9360;
@@ -537,6 +609,16 @@ function parseBodyContent(lines, startIndex) {
       const listResult = parseUnorderedList(lines, i);
       elements.push(...listResult.items);
       i = listResult.nextIndex;
+      continue;
+    }
+
+    // Image: ![caption](path)
+    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)/);
+    if (imgMatch) {
+      const caption = imgMatch[1];
+      const imgPath = imgMatch[2];
+      elements.push(...createImageElements(imgPath, caption));
+      i++;
       continue;
     }
 

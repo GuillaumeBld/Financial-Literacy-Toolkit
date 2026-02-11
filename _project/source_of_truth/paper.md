@@ -163,6 +163,8 @@ The selection algorithm computes a Need score (0--5) for each of the 26 knowledg
 
 The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least 2 items per scoring domain). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. Open-ended items are capped at 3 per student to limit response burden. The complete algorithm specification is presented in Appendix A.
 
+![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence–accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
+
 ### 4.2 Variant Types and Three-Way Classification
 
 **Table 4.2: Variant Assignment Rules**
@@ -433,6 +435,8 @@ A total of 443 students onboarded onto the platform, of whom 431 submitted compl
 
 All tables and statistics in Sections 4 and 6 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
 
+![Figure 3. Daily Enrollment and Completion (Feb 2–9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
+
 The following demographic summary describes the composition of the consented sample for operational context only. No subgroup performance comparisons are reported in Paper 1.
 
 **Table 6.1: Sample Demographics (Consented, n = 354)**
@@ -445,6 +449,10 @@ The following demographic summary describes the composition of the consented sam
 | English first language | 278 | 78.5% |
 | Spanish first language | 44 | 12.4% |
 | Other languages | 32 | 9.0% |
+
+![Figure 7. Sample Demographics (N = 421, full completed cohort). Panels show gender, age range, race/ethnicity, work experience, and first-generation status.](figures/fig7_demographics.png)
+
+![Figure 8. Financial Background and Self-Assessment (N = 421, full completed cohort). Panels show frequency of financial stress and self-rated financial knowledge.](figures/fig8_financial_background.png)
 
 ### 6.2 Anchor Score Context
 
@@ -462,6 +470,8 @@ For the consented subset (n = 354), the mean anchor score was 67.0% (SD = 17.9%,
 
 Investment and Risk was the weakest domain, driven primarily by low performance on Q38 (Inflation Protection) and Q6 (Inflation Lowering). However, Investment and Risk also has the highest selection error count (56), suggesting some of this weakness is artefactual.
 
+![Figure 2. Domain-Level Performance Comparison (full completed cohort). Error bars show ±1 SD. Dashed line indicates overall mean (66.6%).](figures/fig2_domain_performance.png)
+
 **Table 6.3: Score Distribution by Performance Band (Consented, n = 354)**
 
 | Band | n | % of Sample | Status |
@@ -473,11 +483,17 @@ Investment and Risk was the weakest domain, driven primarily by low performance 
 
 The largest segment (45.5%) falls in the 50--69% band. Combined with the 12.7% below 50%, over half the consented sample has partial or incomplete financial literacy knowledge.
 
+![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60–69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
+
+![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, ≥70%), yellow (moderate, 50–69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
+
 The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than the anchor mean (67.0%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
 
 ### 6.3 Assessment Duration
 
 The median assessment duration was 18.1 minutes (consented subset). The mean duration (217.2 minutes) was heavily skewed by a small number of sessions left open without completion, including sessions that remained idle for multiple days. The median is the more representative measure of active assessment time.
+
+![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2–10 PM CST (Chicago time).](figures/fig4_submission_time.png)
 
 ---
 
