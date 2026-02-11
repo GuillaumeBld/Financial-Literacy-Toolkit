@@ -755,7 +755,178 @@ Q15--Q28 are preference items (unscored).
 | Risk and Return Knowledge | Investment Risk -- Asset Class Risk | 1 | Q39 | Yes |
 | Risk and Return Knowledge | Crisis/Systemic Risk | 1 | Q40 | Yes |
 
-*(Full question text with answer keys is available in the project repository.)*
+### B.2: Baseline Covariates (B1–B13, Not Scored)
+
+These items collect demographic characteristics, financial background, and debt status during the onboarding phase. No responses are scored.
+
+**B1.** What is your gender?
+*(A) Female | (B) Male | (C) Prefer not to say*
+
+**B2.** Which category best describes your racial or ethnic background?
+*(A) White or Caucasian | (B) Asian | (C) Black or African American | (D) Hispanic or Latino | (E) Native Hawaiian or Pacific Islander | (F) Native American or Alaska Native | (G) Two or more racial or ethnic backgrounds | (H) Other | (I) Prefer not to say*
+
+**B3.** What is your age range?
+*(A) 20 or under | (B) Above 20*
+
+**B4.** What is your first language?
+*(A) English | (B) Spanish | (C) Chinese (any dialect) | (D) French | (E) Russian | (F) Dutch | (G) Other (please specify)*
+
+**B5.** Do you have work experience?
+*(A) No work experience | (B) Part-time employment | (C) Full-time employment*
+
+**B6.** Prior to enrolling in this course, had you personally used any of the following financial products? (Select all that apply)
+*(A) Credit card | (B) Student loan | (C) Auto loan | (D) Investment account (stocks, ETFs, mutual funds) | (E) Insurance policy in your own name | (F) None of the above*
+
+**B7.** Before enrolling in this course, how would you rate your overall financial knowledge?
+*(A) Very low | (B) Low | (C) Moderate | (D) High | (E) Very high*
+
+**B8.** How often do you feel financially stressed?
+*(A) Never | (B) Rarely | (C) Sometimes | (D) Often | (E) Always*
+
+**B9.** Highest Level of Parental Education
+*(A) Less than high school | (B) High school diploma or GED | (C) Some college, no degree | (D) Associate degree (AA/AS) | (E) Bachelor's degree (BA/BS) | (F) Graduate or professional degree | (G) Don't know | (H) Prefer not to answer*
+
+**B10.** Are you a first-generation college student?
+*(A) Yes | (B) No | (C) Prefer not to say*
+
+**B11.** Do you currently have any student loan debt?
+*(A) Yes | (B) No | (C) Prefer not to say*
+
+**B12.** If yes, what is the interest rate on your student loan debt (best estimate)?
+*(A) Less than 5% | (B) Between 5% and 10% | (C) Above 10% | (D) I do not know | (E) Prefer not to say*
+
+**B13.** If yes, what is the maturity of your student loan (time until fully repaid) (best estimate)?
+*(A) Less than 5 years | (B) 5 to 10 years | (C) More than 10 years | (D) Do not know | (E) Prefer not to say*
+
+### B.3: Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1–Q10, Scored)
+
+**Q1** *(Compound Interest).* Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow?
+*(A) More than $102 | (B) Exactly $102 | (C) Less than $102 | (D) Do not know* — **Answer: A**
+
+**Q2** *(Borrowing/Mortgages).* A 15-year mortgage typically requires higher monthly payments than a 30-year mortgage, but the total interest paid over the life of the loan will be less. True or false?
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q3** *(Inflation).* High inflation means that the cost of living is increasing rapidly. True or false?
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q4** *(Borrowing/Interest).* You lend $25 to a friend one evening and he gives you $25 back the next day. How much interest has he paid on this loan?
+*(A) $25 | (B) $0 | (C) Do not know* — **Answer: B**
+
+**Q5** *(Saving).* Lyle has a good job and earns enough to pay his bills comfortably each month. In terms of his emergency savings, how much should he have set aside?
+*(A) $200 or so | (B) Money equal to his share of one month's rent/mortgage | (C) The equivalent of three or more months of living expenses | (D) Do not know* — **Answer: C**
+
+**Q6** *(Inflation).* A successful effort to lower inflation would likely be accompanied by which of the following?
+*(A) A decrease in the general level of prices | (B) A slower increase in prices | (C) An increase in employment | (D) Do not know* — **Answer: B**
+
+**Q7** *(Inflation).* Inflation can cause difficulty in many ways. Which group would have the greatest problem during periods of high inflation?
+*(A) Young couples with no children who both work | (B) Older, working couples saving for retirement | (C) Retirees living on a fixed income | (D) Do not know* — **Answer: C**
+
+**Q8** *(Borrowing).* Jayden is shopping for an auto loan. Which of the following can he likely negotiate with the lender?
+*(A) The interest rate | (B) The required down payment | (C) Both | (D) Neither | (E) Do not know* — **Answer: C**
+
+**Q9** *(Earning).* Considering the strategy of allocating income, what is the PRIMARY advantage to your household of making a budget?
+*(A) Ensures funds are available for bill paying and saving | (B) Reduces your taxes | (C) Increases rate of return on your investments | (D) Do not know* — **Answer: A**
+
+**Q10** *(Borrowing/Credit).* Which of the following statements regarding credit reports is FALSE?
+*(A) Credit reports are used by employers to screen job applicants | (B) A credit report includes an assessment of your worthiness to receive credit | (C) Your credit report is provided by a single source | (D) Do not know* — **Answer: C**
+
+### B.4: Behavioral and Risk Management — Factual Knowledge (Q11–Q14, Scored)
+
+**Q11** *(Risk Diversification).* Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund.
+*(A) True | (B) False | (C) Do not know* — **Answer: B**
+
+**Q12** *(Insurance).* Which of the following best describes the PRIMARY function of health insurance?
+*(A) Protect against the possibility of large unexpected medical bills | (B) Cover the cost of routine health care expenses | (C) Pay for elective medical procedures | (D) Do not know* — **Answer: A**
+
+**Q13** *(Insurance).* What does a home insurance deductible represent?
+*(A) Amount you pay before insurance covers damages | (B) Monthly premium for coverage | (C) Maximum amount insurance will pay | (D) Do not know* — **Answer: A**
+
+**Q14** *(Risk Diversification).* When an investor spreads money among different assets, the risk of losing money usually:
+*(A) Increases | (B) Decreases | (C) Stays the same | (D) Do not know* — **Answer: B**
+
+### B.5: Financial Attitudes and Preferences (Q15–Q28, Not Scored)
+
+These 14 items capture behavioral attitudes, risk preferences, and financial decision-making tendencies. They are not scored but contribute to the behavioral profile used in the SDM-10 adaptive module.
+
+**Q15** *(Allocation Preference).* You receive a $10,000 bonus. What would you most likely do with it?
+*(A) Put it in a high-interest savings account for safety | (B) Invest it in mutual funds or ETFs for steady growth | (C) Buy individual stocks with potential for high return | (D) Spend most of it and save the rest later*
+
+**Q16** *(Loss Aversion).* Your retirement account drops 20% due to a market downturn. How do you react?
+*(A) Sell everything, I can't risk losing more | (B) Do nothing, markets recover over time | (C) Invest more, buy while prices are low | (D) Move funds to safer options like bonds or cash*
+
+**Q17** *(Risk Perception).* What does "risk" mean to you when it comes to financial decisions?
+*(A) The chance I could lose money | (B) The opportunity to earn a higher return | (C) Something unpredictable that needs to be managed | (D) I'm not sure*
+
+**Q18** *(Social Influence and Herding).* You hear that everyone is investing in a new crypto asset. What do you do?
+*(A) Invest quickly, don't miss out | (B) Put in a small amount just in case | (C) Research carefully before acting | (D) Stay out, I avoid hype*
+
+**Q19** *(Retirement Risk Planning).* When planning for retirement, how do you factor in risk?
+*(A) I ignore it, retirement is far away | (B) I aim for high growth regardless | (C) I diversify and rebalance regularly | (D) I rely on my advisor to guide me*
+
+**Q20** *(Emotional Response to Loss).* You lose $1,000 in an investment. What's your emotional reaction?
+*(A) Angry and anxious | (B) Concerned but calm | (C) Indifferent | (D) Curious to understand why*
+
+**Q21** *(Decision Process).* When faced with a complex financial decision, how do you typically proceed?
+*(A) Do extensive research and consider all outcomes | (B) Go with your intuition or gut feeling | (C) Rely on advice from friends or family | (D) Delay the decision until you feel more confident*
+
+**Q22** *(Risk Confidence).* How confident are you in recognizing when an investment is too risky for your situation?
+*(A) Very confident, I understand my risk limits | (B) Somewhat confident, I can tell when it's extreme | (C) Not very confident, I often second-guess | (D) I usually rely on others to decide for me*
+
+**Q23** *(Risk Attitude).* What best describes your attitude toward risk?
+*(A) I avoid risk as much as possible | (B) I'm okay with small risks for modest gains | (C) I take calculated risks for higher rewards | (D) I actively seek out high-risk, high-reward opportunities*
+
+**Q24** *(Reaction to Underperformance).* If your long-term investment underperforms for a year, what would you most likely do?
+*(A) Sell and look for a better option | (B) Reduce investment but stay in | (C) Stay the course | (D) Invest more to lower the average cost*
+
+**Q25** *(Definition of Success).* How do you define a "successful" investment?
+*(A) One that doesn't lose money | (B) One that beats inflation | (C) One that aligns with my financial goals | (D) One that produces the highest return, regardless of risk*
+
+**Q26** *(Downside Awareness).* When making financial decisions, how often do you consider the potential downside risk?
+*(A) Never | (B) Rarely | (C) Sometimes | (D) Always*
+
+**Q27** *(Risk Preference in Income).* Imagine you're offered two jobs. Job A pays more but has uncertain income and less security. Job B pays less but is stable. Which do you choose?
+*(A) Definitely Job A | (B) Probably Job A | (C) Probably Job B | (D) Definitely Job B*
+
+**Q28** *(Scam Skepticism).* If an investment opportunity promises unusually high returns with little explanation of how, what do you do?
+*(A) Invest a small amount just to test it | (B) Ask for more details and do research | (C) Avoid it, it seems too good to be true | (D) Immediately take advantage before it's gone*
+
+### B.6: Risk and Return Knowledge (Q29–Q40, Scored)
+
+**Q29** *(Investing).* If interest rates rise, what will typically happen to bond prices?
+*(A) They will rise | (B) They will fall | (C) They will stay the same | (D) There is no relationship | (E) Do not know* — **Answer: B**
+
+**Q30** *(Investing).* An investment with a high return is likely to be high risk. True or false?
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q31** *(Investing).* Which of the following best describes what the stock market does?
+*(A) Results in a gain in wealth for investors | (B) Creates liquidity by guaranteeing investors a profit | (C) Brings people who want to buy stocks together with those who want to sell stocks | (D) Do not know* — **Answer: C**
+
+**Q32** *(Investing).* Considering a long time period (e.g., 10–20 years), which asset normally gives the highest return?
+*(A) Savings accounts | (B) Bonds | (C) Stocks | (D) Do not know* — **Answer: C**
+
+**Q33** *(Basic Probability).* In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket?
+*(A) 5 | (B) 8 | (C) 10 | (D) 12 | (E) Do not know* — **Answer: C**
+
+**Q34** *(Diversification Effect).* When an investor spreads money among different assets, does the risk of losing money usually increase, decrease, or stay the same?
+*(A) Increase | (B) Decrease | (C) Stay the same | (D) Do not know* — **Answer: B**
+
+**Q35** *(Risk-Return Relationship).* If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false?
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q36** *(Diversification Principle).* True or false: It is less likely that you will lose all of your money if you save it in more than one place.
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q37** *(Insurance).* Which of the following insurance policies is most likely to protect you if you cause an accident that injures someone?
+*(A) Health insurance | (B) Homeowner's or renter's insurance | (C) Auto insurance liability coverage | (D) Do not know* — **Answer: C**
+
+**Q38** *(Inflation Risk).* Which of the following types of investment would best protect the purchasing power of a family's savings in the event of a sudden increase in inflation?
+*(A) A 10-year bond paying a fixed rate of interest | (B) A certificate of deposit at a bank | (C) A 25-year home mortgage at a fixed rate | (D) A house financed with a fixed-rate mortgage | (E) Do not know* — **Answer: D**
+
+**Q39** *(Asset Class Risk).* True or false: Stocks are generally riskier than bonds.
+*(A) True | (B) False | (C) Do not know* — **Answer: A**
+
+**Q40** *(Crisis/Systemic Risk).* What was a key factor contributing to the 2007 to 2008 financial crisis?
+*(A) Strong regulation of mortgage lending | (B) Widespread failure to properly assess and manage financial risk | (C) High household savings rates | (D) Low levels of borrowing by households* — **Answer: B**
 
 ---
 
