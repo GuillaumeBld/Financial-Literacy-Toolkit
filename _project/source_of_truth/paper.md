@@ -390,7 +390,19 @@ The consent flow structurally separates the course requirement from the research
 
 **Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
 
-**Representativeness check.** The consented subsample (n = 354) closely mirrors the full cohort (N = 431). The consented group has a mean anchor score of 67.0% (full cohort: 67.4%), and diagnostic classification distributions within 1 percentage point of the full-cohort values across all categories. The 77 non-consented students are not systematically different on observable assessment characteristics, indicating that the NULL-consent cohort reflects deployment timing rather than a self-selected subgroup.
+**Representativeness check.** The consented subsample appears similar to the full cohort on observed score distributions, as summarized below. This comparison is descriptive; no formal equivalence test was conducted.
+
+**Table 5.1: Consented vs. Full Cohort Comparison**
+
+| Metric | Consented (n = 354) | Full Cohort (N = 431) | Difference |
+| --- | --- | --- | --- |
+| Anchor mean | 67.0% | 67.4% | 0.4 pp |
+| Anchor SD | 17.9% | 17.9% | 0.0 pp |
+| Median | 69.2% | 69.2% | 0.0 pp |
+| Below 50% band | 12.7% | 12.3% | 0.4 pp |
+| 80%+ band | 24.9% | 25.6% | 0.7 pp |
+
+The small differences (all < 1 percentage point) suggest that the NULL-consent cohort reflects deployment timing rather than a self-selected subgroup, though this cannot be confirmed without additional non-observable covariates.
 
 **Default selection.** The consent screen presented "Yes, I consent" as the default selection. While the 0% explicit decline rate is consistent with students having no objection to de-identified research use, the default-yes design may have inflated the consent rate through status quo bias. Paper 2 will mitigate this by implementing a forced active choice (no default selection) in the post-assessment consent screen.
 
@@ -544,7 +556,7 @@ We plan to submit an IRB application to Loyola University Chicago to evaluate th
 
 The publishable evaluation will be conducted only on IRB-consented data. The existing consent infrastructure (Section 5.3) separates instructional use from research use; this separation will be maintained in the post-assessment. All student data will remain de-identified using the one-way hashing architecture described in Section 5.2. No raw student identifiers will appear in any dataset or publication.
 
-**Suppression rules.** To protect student privacy in subgroup analyses, Paper 2 will suppress any demographic cell with fewer than 10 observations. Intersectional cells (e.g., gender x race/ethnicity) that fall below this threshold will be reported only in aggregate or omitted. These thresholds follow standard practices for small-sample educational research and are consistent with FERPA de-identification guidance.
+**Suppression rules.** To protect student privacy in subgroup analyses, Paper 2 will suppress any demographic cell with fewer than 10 observations. Intersectional cells (e.g., gender x race/ethnicity) that fall below this threshold will be reported only in aggregate or omitted. These thresholds follow standard practices for small-sample educational research and are consistent with a FERPA-aware design approach to de-identification.
 
 ### 9.4 Intended Use and Prohibited Use
 
@@ -637,7 +649,7 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 | Control | Rule |
 | --- | --- |
-| SDM size | Fixed 10 items after the 40 anchor questions |
+| SDM size | Target 10 items after the 40 anchor questions (5--10 delivered depending on available high-Need subcategories) |
 | Selection basis | Ranked by Need score (0--5) at subcategory level |
 | Domain balance | At least 2 items per domain (borrowing/credit, investment, risk management) |
 | Subcategory cap | Max 2 SDM items per subcategory |
