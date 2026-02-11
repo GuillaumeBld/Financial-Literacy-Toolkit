@@ -30,7 +30,9 @@ const PAPER_MD = "/root/Financial-Literacy-Toolkit/_project/source_of_truth/pape
 const OUTPUT_PATH = `${EXPORTS_DIR}/paper.docx`;
 
 // ─── Image helpers ───────────────────────────────────────────────────────────
-const MAX_IMAGE_WIDTH_EMU = 5486400; // 6 inches (914400 EMU/inch × 6)
+// docx library expects PIXELS for ImageRun transformation (converts to EMU internally × 9525)
+// 6 inches at 96 DPI = 576 px. Use 580 px as max display width.
+const MAX_IMAGE_WIDTH_PX = 580;
 
 function getPngDimensions(buffer) {
   // PNG IHDR chunk: 8-byte signature + 4-byte length + 4-byte "IHDR" + width + height
@@ -63,7 +65,7 @@ function createImageElements(imagePath, captionText) {
   const imgBuffer = fs.readFileSync(fullPath);
   const { width, height } = getPngDimensions(imgBuffer);
   const aspectRatio = height / width;
-  const displayWidth = MAX_IMAGE_WIDTH_EMU;
+  const displayWidth = Math.min(MAX_IMAGE_WIDTH_PX, width);
   const displayHeight = Math.round(displayWidth * aspectRatio);
 
   const elements = [
