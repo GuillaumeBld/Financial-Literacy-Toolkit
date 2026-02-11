@@ -27,7 +27,7 @@ const {
 // ─── Paths ───────────────────────────────────────────────────────────────────
 const EXPORTS_DIR = "/root/Financial-Literacy-Toolkit/exports";
 const PAPER_MD = "/root/Financial-Literacy-Toolkit/_project/source_of_truth/paper.md";
-const OUTPUT_PATH = `${EXPORTS_DIR}/paper.docx`;
+const OUTPUT_PATH = `${EXPORTS_DIR}/Bolivard_QUIN102_Paper1.docx`;
 
 // ─── Image helpers ───────────────────────────────────────────────────────────
 // docx library expects PIXELS for ImageRun transformation (converts to EMU internally × 9525)
