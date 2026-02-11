@@ -524,9 +524,8 @@ function parseBodyContent(lines, startIndex) {
       continue;
     }
 
-    // Horizontal rule (---) => page break
+    // Horizontal rule (---) => skip (H2 headings handle page breaks)
     if (/^-{3,}\s*$/.test(trimmed)) {
-      elements.push(pageBreakParagraph());
       i++;
       continue;
     }
@@ -559,7 +558,7 @@ function parseBodyContent(lines, startIndex) {
       continue;
     }
 
-    // H2 heading (##)
+    // H2 heading (##) — always starts on a new page
     if (trimmed.startsWith("## ")) {
       const headingText = trimmed.replace(/^##\s+/, "");
       elements.push(
@@ -567,6 +566,7 @@ function parseBodyContent(lines, startIndex) {
           children: parseInlineFormatting(headingText),
           heading: HeadingLevel.HEADING_1,
           spacing: { before: 480, after: 240 },
+          pageBreakBefore: true,
         })
       );
       i++;
