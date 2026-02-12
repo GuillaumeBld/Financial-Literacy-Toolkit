@@ -1,7 +1,14 @@
 # Developing a Risk Literacy Diagnostic for QUIN 102: Instrument Design, Platform Implementation, and SDM-10 Diagnostic Findings
 
+**Guillaume Bolivard**
 **Loyola University Chicago**
 **Independent Study -- Spring 2026**
+
+---
+
+## Abstract
+
+This paper describes the design, implementation, and initial deployment of a 40-item pre-course financial risk literacy assessment for QUIN 102 at Loyola University Chicago. The instrument spans three knowledge domains -- Borrowing and Credit, Risk Management, and Investment and Risk -- using 26 scored and 14 unscored anchor items. A Supplemental Diagnostic Module (SDM-10) adaptively selects up to 10 open-ended follow-up items based on each student's anchor performance; an AI scoring pipeline classifies responses into misconception, knowledge gap, and selection error categories. During the Spring 2026 pilot, 354 research-consented students completed the assessment through a FERPA-compliant web platform built on Next.js and PostgreSQL. The mean anchor score was 67.0% (SD = 17.9%), with notable variation across domains. Among 493 scored diagnostic responses, 53.9% reflected misconceptions, 31.9% selection errors, and 14.2% knowledge gaps. We discuss implications for targeted instruction, outline limitations of the current single-cohort design, and preview a planned validation study that will add pre-post measurement, factor analysis, and heterogeneity modeling.
 
 ---
 
@@ -23,7 +30,7 @@
    - 4.3 [AI-Assisted Scoring Pipeline](#43-ai-assisted-scoring-pipeline)
    - 4.4 [Diagnostic Findings](#44-diagnostic-findings)
      - 4.4.1 [Open-Ended Response Overview](#441-open-ended-response-overview)
-     - 4.4.2 [Diagnose Classification Results](#442-diagnose-classification-results)
+     - 4.4.2 [Diagnostic Classification Results](#442-diagnose-classification-results)
      - 4.4.3 [Confirm Classification Results](#443-confirm-classification-results)
      - 4.4.4 [Misconception Analysis by Domain](#444-misconception-analysis-by-domain)
      - 4.4.5 [Selection Error Patterns](#445-selection-error-patterns)
@@ -76,7 +83,7 @@ RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent s
 
 Since the early 2000s, a growing body of research has examined how well people understand basic financial concepts and how that understanding shapes their economic decisions. Lusardi and Mitchell (2014) anchored much of this work by defining financial literacy around three core ideas -- interest compounding, inflation, and risk diversification -- and showing that individuals who grasp these concepts save more, invest more effectively, and accumulate greater wealth over time. Their "Big Three" questions have become the most widely adopted instrument for assessing basic financial literacy and form the conceptual basis for most subsequent measurement efforts, including the assessment categories used in the present study.
 
-Despite broad recognition of its importance, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12--20 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment's coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston's recommended framework. More recently, the OECD (2022) OECD/INFE toolkit has provided a standardized questionnaire measuring three dimensions of financial literacy -- knowledge, behavior, and attitudes -- deployed across dozens of countries to enable cross-national comparisons.
+Although the construct is widely acknowledged, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12--20 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment's coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston's recommended framework. More recently, the OECD/INFE toolkit (OECD, 2022) has provided a standardized questionnaire measuring three dimensions of financial literacy -- knowledge, behavior, and attitudes -- deployed across dozens of countries to enable cross-national comparisons.
 
 In their methodological review, Hastings, Madrian, and Skimmyhorn (2013) examined how researchers actually measure financial literacy and concluded that the "Big Five" questions -- interest rates, inflation, diversification, compound interest, and bond pricing -- remain the field's most trusted indicators, despite persistent difficulties in drawing causal links between what people know and how they behave financially. Lusardi (2019) further documented that globally, only about one-third of adults demonstrate familiarity with basic financial concepts, with illiteracy especially concentrated among women, minorities, the young, and those with lower educational attainment.
 
@@ -88,7 +95,7 @@ Research has documented uneven financial literacy across knowledge domains. Lusa
 
 In the investment domain, van Rooij, Lusardi, and Alessie (2011) found that while most respondents demonstrated basic financial knowledge (interest compounding, inflation, time value of money), very few understood differences between bonds and stocks, bond price-interest rate relationships, or risk diversification basics. Individuals with low advanced financial literacy were significantly less likely to participate in the stock market.
 
-Among college students specifically, Akers and Chingos (2014) found striking levels of student loan illiteracy: 28% of first-year students with federal loans reported having no federal debt, and nearly half seriously underestimated their total student debt. These findings underscore why the present assessment includes borrowing/credit as a major knowledge domain.
+Within the college population, Akers and Chingos (2014) found striking levels of student loan illiteracy: 28% of first-year students with federal loans reported having no federal debt, and nearly half seriously underestimated their total student debt. These findings underscore why the present assessment includes borrowing/credit as a major knowledge domain.
 
 ### 2.3 Confidence Calibration and Overconfidence
 
@@ -141,7 +148,7 @@ Each anchor item also carries a confidence rating, which we use for secondary an
 
 The instrument emphasizes risk literacy as a core construct, consistent with the independent study's objectives. Risk literacy encompasses not only factual knowledge of diversification, insurance, and risk-return tradeoffs (assessed through scored knowledge items) but also students' self-assessed confidence in recognizing and managing risk (assessed through confidence ratings and preference items). The SDM-10 module provides a deeper diagnostic layer by probing whether incorrect answers on risk-related items reflect misconceptions (specific wrong mental models), knowledge gaps (absence of knowledge), or selection errors (correct understanding with wrong answer choice). This three-level diagnostic architecture -- knowledge score, confidence calibration, and open-ended classification -- enables measurement of both quantitative and qualitative dimensions of risk literacy.
 
-We designed the instrument to be internally consistent and transferable: piloted first with Loyola University Chicago students in QUIN 102, the item bank, scoring framework, and diagnostic module are intended for adaptation to broader student populations in future work.
+We designed the instrument to be internally consistent and transferable. Although piloted first with Loyola University Chicago students in QUIN 102, the item bank, scoring framework, and diagnostic module are intended for adaptation to broader student populations in future work.
 
 ---
 
@@ -149,7 +156,7 @@ We designed the instrument to be internally consistent and transferable: piloted
 
 ### 4.1 Selection Algorithm and Need Score
 
-The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (6 variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The SDM-10 draws only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) do not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
+The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (six variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The SDM-10 draws only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) do not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
 
 The selection algorithm computes a Need score (0--5) for each of the 26 knowledge subcategories based on three signals from the anchor response: correctness, confidence (1--3 scale), and item format (True/False vs. multiple choice). Higher Need scores indicate greater residual uncertainty. The format-aware adjustment addresses differential guessing probability: a correct True/False response with moderate confidence is assigned a higher Need (Need = 2) than the equivalent multiple-choice response (Need = 1), reflecting the 50% versus approximately 25% chance-level baseline. Incorrect responses with high confidence receive the maximum Need score (Need = 5), signaling a likely misconception requiring open-ended diagnostic follow-up.
 
@@ -161,9 +168,9 @@ The selection algorithm computes a Need score (0--5) for each of the 26 knowledg
 | 2 (Mid) | 1 | 2 | 4 | 4 |
 | 3 (High) | 0 | 0 | 5 | 5 |
 
-The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least 2 items per scoring domain). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. Open-ended items are capped at 3 per student to limit response burden. The complete algorithm specification is presented in Appendix A.
+The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least two items per scoring domain). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. Open-ended items are capped at three per student to limit response burden. The complete algorithm specification is presented in Appendix A.
 
-![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence–accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
+![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence-accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
 
 ### 4.2 Variant Types and Three-Way Classification
 
@@ -344,7 +351,7 @@ These findings demonstrate that raw MCQ scores materially understate student kno
 
 #### 4.4.6 Validation Against Manual Analysis
 
-Prior to AI scoring, a manual analysis of response patterns was conducted on a calibration sample. Table 4.11 compares the predicted dominant misconception rates from manual analysis with the AI-scored results for the consented sample.
+Prior to AI scoring, we conducted a manual analysis of response patterns on a calibration sample. Table 4.11 compares the predicted dominant misconception rates from manual analysis with the AI-scored results for the consented sample.
 
 **Table 4.11: Manual Prediction vs. AI Scoring Results (Consented Sample)**
 
@@ -418,7 +425,7 @@ Below we report operational statistics from the pre-course assessment window (Fe
 
 ### 6.1 Participation and Completion
 
-A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment received SDM-10 items. Of these, 300 consented students (84.7%) received the full 10-item module; 54 received between 5 and 9 items due to insufficient high-Need subcategories in their anchor profile (the algorithm could not fill all 10 slots when a student's anchor performance was uniformly strong or weak across subcategories).
+A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment received SDM-10 items. Of these, 300 consented students (84.7%) received the full 10-item module; 54 received between five and nine items due to insufficient high-Need subcategories in their anchor profile (the algorithm could not fill all 10 slots when a student's anchor performance was uniformly strong or weak across subcategories).
 
 **Table 6.0: Counts and Inclusion Rules**
 
@@ -435,7 +442,7 @@ A total of 443 students onboarded onto the platform, of whom 431 submitted compl
 
 All tables and statistics in Sections 4 and 6 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
 
-![Figure 3. Daily Enrollment and Completion (Feb 2–9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
+![Figure 3. Daily Enrollment and Completion (Feb 2--9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
 
 The following demographic summary describes the composition of the consented sample for operational context only. No subgroup performance comparisons are reported in Paper 1.
 
@@ -468,7 +475,7 @@ For the consented subset (n = 354), the mean anchor score was 67.0% (SD = 17.9%,
 | Borrowing, Interest Rates, and Financial Numeracy Knowledge | 10 | 69.2% |
 | Risk and Return Knowledge | 12 | 63.4% |
 
-Investment and Risk was the weakest domain, driven primarily by low performance on Q38 (Inflation Protection) and Q6 (Inflation Lowering). However, Investment and Risk also has the highest selection error count (56), suggesting some of this weakness is artefactual.
+Risk and Return Knowledge was the weakest domain, driven primarily by low performance on Q38 (Inflation Protection) and Q6 (Inflation Lowering). However, this domain also has the highest selection error count (56), suggesting some of this weakness is artifactual.
 
 ![Figure 2. Domain-Level Performance Comparison (full completed cohort). Error bars show ±1 SD. Dashed line indicates overall mean (66.6%).](figures/fig2_domain_performance.png)
 
@@ -483,9 +490,9 @@ Investment and Risk was the weakest domain, driven primarily by low performance 
 
 The largest segment (45.5%) falls in the 50--69% band. Combined with the 12.7% below 50%, over half the consented sample has partial or incomplete financial literacy knowledge.
 
-![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60–69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
+![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60--69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
 
-![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, ≥70%), yellow (moderate, 50–69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
+![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, ≥70%), yellow (moderate, 50--69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
 
 The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than the anchor mean (67.0%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
 
@@ -493,7 +500,7 @@ The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than th
 
 The median assessment duration was 18.1 minutes (consented subset). The mean duration (217.2 minutes) was heavily skewed by a small number of sessions left open without completion, including sessions that remained idle for multiple days. The median is the more representative measure of active assessment time.
 
-![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2–10 PM CST (Chicago time).](figures/fig4_submission_time.png)
+![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2--10 PM CST (Chicago time).](figures/fig4_submission_time.png)
 
 ---
 
@@ -509,13 +516,13 @@ The SDM-10 diagnostic findings reveal that standard multiple-choice assessment s
 
 **The three-way classification adds diagnostic value beyond MCQ scores.** Traditional MCQ instruments classify responses into only two categories (correct/incorrect). The SDM-10's three-way classification (misconception/knowledge gap/selection error for diagnose; verified/partial/likely guess for confirm) provides the diagnostic specificity needed to differentiate students who need conceptual correction from those who need format remediation or foundational instruction. None of this information is available from the anchor score alone, and the ability to surface it represents the instrument's primary contribution to measurement methodology in financial literacy evaluation.
 
-**Instructional targeting.** The item-level diagnostic data enable prioritized instructional interventions. The following rates are conditional on the SDM-10 trigger (incorrect + high confidence) and reflect the composition of errors within that subsample rather than cohort-wide rates. Critical priority targets include inflation mechanics (Q6, Q7), where 79% and 63% of diagnosed responses respectively revealed active misconceptions centered on the rate-versus-level confusion, and health insurance purpose (Q12), where 82% of diagnosed responses reflected the misconception that routine care is the primary function of insurance. High priority targets include risk-return reasoning (Q30, Q35), where the exceptions-disprove-rule pattern indicates a reasoning error about statistical relationships rather than a content knowledge gap, and auto loan factors (Q8), where students recognize individual factors but do not understand their interaction. Items with high selection error rates (Q36, Q9, Q14) require item revision rather than instructional intervention -- the students already understand the material.
+**Instructional targeting.** The item-level diagnostic data enable prioritized instructional interventions. The following rates are conditional on the SDM-10 trigger (incorrect + high confidence) and reflect the composition of errors within that subsample rather than cohort-wide rates. Critical priority targets include inflation mechanics (Q6, Q7), where 79% and 63% of diagnosed responses, respectively, revealed active misconceptions centered on the rate-versus-level confusion, and health insurance purpose (Q12), where 82% of diagnosed responses reflected the misconception that routine care is the primary function of insurance. High priority targets include risk-return reasoning (Q30, Q35), where the exceptions-disprove-rule pattern indicates a reasoning error about statistical relationships rather than a content knowledge gap, and auto loan factors (Q8), where students recognize individual factors but do not understand their interaction. Items with high selection error rates (Q36, Q9, Q14) require item revision rather than instructional intervention -- the students already understand the material.
 
 **Implications for risk literacy measurement.** The instrument's emphasis on risk-related items (diversification, insurance, risk-return tradeoffs, crisis awareness) combined with the SDM-10 diagnostic layer provides a richer assessment of risk literacy than traditional knowledge-only measures. The finding that students can often articulate correct risk reasoning but select wrong answers (particularly on diversification items) suggests that the gap between students' conceptual understanding and their ability to translate that understanding into correct MCQ responses is larger in the risk domain than in other domains.
 
-**Future modality: oral diagnostics for misconception depth (proposed).** A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-Need SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth — for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
+**Future modality: oral diagnostics for misconception depth (proposed).** A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-Need SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth -- for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
 
-Operationally, the oral diagnostic should be designed as a constrained clinical-interview script with branching logic rather than open-ended chat: a brief warm-up, then 2–3 targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations — including speaking anxiety, language and accent effects, transcription error, and privacy risks associated with voice data — this modality is proposed only as a small IRB-reviewed volunteer pilot (for example, ~20–30 students) evaluated via within-subject comparison against written SDM classifications to quantify incremental diagnostic value before any scaling.
+Operationally, the oral diagnostic should be designed as a constrained clinical-interview script with branching logic rather than open-ended chat: a brief warm-up, then two to three targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations -- including speaking anxiety, language and accent effects, transcription error, and privacy risks associated with voice data -- this modality is proposed only as a small IRB-reviewed volunteer pilot (for example, ~20--30 students) evaluated via within-subject comparison against written SDM classifications to quantify incremental diagnostic value before any scaling.
 
 This oral modality is future work and would be implemented and analyzed only under IRB review with opt-in participation and a non-voice alternative path.
 
@@ -537,7 +544,7 @@ Readers should keep the following limitations in mind when interpreting these fi
 
 6. **Consent attrition.** Seventy-seven students (17.9% of the cohort) have NULL consent status because they completed the assessment before the research consent screen was deployed. No student actively opted out (see Section 5.3). We exclude the NULL cohort from all research analyses per standard practice (absence of affirmative consent is treated as non-consent). A representativeness check (Section 5.3) shows the consented sample is similar to the full cohort on score distribution and classification distributions, so consent-related selection bias is unlikely. However, the reduction from 431 to 354 students slightly reduces statistical power for item-level analyses with small cell sizes.
 
-7. **Legacy submission types.** Legacy submission types resulting from technical adjustments during the first days of the assessment window account for approximately 20% of submissions. These were reviewed and retained but may affect comparability for a subset of respondents.
+7. **Legacy submission types.** Legacy submission types resulting from technical adjustments during the first days of the assessment window account for approximately 20% of submissions. We reviewed and retained these submissions, but they may affect comparability for a subset of respondents.
 
 8. **Variant assignment mismatch.** A software defect caused 40 mismatched SDM variant assignments across 36 students due to a stale anchor score synchronization issue. We identified and filtered the mismatched responses using an anchor_score and confidence cross-check. The bug was subsequently fixed, and the misconception taxonomy is unaffected because we verified that all analyzed responses correspond to correctly triggered variants.
 
@@ -661,7 +668,7 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 2. **Open-ended response scoring.** GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.3.
 
-3. **Manuscript preparation.** Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the authors, who take full responsibility for the accuracy and integrity of the publication.
+3. **Manuscript preparation.** Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the author, who takes full responsibility for the accuracy and integrity of the publication.
 
 ---
 
@@ -777,7 +784,7 @@ Q15--Q28 are preference items (unscored).
 | Risk and Return Knowledge | Investment Risk -- Asset Class Risk | 1 | Q39 | Yes |
 | Risk and Return Knowledge | Crisis/Systemic Risk | 1 | Q40 | Yes |
 
-### B.2: Baseline Covariates (B1–B13, Not Scored)
+### B.2: Baseline Covariates (B1--B13, Not Scored)
 
 These items collect demographic characteristics, financial background, and debt status during the onboarding phase. No responses are scored.
 
@@ -820,7 +827,7 @@ These items collect demographic characteristics, financial background, and debt 
 **B13.** If yes, what is the maturity of your student loan (time until fully repaid) (best estimate)?
 *(A) Less than 5 years | (B) 5 to 10 years | (C) More than 10 years | (D) Do not know | (E) Prefer not to say*
 
-### B.3: Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1–Q10, Scored)
+### B.3: Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1--Q10, Scored)
 
 **Q1** *(Compound Interest).* Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow?
 *(A) More than $102 | (B) Exactly $102 | (C) Less than $102 | (D) Do not know* — **Answer: A**
@@ -852,7 +859,7 @@ These items collect demographic characteristics, financial background, and debt 
 **Q10** *(Borrowing/Credit).* Which of the following statements regarding credit reports is FALSE?
 *(A) Credit reports are used by employers to screen job applicants | (B) A credit report includes an assessment of your worthiness to receive credit | (C) Your credit report is provided by a single source | (D) Do not know* — **Answer: C**
 
-### B.4: Behavioral and Risk Management — Factual Knowledge (Q11–Q14, Scored)
+### B.4: Behavioral and Risk Management -- Factual Knowledge (Q11--Q14, Scored)
 
 **Q11** *(Risk Diversification).* Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund.
 *(A) True | (B) False | (C) Do not know* — **Answer: B**
@@ -866,7 +873,7 @@ These items collect demographic characteristics, financial background, and debt 
 **Q14** *(Risk Diversification).* When an investor spreads money among different assets, the risk of losing money usually:
 *(A) Increases | (B) Decreases | (C) Stays the same | (D) Do not know* — **Answer: B**
 
-### B.5: Financial Attitudes and Preferences (Q15–Q28, Not Scored)
+### B.5: Financial Attitudes and Preferences (Q15--Q28, Not Scored)
 
 These 14 items capture behavioral attitudes, risk preferences, and financial decision-making tendencies. They are not scored but contribute to the behavioral profile used in the SDM-10 adaptive module.
 
@@ -912,7 +919,7 @@ These 14 items capture behavioral attitudes, risk preferences, and financial dec
 **Q28** *(Scam Skepticism).* If an investment opportunity promises unusually high returns with little explanation of how, what do you do?
 *(A) Invest a small amount just to test it | (B) Ask for more details and do research | (C) Avoid it, it seems too good to be true | (D) Immediately take advantage before it's gone*
 
-### B.6: Risk and Return Knowledge (Q29–Q40, Scored)
+### B.6: Risk and Return Knowledge (Q29--Q40, Scored)
 
 **Q29** *(Investing).* If interest rates rise, what will typically happen to bond prices?
 *(A) They will rise | (B) They will fall | (C) They will stay the same | (D) There is no relationship | (E) Do not know* — **Answer: B**
@@ -923,7 +930,7 @@ These 14 items capture behavioral attitudes, risk preferences, and financial dec
 **Q31** *(Investing).* Which of the following best describes what the stock market does?
 *(A) Results in a gain in wealth for investors | (B) Creates liquidity by guaranteeing investors a profit | (C) Brings people who want to buy stocks together with those who want to sell stocks | (D) Do not know* — **Answer: C**
 
-**Q32** *(Investing).* Considering a long time period (e.g., 10–20 years), which asset normally gives the highest return?
+**Q32** *(Investing).* Considering a long time period (e.g., 10--20 years), which asset normally gives the highest return?
 *(A) Savings accounts | (B) Bonds | (C) Stocks | (D) Do not know* — **Answer: C**
 
 **Q33** *(Basic Probability).* In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket?
