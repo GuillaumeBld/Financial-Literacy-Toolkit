@@ -83,10 +83,11 @@ export async function GET(request: NextRequest) {
       // Q3: Per-item stats
       queryMany<{
         item_id: string; subdomain: string; domain: string; key: string;
+        stem: string; options: Array<{ id: string; text: string }>;
         total: number; correct: number; incorrect: number;
         confident_errors: number; uncertain_correct: number;
       }>(`
-        SELECT i.item_id, i.subdomain, i.domain, i.key,
+        SELECT i.item_id, i.subdomain, i.domain, i.key, i.stem, i.options,
           COUNT(r.response_id)::int as total,
           COUNT(CASE WHEN r.score = 100 THEN 1 END)::int as correct,
           COUNT(CASE WHEN r.score = 0 THEN 1 END)::int as incorrect,
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
         JOIN attempts a ON r.attempt_id = a.attempt_id
         WHERE i.is_anchor = true AND i.is_scored = true
           AND a.course_id = $1 AND a.submitted_at IS NOT NULL
-        GROUP BY i.item_id, i.subdomain, i.domain, i.key
+        GROUP BY i.item_id, i.subdomain, i.domain, i.key, i.stem, i.options
         ORDER BY (SUBSTRING(i.item_id FROM '(\\d+)')::integer)
       `, [targetCourseId]),
 
@@ -269,6 +270,9 @@ export async function GET(request: NextRequest) {
         id,
         subdomain: row.subdomain,
         domain: SHORT_NAMES[row.domain] || row.domain,
+        stem: row.stem,
+        options: row.options,
+        key: row.key,
         total,
         correct,
         incorrect,

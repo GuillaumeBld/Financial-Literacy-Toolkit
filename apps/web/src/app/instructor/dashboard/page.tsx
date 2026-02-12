@@ -45,6 +45,9 @@ interface DashboardItem {
   id: string;
   subdomain: string;
   domain: string;
+  stem: string;
+  options: Array<{ id: string; text: string }>;
+  key: string;
   total: number;
   correct: number;
   incorrect: number;
@@ -90,6 +93,29 @@ const severityConfig: Record<SeverityLevel, { label: string; bg: string; text: s
 const barColors = ['#ef4444', '#ef4444', '#ef4444', '#f59e0b', '#f59e0b', '#6366f1', '#6366f1', '#10b981', '#10b981', '#10b981'];
 
 // ── Components ────────────────────────────────────────────
+function QuestionPreview({ item }: { item: DashboardItem }) {
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3">
+      <p className="text-sm text-gray-800 font-medium mb-2">{item.stem}</p>
+      <div className="grid grid-cols-2 gap-1.5">
+        {item.options.map(opt => (
+          <div
+            key={opt.id}
+            className={`text-xs px-2.5 py-1.5 rounded ${
+              opt.id === item.key
+                ? 'bg-green-100 text-green-800 border border-green-300 font-semibold'
+                : 'bg-white text-gray-600 border border-gray-200'
+            }`}
+          >
+            <span className="font-bold mr-1">{opt.id}.</span>{opt.text}
+            {opt.id === item.key && <span className="ml-1 text-green-600">&check;</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SeverityBadge({ level }: { level: SeverityLevel }) {
   const config = severityConfig[level];
   return (
@@ -186,6 +212,11 @@ export default function InstructorDashboardPage() {
       range: `${i * 10}-${i * 10 + 9}%`,
       count,
     }));
+  }, [data]);
+
+  const itemMap = useMemo(() => {
+    if (!data) return {} as Record<string, DashboardItem>;
+    return Object.fromEntries(data.items.map(i => [i.id, i]));
   }, [data]);
 
   const totalConfidentErrors = useMemo(() => data ? data.items.reduce((s, i) => s + i.confidentErrors, 0) : 0, [data]);
@@ -526,6 +557,7 @@ export default function InstructorDashboardPage() {
                             <tr key={`${item.id}-detail`}>
                               <td colSpan={7} className="px-0 py-0 bg-indigo-50/50 border-b-2 border-indigo-200">
                                 <div className="p-5">
+                                  <QuestionPreview item={item} />
                                   <div className="grid md:grid-cols-3 gap-5 mb-4">
                                     {/* Error Confidence */}
                                     <div>
@@ -667,17 +699,22 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                        {isExpanded && (
                           <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-red-200 pl-4">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                            {m.evidence.map((e, j) => (
-                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                {e.reasoning && (
-                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                )}
-                              </div>
-                            ))}
+                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                            {m.evidence && m.evidence.length > 0 && (
+                              <>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                {m.evidence.map((e, j) => (
+                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                    {e.reasoning && (
+                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -793,17 +830,22 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                        {isExpanded && (
                           <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-gray-300 pl-4">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                            {m.evidence.map((e, j) => (
-                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                {e.reasoning && (
-                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                )}
-                              </div>
-                            ))}
+                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                            {m.evidence && m.evidence.length > 0 && (
+                              <>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                {m.evidence.map((e, j) => (
+                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                    {e.reasoning && (
+                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -876,17 +918,22 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                        {isExpanded && (
                           <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-purple-200 pl-4">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                            {m.evidence.map((e, j) => (
-                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                {e.reasoning && (
-                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                )}
-                              </div>
-                            ))}
+                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                            {m.evidence && m.evidence.length > 0 && (
+                              <>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                {m.evidence.map((e, j) => (
+                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                    {e.reasoning && (
+                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
