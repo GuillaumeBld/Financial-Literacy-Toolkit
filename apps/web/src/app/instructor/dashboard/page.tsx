@@ -78,6 +78,42 @@ interface DashboardData {
   misconceptionSummary: { detected: number; possible: number };
 }
 
+interface DashboardCourse {
+  id: string;
+  name: string;
+  accessLevel: string;
+}
+
+// ── Static recommendation map (curated per-item teaching suggestions) ──
+const ITEM_RECOMMENDATIONS: Record<string, string> = {
+  Q1: 'Walk through a compound interest calculation step by step. Show the difference between simple and compound interest using a $1,000 deposit over 5, 10, and 20 years.',
+  Q2: 'Compare two mortgage scenarios side-by-side: 15-year vs 30-year on the same home. Show total interest paid for each. Students often focus on monthly payment without considering total cost.',
+  Q3: 'Show a price index graph over 20 years. Point out that "2% inflation" doesn\'t mean prices stay the same — it means they rise 2% per year, compounding over time.',
+  Q4: 'Use a simple loan amortization table to show how each payment splits between principal and interest. Highlight how the ratio changes over the life of a loan.',
+  Q5: 'Have students calculate their own monthly expenses, then multiply by 3-6 months. Emphasize that emergency funds should be based on expenses, not income or an arbitrary dollar amount.',
+  Q6: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher — just rising more slowly. A visual timeline of price levels vs. inflation rate clarifies the distinction.',
+  Q7: 'Define "fixed income" explicitly before discussing inflation impact on different groups. Retirees on fixed pensions lose purchasing power when prices rise, while workers can negotiate raises.',
+  Q8: 'Walk through a real auto loan negotiation scenario. Show that price, interest rate, trade-in value, and loan term are all negotiable — not just one element.',
+  Q9: 'Teach the 50/30/20 budgeting framework. Clarify that insurance is a risk management tool within a budget, not a savings or investment vehicle.',
+  Q10: 'Brief lesson on credit report access rights. Explain who can check your credit report (employers, landlords, lenders) and the difference between a credit report and credit score.',
+  Q11: 'Use a visual comparison: show returns of a single stock vs. a diversified portfolio over 10 years. The single stock has higher highs but also devastating lows.',
+  Q12: 'Teach the catastrophic protection model. Use this comparison: a $200 checkup vs. a $200,000 surgery. Which one would bankrupt you without insurance?',
+  Q13: 'Create a simple insurance claim walkthrough showing premium, deductible, copay, and out-of-pocket maximum. Use a real medical bill example.',
+  Q14: 'Explain diversification with a simple analogy: "Don\'t put all your eggs in one basket." More variety in a portfolio reduces overall risk, not increases it.',
+  Q29: 'Draw the inverse relationship on the board: when interest rates go up, existing bond prices go down (and vice versa). Use a seesaw analogy.',
+  Q30: 'Teach the difference between general principles and universal rules. Use: "Taller people are generally heavier. Always true? No. Generally true? Yes." Risk-return works the same way.',
+  Q31: 'Explain that the stock market\'s primary function is price discovery and liquidity — allowing buyers and sellers to trade ownership. Wealth creation is a consequence, not the purpose.',
+  Q32: 'Show a historical returns chart (1926-present) comparing stocks, bonds, and savings. Over 20+ year periods, stocks have consistently outperformed despite short-term volatility.',
+  Q33: 'Practice converting between percentages and counts: "If 10% of 200 students skip breakfast, how many is that?" Build intuition before applying to financial contexts.',
+  Q34: 'Use a portfolio simulation: show that adding different asset types (stocks, bonds, real estate) reduces overall portfolio risk even though each individual asset carries risk.',
+  Q35: 'Discuss why higher-risk investments must offer higher expected returns to attract investors. If they didn\'t, no one would take the extra risk.',
+  Q36: 'This question had a high selection error rate due to True/False negative phrasing. Consider rewording for future tests. For genuine misconceptions, review why diversification reduces risk.',
+  Q37: 'Review the major types of insurance (health, auto liability, homeowner\'s, life) and what each covers. Create a matching exercise linking scenarios to insurance types.',
+  Q38: 'Explain that real assets (real estate, stocks) tend to rise with inflation, while fixed-rate instruments (bonds, CDs) lose purchasing power. TIPS and I-bonds are designed for inflation protection.',
+  Q39: 'Compare stock and bond risk profiles: stocks represent ownership (higher risk/return), bonds represent lending (lower risk/return). Use a risk spectrum visual.',
+  Q40: 'Walk through the 2008 crisis timeline: excessive/risky lending → housing bubble → bank failures → recession. Emphasize that too much borrowing (not too little) was the root cause.',
+};
+
 // ── Helpers ────────────────────────────────────────────────
 type SeverityLevel = 'critical' | 'concern' | 'monitor' | 'ok';
 
@@ -148,8 +184,8 @@ export default function InstructorDashboardPage() {
   const [showAllEvidence, setShowAllEvidence] = useState<Set<string>>(new Set());
   const router = useRouter();
 
-  const [isAdmin, setIsAdmin] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
+  const [courses, setCourses] = useState<DashboardCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -164,6 +200,7 @@ export default function InstructorDashboardPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Failed to load dashboard data');
       setData(json.data);
+      setCourses(json.courses || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
@@ -179,7 +216,6 @@ export default function InstructorDashboardPage() {
       return;
     }
     setInstructorName(name || 'Instructor');
-    setIsAdmin(name === 'gbolivard' || name === 'ajalilv');
     localStorage.setItem('active-portal', 'instructor');
     fetchData(token);
   }, [router, fetchData]);
@@ -211,7 +247,7 @@ export default function InstructorDashboardPage() {
   const scoreDistData = useMemo(() => {
     if (!data) return [];
     return data.overall.scoreDist.map((count, i) => ({
-      range: `${i * 10}-${i * 10 + 9}%`,
+      range: i === 9 ? '90-100%' : `${i * 10}-${i * 10 + 9}%`,
       count,
     }));
   }, [data]);
@@ -221,12 +257,71 @@ export default function InstructorDashboardPage() {
     return Object.fromEntries(data.items.map(i => [i.id, i]));
   }, [data]);
 
+  const isAdmin = useMemo(() => courses.some(c => c.accessLevel === 'admin'), [courses]);
+  const courseName = courses.length > 0 ? courses[0].name : 'Course';
+
   const totalConfidentErrors = useMemo(() => data ? data.items.reduce((s, i) => s + i.confidentErrors, 0) : 0, [data]);
   const totalIncorrect = useMemo(() => data ? data.items.reduce((s, i) => s + i.incorrect, 0) : 0, [data]);
   const overconfidenceRate = totalIncorrect > 0 ? (totalConfidentErrors / totalIncorrect * 100).toFixed(1) : '0';
   const itemsWithMisconceptions = useMemo(() => {
     if (!data) return 0;
     return data.items.filter(i => i.misconceptions.some(m => m.diagnosisType === 'misconception')).length;
+  }, [data]);
+
+  // Generate dynamic instructional recommendations from data
+  const dynamicRecommendations = useMemo(() => {
+    if (!data) return [];
+    // For each item, compute total misconception students and summarize
+    const itemSummaries = data.items
+      .map(item => {
+        const miscs = item.misconceptions.filter(m => m.diagnosisType === 'misconception');
+        const ses = item.misconceptions.filter(m => m.diagnosisType === 'selection_error');
+        const totalMiscN = miscs.reduce((s, m) => s + m.n, 0);
+        const totalSEN = ses.reduce((s, m) => s + m.n, 0);
+        return { item, miscs, ses, totalMiscN, totalSEN };
+      })
+      .filter(s => s.totalMiscN > 0 || (s.totalSEN > 5 && s.totalMiscN === 0))
+      .sort((a, b) => b.totalMiscN - a.totalMiscN);
+
+    // Assign priorities: top items by misconception prevalence
+    type RecItem = { q: string; topic: string; issue: string; action: string };
+    const critical: RecItem[] = [];
+    const high: RecItem[] = [];
+    const monitor: RecItem[] = [];
+
+    for (const s of itemSummaries) {
+      const { item, miscs, ses, totalMiscN, totalSEN } = s;
+      if (totalMiscN === 0 && totalSEN === 0) continue;
+
+      // Build finding text
+      const topMisc = miscs[0];
+      let finding = '';
+      if (topMisc) {
+        finding = `${topMisc.pct}% of diagnosed students (n=${topMisc.n}) ${topMisc.label.toLowerCase()}.`;
+        if (miscs.length > 1) {
+          const second = miscs[1];
+          finding += ` An additional ${second.pct}% (n=${second.n}) ${second.label.toLowerCase()}.`;
+        }
+        if (totalSEN > 0) {
+          finding += ` ${totalSEN} student${totalSEN > 1 ? 's' : ''} made selection errors (not a knowledge issue).`;
+        }
+      } else if (totalSEN > 0) {
+        finding = `${totalSEN} students made selection errors on this question. Most understood the concept but chose incorrectly due to question wording or careless mistakes.`;
+      }
+
+      const action = ITEM_RECOMMENDATIONS[item.id] || 'Review this topic with targeted examples that address the specific reasoning errors identified above.';
+      const rec: RecItem = { q: item.id, topic: item.subdomain, issue: finding, action };
+
+      if (totalMiscN >= 15) critical.push(rec);
+      else if (totalMiscN >= 5) high.push(rec);
+      else if (totalMiscN >= 2) monitor.push(rec);
+    }
+
+    const sections: { priority: string; dot: string; title: string; card: string; items: RecItem[] }[] = [];
+    if (critical.length > 0) sections.push({ priority: 'Critical', dot: 'bg-red-500', title: 'text-red-600', card: 'bg-red-50 border-red-200', items: critical });
+    if (high.length > 0) sections.push({ priority: 'High', dot: 'bg-amber-500', title: 'text-amber-600', card: 'bg-amber-50 border-amber-200', items: high });
+    if (monitor.length > 0) sections.push({ priority: 'Monitor', dot: 'bg-blue-500', title: 'text-blue-600', card: 'bg-blue-50 border-blue-200', items: monitor });
+    return sections;
   }, [data]);
 
   // ── Loading State ──
@@ -267,9 +362,9 @@ export default function InstructorDashboardPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-xs font-semibold text-loyola-maroon uppercase tracking-wider">QUIN 102 / SDM-10 Diagnostic</div>
+              <div className="text-xs font-semibold text-loyola-maroon uppercase tracking-wider">{courseName} / SDM-10 Diagnostic</div>
               <h1 className="text-2xl font-bold text-gray-900">Instructor Dashboard</h1>
-              <p className="text-sm text-gray-500">Test 1 Results, Spring 2026 &middot; {data.overall.students} students</p>
+              <p className="text-sm text-gray-500">Pre-Assessment Results &middot; {data.overall.students} students</p>
             </div>
             <div className="flex items-center gap-3">
               {/* Tab navigation */}
@@ -380,9 +475,9 @@ export default function InstructorDashboardPage() {
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                   <Zap className="w-3.5 h-3.5" /> Misconceptions Detected
                 </div>
-                <div className="text-3xl font-bold text-green-600">{data.misconceptionSummary.detected}</div>
-                <div className="text-xs text-gray-400 mt-0.5">of {data.misconceptionSummary.possible} possible types, across {itemsWithMisconceptions} questions</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Unique misconception types identified through SDM-10 diagnostic follow-ups. These are specific wrong beliefs your students hold &mdash; not just wrong answers. See the Misconceptions tab for details and teaching strategies.</p>
+                <div className="text-3xl font-bold text-amber-600">{data.misconceptionSummary.detected}</div>
+                <div className="text-xs text-gray-400 mt-0.5">unique types across {itemsWithMisconceptions} questions</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. Each type represents a specific reasoning error your students make &mdash; not just a wrong answer. See the Misconceptions tab for details and teaching strategies.</p>
               </div>
             </div>
 
@@ -440,7 +535,7 @@ export default function InstructorDashboardPage() {
             {/* Priority Items */}
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Priority Items for Instruction</h3>
-              <p className="text-xs text-gray-400 mb-4">Sorted by confident errors. These represent the strongest misconceptions to address in class.</p>
+              <p className="text-xs text-gray-400 mb-4">The top {topConcerns.length} items where at least 25% of students answered incorrectly, sorted by confident errors. Click any card to jump to its detailed analysis.</p>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {topConcerns.map(item => {
                   const sev = getSeverity(item.pctIncorrect);
@@ -513,6 +608,21 @@ export default function InstructorDashboardPage() {
                   <option value="pctConfErrors">% Confident Errors</option>
                 </select>
               </div>
+            </div>
+
+            {/* Summary Counts */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              {[
+                { label: 'Critical', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'critical').length, bg: 'bg-red-50 border-red-200 text-red-700' },
+                { label: 'Needs Attention', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'concern').length, bg: 'bg-amber-50 border-amber-200 text-amber-700' },
+                { label: 'Monitor', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'monitor').length, bg: 'bg-blue-50 border-blue-200 text-blue-700' },
+                { label: 'Strong', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'ok').length, bg: 'bg-green-50 border-green-200 text-green-700' },
+              ].map(s => (
+                <div key={s.label} className={`px-3 py-1.5 rounded-lg border text-xs font-semibold ${s.bg}`}>
+                  {s.count} {s.label}
+                </div>
+              ))}
+              <span className="text-xs text-gray-400 self-center ml-1">{filteredItems.length} items total</span>
             </div>
 
             {/* Item Table */}
@@ -590,13 +700,13 @@ export default function InstructorDashboardPage() {
                                         ))}
                                       </div>
                                     </div>
-                                    {/* SDM Coverage */}
+                                    {/* SDM Follow-up Coverage */}
                                     <div>
-                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">SDM Coverage</h4>
-                                      <p className="text-[10px] text-gray-400 mb-2">How many eligible students received a diagnostic follow-up? Higher coverage = more reliable misconception data for this item.</p>
-                                      <div className="text-xs text-gray-600 space-y-1">
-                                        <div>Diagnose: {item.diagnoseN} / {item.confidentErrors} eligible ({item.confidentErrors > 0 ? (item.diagnoseN / item.confidentErrors * 100).toFixed(0) : 0}%)</div>
-                                        <div>Confirm: {item.confirmN} / {item.uncertainCorrect} eligible ({item.uncertainCorrect > 0 ? (item.confirmN / item.uncertainCorrect * 100).toFixed(0) : 0}%)</div>
+                                      <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Diagnostic Follow-ups</h4>
+                                      <p className="text-[10px] text-gray-400 mb-2">Students selected by the SDM-10 adaptive algorithm for open-ended follow-up questions on this item. More follow-ups = more reliable diagnostic data.</p>
+                                      <div className="text-xs text-gray-600 space-y-1.5">
+                                        <div><strong className="text-red-600">{item.diagnoseN}</strong> students asked <em>why they chose wrong</em> (of {item.incorrect} who answered incorrectly)</div>
+                                        <div><strong className="text-blue-600">{item.confirmN}</strong> students asked <em>to confirm understanding</em> (of {item.uncertainCorrect} who were correct but unsure)</div>
                                       </div>
                                     </div>
                                   </div>
@@ -658,7 +768,7 @@ export default function InstructorDashboardPage() {
             <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Class-Wide Misconception Prevalence</h3>
               <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. The progress bar shows what fraction of diagnosed students hold each belief. Focus your teaching on items near the top of this list for maximum impact.
+                Ranked by number of students affected. The percentage shows what fraction of students who received a diagnostic follow-up for that question hold this specific belief. Focus on items near the top for maximum impact.
               </p>
               <div className="space-y-0.5">
                 {(() => {
@@ -743,49 +853,38 @@ export default function InstructorDashboardPage() {
             </div>
 
             {/* Instructional Recommendations */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Instructional Recommendations</h3>
-              <p className="text-xs text-gray-400 mb-2">Actionable teaching suggestions generated from the diagnostic data. Each recommendation includes what the data shows and a concrete strategy you can use in class.</p>
-              <div className="text-[11px] text-gray-400 mb-5 flex flex-wrap gap-4">
-                <span><span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1" />Critical = widespread misconception, address immediately</span>
-                <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />High = significant issue, plan a lesson segment</span>
-                <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />Monitor = worth watching, brief mention may suffice</span>
-              </div>
-
-              {[
-                { priority: 'Critical', dot: 'bg-red-500', title: 'text-red-600', card: 'bg-red-50 border-red-200', items: [
-                  { q: 'Q6', topic: 'Inflation (Lowering)', issue: '55% of diagnosed students (n=36) believe lower inflation means falling prices. An additional 22% (n=14) incorrectly link inflation to employment changes. Students confuse the rate of price change with the price level itself.', action: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher, just rising more slowly. A visual timeline of price levels vs. inflation rate would help.' },
-                ]},
-                { priority: 'High', dot: 'bg-amber-500', title: 'text-amber-600', card: 'bg-amber-50 border-amber-200', items: [
-                  { q: 'Q36', topic: 'Diversification (Savings)', issue: '38% of diagnosed students (n=20) made selection errors (reversal), and 28% (n=15) had correct reasoning but chose the wrong answer. The True/False negative phrasing confused them.', action: 'This is largely a question design issue, not a knowledge gap. Consider rewording for Test 2. No additional teaching needed for most of these students.' },
-                  { q: 'Q10', topic: 'Credit Reports', issue: '33% (n=17) did not know employers can check credit reports. 31% (n=16) were selection errors (self-corrected during SDM follow-up).', action: 'Brief lesson on credit report access rights. The high self-correction rate suggests partial knowledge — a quick review may be sufficient.' },
-                  { q: 'Q12', topic: 'Health Insurance', issue: '56% of diagnosed students (n=19) believe insurance is primarily for routine care. 18% (n=6) judge by frequency of use rather than severity of need.', action: 'Teach the catastrophic protection model. Use example: $200 checkup vs. $200,000 surgery. Which one would bankrupt you without insurance?' },
-                ]},
-                { priority: 'Monitor', dot: 'bg-blue-500', title: 'text-blue-600', card: 'bg-blue-50 border-blue-200', items: [
-                  { q: 'Q30', topic: 'Risk-Return Tradeoff', issue: '67% of diagnosed students (n=14) argue that because exceptions exist, the general principle is false.', action: 'Teach the difference between general principles and universal rules. Use: "Taller people are likely heavier. Is this always true? No. Is it generally true? Yes."' },
-                  { q: 'Q7', topic: 'Inflation & Fixed Income', issue: '27% (n=16) believe older workers suffer most from inflation, 25% (n=15) believe young couples suffer most. Students split between empathy-driven reasoning and not understanding "fixed income."', action: 'Define "fixed income" explicitly before discussing inflation impact on different groups.' },
-                ]},
-              ].map(section => (
-                <div key={section.priority} className="mb-6 last:mb-0">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-2.5 h-2.5 rounded-full ${section.dot}`} />
-                    <span className={`text-sm font-bold ${section.title}`}>{section.priority} Priority</span>
-                  </div>
-                  <div className="space-y-2">
-                    {section.items.map((item, i) => (
-                      <div key={i} className={`p-4 rounded-lg border ${section.card}`}>
-                        <div className="flex gap-2 items-center mb-1.5">
-                          <span className="font-bold text-gray-900">{item.q}</span>
-                          <span className="text-xs text-gray-500">{item.topic}</span>
-                        </div>
-                        <p className="text-sm text-gray-700 mb-1"><strong>Finding:</strong> {item.issue}</p>
-                        <p className="text-sm text-gray-800"><strong>Recommendation:</strong> {item.action}</p>
-                      </div>
-                    ))}
-                  </div>
+            {dynamicRecommendations.length > 0 && (
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Instructional Recommendations</h3>
+                <p className="text-xs text-gray-400 mb-2">Actionable teaching suggestions generated from the diagnostic data. Priority levels are based on total students affected by misconceptions for each question.</p>
+                <div className="text-[11px] text-gray-400 mb-5 flex flex-wrap gap-4">
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1" />Critical = 15+ students affected, address immediately</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />High = 5-14 students affected, plan a lesson segment</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />Monitor = 2-4 students affected, brief mention may suffice</span>
                 </div>
-              ))}
-            </div>
+
+                {dynamicRecommendations.map(section => (
+                  <div key={section.priority} className="mb-6 last:mb-0">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`w-2.5 h-2.5 rounded-full ${section.dot}`} />
+                      <span className={`text-sm font-bold ${section.title}`}>{section.priority} Priority</span>
+                    </div>
+                    <div className="space-y-2">
+                      {section.items.map((item, i) => (
+                        <div key={i} className={`p-4 rounded-lg border ${section.card}`}>
+                          <div className="flex gap-2 items-center mb-1.5">
+                            <span className="font-bold text-gray-900">{item.q}</span>
+                            <span className="text-xs text-gray-500">{item.topic}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-1"><strong>Finding:</strong> {item.issue}</p>
+                          <p className="text-sm text-gray-800"><strong>Recommendation:</strong> {item.action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
         {/* ── KNOWLEDGE GAPS TAB ── */}
@@ -805,7 +904,7 @@ export default function InstructorDashboardPage() {
             <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Knowledge Gap Prevalence</h3>
               <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. These students need foundational instruction &mdash; they lack the knowledge entirely rather than holding wrong beliefs.
+                Ranked by number of students affected. The percentage shows what fraction of diagnosed students for that question showed this gap. These students need foundational instruction &mdash; they lack the knowledge entirely rather than holding wrong beliefs.
               </p>
               <div className="space-y-0.5">
                 {(() => {
@@ -888,6 +987,48 @@ export default function InstructorDashboardPage() {
                 })()}
               </div>
             </div>
+
+            {/* Knowledge Gap Guidance */}
+            {(() => {
+              const allGaps: { itemId: string; subdomain: string; totalN: number }[] = [];
+              const seen = new Set<string>();
+              data.items.forEach(item => {
+                const gaps = item.misconceptions.filter(m => m.diagnosisType === 'knowledge_gap');
+                const totalN = gaps.reduce((s, m) => s + m.n, 0);
+                if (totalN > 0 && !seen.has(item.id)) {
+                  seen.add(item.id);
+                  allGaps.push({ itemId: item.id, subdomain: item.subdomain, totalN });
+                }
+              });
+              allGaps.sort((a, b) => b.totalN - a.totalN);
+              if (allGaps.length === 0) return null;
+              const topGaps = allGaps.slice(0, 5);
+              const totalStudents = allGaps.reduce((s, g) => s + g.totalN, 0);
+              return (
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Teaching Guidance</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Knowledge gaps are easier to address than misconceptions &mdash; students are starting from zero, not from a wrong foundation.
+                    Focus on introducing these concepts clearly rather than correcting existing beliefs.
+                  </p>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p className="text-sm text-gray-700 mb-2">
+                      <strong>{totalStudents} total knowledge gap instances</strong> across {allGaps.length} questions.
+                      The topics with the most gaps are:
+                    </p>
+                    <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                      {topGaps.map(g => (
+                        <li key={g.itemId}><strong>{g.itemId}</strong> {g.subdomain} &mdash; {g.totalN} student{g.totalN > 1 ? 's' : ''} had no prior knowledge</li>
+                      ))}
+                    </ul>
+                    <p className="text-sm text-gray-700 mt-3">
+                      <strong>Strategy:</strong> For these topics, start with foundational definitions and real-world examples before introducing complexity.
+                      Students with knowledge gaps respond well to direct instruction since they have no prior beliefs to unlearn.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
 
@@ -909,7 +1050,7 @@ export default function InstructorDashboardPage() {
             <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Selection Error Prevalence</h3>
               <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. Unlike misconceptions, these typically do not require additional teaching &mdash; but high counts on a single question suggest the question wording may need improvement.
+                Ranked by number of students affected. The percentage shows what fraction of diagnosed students for that question made this type of error. Unlike misconceptions, these typically do not require additional teaching &mdash; but high counts on a single question suggest the question wording may need improvement.
               </p>
               <div className="space-y-0.5">
                 {(() => {
@@ -992,6 +1133,48 @@ export default function InstructorDashboardPage() {
                 })()}
               </div>
             </div>
+
+            {/* Selection Error Guidance */}
+            {(() => {
+              const allSE: { itemId: string; subdomain: string; totalN: number }[] = [];
+              const seen = new Set<string>();
+              data.items.forEach(item => {
+                const ses = item.misconceptions.filter(m => m.diagnosisType === 'selection_error');
+                const totalN = ses.reduce((s, m) => s + m.n, 0);
+                if (totalN > 0 && !seen.has(item.id)) {
+                  seen.add(item.id);
+                  allSE.push({ itemId: item.id, subdomain: item.subdomain, totalN });
+                }
+              });
+              allSE.sort((a, b) => b.totalN - a.totalN);
+              if (allSE.length === 0) return null;
+              const topSE = allSE.slice(0, 5);
+              const totalStudents = allSE.reduce((s, e) => s + e.totalN, 0);
+              return (
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Question Design Insights</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Selection errors are primarily a question design signal, not a knowledge signal.
+                    Use this data to improve question clarity for future assessments.
+                  </p>
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <p className="text-sm text-gray-700 mb-2">
+                      <strong>{totalStudents} total selection errors</strong> across {allSE.length} questions.
+                      The questions with the most selection errors are:
+                    </p>
+                    <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                      {topSE.map(s => (
+                        <li key={s.itemId}><strong>{s.itemId}</strong> {s.subdomain} &mdash; {s.totalN} student{s.totalN > 1 ? 's' : ''} understood but chose wrong</li>
+                      ))}
+                    </ul>
+                    <p className="text-sm text-gray-700 mt-3">
+                      <strong>Action items:</strong> Review questions with high selection error rates for confusing wording, double negatives, or ambiguous answer choices.
+                      These students do <em>not</em> need additional instruction &mdash; they already understand the material.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </main>
