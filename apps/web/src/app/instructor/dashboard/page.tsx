@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LogOut,
@@ -25,132 +25,54 @@ import {
   Cell,
 } from 'recharts';
 
-// ── Hardcoded Test 1 Data ──────────────────────────────────
-const DATA = {
-  overall: { students: 431, meanScore: 66.44, medianScore: 68.06, totalDiagnose: 603, totalConfirm: 353, scoreDist: [1,8,10,12,24,75,125,82,60,34] },
-  domains: [
-    { name: "Borrowing & Credit", pctCorrect: 69.2, totalConfErrors: 397, itemCount: 10 },
-    { name: "Risk Management", pctCorrect: 73.3, totalConfErrors: 97, itemCount: 4 },
-    { name: "Investment & Risk", pctCorrect: 63.8, totalConfErrors: 558, itemCount: 12 },
-  ],
-  items: [
-    { id:"Q1", subdomain:"Compound Interest", domain:"Borrowing & Credit", total:431, correct:394, incorrect:37, pctCorrect:91.4, pctIncorrect:8.6, confidentErrors:8, pctConfErrors:1.9, uncertainCorrect:132, diagnoseN:6, confirmN:11, distractors:{B:20,C:13,D:4} as Record<string,number>, confDist:{low:12,med:17,high:8}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q2", subdomain:"Borrowing/Mortgages", domain:"Borrowing & Credit", total:431, correct:313, incorrect:118, pctCorrect:72.6, pctIncorrect:27.4, confidentErrors:27, pctConfErrors:6.3, uncertainCorrect:136, diagnoseN:28, confirmN:32, distractors:{B:63,C:55} as Record<string,number>, confDist:{low:28,med:63,high:27}, misconceptions:[
-      {tag:"KG-idk",label:"Knowledge gap",pct:37,n:10},
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:22,n:6},
-      {tag:"monthly_vs_total_confusion",label:"Monthly vs total payment confusion",pct:19,n:5}
-    ]},
-    { id:"Q3", subdomain:"Inflation", domain:"Borrowing & Credit", total:431, correct:370, incorrect:61, pctCorrect:85.8, pctIncorrect:14.2, confidentErrors:16, pctConfErrors:3.7, uncertainCorrect:170, diagnoseN:17, confirmN:19, distractors:{B:34,C:27} as Record<string,number>, confDist:{low:16,med:29,high:16}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q4", subdomain:"Borrowing/Interest", domain:"Borrowing & Credit", total:431, correct:400, incorrect:31, pctCorrect:92.8, pctIncorrect:7.2, confidentErrors:7, pctConfErrors:1.6, uncertainCorrect:95, diagnoseN:4, confirmN:5, distractors:{A:20,C:11} as Record<string,number>, confDist:{low:10,med:14,high:7}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q5", subdomain:"Emergency Fund", domain:"Borrowing & Credit", total:431, correct:309, incorrect:122, pctCorrect:71.7, pctIncorrect:28.3, confidentErrors:38, pctConfErrors:8.8, uncertainCorrect:138, diagnoseN:35, confirmN:16, distractors:{B:82,D:24,A:16} as Record<string,number>, confDist:{low:28,med:56,high:38}, misconceptions:[
-      {tag:"one_month_sufficient",label:"One month emergency fund sufficient",pct:31,n:11},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:8},
-      {tag:"fixed_dollar_amount",label:"Fixed dollar amount (not expense-based)",pct:14,n:5}
-    ]},
-    { id:"Q6", subdomain:"Inflation (Lowering)", domain:"Borrowing & Credit", total:431, correct:142, incorrect:289, pctCorrect:32.9, pctIncorrect:67.1, confidentErrors:102, pctConfErrors:23.7, uncertainCorrect:82, diagnoseN:66, confirmN:5, distractors:{A:163,C:82,D:44} as Record<string,number>, confDist:{low:54,med:133,high:102}, misconceptions:[
-      {tag:"lower_inflation_means_lower_prices",label:"Lower inflation = falling prices",pct:55,n:36},
-      {tag:"employment_link",label:"Links to employment changes",pct:22,n:14},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:12,n:8},
-      {tag:"KG-idk",label:"Knowledge gap",pct:6,n:4}
-    ]},
-    { id:"Q7", subdomain:"Inflation (Fixed Income)", domain:"Borrowing & Credit", total:431, correct:259, incorrect:172, pctCorrect:60.1, pctIncorrect:39.9, confidentErrors:62, pctConfErrors:14.4, uncertainCorrect:118, diagnoseN:60, confirmN:16, distractors:{B:93,A:48,D:31} as Record<string,number>, confDist:{low:32,med:78,high:62}, misconceptions:[
-      {tag:"older_workers_worst",label:"Older workers suffer most",pct:27,n:16},
-      {tag:"young_couples_worst",label:"Young couples suffer most",pct:25,n:15},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:14},
-      {tag:"young_because_building",label:"Young because building wealth",pct:8,n:5},
-      {tag:"fixed_income_misunderstood",label:'Does not understand "fixed income"',pct:3,n:2}
-    ]},
-    { id:"Q8", subdomain:"Auto Loans", domain:"Borrowing & Credit", total:431, correct:248, incorrect:183, pctCorrect:57.5, pctIncorrect:42.5, confidentErrors:52, pctConfErrors:12.1, uncertainCorrect:129, diagnoseN:40, confirmN:17, distractors:{B:89,E:39,A:38,D:17} as Record<string,number>, confDist:{low:44,med:87,high:52}, misconceptions:[
-      {tag:"down_payment_only",label:"Only down payment negotiable",pct:35,n:14},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:23,n:9},
-      {tag:"KG-idk",label:"Knowledge gap",pct:15,n:6},
-      {tag:"interest_rate_only",label:"Only interest rate negotiable",pct:13,n:5},
-      {tag:"interest_rate_fixed_by_fed",label:"Fed sets rates, not negotiable",pct:8,n:3}
-    ]},
-    { id:"Q9", subdomain:"Budgeting", domain:"Borrowing & Credit", total:431, correct:323, incorrect:108, pctCorrect:74.9, pctIncorrect:25.1, confidentErrors:28, pctConfErrors:6.5, uncertainCorrect:121, diagnoseN:7, confirmN:8, distractors:{D:49,C:39,B:20} as Record<string,number>, confDist:{low:35,med:45,high:28}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q10", subdomain:"Credit Reports", domain:"Borrowing & Credit", total:431, correct:226, incorrect:205, pctCorrect:52.4, pctIncorrect:47.6, confidentErrors:57, pctConfErrors:13.2, uncertainCorrect:134, diagnoseN:51, confirmN:18, distractors:{B:89,A:87,D:29} as Record<string,number>, confDist:{low:38,med:110,high:57}, misconceptions:[
-      {tag:"employer_use_confusion",label:"Employers can't check credit",pct:33,n:17},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:31,n:16},
-      {tag:"credit_score_confusion",label:"Credit report vs. score confusion",pct:8,n:4},
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:6,n:3}
-    ]},
-    { id:"Q11", subdomain:"Risk Diversification", domain:"Risk Management", total:431, correct:325, incorrect:106, pctCorrect:75.4, pctIncorrect:24.6, confidentErrors:17, pctConfErrors:3.9, uncertainCorrect:161, diagnoseN:17, confirmN:34, distractors:{C:71,A:35} as Record<string,number>, confDist:{low:43,med:46,high:17}, misconceptions:[
-      {tag:"KG-idk",label:"Knowledge gap",pct:41,n:7},
-      {tag:"single_stock_safer_belief",label:"Single stock is safer",pct:24,n:4}
-    ]},
-    { id:"Q12", subdomain:"Insurance", domain:"Risk Management", total:431, correct:305, incorrect:126, pctCorrect:70.8, pctIncorrect:29.2, confidentErrors:38, pctConfErrors:8.8, uncertainCorrect:156, diagnoseN:34, confirmN:7, distractors:{B:116,C:9,D:1} as Record<string,number>, confDist:{low:17,med:71,high:38}, misconceptions:[
-      {tag:"routine_care_primary",label:"Insurance is for routine care",pct:56,n:19},
-      {tag:"frequency_over_severity",label:"Used often = primary function",pct:18,n:6},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:15,n:5},
-      {tag:"insurance_doesnt_cover_large_bills",label:"Insurance doesn't cover large bills",pct:9,n:3}
-    ]},
-    { id:"Q13", subdomain:"Insurance", domain:"Risk Management", total:431, correct:269, incorrect:162, pctCorrect:62.4, pctIncorrect:37.6, confidentErrors:31, pctConfErrors:7.2, uncertainCorrect:149, diagnoseN:20, confirmN:31, distractors:{B:64,C:52,D:46} as Record<string,number>, confDist:{low:60,med:71,high:31}, misconceptions:[
-      {tag:"deductible_is_max_payout",label:"Deductible is max payout",pct:30,n:6},
-      {tag:"KG-idk",label:"Knowledge gap",pct:30,n:6},
-      {tag:"deductible_is_premium",label:"Confuses deductible with premium",pct:20,n:4},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:15,n:3}
-    ]},
-    { id:"Q14", subdomain:"Risk Diversification", domain:"Risk Management", total:431, correct:364, incorrect:67, pctCorrect:84.5, pctIncorrect:15.5, confidentErrors:11, pctConfErrors:2.6, uncertainCorrect:151, diagnoseN:8, confirmN:18, distractors:{A:35,C:18,D:14} as Record<string,number>, confDist:{low:21,med:35,high:11}, misconceptions:[
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:50,n:4},
-      {tag:"more_assets_more_risk",label:"More assets = more risk",pct:38,n:3}
-    ]},
-    { id:"Q29", subdomain:"Interest Rates & Bonds", domain:"Investment & Risk", total:431, correct:156, incorrect:275, pctCorrect:36.2, pctIncorrect:63.8, confidentErrors:84, pctConfErrors:19.5, uncertainCorrect:76, diagnoseN:31, confirmN:12, distractors:{E:129,A:108,D:24,C:14} as Record<string,number>, confDist:{low:83,med:108,high:84}, misconceptions:[
-      {tag:"positive_correlation_belief",label:"Rates up = prices up",pct:35,n:11},
-      {tag:"KG-idk",label:"Knowledge gap",pct:23,n:7},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:19,n:6},
-      {tag:"no_relationship_belief",label:"No relationship between rates and prices",pct:6,n:2}
-    ]},
-    { id:"Q30", subdomain:"Risk-Return Tradeoff", domain:"Investment & Risk", total:431, correct:333, incorrect:98, pctCorrect:77.3, pctIncorrect:22.7, confidentErrors:27, pctConfErrors:6.3, uncertainCorrect:142, diagnoseN:21, confirmN:11, distractors:{B:62,C:36} as Record<string,number>, confDist:{low:21,med:50,high:27}, misconceptions:[
-      {tag:"exceptions_disprove_rule",label:"Exceptions invalidate the rule",pct:67,n:14},
-      {tag:"prediction_negates_risk",label:"Predictions eliminate risk",pct:10,n:2}
-    ]},
-    { id:"Q31", subdomain:"Stock Market Function", domain:"Investment & Risk", total:431, correct:268, incorrect:163, pctCorrect:62.2, pctIncorrect:37.8, confidentErrors:43, pctConfErrors:10.0, uncertainCorrect:140, diagnoseN:14, confirmN:8, distractors:{B:76,A:55,D:32} as Record<string,number>, confDist:{low:32,med:88,high:43}, misconceptions:[
-      {tag:"wealth_creation_primary",label:"Wealth creation is primary function",pct:29,n:4},
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:21,n:3},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:14,n:2}
-    ]},
-    { id:"Q32", subdomain:"Long-Term Asset Returns", domain:"Investment & Risk", total:431, correct:227, incorrect:204, pctCorrect:52.7, pctIncorrect:47.3, confidentErrors:60, pctConfErrors:13.9, uncertainCorrect:125, diagnoseN:14, confirmN:3, distractors:{B:96,A:57,D:51} as Record<string,number>, confDist:{low:56,med:88,high:60}, misconceptions:[
-      {tag:"bonds_safest_therefore_best",label:"Bonds safest = best returns",pct:43,n:6},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:29,n:4},
-      {tag:"savings_safest_therefore_best",label:"Savings safest = best returns",pct:14,n:2}
-    ]},
-    { id:"Q33", subdomain:"Probability (% to Count)", domain:"Investment & Risk", total:431, correct:340, incorrect:91, pctCorrect:78.9, pctIncorrect:21.1, confidentErrors:20, pctConfErrors:4.6, uncertainCorrect:141, diagnoseN:2, confirmN:9, distractors:{A:36,E:32,B:20,D:3} as Record<string,number>, confDist:{low:34,med:37,high:20}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q34", subdomain:"Diversification Effect", domain:"Investment & Risk", total:431, correct:322, incorrect:109, pctCorrect:74.7, pctIncorrect:25.3, confidentErrors:34, pctConfErrors:7.9, uncertainCorrect:141, diagnoseN:5, confirmN:4, distractors:{A:40,C:38,D:31} as Record<string,number>, confDist:{low:26,med:49,high:34}, misconceptions:[] as {tag:string;label:string;pct:number;n:number}[] },
-    { id:"Q35", subdomain:"Risk-Return Relationship", domain:"Investment & Risk", total:431, correct:337, incorrect:94, pctCorrect:78.2, pctIncorrect:21.8, confidentErrors:25, pctConfErrors:5.8, uncertainCorrect:152, diagnoseN:10, confirmN:11, distractors:{B:63,C:31} as Record<string,number>, confDist:{low:26,med:43,high:25}, misconceptions:[
-      {tag:"real_world_counterexample",label:"Real-world counterexample",pct:50,n:5},
-      {tag:"exceptions_disprove_rule",label:"Exceptions invalidate the rule",pct:20,n:2},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:20,n:2}
-    ]},
-    { id:"Q36", subdomain:"Diversification Principle", domain:"Investment & Risk", total:431, correct:279, incorrect:152, pctCorrect:64.7, pctIncorrect:35.3, confidentErrors:77, pctConfErrors:17.9, uncertainCorrect:105, diagnoseN:53, confirmN:7, distractors:{B:120,C:32} as Record<string,number>, confDist:{low:22,med:53,high:77}, misconceptions:[
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:38,n:20},
-      {tag:"correct_reasoning_wrong_answer",label:"Correct reasoning, wrong answer",pct:28,n:15},
-      {tag:"all_places_can_fail",label:"All places can fail simultaneously",pct:8,n:4},
-      {tag:"SE-misread",label:"Selection error (misread)",pct:8,n:4},
-      {tag:"KG-idk",label:"Knowledge gap",pct:4,n:2}
-    ]},
-    { id:"Q37", subdomain:"Insurance Types", domain:"Investment & Risk", total:431, correct:329, incorrect:102, pctCorrect:76.3, pctIncorrect:23.7, confidentErrors:47, pctConfErrors:10.9, uncertainCorrect:164, diagnoseN:21, confirmN:11, distractors:{A:62,B:21,D:19} as Record<string,number>, confDist:{low:18,med:37,high:47}, misconceptions:[
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:38,n:8},
-      {tag:"health_insurance_for_injuries",label:"Health insurance for injuries only",pct:33,n:7},
-      {tag:"auto_liability_for_self",label:"Auto liability covers self",pct:14,n:3}
-    ]},
-    { id:"Q38", subdomain:"Inflation Protection", domain:"Investment & Risk", total:431, correct:102, incorrect:329, pctCorrect:23.7, pctIncorrect:76.3, confidentErrors:81, pctConfErrors:18.8, uncertainCorrect:65, diagnoseN:19, confirmN:10, distractors:{A:122,E:112,C:63,B:32} as Record<string,number>, confDist:{low:109,med:139,high:81}, misconceptions:[
-      {tag:"fixed_bond_best",label:"Fixed bonds best for inflation",pct:26,n:5},
-      {tag:"KG-idk",label:"Knowledge gap",pct:21,n:4},
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:16,n:3},
-      {tag:"SE-selfcorrect",label:"Selection error (self-corrected)",pct:16,n:3},
-      {tag:"mortgage_not_house",label:"Mortgage, not house value",pct:11,n:2}
-    ]},
-    { id:"Q39", subdomain:"Stocks vs Bonds Risk", domain:"Investment & Risk", total:431, correct:310, incorrect:121, pctCorrect:71.9, pctIncorrect:28.1, confidentErrors:32, pctConfErrors:7.4, uncertainCorrect:145, diagnoseN:11, confirmN:6, distractors:{C:73,B:48} as Record<string,number>, confDist:{low:47,med:42,high:32}, misconceptions:[
-      {tag:"some_bonds_risky_too",label:"Some bonds risky too",pct:27,n:3},
-      {tag:"bonds_contain_stocks",label:"Bonds contain stocks",pct:18,n:2},
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:18,n:2}
-    ]},
-    { id:"Q40", subdomain:"2008 Financial Crisis", domain:"Investment & Risk", total:431, correct:299, incorrect:132, pctCorrect:69.4, pctIncorrect:30.6, confidentErrors:28, pctConfErrors:6.5, uncertainCorrect:182, diagnoseN:9, confirmN:24, distractors:{D:46,A:44,C:42} as Record<string,number>, confDist:{low:48,med:56,high:28}, misconceptions:[
-      {tag:"SE-reversal",label:"Selection error (reversal)",pct:44,n:4},
-      {tag:"high_savings_risk",label:"High savings = high risk",pct:22,n:2}
-    ]},
-  ],
-};
+// ── Types ────────────────────────────────────────────────────
+interface MisconceptionEvidence {
+  studentAnswer: string;
+  reasoning: string;
+  evidenceQuote: string;
+}
+
+interface Misconception {
+  tag: string;
+  label: string;
+  diagnosisType: string;
+  pct: number;
+  n: number;
+  evidence: MisconceptionEvidence[];
+}
+
+interface DashboardItem {
+  id: string;
+  subdomain: string;
+  domain: string;
+  total: number;
+  correct: number;
+  incorrect: number;
+  pctCorrect: number;
+  pctIncorrect: number;
+  confidentErrors: number;
+  pctConfErrors: number;
+  uncertainCorrect: number;
+  diagnoseN: number;
+  confirmN: number;
+  distractors: Record<string, number>;
+  confDist: { low: number; med: number; high: number };
+  misconceptions: Misconception[];
+}
+
+interface DashboardData {
+  overall: {
+    students: number;
+    meanScore: number;
+    medianScore: number;
+    totalDiagnose: number;
+    totalConfirm: number;
+    scoreDist: number[];
+  };
+  domains: Array<{ name: string; pctCorrect: number; totalConfErrors: number; itemCount: number }>;
+  items: DashboardItem[];
+  misconceptionSummary: { detected: number; possible: number };
+}
 
 // ── Helpers ────────────────────────────────────────────────
 type SeverityLevel = 'critical' | 'concern' | 'monitor' | 'ok';
@@ -195,9 +117,31 @@ export default function InstructorDashboardPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'confidentErrors' | 'pctIncorrect' | 'pctConfErrors'>('confidentErrors');
   const [instructorName, setInstructorName] = useState('');
+  const [expandedMisc, setExpandedMisc] = useState<string | null>(null);
   const router = useRouter();
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async (token: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/instructor/dashboard', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Failed to load dashboard data');
+      setData(json.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('instructor-token');
@@ -209,7 +153,8 @@ export default function InstructorDashboardPage() {
     setInstructorName(name || 'Instructor');
     setIsAdmin(name === 'gbolivard' || name === 'ajalilv');
     localStorage.setItem('active-portal', 'instructor');
-  }, [router]);
+    fetchData(token);
+  }, [router, fetchData]);
 
   const handleLogout = () => {
     localStorage.removeItem('instructor-token');
@@ -218,30 +163,69 @@ export default function InstructorDashboardPage() {
     router.push('/instructor');
   };
 
+  const handleRefresh = () => {
+    const token = localStorage.getItem('instructor-token');
+    if (token) fetchData(token);
+  };
+
   const filteredItems = useMemo(() => {
-    let items = DATA.items;
+    if (!data) return [];
+    let items = data.items;
     if (selectedDomain !== 'All') items = items.filter(i => i.domain === selectedDomain);
     return [...items].sort((a, b) => b[sortBy] - a[sortBy]);
-  }, [selectedDomain, sortBy]);
+  }, [data, selectedDomain, sortBy]);
 
-  const topConcerns = useMemo(() =>
-    DATA.items.filter(i => i.pctIncorrect >= 25).sort((a, b) => b.confidentErrors - a.confidentErrors).slice(0, 6),
-  []);
+  const topConcerns = useMemo(() => {
+    if (!data) return [];
+    return data.items.filter(i => i.pctIncorrect >= 25).sort((a, b) => b.confidentErrors - a.confidentErrors).slice(0, 6);
+  }, [data]);
 
-  const scoreDistData = DATA.overall.scoreDist.map((count, i) => ({
-    range: `${i * 10}-${i * 10 + 9}%`,
-    count,
-  }));
+  const scoreDistData = useMemo(() => {
+    if (!data) return [];
+    return data.overall.scoreDist.map((count, i) => ({
+      range: `${i * 10}-${i * 10 + 9}%`,
+      count,
+    }));
+  }, [data]);
 
-  const totalConfidentErrors = DATA.items.reduce((s, i) => s + i.confidentErrors, 0);
-  const totalIncorrect = DATA.items.reduce((s, i) => s + i.incorrect, 0);
-  const overconfidenceRate = totalIncorrect > 0
-    ? (totalConfidentErrors / totalIncorrect * 100).toFixed(1)
-    : '0';
-  const uniqueMisconceptions = new Set(
-    DATA.items.flatMap(i => i.misconceptions.map(m => m.tag))
-  ).size;
-  const itemsWithMisconceptions = DATA.items.filter(i => i.misconceptions.length > 0).length;
+  const totalConfidentErrors = useMemo(() => data ? data.items.reduce((s, i) => s + i.confidentErrors, 0) : 0, [data]);
+  const totalIncorrect = useMemo(() => data ? data.items.reduce((s, i) => s + i.incorrect, 0) : 0, [data]);
+  const overconfidenceRate = totalIncorrect > 0 ? (totalConfidentErrors / totalIncorrect * 100).toFixed(1) : '0';
+  const itemsWithMisconceptions = useMemo(() => {
+    if (!data) return 0;
+    return data.items.filter(i => i.misconceptions.some(m => m.diagnosisType === 'misconception')).length;
+  }, [data]);
+
+  // ── Loading State ──
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-loyola-maroon animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error State ──
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-xl border border-red-200 max-w-md">
+          <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-gray-900 mb-2">Failed to Load Dashboard</h2>
+          <p className="text-sm text-gray-500 mb-4">{error || 'No data available'}</p>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-loyola-maroon text-white rounded-lg text-sm hover:bg-red-900 transition"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -252,7 +236,7 @@ export default function InstructorDashboardPage() {
             <div>
               <div className="text-xs font-semibold text-loyola-maroon uppercase tracking-wider">QUIN 102 / SDM-10 Diagnostic</div>
               <h1 className="text-2xl font-bold text-gray-900">Instructor Dashboard</h1>
-              <p className="text-sm text-gray-500">Test 1 Results, Spring 2026 &middot; {DATA.overall.students} students</p>
+              <p className="text-sm text-gray-500">Test 1 Results, Spring 2026 &middot; {data.overall.students} students</p>
             </div>
             <div className="flex items-center gap-3">
               {/* Tab navigation */}
@@ -272,7 +256,7 @@ export default function InstructorDashboardPage() {
                 ))}
               </div>
               <button
-                onClick={() => window.location.reload()}
+                onClick={handleRefresh}
                 className="p-2 text-gray-500 hover:text-gray-700 transition"
                 title="Refresh"
               >
@@ -338,15 +322,15 @@ export default function InstructorDashboardPage() {
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                   <TrendingUp className="w-3.5 h-3.5" /> Mean Score
                 </div>
-                <div className="text-3xl font-bold text-loyola-maroon">{DATA.overall.meanScore}%</div>
-                <div className="text-xs text-gray-400 mt-0.5">Median: {DATA.overall.medianScore}%</div>
+                <div className="text-3xl font-bold text-loyola-maroon">{data.overall.meanScore}%</div>
+                <div className="text-xs text-gray-400 mt-0.5">Median: {data.overall.medianScore}%</div>
                 <p className="text-[10px] text-gray-400 mt-2 leading-snug">Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.</p>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                   <Users className="w-3.5 h-3.5" /> Students
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{DATA.overall.students}</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overall.students}</div>
                 <div className="text-xs text-gray-400 mt-0.5">Completed Test 1</div>
                 <p className="text-[10px] text-gray-400 mt-2 leading-snug">Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).</p>
               </div>
@@ -362,9 +346,9 @@ export default function InstructorDashboardPage() {
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                   <Zap className="w-3.5 h-3.5" /> Misconceptions Detected
                 </div>
-                <div className="text-3xl font-bold text-green-600">{uniqueMisconceptions}</div>
-                <div className="text-xs text-gray-400 mt-0.5">across {itemsWithMisconceptions} questions</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Unique misconceptions identified through SDM-10 diagnostic follow-ups. These are specific wrong beliefs your students hold &mdash; not just wrong answers. See the Misconceptions tab for details and teaching strategies.</p>
+                <div className="text-3xl font-bold text-green-600">{data.misconceptionSummary.detected}</div>
+                <div className="text-xs text-gray-400 mt-0.5">of {data.misconceptionSummary.possible} possible types, across {itemsWithMisconceptions} questions</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Unique misconception types identified through SDM-10 diagnostic follow-ups. These are specific wrong beliefs your students hold &mdash; not just wrong answers. See the Misconceptions tab for details and teaching strategies.</p>
               </div>
             </div>
 
@@ -396,7 +380,7 @@ export default function InstructorDashboardPage() {
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Domain Performance</h3>
                 <p className="text-xs text-gray-400 mb-4">Average correct rate for each content domain. Red (&lt;65%) = significant gaps to address. Amber (65-74%) = room for improvement. Green (75%+) = generally well understood. Focus your teaching time on red and amber domains.</p>
                 <div className="space-y-5">
-                  {DATA.domains.map((d, i) => (
+                  {data.domains.map((d, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-sm mb-1.5">
                         <span className="font-medium text-gray-700">{d.name}</span>
@@ -566,7 +550,7 @@ export default function InstructorDashboardPage() {
                                       <div className="flex flex-wrap gap-2">
                                         {Object.entries(item.distractors).sort((a, b) => b[1] - a[1]).map(([opt, n]) => (
                                           <div key={opt} className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs">
-                                            <strong>{opt}</strong>: {n} <span className="text-gray-400">({(n / item.incorrect * 100).toFixed(0)}%)</span>
+                                            <strong>{opt}</strong>: {n} <span className="text-gray-400">({item.incorrect > 0 ? (n / item.incorrect * 100).toFixed(0) : 0}%)</span>
                                           </div>
                                         ))}
                                       </div>
@@ -591,14 +575,14 @@ export default function InstructorDashboardPage() {
                                       {item.misconceptions.map((m, mi) => (
                                         <div key={mi} className="flex items-center gap-3 py-1.5">
                                           <div className="w-40 shrink-0">
-                                            <div className={`text-xs font-semibold ${m.tag.startsWith('SE') ? 'text-purple-600' : m.tag.startsWith('KG') ? 'text-gray-500' : 'text-red-600'}`}>
+                                            <div className={`text-xs font-semibold ${m.diagnosisType === 'selection_error' ? 'text-purple-600' : m.diagnosisType === 'knowledge_gap' ? 'text-gray-500' : 'text-red-600'}`}>
                                               {m.label}
                                             </div>
                                             <div className="text-[10px] text-gray-400 font-mono">{m.tag}</div>
                                           </div>
                                           <ProgressBar
                                             pct={m.pct}
-                                            color={m.tag.startsWith('SE') ? 'bg-purple-500' : m.tag.startsWith('KG') ? 'bg-gray-400' : 'bg-red-500'}
+                                            color={m.diagnosisType === 'selection_error' ? 'bg-purple-500' : m.diagnosisType === 'knowledge_gap' ? 'bg-gray-400' : 'bg-red-500'}
                                           />
                                           <span className="text-xs text-gray-500">n={m.n}</span>
                                         </div>
@@ -628,63 +612,76 @@ export default function InstructorDashboardPage() {
               <p className="text-xs text-indigo-700 leading-relaxed mb-2">
                 This tab shows the specific wrong beliefs your students hold, identified through SDM-10 diagnostic follow-up questions.
                 Unlike a simple &quot;% incorrect&quot; metric, these reveal <em>why</em> students are getting questions wrong, so you can tailor your instruction to directly address those beliefs.
+                Click any row to see the actual student responses that led to this classification.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px]">
-                <div className="flex items-start gap-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 shrink-0" />
-                  <span className="text-indigo-700"><strong>Misconception</strong> &mdash; The student holds an active wrong belief (e.g., &quot;lower inflation means prices fall&quot;). These require targeted instruction to correct.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-purple-500 mt-0.5 shrink-0" />
-                  <span className="text-indigo-700"><strong>Selection Error</strong> &mdash; The student understood the concept but chose the wrong answer (e.g., confused by negative phrasing). May indicate a question design issue rather than a knowledge gap.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-gray-400 mt-0.5 shrink-0" />
-                  <span className="text-indigo-700"><strong>Knowledge Gap</strong> &mdash; The student simply didn&apos;t know the answer (e.g., &quot;I don&apos;t know&quot;). These respond well to standard instruction and are filtered from the list below.</span>
-                </div>
-              </div>
+              <p className="text-[11px] text-indigo-600 mt-1">
+                Only true misconceptions are shown below. Selection errors and knowledge gaps are filtered out &mdash; see the Item Analysis tab for the full breakdown per question.
+              </p>
             </div>
 
             {/* Class-wide misconceptions */}
             <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Class-Wide Misconception Prevalence</h3>
               <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. The progress bar shows what fraction of the class holds each belief. Focus your teaching on items near the top of this list for maximum impact.
+                Ranked by number of students affected. The progress bar shows what fraction of diagnosed students hold each belief. Focus your teaching on items near the top of this list for maximum impact.
               </p>
               <div className="space-y-0.5">
                 {(() => {
-                  const allMisc: { tag: string; label: string; pct: number; n: number; itemId: string; subdomain: string }[] = [];
-                  DATA.items.forEach(item => {
+                  const allMisc: (Misconception & { itemId: string; subdomain: string })[] = [];
+                  data.items.forEach(item => {
                     item.misconceptions?.forEach(m => {
-                      if (!m.tag.startsWith('KG')) {
+                      if (m.diagnosisType === 'misconception') {
                         allMisc.push({ ...m, itemId: item.id, subdomain: item.subdomain });
                       }
                     });
                   });
                   allMisc.sort((a, b) => b.n - a.n);
-                  return allMisc.map((m, i) => (
-                    <div key={i} className="flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition">
-                      <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
-                        <div className="text-xs text-gray-400">{m.subdomain}</div>
+                  return allMisc.map((m, i) => {
+                    const key = `${m.itemId}-${m.tag}`;
+                    const isExpanded = expandedMisc === key;
+                    return (
+                      <div key={i}>
+                        <button
+                          onClick={() => setExpandedMisc(isExpanded ? null : key)}
+                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                        >
+                          <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
+                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                          </div>
+                          <div className="w-48">
+                            <ProgressBar
+                              pct={m.pct}
+                              color="bg-red-500"
+                            />
+                          </div>
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200">
+                            Misconception
+                          </span>
+                          {m.evidence && m.evidence.length > 0 && (
+                            isExpanded
+                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                          )}
+                        </button>
+                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-red-200 pl-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                            {m.evidence.map((e, j) => (
+                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                {e.reasoning && (
+                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="w-48">
-                        <ProgressBar
-                          pct={m.n / 421 * 100}
-                          color={m.tag.startsWith('SE') ? 'bg-purple-500' : 'bg-red-500'}
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                        m.tag.startsWith('SE')
-                          ? 'bg-purple-50 text-purple-600 border border-purple-200'
-                          : 'bg-red-50 text-red-600 border border-red-200'
-                      }`}>
-                        {m.tag.startsWith('SE') ? 'Selection Error' : 'Misconception'}
-                      </span>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
               </div>
             </div>
