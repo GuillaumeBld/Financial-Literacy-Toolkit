@@ -89,8 +89,8 @@ export default function AdminDashboardPage() {
     setIsLoading(true);
     try {
       const url = courseId
-        ? `/api/instructor/dashboard?courseId=${courseId}`
-        : '/api/instructor/dashboard';
+        ? `/api/admin/dashboard?courseId=${courseId}`
+        : '/api/admin/dashboard';
 
       const response = await fetch(url, {
         headers: {
