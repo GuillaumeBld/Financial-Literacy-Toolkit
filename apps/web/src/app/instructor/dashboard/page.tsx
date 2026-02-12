@@ -12,8 +12,8 @@ import {
   Eye,
   TrendingUp,
   Users,
-  Target,
   Zap,
+  RefreshCw,
 } from 'lucide-react';
 import {
   BarChart,
@@ -234,6 +234,14 @@ export default function InstructorDashboardPage() {
   }));
 
   const totalConfidentErrors = DATA.items.reduce((s, i) => s + i.confidentErrors, 0);
+  const totalIncorrect = DATA.items.reduce((s, i) => s + i.incorrect, 0);
+  const overconfidenceRate = totalIncorrect > 0
+    ? (totalConfidentErrors / totalIncorrect * 100).toFixed(1)
+    : '0';
+  const uniqueMisconceptions = new Set(
+    DATA.items.flatMap(i => i.misconceptions.map(m => m.tag))
+  ).size;
+  const itemsWithMisconceptions = DATA.items.filter(i => i.misconceptions.length > 0).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -263,6 +271,13 @@ export default function InstructorDashboardPage() {
                   </button>
                 ))}
               </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="p-2 text-gray-500 hover:text-gray-700 transition"
+                title="Refresh"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
               {isAdmin && (
                 <button
                   onClick={() => {
@@ -337,19 +352,19 @@ export default function InstructorDashboardPage() {
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Confident Errors
+                  <AlertTriangle className="w-3.5 h-3.5" /> Overconfidence Rate
                 </div>
-                <div className="text-3xl font-bold text-red-600">{totalConfidentErrors}</div>
-                <div className="text-xs text-gray-400 mt-0.5">Incorrect + high confidence</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Students who answered incorrectly AND reported high confidence. These are the hardest to correct because students believe they already know the answer.</p>
+                <div className={`text-3xl font-bold ${Number(overconfidenceRate) > 20 ? 'text-red-600' : Number(overconfidenceRate) > 10 ? 'text-amber-600' : 'text-green-600'}`}>{overconfidenceRate}%</div>
+                <div className="text-xs text-gray-400 mt-0.5">{totalConfidentErrors} of {totalIncorrect} wrong answers</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Percentage of wrong answers where the student reported high confidence. These are the hardest misconceptions to correct &mdash; students don&apos;t know what they don&apos;t know. Above 15% signals significant overconfidence.</p>
               </div>
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <Target className="w-3.5 h-3.5" /> Diagnostic Responses
+                  <Zap className="w-3.5 h-3.5" /> Misconceptions Detected
                 </div>
-                <div className="text-3xl font-bold text-green-600">{DATA.overall.totalDiagnose + DATA.overall.totalConfirm}</div>
-                <div className="text-xs text-gray-400 mt-0.5">{DATA.overall.totalDiagnose} diagnose / {DATA.overall.totalConfirm} confirm</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">SDM-10 follow-up responses that reveal <em>why</em> students got items wrong (diagnose) or <em>confirm</em> uncertain correct answers. These power the misconception data.</p>
+                <div className="text-3xl font-bold text-green-600">{uniqueMisconceptions}</div>
+                <div className="text-xs text-gray-400 mt-0.5">across {itemsWithMisconceptions} questions</div>
+                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Unique misconceptions identified through SDM-10 diagnostic follow-ups. These are specific wrong beliefs your students hold &mdash; not just wrong answers. See the Misconceptions tab for details and teaching strategies.</p>
               </div>
             </div>
 
