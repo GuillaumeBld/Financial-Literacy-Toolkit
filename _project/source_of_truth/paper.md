@@ -30,7 +30,7 @@ This paper describes the design, implementation, and initial deployment of a 40-
    - 4.3 [AI-Assisted Scoring Pipeline](#43-ai-assisted-scoring-pipeline)
    - 4.4 [Diagnostic Findings](#44-diagnostic-findings)
      - 4.4.1 [Open-Ended Response Overview](#441-open-ended-response-overview)
-     - 4.4.2 [Diagnostic Classification Results](#442-diagnose-classification-results)
+     - 4.4.2 [Diagnostic Classification Results](#442-diagnostic-classification-results)
      - 4.4.3 [Confirm Classification Results](#443-confirm-classification-results)
      - 4.4.4 [Misconception Analysis by Domain](#444-misconception-analysis-by-domain)
      - 4.4.5 [Selection Error Patterns](#445-selection-error-patterns)
@@ -228,7 +228,7 @@ Of the 354 consented students who submitted the assessment, 306 (86.4%) received
 
 **Response Quality.** Among diagnose responses, 89.2% were substantive (providing reasoning beyond "I don't know" or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module from the anchor assessment and received no grade incentive to provide detailed explanations.
 
-#### 4.4.2 Diagnose Classification Results
+#### 4.4.2 Diagnostic Classification Results
 
 **Table 4.4: Diagnose Three-Way Classification (Consented, n = 493 scored, 479 classified)**
 
