@@ -6,6 +6,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Settings,
   AlertTriangle,
   CheckCircle,
@@ -144,6 +145,7 @@ export default function InstructorDashboardPage() {
   const [sortBy, setSortBy] = useState<'confidentErrors' | 'pctIncorrect' | 'pctConfErrors'>('confidentErrors');
   const [instructorName, setInstructorName] = useState('');
   const [expandedMisc, setExpandedMisc] = useState<string | null>(null);
+  const [showAllEvidence, setShowAllEvidence] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -699,24 +701,40 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && (
-                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-red-200 pl-4">
-                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
-                            {m.evidence && m.evidence.length > 0 && (
-                              <>
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                                {m.evidence.map((e, j) => (
-                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                    {e.reasoning && (
-                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                    )}
-                                  </div>
-                                ))}
-                              </>
-                            )}
-                          </div>
-                        )}
+                        {isExpanded && (() => {
+                          const allShown = showAllEvidence.has(key);
+                          const visible = m.evidence && m.evidence.length > 0
+                            ? (allShown ? m.evidence : m.evidence.slice(0, 5))
+                            : [];
+                          const hasMore = m.evidence && m.evidence.length > 5;
+                          return (
+                            <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-red-200 pl-4">
+                              {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                              {visible.length > 0 && (
+                                <>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                  {visible.map((e, j) => (
+                                    <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                      <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                      {e.reasoning && (
+                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {hasMore && (
+                                    <button
+                                      onClick={(ev) => { ev.stopPropagation(); setShowAllEvidence(prev => { const next = new Set(prev); if (allShown) next.delete(key); else next.add(key); return next; }); }}
+                                      className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium py-1"
+                                    >
+                                      {allShown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                      {allShown ? 'Show fewer' : `Show all ${m.evidence.length} responses`}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   });
@@ -830,24 +848,40 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && (
-                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-gray-300 pl-4">
-                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
-                            {m.evidence && m.evidence.length > 0 && (
-                              <>
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                                {m.evidence.map((e, j) => (
-                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                    {e.reasoning && (
-                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                    )}
-                                  </div>
-                                ))}
-                              </>
-                            )}
-                          </div>
-                        )}
+                        {isExpanded && (() => {
+                          const allShown = showAllEvidence.has(key);
+                          const visible = m.evidence && m.evidence.length > 0
+                            ? (allShown ? m.evidence : m.evidence.slice(0, 5))
+                            : [];
+                          const hasMore = m.evidence && m.evidence.length > 5;
+                          return (
+                            <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-gray-300 pl-4">
+                              {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                              {visible.length > 0 && (
+                                <>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                  {visible.map((e, j) => (
+                                    <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                      <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                      {e.reasoning && (
+                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {hasMore && (
+                                    <button
+                                      onClick={(ev) => { ev.stopPropagation(); setShowAllEvidence(prev => { const next = new Set(prev); if (allShown) next.delete(key); else next.add(key); return next; }); }}
+                                      className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 font-medium py-1"
+                                    >
+                                      {allShown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                      {allShown ? 'Show fewer' : `Show all ${m.evidence.length} responses`}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   });
@@ -918,24 +952,40 @@ export default function InstructorDashboardPage() {
                               : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
                           )}
                         </button>
-                        {isExpanded && (
-                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-purple-200 pl-4">
-                            {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
-                            {m.evidence && m.evidence.length > 0 && (
-                              <>
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
-                                {m.evidence.map((e, j) => (
-                                  <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
-                                    <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
-                                    {e.reasoning && (
-                                      <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
-                                    )}
-                                  </div>
-                                ))}
-                              </>
-                            )}
-                          </div>
-                        )}
+                        {isExpanded && (() => {
+                          const allShown = showAllEvidence.has(key);
+                          const visible = m.evidence && m.evidence.length > 0
+                            ? (allShown ? m.evidence : m.evidence.slice(0, 5))
+                            : [];
+                          const hasMore = m.evidence && m.evidence.length > 5;
+                          return (
+                            <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-purple-200 pl-4">
+                              {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
+                              {visible.length > 0 && (
+                                <>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                                  {visible.map((e, j) => (
+                                    <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                      <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                      {e.reasoning && (
+                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {hasMore && (
+                                    <button
+                                      onClick={(ev) => { ev.stopPropagation(); setShowAllEvidence(prev => { const next = new Set(prev); if (allShown) next.delete(key); else next.add(key); return next; }); }}
+                                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-medium py-1"
+                                    >
+                                      {allShown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                      {allShown ? 'Show fewer' : `Show all ${m.evidence.length} responses`}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   });

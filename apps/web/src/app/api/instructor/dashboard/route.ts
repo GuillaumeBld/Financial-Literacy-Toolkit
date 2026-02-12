@@ -223,8 +223,7 @@ export async function GET(request: NextRequest) {
       }
       const entry = miscByItem[row.anchor_id][row.tag];
       entry.n++;
-      // Keep up to 5 evidence items per tag per item
-      if (entry.evidence.length < 5 && row.student_answer) {
+      if (row.student_answer) {
         entry.evidence.push({
           studentAnswer: row.student_answer,
           reasoning: row.reasoning || '',
