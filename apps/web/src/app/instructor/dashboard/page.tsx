@@ -112,7 +112,7 @@ function ProgressBar({ pct, color = 'bg-loyola-maroon' }: { pct: number; color?:
 
 // ── Main Dashboard ────────────────────────────────────────
 export default function InstructorDashboardPage() {
-  const [view, setView] = useState<'overview' | 'items' | 'misconceptions'>('overview');
+  const [view, setView] = useState<'overview' | 'items' | 'misconceptions' | 'knowledge-gaps' | 'selection-errors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState('All');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'confidentErrors' | 'pctIncorrect' | 'pctConfErrors'>('confidentErrors');
@@ -241,17 +241,17 @@ export default function InstructorDashboardPage() {
             <div className="flex items-center gap-3">
               {/* Tab navigation */}
               <div className="hidden sm:flex bg-gray-100 rounded-lg p-1">
-                {(['overview', 'items', 'misconceptions'] as const).map(v => (
+                {(['overview', 'items', 'misconceptions', 'knowledge-gaps', 'selection-errors'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => setView(v)}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
                       view === v
                         ? 'bg-white text-loyola-maroon shadow-sm'
                         : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    {v === 'overview' ? 'Overview' : v === 'items' ? 'Item Analysis' : 'Misconceptions'}
+                    {v === 'overview' ? 'Overview' : v === 'items' ? 'Item Analysis' : v === 'misconceptions' ? 'Misconceptions' : v === 'knowledge-gaps' ? 'Knowledge Gaps' : 'Selection Errors'}
                   </button>
                 ))}
               </div>
@@ -282,18 +282,18 @@ export default function InstructorDashboardPage() {
             </div>
           </div>
           {/* Mobile tab nav */}
-          <div className="flex sm:hidden mt-3 bg-gray-100 rounded-lg p-1">
-            {(['overview', 'items', 'misconceptions'] as const).map(v => (
+          <div className="flex sm:hidden mt-3 bg-gray-100 rounded-lg p-1 overflow-x-auto">
+            {(['overview', 'items', 'misconceptions', 'knowledge-gaps', 'selection-errors'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition ${
+                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition whitespace-nowrap ${
                   view === v
                     ? 'bg-white text-loyola-maroon shadow-sm'
                     : 'text-gray-500'
                 }`}
               >
-                {v === 'overview' ? 'Overview' : v === 'items' ? 'Items' : 'Misconceptions'}
+                {v === 'overview' ? 'Overview' : v === 'items' ? 'Items' : v === 'misconceptions' ? 'Miscon.' : v === 'knowledge-gaps' ? 'Gaps' : 'Errors'}
               </button>
             ))}
           </div>
@@ -312,7 +312,8 @@ export default function InstructorDashboardPage() {
                 This dashboard summarizes your students&apos; performance on the pre-assessment, powered by the SDM-10 diagnostic model.
                 Use <strong>Overview</strong> to see where your class stands overall.
                 Use <strong>Item Analysis</strong> to drill into specific questions and see which answer choices students picked and why.
-                Use <strong>Misconceptions</strong> to identify the specific wrong beliefs your students hold so you can address them directly in your teaching.
+                Use <strong>Misconceptions</strong> to identify wrong beliefs, <strong>Knowledge Gaps</strong> to see where students lack foundational knowledge,
+                and <strong>Selection Errors</strong> to find questions where students understood the concept but made a mechanical mistake.
               </p>
             </div>
 
@@ -729,6 +730,170 @@ export default function InstructorDashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </>
+        )}
+        {/* ── KNOWLEDGE GAPS TAB ── */}
+        {view === 'knowledge-gaps' && (
+          <>
+            <div className="bg-gray-100 border border-gray-300 rounded-xl p-4 mb-6">
+              <h2 className="text-sm font-bold text-gray-800 mb-1">Understanding Knowledge Gaps</h2>
+              <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                Knowledge gaps represent cases where students simply did not know the answer &mdash; they left it blank, said &quot;I don&apos;t know,&quot; or gave a vague response
+                that showed no existing belief to correct. Unlike misconceptions (wrong beliefs), knowledge gaps are easier to address: students are starting from zero, not from a wrong foundation.
+              </p>
+              <p className="text-[11px] text-gray-500 mt-1">
+                Click any row to see the actual student responses classified as knowledge gaps.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">Knowledge Gap Prevalence</h3>
+              <p className="text-xs text-gray-400 mb-5">
+                Ranked by number of students affected. These students need foundational instruction &mdash; they lack the knowledge entirely rather than holding wrong beliefs.
+              </p>
+              <div className="space-y-0.5">
+                {(() => {
+                  const allGaps: (Misconception & { itemId: string; subdomain: string })[] = [];
+                  data.items.forEach(item => {
+                    item.misconceptions?.forEach(m => {
+                      if (m.diagnosisType === 'knowledge_gap') {
+                        allGaps.push({ ...m, itemId: item.id, subdomain: item.subdomain });
+                      }
+                    });
+                  });
+                  allGaps.sort((a, b) => b.n - a.n);
+                  if (allGaps.length === 0) {
+                    return <p className="text-sm text-gray-400 italic py-4">No knowledge gaps identified in the diagnostic data.</p>;
+                  }
+                  return allGaps.map((m, i) => {
+                    const key = `kg-${m.itemId}-${m.tag}`;
+                    const isExpanded = expandedMisc === key;
+                    return (
+                      <div key={i}>
+                        <button
+                          onClick={() => setExpandedMisc(isExpanded ? null : key)}
+                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                        >
+                          <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
+                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                          </div>
+                          <div className="w-48">
+                            <ProgressBar pct={m.pct} color="bg-gray-400" />
+                          </div>
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-300">
+                            Knowledge Gap
+                          </span>
+                          {m.evidence && m.evidence.length > 0 && (
+                            isExpanded
+                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                          )}
+                        </button>
+                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-gray-300 pl-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                            {m.evidence.map((e, j) => (
+                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                {e.reasoning && (
+                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── SELECTION ERRORS TAB ── */}
+        {view === 'selection-errors' && (
+          <>
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+              <h2 className="text-sm font-bold text-purple-900 mb-1">Understanding Selection Errors</h2>
+              <p className="text-xs text-purple-700 leading-relaxed mb-2">
+                Selection errors occur when students understood the concept but chose the wrong answer due to a mechanical mistake &mdash; misreading the question,
+                reversing their intended choice, or self-correcting during the diagnostic follow-up. These are <strong>not</strong> knowledge deficits: the student
+                already knows the material, they just made an error in execution.
+              </p>
+              <p className="text-[11px] text-purple-600 mt-1">
+                Click any row to see the actual student responses. High selection error rates on a question may indicate confusing wording that should be revised for future tests.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">Selection Error Prevalence</h3>
+              <p className="text-xs text-gray-400 mb-5">
+                Ranked by number of students affected. Unlike misconceptions, these typically do not require additional teaching &mdash; but high counts on a single question suggest the question wording may need improvement.
+              </p>
+              <div className="space-y-0.5">
+                {(() => {
+                  const allSE: (Misconception & { itemId: string; subdomain: string })[] = [];
+                  data.items.forEach(item => {
+                    item.misconceptions?.forEach(m => {
+                      if (m.diagnosisType === 'selection_error') {
+                        allSE.push({ ...m, itemId: item.id, subdomain: item.subdomain });
+                      }
+                    });
+                  });
+                  allSE.sort((a, b) => b.n - a.n);
+                  if (allSE.length === 0) {
+                    return <p className="text-sm text-gray-400 italic py-4">No selection errors identified in the diagnostic data.</p>;
+                  }
+                  return allSE.map((m, i) => {
+                    const key = `se-${m.itemId}-${m.tag}`;
+                    const isExpanded = expandedMisc === key;
+                    return (
+                      <div key={i}>
+                        <button
+                          onClick={() => setExpandedMisc(isExpanded ? null : key)}
+                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                        >
+                          <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
+                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                          </div>
+                          <div className="w-48">
+                            <ProgressBar pct={m.pct} color="bg-purple-500" />
+                          </div>
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200">
+                            Selection Error
+                          </span>
+                          {m.evidence && m.evidence.length > 0 && (
+                            isExpanded
+                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                          )}
+                        </button>
+                        {isExpanded && m.evidence && m.evidence.length > 0 && (
+                          <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-purple-200 pl-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Student Responses ({m.evidence.length})</p>
+                            {m.evidence.map((e, j) => (
+                              <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
+                                <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
+                                {e.reasoning && (
+                                  <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
           </>
         )}
