@@ -1070,11 +1070,13 @@ Four responses produced substantive disagreement among the eight non-disqualifie
 
 ## Appendix E: Supplementary Materials
 
-- **Introductory orientation video.** Before beginning the assessment, each student views a short orientation video explaining the purpose, structure, and non-graded nature of the assessment. The video is available at: [https://financial-literacy.qualiaai.fr/intro-video.mp4](https://financial-literacy.qualiaai.fr/intro-video.mp4)
+**Data and materials availability.** The de-identified data exports, orientation video, source code, and reproducible verification script (`verify_paper_tables.py`) described below are available in the project repository (Bolivard, 2026). Direct download links are provided in the repository README.
 
-- **Source code repository.** The complete platform source code, data export scripts, and reproducible verification script (`verify_paper_tables.py`) are publicly available in the project repository (Bolivard, 2026).
+- **Introductory orientation video.** Before beginning the assessment, each student views a short orientation video explaining the purpose, structure, and non-graded nature of the assessment.
 
-- **De-identified data exports.** The following data files are available for download at: [https://financial-literacy.qualiaai.fr/admin/documents](https://financial-literacy.qualiaai.fr/admin/documents)
+- **Source code repository.** The complete platform source code, data export scripts, and verification script are publicly available in the project repository (Bolivard, 2026).
+
+- **De-identified data exports.** The following data files are available for download from the project repository:
 
   - `consented_responses_354.csv` -- Primary analysis dataset containing all anchor and SDM-10 responses for the research-consented subset. Fields: attempt_id, submission_type, submitted_at, duration_s, item_id, item_type, domain, subdomain, is_anchor, is_scored, student_answer, item_score, confidence, answered_at.
   - `all_responses_421_students.csv` -- Operational dataset including non-consented responses. Used for operational context only; not included in research analyses.
