@@ -25,9 +25,9 @@ This paper describes the design, deployment, and diagnostic findings from a 40-i
    - 3.2 [Scoring Methodology](#32-scoring-methodology)
    - 3.3 [Risk Literacy Emphasis](#33-risk-literacy-emphasis)
 4. [Assessment Pipeline](#4-assessment-pipeline)
-   - 4.1 [Pipeline Overview and Illustrative Walkthrough](#41-pipeline-overview-and-illustrative-walkthrough)
-   - 4.2 [Adaptive Selection and Diagnostic Priority Score](#42-adaptive-selection-and-diagnostic-priority-score)
-   - 4.3 [Variant Types and Three-Way Classification](#43-variant-types-and-three-way-classification)
+   - 4.1 [Variant Bank Design](#41-variant-bank-design)
+   - 4.2 [Pipeline Overview and Illustrative Walkthrough](#42-pipeline-overview-and-illustrative-walkthrough)
+   - 4.3 [Adaptive Selection and Diagnostic Priority Score](#43-adaptive-selection-and-diagnostic-priority-score)
    - 4.4 [AI-Assisted Scoring Pipeline](#44-ai-assisted-scoring-pipeline)
 5. [Platform and Governance Design](#5-platform-and-governance-design)
    - 5.1 [Consent Mechanics](#51-consent-mechanics)
@@ -157,37 +157,41 @@ We designed the instrument to be internally consistent and transferable. Althoug
 
 ## 4. Assessment Pipeline
 
-### 4.1 Pipeline Overview and Illustrative Walkthrough
+### 4.1 Variant Bank Design
 
-The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from a pre-written variant bank ranked by priority (targeting 10, delivering 5–10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). Two illustrative cases show how the pipeline works in practice.
+Before describing the selection algorithm, we explain how the follow-up items were constructed. Each of the 26 anchor knowledge items has a set of pre-written variants stored in a 182-row item bank (see Appendix E). Variants were created by varying two axes only: **response format** (multiple-choice, True/False, or open response) and **level of understanding probed** (recognize/select, apply/transfer, or explain reasoning). Table 4.1 shows the resulting design space.
+
+**Table 4.1: Variant bank design space: format vs. level of understanding**
+
+| Level of understanding | Multiple-choice | True/False | Open response |
+| --- | --- | --- | --- |
+| Recognize/select | Anchor item (scored) | Format variant (same concept) | Not used |
+| Apply/transfer | Scenario variant (MCQ) | Scenario variant (T/F) | Not used |
+| Explain reasoning | Not used | Not used | Open_Diagnose (incorrect + high confidence) or Open_Confirm (correct + low confidence) |
+
+The closed-format variants (multiple-choice and True/False) test recognition and application at increasing transfer distance from the anchor item. Open-response variants occupy the explain-reasoning row exclusively and serve as the primary diagnostic instruments.
+
+**Open_Diagnose** is assigned when a student answers the anchor item incorrectly with high confidence. The student is asked to explain the reasoning behind the chosen answer. The response is classified into one of three categories: misconception (a specific wrong mental model), knowledge gap (absence of knowledge), or selection error (correct understanding despite the wrong answer choice).
+
+**Open_Confirm** is assigned when a student answers the anchor item correctly with low confidence. The student is asked to explain why the correct answer holds. The response is classified as verified (genuine understanding), partial (incomplete reasoning), or likely guess (no substantive understanding despite the correct answer).
+
+Open_Diagnose and Open_Confirm are alternative follow-ups triggered by different anchor states; they are not sequential steps applied to the same item.
+
+**Misconception taxonomy.** A two-layer taxonomy structures the open-ended classification. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories (Appendix C). Layer 2 contains item-specific tags derived from observed student response patterns. Layer 1 codes are designed to transfer across assessment contexts and student populations.
+
+### 4.2 Pipeline Overview and Illustrative Walkthrough
+
+As described in Section 4.1, SDM selection chooses from pre-written variants that vary by format and level of understanding. The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from the variant bank ranked by priority (targeting 10, delivering 5–10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). Two illustrative cases show how the pipeline works in practice.
 
 **Case A: Open_Diagnose (incorrect + high confidence).** A student encounters Q6, which asks what a "successful effort to lower inflation" would likely be accompanied by. The student selects "a decrease in the general level of prices" (the incorrect answer) and reports high confidence. Because the combination of incorrectness and high confidence produces a high diagnostic priority, the algorithm assigns an Open_Diagnose variant for the Inflation (Lowering) concept area. The student sees an open-ended prompt: *"You chose 'a decrease in the general level of prices.' In your own words, explain what happens to prices when inflation is lowered."* The student writes: *"If inflation goes down, prices should go down too, that's what lower inflation means."* The AI scoring pipeline classifies this as a **misconception** (INF-01: confuses a decrease in the rate of price increase with an actual decrease in prices) and assigns taxonomy codes. The classification distinguishes this from a knowledge gap (the student has an active belief, not an absence of knowledge) and from a selection error (the student's reasoning is consistent with the wrong answer, not inconsistent with it).
 
-**Open_Diagnose** is an open-ended prompt assigned when a student answers incorrectly with high confidence. Its diagnostic goal is to distinguish three response types: misconception (a specific wrong mental model), knowledge gap (absence of knowledge), or selection error (correct understanding despite the wrong answer choice).
-
 **Case B: Open_Confirm (correct + low confidence).** The same student answers Q29 correctly ("bond prices fall when interest rates rise") but reports low confidence. Because a correct answer paired with low confidence leaves residual uncertainty about whether the student genuinely understands the concept, the algorithm assigns an Open_Confirm variant. The prompt asks: *"You said bond prices typically fall when interest rates rise. In your own words, explain why this relationship holds."* The student writes: *"I'm not really sure, I think I read it somewhere but I don't remember why."* The AI scoring pipeline classifies this as a **likely guess**: the student cannot articulate the reasoning behind the correct answer. Without this follow-up, the anchor score of 100% on Q29 would overstate the student's understanding.
-
-**Open_Confirm** is an open-ended prompt assigned when a student answers correctly with low confidence. Its diagnostic goal is to distinguish three response types: verified (genuine understanding), partial (incomplete reasoning), or likely guess (no substantive understanding despite the correct answer).
 
 Together, these two cases illustrate the SDM-10's central contribution: standard MCQ scores classify responses as simply correct or incorrect, while the diagnostic module reveals whether incorrect answers reflect misconceptions, knowledge gaps, or format-induced errors, and whether correct answers reflect genuine understanding or fortunate guessing.
 
-### 4.2 Adaptive Selection and Diagnostic Priority Score
+### 4.3 Adaptive Selection and Diagnostic Priority Score
 
-The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 182 variants across 26 anchor items (see Appendix E) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. See Appendix A for the complete selection specification.
-
-### 4.3 Variant Types and Three-Way Classification
-
-Each SDM-10 item is drawn from one of six variant types determined by the student's anchor response pattern. Incorrect responses with high confidence trigger Open_Diagnose (open-ended); incorrect with mid confidence trigger Lower_MCQ; incorrect with low confidence trigger Lower_TF. Correct responses with low confidence trigger Open_Confirm (open-ended); correct with mid confidence trigger Same_MCQ; correct with high confidence trigger Higher_MCQ. The variant assignment rules are specified in Appendix A (Table A.3).
-
-Every open-ended response is classified into one of three categories:
-
-- **Misconception**: The student holds a specific wrong mental model (e.g., believing lower inflation means falling prices, or that insurance exists primarily for routine care). Layer 1 and Layer 2 taxonomy codes are assigned.
-- **Knowledge gap**: The student lacks knowledge, as indicated by blank responses, "I don't know," or inability to articulate reasoning about the topic.
-- **Selection error**: The student demonstrates correct understanding in the explanation but selected the wrong anchor answer, typically due to misreading, misclick, or True/False reversal.
-
-This three-way classification drives differentiated instructional follow-up: misconceptions require targeted correction of the specific wrong belief, knowledge gaps require instruction from foundational principles, and selection errors flag potential item ambiguity for revision rather than student remediation.
-
-**Misconception Taxonomy.** A two-layer taxonomy structures the classification. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories (Appendix C). Layer 2 contains item-specific tags derived from observed student response patterns. Layer 1 codes are designed to transfer across assessment contexts and student populations.
+The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 182 variants across 26 anchor items (see Appendix E) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. Once a subcategory is selected, the specific variant type is determined by the combination of correctness and confidence: six types in total (Open_Diagnose, Open_Confirm, Lower_MCQ, Lower_TF, Same_MCQ, Higher_MCQ), as specified in Appendix A (Table A.3). See Appendix A for the complete selection specification.
 
 ### 4.4 AI-Assisted Scoring Pipeline
 
