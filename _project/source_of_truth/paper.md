@@ -2,13 +2,13 @@
 
 **Guillaume Bolivard**
 **Loyola University Chicago**
-**Independent Study -- Spring 2026**
+**Independent Study: Spring 2026**
 
 ---
 
 ## Abstract
 
-This paper describes the design, deployment, and diagnostic findings from a 40-item pre-course financial risk literacy assessment for QUIN 102 at Loyola University Chicago. The instrument spans three knowledge domains -- Borrowing and Credit, Risk Management, and Investment and Risk -- using 26 scored and 14 unscored anchor items. A Supplemental Diagnostic Module (SDM-10) adaptively selects up to 10 open-ended follow-up items based on each student's anchor performance; an AI-assisted rubric classifies responses into misconception, knowledge gap, and selection error categories. During the Spring 2026 pilot, 354 research-consented students completed the assessment. The mean anchor score was 67.0% (SD = 17.9%), with notable variation across domains. Among 493 scored diagnostic responses, 53.9% reflected misconceptions, 31.9% selection errors, and 14.2% knowledge gaps. The selection error finding is central: among students who answered incorrectly with high confidence, nearly one in three demonstrated correct understanding in their open-ended explanation, indicating that raw MCQ scores systematically misrepresent student knowledge on format-sensitive items. The diagnostic results yield 10 specific course improvement recommendations -- spanning instructional content, instrument revision, and delivery changes -- each anchored to evidence and paired with a Paper 2 evaluation criterion. We outline limitations of the current single-cohort design and preview a planned validation study that will add pre-post measurement, factor analysis, and heterogeneity modeling.
+This paper describes the design, deployment, and diagnostic findings from a 40-item pre-course financial risk literacy assessment for QUIN 102 at Loyola University Chicago. The instrument spans three knowledge domains (Borrowing and Credit, Risk Management, and Investment and Risk) using 26 scored and 14 unscored anchor items. A Supplemental Diagnostic Module (SDM-10) adaptively selects up to 10 open-ended follow-up items based on each student's anchor performance; an AI-assisted rubric classifies responses into misconception, knowledge gap, and selection error categories. During the Spring 2026 pilot, 354 research-consented students completed the assessment. The mean anchor score was 67.0% (SD = 17.9%), with notable variation across domains. Among 493 scored diagnostic responses, 53.9% reflected misconceptions, 31.9% selection errors, and 14.2% knowledge gaps. The selection error finding is central: among students who answered incorrectly with high confidence, nearly one in three demonstrated correct understanding in their open-ended explanation, indicating that raw MCQ scores systematically misrepresent student knowledge on format-sensitive items. The diagnostic results yield 10 specific course improvement recommendations, spanning instructional content, instrument revision, and delivery changes, each anchored to evidence and paired with a Paper 2 evaluation criterion. We outline limitations of the current single-cohort design and preview a planned validation study that will add pre-post measurement, factor analysis, and heterogeneity modeling.
 
 ---
 
@@ -76,7 +76,7 @@ More specifically, the independent study is organized around two research questi
 
 - **RQ2 (Heterogeneity):** Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
-RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent study contingent on institutional review board approval (see Section 10). This paper (Paper 1) is an independent study deliverable that documents instrument design, platform implementation, and descriptive diagnostic findings from the pre-course assessment (February 2--9, 2026). It reports no learning gains, no inferential statistics, and no subgroup comparisons. All pre-course results are presented as operational baseline context for the planned validation study, not as standalone research findings. The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture -- in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
+RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent study contingent on institutional review board approval (see Section 10). This paper (Paper 1) is an independent study deliverable that documents instrument design, platform implementation, and descriptive diagnostic findings from the pre-course assessment (February 2–9, 2026). It reports no learning gains, no inferential statistics, and no subgroup comparisons. All pre-course results are presented as operational baseline context for the planned validation study, not as standalone research findings. The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture: in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
 
 ---
 
@@ -84,17 +84,17 @@ RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent s
 
 ### 2.1 Financial Literacy: Definitions and Measurement
 
-Since the early 2000s, a growing body of research has examined how well people understand basic financial concepts and how that understanding shapes their economic decisions. Lusardi and Mitchell (2014) anchored much of this work by defining financial literacy around three core ideas -- interest compounding, inflation, and risk diversification -- and showing that individuals who grasp these concepts save more, invest more effectively, and accumulate greater wealth over time. Their "Big Three" questions have become the most widely adopted instrument for assessing basic financial literacy and form the conceptual basis for most subsequent measurement efforts, including the assessment categories used in the present study.
+Since the early 2000s, a growing body of research has examined how well people understand basic financial concepts and how that understanding shapes their economic decisions. Lusardi and Mitchell (2014) anchored much of this work by defining financial literacy around three core ideas (interest compounding, inflation, and risk diversification) and showing that individuals who grasp these concepts save more, invest more effectively, and accumulate greater wealth over time. Their "Big Three" questions have become the most widely adopted instrument for assessing basic financial literacy and form the conceptual basis for most subsequent measurement efforts, including the assessment categories used in the present study.
 
-Although the construct is widely acknowledged, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12--20 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment's coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston's recommended framework. More recently, the OECD/INFE toolkit (OECD, 2022) has provided a standardized questionnaire measuring three dimensions of financial literacy -- knowledge, behavior, and attitudes -- deployed across dozens of countries to enable cross-national comparisons.
+Although the construct is widely acknowledged, the field has lacked a standardized instrument analogous to established health literacy measures. Huston (2010) reviewed the heterogeneous measurement landscape and proposed that financial literacy instruments should contain 12–20 items spanning four content areas: money basics (time value of money, purchasing power), borrowing, investing, and asset protection. Our assessment's coverage of borrowing/credit, investment/risk, and behavioral risk management closely mirrors Huston's recommended framework. More recently, the OECD/INFE toolkit (OECD, 2022) has provided a standardized questionnaire measuring three dimensions of financial literacy (knowledge, behavior, and attitudes) deployed across dozens of countries to enable cross-national comparisons.
 
-In their methodological review, Hastings, Madrian, and Skimmyhorn (2013) examined how researchers actually measure financial literacy and concluded that the "Big Five" questions -- interest rates, inflation, diversification, compound interest, and bond pricing -- remain the field's most trusted indicators, despite persistent difficulties in drawing causal links between what people know and how they behave financially. Lusardi (2019) further documented that globally, only about one-third of adults demonstrate familiarity with basic financial concepts, with illiteracy especially concentrated among women, minorities, the young, and those with lower educational attainment.
+In their methodological review, Hastings, Madrian, and Skimmyhorn (2013) examined how researchers actually measure financial literacy and concluded that the "Big Five" questions (interest rates, inflation, diversification, compound interest, and bond pricing) remain the field's most trusted indicators, despite persistent difficulties in drawing causal links between what people know and how they behave financially. Lusardi (2019) further documented that globally, only about one-third of adults demonstrate familiarity with basic financial concepts, with illiteracy especially concentrated among women, minorities, the young, and those with lower educational attainment.
 
 Among college students specifically, Chen and Volpe (1998) established early baseline evidence, finding that 924 college students answered only about 53% of financial literacy questions correctly, with non-business majors, women, and students with limited work experience scoring significantly lower.
 
 ### 2.2 Domain-Specific Knowledge Gaps
 
-Research has documented uneven financial literacy across knowledge domains. Lusardi and Tufano (2015) established the concept of "debt literacy" as distinct from general financial literacy, finding that only about one-third of Americans comprehend interest compounding or credit card mechanics, and estimating that as much as one-third of charges and fees paid by less-knowledgeable individuals can be attributed to ignorance. Stango and Zinman (2009) identified the cognitive mechanism underlying many borrowing mistakes -- exponential growth bias, the pervasive tendency to linearize exponential functions -- which leads consumers to underestimate interest rates on loans and underestimate future values of investments.
+Research has documented uneven financial literacy across knowledge domains. Lusardi and Tufano (2015) established the concept of "debt literacy" as distinct from general financial literacy, finding that only about one-third of Americans comprehend interest compounding or credit card mechanics, and estimating that as much as one-third of charges and fees paid by less-knowledgeable individuals can be attributed to ignorance. Stango and Zinman (2009) identified the cognitive mechanism underlying many borrowing mistakes (exponential growth bias, the pervasive tendency to linearize exponential functions) which leads consumers to underestimate interest rates on loans and underestimate future values of investments.
 
 In the investment domain, van Rooij, Lusardi, and Alessie (2011) found that while most respondents demonstrated basic financial knowledge (interest compounding, inflation, time value of money), very few understood differences between bonds and stocks, bond price-interest rate relationships, or risk diversification basics. Individuals with low advanced financial literacy were significantly less likely to participate in the stock market.
 
@@ -104,13 +104,13 @@ Within the college population, Akers and Chingos (2014) found striking levels of
 
 The relationship between perceived and actual financial literacy has emerged as a critical dimension of financial competence. Allgood and Walstad (2016) demonstrated, using a national survey of 28,146 U.S. adults, that both actual (objective) and perceived (subjective) financial literacy independently influence financial behaviors across five domains. The combined measure of both perceived and actual literacy provides greater explanatory power than either alone, supporting the QUIN 102 assessment's design that generates an overconfidence index from both measures.
 
-Robb and Woodyard (2011) found that subjective financial knowledge had a larger relative impact on financial behavior than objective knowledge, underscoring the importance of measuring confidence calibration. Porto and Xiao (2016) found that over 11% of respondents in a nationally representative sample displayed financial literacy overconfidence -- scoring above average on perceived knowledge but failing basic literacy questions -- and that these overconfident consumers were less likely to seek professional financial advice in domains where they most needed it.
+Robb and Woodyard (2011) found that subjective financial knowledge had a larger relative impact on financial behavior than objective knowledge, underscoring the importance of measuring confidence calibration. Porto and Xiao (2016) found that over 11% of respondents in a nationally representative sample displayed financial literacy overconfidence (scoring above average on perceived knowledge but failing basic literacy questions) and that these overconfident consumers were less likely to seek professional financial advice in domains where they most needed it.
 
 In a study closely comparable to the present research, Ipatova and Merheb (2023) examined overconfidence among 169 undergraduates and confirmed the Dunning-Kruger effect in financial literacy contexts: students with lower financial proficiency systematically overestimated their knowledge and competence. Kramer (2016) provided additional evidence that confidence operates independently of knowledge in shaping financial behavior, finding that higher confidence reduces advice-seeking while no relationship exists between objective literacy and advice-seeking.
 
 ### 2.4 Gaps in the Literature
 
-The literature review reveals several gaps that the present instrument addresses. First, most financial literacy measurement studies rely on fixed multiple-choice instruments that cannot distinguish between genuine misconceptions, knowledge gaps, and selection errors -- a limitation that affects both diagnostic accuracy and instructional targeting. Second, the use of adaptive diagnostic instruments that probe areas of weakness identified in an anchor assessment is novel in the financial literacy evaluation literature. Third, the simultaneous measurement of knowledge, confidence, and behavioral covariates enables analysis of confidence calibration, directly addressing Willis's (2011) concern about "confident incompetence." The present study contributes to filling these gaps by developing a diagnostic instrument that combines a fixed anchor assessment with an adaptive diagnostic module, enabling finer-grained classification of student responses than traditional MCQ-only approaches.
+The literature review reveals several gaps that the present instrument addresses. First, most financial literacy measurement studies rely on fixed multiple-choice instruments that cannot distinguish between genuine misconceptions, knowledge gaps, and selection errors, a limitation that affects both diagnostic accuracy and instructional targeting. Second, the use of adaptive diagnostic instruments that probe areas of weakness identified in an anchor assessment is novel in the financial literacy evaluation literature. Third, the simultaneous measurement of knowledge, confidence, and behavioral covariates enables analysis of confidence calibration, directly addressing Willis's (2011) concern about "confident incompetence." The present study contributes to filling these gaps by developing a diagnostic instrument that combines a fixed anchor assessment with an adaptive diagnostic module, enabling finer-grained classification of student responses than traditional MCQ-only approaches.
 
 ---
 
@@ -129,27 +129,27 @@ The instrument comprises three components:
 | Component | Items | Content | Scored |
 | --- | --- | --- | --- |
 | Baseline covariates | 13 | Demographics, financial background, debt status | No |
-| Anchor knowledge items | 26 | Q1--Q14, Q29--Q40 (borrowing, investment, risk) | Yes |
-| Anchor preference items | 14 | Q15--Q28 (attitudes, risk tolerance, behavior) | No |
-| SDM-10 adaptive items | 10 | Selected from 156-variant item bank | Diagnostic only |
+| Anchor knowledge items | 26 | Q1–Q14, Q29–Q40 (borrowing, investment, risk) | Yes |
+| Anchor preference items | 14 | Q15–Q28 (attitudes, risk tolerance, behavior) | No |
+| SDM-10 adaptive items | 10 | Selected from 182-variant item bank (see Appendix E) | Diagnostic only |
 
-Out of the 40 anchor items, 26 are knowledge items scored as correct/incorrect and used to compute learning gains. The remaining 14 are preference items (Q15--Q28) that assess behavioral tendencies and serve as unscored covariates for heterogeneity analysis. Each anchor item is paired with a confidence rating on a 1--3 scale (low, medium, high). The combination of correctness and confidence determines whether additional diagnostic measurement is warranted in the SDM-10.
+Out of the 40 anchor items, 26 are knowledge items scored as correct/incorrect and used to compute learning gains. The remaining 14 are preference items (Q15–Q28) that assess behavioral tendencies and serve as unscored covariates for heterogeneity analysis. Each anchor item is paired with a confidence rating on a 1–3 scale (low, medium, high). The combination of correctness and confidence determines whether additional diagnostic measurement is warranted in the SDM-10.
 
 We built the question bank by adapting and synthesizing items from established financial literacy and numeracy instruments, including the Berlin Numeracy Test, Lipkus Numeracy Scale, the "Big Three" (Lusardi and Mitchell), the FINRA National Financial Capability Study item sets, the OECD/INFE Toolkit (2022), the P-Fin Index, and related decision science instruments. Starting from an initial pool of approximately 80 candidates, we refined the bank down to a 40-item anchor assessment.
 
 ### 3.2 Scoring Methodology
 
-We score knowledge items (Q1--Q14, Q29--Q40) as correct/incorrect (binary) and compute both overall and domain-level percent-correct scores across three instructional domains:
+We score knowledge items (Q1–Q14, Q29–Q40) as correct/incorrect (binary) and compute both overall and domain-level percent-correct scores across three instructional domains:
 
-- **Borrowing, Interest Rates, and Financial Numeracy Knowledge** (10 items: Q1--Q10)
-- **Behavioral and Risk Management Knowledge** (4 scored items: Q11--Q14)
-- **Risk and Return Knowledge** (12 items: Q29--Q40)
+- **Borrowing, Interest Rates, and Financial Numeracy Knowledge** (10 items: Q1–Q10)
+- **Behavioral and Risk Management Knowledge** (4 scored items: Q11–Q14)
+- **Risk and Return Knowledge** (12 items: Q29–Q40)
 
 Each anchor item also carries a confidence rating, which we use for secondary analyses (calibration and diagnostic interpretation) but which does not affect the primary score. The SDM-10 is diagnostic only and does not contribute to the student's course grade.
 
 ### 3.3 Risk Literacy Emphasis
 
-The instrument emphasizes risk literacy as a core construct, consistent with the independent study's objectives. Risk literacy encompasses not only factual knowledge of diversification, insurance, and risk-return tradeoffs (assessed through scored knowledge items) but also students' self-assessed confidence in recognizing and managing risk (assessed through confidence ratings and preference items). The SDM-10 module provides a deeper diagnostic layer by probing whether incorrect answers on risk-related items reflect misconceptions (specific wrong mental models), knowledge gaps (absence of knowledge), or selection errors (correct understanding with wrong answer choice). This three-level diagnostic architecture -- knowledge score, confidence calibration, and open-ended classification -- enables measurement of both quantitative and qualitative dimensions of risk literacy.
+The instrument emphasizes risk literacy as a core construct, consistent with the independent study's objectives. Risk literacy encompasses not only factual knowledge of diversification, insurance, and risk-return tradeoffs (assessed through scored knowledge items) but also students' self-assessed confidence in recognizing and managing risk (assessed through confidence ratings and preference items). The SDM-10 module provides a deeper diagnostic layer by probing whether incorrect answers on risk-related items reflect misconceptions (specific wrong mental models), knowledge gaps (absence of knowledge), or selection errors (correct understanding with wrong answer choice). This three-level diagnostic architecture (knowledge score, confidence calibration, and open-ended classification) enables measurement of both quantitative and qualitative dimensions of risk literacy.
 
 We designed the instrument to be internally consistent and transferable. Although piloted first with Loyola University Chicago students in QUIN 102, the item bank, scoring framework, and diagnostic module are intended for adaptation to broader student populations in future work.
 
@@ -159,13 +159,13 @@ We designed the instrument to be internally consistent and transferable. Althoug
 
 ### 4.1 Pipeline Overview and Illustrative Walkthrough
 
-The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from a pre-written variant bank ranked by priority (targeting 10, delivering 5--10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). Two illustrative cases show how the pipeline works in practice.
+The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from a pre-written variant bank ranked by priority (targeting 10, delivering 5–10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). Two illustrative cases show how the pipeline works in practice.
 
-**Case A -- Open_Diagnose (incorrect + high confidence).** A student encounters Q6, which asks what a "successful effort to lower inflation" would likely be accompanied by. The student selects "a decrease in the general level of prices" -- the incorrect answer -- and reports high confidence. Because the combination of incorrectness and high confidence produces a high diagnostic priority, the algorithm assigns an Open_Diagnose variant for the Inflation (Lowering) concept area. The student sees an open-ended prompt: *"You chose 'a decrease in the general level of prices.' In your own words, explain what happens to prices when inflation is lowered."* The student writes: *"If inflation goes down, prices should go down too -- that's what lower inflation means."* The AI scoring pipeline classifies this as a **misconception** (INF-01: confuses a decrease in the rate of price increase with an actual decrease in prices) and assigns taxonomy codes. The classification distinguishes this from a knowledge gap (the student has an active belief, not an absence of knowledge) and from a selection error (the student's reasoning is consistent with the wrong answer, not inconsistent with it).
+**Case A: Open_Diagnose (incorrect + high confidence).** A student encounters Q6, which asks what a "successful effort to lower inflation" would likely be accompanied by. The student selects "a decrease in the general level of prices" (the incorrect answer) and reports high confidence. Because the combination of incorrectness and high confidence produces a high diagnostic priority, the algorithm assigns an Open_Diagnose variant for the Inflation (Lowering) concept area. The student sees an open-ended prompt: *"You chose 'a decrease in the general level of prices.' In your own words, explain what happens to prices when inflation is lowered."* The student writes: *"If inflation goes down, prices should go down too, that's what lower inflation means."* The AI scoring pipeline classifies this as a **misconception** (INF-01: confuses a decrease in the rate of price increase with an actual decrease in prices) and assigns taxonomy codes. The classification distinguishes this from a knowledge gap (the student has an active belief, not an absence of knowledge) and from a selection error (the student's reasoning is consistent with the wrong answer, not inconsistent with it).
 
 **Open_Diagnose** is an open-ended prompt assigned when a student answers incorrectly with high confidence. Its diagnostic goal is to distinguish three response types: misconception (a specific wrong mental model), knowledge gap (absence of knowledge), or selection error (correct understanding despite the wrong answer choice).
 
-**Case B -- Open_Confirm (correct + low confidence).** The same student answers Q29 correctly -- "bond prices fall when interest rates rise" -- but reports low confidence. Because a correct answer paired with low confidence leaves residual uncertainty about whether the student genuinely understands the concept, the algorithm assigns an Open_Confirm variant. The prompt asks: *"You said bond prices typically fall when interest rates rise. In your own words, explain why this relationship holds."* The student writes: *"I'm not really sure, I think I read it somewhere but I don't remember why."* The AI scoring pipeline classifies this as a **likely guess** -- the student cannot articulate the reasoning behind the correct answer. Without this follow-up, the anchor score of 100% on Q29 would overstate the student's understanding.
+**Case B: Open_Confirm (correct + low confidence).** The same student answers Q29 correctly ("bond prices fall when interest rates rise") but reports low confidence. Because a correct answer paired with low confidence leaves residual uncertainty about whether the student genuinely understands the concept, the algorithm assigns an Open_Confirm variant. The prompt asks: *"You said bond prices typically fall when interest rates rise. In your own words, explain why this relationship holds."* The student writes: *"I'm not really sure, I think I read it somewhere but I don't remember why."* The AI scoring pipeline classifies this as a **likely guess**: the student cannot articulate the reasoning behind the correct answer. Without this follow-up, the anchor score of 100% on Q29 would overstate the student's understanding.
 
 **Open_Confirm** is an open-ended prompt assigned when a student answers correctly with low confidence. Its diagnostic goal is to distinguish three response types: verified (genuine understanding), partial (incomplete reasoning), or likely guess (no substantive understanding despite the correct answer).
 
@@ -173,7 +173,7 @@ Together, these two cases illustrate the SDM-10's central contribution: standard
 
 ### 4.2 Adaptive Selection and Diagnostic Priority Score
 
-The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (six variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. See Appendix A for the complete selection specification.
+The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 182 variants across 26 anchor items (see Appendix E) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. See Appendix A for the complete selection specification.
 
 ### 4.3 Variant Types and Three-Way Classification
 
@@ -182,7 +182,7 @@ Each SDM-10 item is drawn from one of six variant types determined by the studen
 Every open-ended response is classified into one of three categories:
 
 - **Misconception**: The student holds a specific wrong mental model (e.g., believing lower inflation means falling prices, or that insurance exists primarily for routine care). Layer 1 and Layer 2 taxonomy codes are assigned.
-- **Knowledge gap**: The student lacks knowledge -- blank responses, "I don't know," or inability to articulate reasoning about the topic.
+- **Knowledge gap**: The student lacks knowledge, as indicated by blank responses, "I don't know," or inability to articulate reasoning about the topic.
 - **Selection error**: The student demonstrates correct understanding in the explanation but selected the wrong anchor answer, typically due to misreading, misclick, or True/False reversal.
 
 This three-way classification drives differentiated instructional follow-up: misconceptions require targeted correction of the specific wrong belief, knowledge gaps require instruction from foundational principles, and selection errors flag potential item ambiguity for revision rather than student remediation.
@@ -209,7 +209,7 @@ The platform implements a two-part consent flow before data collection:
 
 The consent flow structurally separates the course requirement from the research opt-in: a student can complete the assessment (fulfilling the course obligation) without consenting to research use. This separation is the primary safeguard of voluntariness. Before the consent flow, students view a short orientation video explaining the purpose, structure, and non-graded nature of the assessment (see Appendix E). A privacy notice displayed during onboarding describes the hashing process, data separation, and the student's right to withdraw.
 
-**Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses -- absence of affirmative consent is treated as non-consent, regardless of the reason.
+**Consent accounting.** Of the 431 students who submitted completed assessments, 354 (82.1%) provided affirmative research consent. Zero students explicitly declined. The remaining 77 (17.9%) have a NULL consent status because they completed the assessment during the first days of the assessment window before the research consent screen was deployed in the platform. Following standard research ethics practice, students with NULL consent are treated as non-consented for all research analyses; absence of affirmative consent is treated as non-consent, regardless of the reason.
 
 **Representativeness check.** The consented subsample appears similar to the full cohort on observed score distributions, as summarized below. This comparison is descriptive; no formal equivalence test was conducted.
 
@@ -233,7 +233,7 @@ All analyses in this paper use only the research-consented subset (n = 354). For
 
 ## 6. Pilot Operations and Descriptive Statistics
 
-Below we report operational statistics from the pre-course assessment window (February 2--9, 2026) as quality assurance context for interpreting the SDM-10 diagnostic findings. These are descriptive operational summaries of assessment administration, not inferential research results. No subgroup comparisons, hypothesis tests, or claims about population parameters are made in this section. Subgroup analyses are deferred to Paper 2, contingent on institutional review board approval for human-subjects research.
+Below we report operational statistics from the pre-course assessment window (February 2–9, 2026) as quality assurance context for interpreting the SDM-10 diagnostic findings. These are descriptive operational summaries of assessment administration, not inferential research results. No subgroup comparisons, hypothesis tests, or claims about population parameters are made in this section. Subgroup analyses are deferred to Paper 2, contingent on institutional review board approval for human-subjects research.
 
 ### 6.1 Participation and Completion
 
@@ -254,7 +254,7 @@ A total of 443 students onboarded onto the platform, of whom 431 submitted compl
 
 All tables and statistics in Sections 4, 6, and 7 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
 
-![Figure 3. Daily Enrollment and Completion (Feb 2--9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
+![Figure 3. Daily Enrollment and Completion (Feb 2–9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
 
 ### 6.2 Sample Demographics
 
@@ -308,27 +308,27 @@ Risk and Return Knowledge was the weakest domain, driven primarily by low perfor
 | Band | n | % of Sample | Status |
 | --- | --- | --- | --- |
 | Below 50% | 45 | 12.7% | At risk |
-| 50--69% | 161 | 45.5% | Developing |
-| 70--79% | 60 | 16.9% | Proficient |
+| 50–69% | 161 | 45.5% | Developing |
+| 70–79% | 60 | 16.9% | Proficient |
 | 80% and above | 88 | 24.9% | Strong |
 
-The largest segment (45.5%) falls in the 50--69% band. Combined with the 12.7% below 50%, over half the consented sample has partial or incomplete financial literacy knowledge.
+The largest segment (45.5%) falls in the 50–69% band. Combined with the 12.7% below 50%, over half the consented sample has partial or incomplete financial literacy knowledge.
 
-![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60--69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
+![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60–69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
 
-![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, >=70%), yellow (moderate, 50--69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
+![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, >=70%), yellow (moderate, 50–69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
 
 The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than the anchor mean (67.0%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
 
 The median assessment duration was 18.1 minutes (consented subset). The mean duration (217.2 minutes) was heavily skewed by a small number of sessions left open without completion, including sessions that remained idle for multiple days. The median is the more representative measure of active assessment time.
 
-![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2--10 PM CST (Chicago time).](figures/fig4_submission_time.png)
+![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2–10 PM CST (Chicago time).](figures/fig4_submission_time.png)
 
 ### 7.2 Confidence Calibration Patterns
 
 ![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence-accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
 
-Figure 5 presents the distribution of students across confidence calibration categories based on the alignment between average confidence ratings and anchor accuracy. Calibration patterns inform the SDM-10's adaptive logic: students with high confidence and low accuracy (overconfident) are more likely to trigger Open_Diagnose items, while students with low confidence and high accuracy (underconfident) are more likely to trigger Open_Confirm items. The distribution shows that the majority of students fall within calibrated or mildly overconfident ranges, with a smaller tail of strongly overconfident students whose high-confidence errors drive the diagnose subsample analyzed in Sections 7.3--7.6.
+Figure 5 presents the distribution of students across confidence calibration categories based on the alignment between average confidence ratings and anchor accuracy. Calibration patterns inform the SDM-10's adaptive logic: students with high confidence and low accuracy (overconfident) are more likely to trigger Open_Diagnose items, while students with low confidence and high accuracy (underconfident) are more likely to trigger Open_Confirm items. The distribution shows that the majority of students fall within calibrated or mildly overconfident ranges, with a smaller tail of strongly overconfident students whose high-confidence errors drive the diagnose subsample analyzed in Sections 7.3–7.6.
 
 ### 7.3 Diagnostic Classification: Diagnose Composition
 
@@ -360,7 +360,7 @@ Of the 354 consented students who submitted the assessment, 306 (86.4%) received
 | Knowledge gap | 68 | 14.2% | Acknowledged uncertainty, no model |
 | Unclassified | 14 | --- | Ambiguous or insufficient for three-way |
 
-Of the 493 AI-scored diagnose responses, 479 (97.2%) were classified into the three-way taxonomy. Over half of classified responses (53.9%) reflected identifiable misconceptions -- specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. The 14 unclassified responses had ambiguous explanations that did not clearly fit any category. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 7 caveat).
+Of the 493 AI-scored diagnose responses, 479 (97.2%) were classified into the three-way taxonomy. Over half of classified responses (53.9%) reflected identifiable misconceptions, that is, specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. The 14 unclassified responses had ambiguous explanations that did not clearly fit any category. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 7 caveat).
 
 **Table 7.5: Diagnose Classification by Item (Consented, items with n >= 5, sorted by diagnose volume)**
 
@@ -404,7 +404,7 @@ Items with the highest misconception density (> 70%) are Q12 (Health Insurance, 
 | Partial | 119 | 41.8% |
 | Likely guess | 39 | 13.7% |
 
-Among students who answered correctly but with low confidence, 44.6% demonstrated genuine understanding in their explanation (verified), 41.8% showed partial understanding, and 13.7% were classified as likely guesses -- their explanations showed no understanding of the underlying concept despite selecting the correct answer. This finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
+Among students who answered correctly but with low confidence, 44.6% demonstrated genuine understanding in their explanation (verified), 41.8% showed partial understanding, and 13.7% were classified as likely guesses; their explanations showed no understanding of the underlying concept despite selecting the correct answer. This finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
 
 **Table 7.7: Confirm Items with Highest Likely-Guess Rates (Consented, confirm n >= 5)**
 
@@ -434,9 +434,9 @@ Q29 (Bonds & Interest Rates) and Q13 (Insurance Deductible) have the highest gue
 
 The AI-assisted classification revealed distinct misconception patterns across assessment domains.
 
-**Inflation and Purchasing Power.** The most prevalent misconception was INF-01 (lower inflation equals falling prices), identified in 42 consented diagnose responses -- the single most frequent misconception code in the dataset. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices. On Q7 (which group is most hurt by inflation), empathy-driven reasoning (INF-05, n = 17) led students to select "young couples" because they identified personally with that demographic rather than analyzing fixed-income vulnerability.
+**Inflation and Purchasing Power.** The most prevalent misconception was INF-01 (lower inflation equals falling prices), identified in 42 consented diagnose responses, the single most frequent misconception code in the dataset. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices. On Q7 (which group is most hurt by inflation), empathy-driven reasoning (INF-05, n = 17) led students to select "young couples" because they identified personally with that demographic rather than analyzing fixed-income vulnerability.
 
-**Risk, Return, and Diversification.** On Q36 (diversification principle), 81.0% of diagnose responses from consented students were classified as selection errors -- the highest selection error rate of any item. Students who answered incorrectly could explain why spreading money across assets reduces risk, but selected "False" on the True/False item, likely due to negation confusion or overthinking the word "all." On Q35 (risk-return relationship), students used real-world counterexamples from non-financial domains to argue against the general financial principle (RISK-10), indicating reasoning by analogy rather than domain-specific knowledge.
+**Risk, Return, and Diversification.** On Q36 (diversification principle), 81.0% of diagnose responses from consented students were classified as selection errors, the highest selection error rate of any item. Students who answered incorrectly could explain why spreading money across assets reduces risk, but selected "False" on the True/False item, likely due to negation confusion or overthinking the word "all." On Q35 (risk-return relationship), students used real-world counterexamples from non-financial domains to argue against the general financial principle (RISK-10), indicating reasoning by analogy rather than domain-specific knowledge.
 
 **Insurance and Risk Management.** On Q12 (primary purpose of health insurance), 82.1% of diagnose responses reflected the misconception that routine care is the primary function of insurance (INS-01, n = 23 of 28), with many students applying frequency-over-severity reasoning: because routine visits are more common, they must be the primary purpose (INS-02). Q13 (deductible definition) showed a high knowledge gap rate (31.6%), indicating unfamiliarity with this technical insurance term rather than a specific misconception.
 
@@ -459,11 +459,11 @@ The AI-assisted classification revealed distinct misconception patterns across a
 
 Five dominant patterns emerged across the assessment:
 
-1. **Inflation mechanics confusion** -- centered on the distinction between lower inflation rates and lower prices (Q6, Q7), representing the single largest misconception cluster
-2. **Risk-return reasoning from exceptions** -- students cited specific counterexamples to invalidate general financial principles (Q30, Q35), applying inductive reasoning where deductive understanding is required
-3. **Insurance purpose confusion** -- equating frequency of use with primary function (Q12), reflecting a consumer experience bias
-4. **Empathy-driven financial reasoning** -- selecting answers based on personal identification with demographic groups rather than economic logic (Q7)
-5. **Format-induced errors** -- particularly on True/False items (Q36, Q2) where correct knowledge led to incorrect answers due to negation confusion or reversed logic
+1. **Inflation mechanics confusion**: centered on the distinction between lower inflation rates and lower prices (Q6, Q7), representing the single largest misconception cluster
+2. **Risk-return reasoning from exceptions**: students cited specific counterexamples to invalidate general financial principles (Q30, Q35), applying inductive reasoning where deductive understanding is required
+3. **Insurance purpose confusion**: equating frequency of use with primary function (Q12), reflecting a consumer experience bias
+4. **Empathy-driven financial reasoning**: selecting answers based on personal identification with demographic groups rather than economic logic (Q7)
+5. **Format-induced errors**: particularly on True/False items (Q36, Q2) where correct knowledge led to incorrect answers due to negation confusion or reversed logic
 
 ### 7.6 Selection Error Patterns and Item Revision Targets
 
@@ -506,11 +506,11 @@ All five validation benchmarks were confirmed. Three showed exact or near-exact 
 
 ### 8.1 Key Findings
 
-The SDM-10 diagnostic findings reveal that standard multiple-choice assessment scores both overstate and understate student financial literacy knowledge in systematic, measurable ways. All SDM-10 prevalence rates reported in Section 7 reflect conditioned subsamples -- diagnose items target students who answered incorrectly with high confidence, and confirm items target students who answered correctly with low confidence -- not random cross-sections of the class. Four principal findings emerged.
+The SDM-10 diagnostic findings reveal that standard multiple-choice assessment scores both overstate and understate student financial literacy knowledge in systematic, measurable ways. All SDM-10 prevalence rates reported in Section 7 reflect conditioned subsamples (diagnose items target students who answered incorrectly with high confidence, and confirm items target students who answered correctly with low confidence), not random cross-sections of the class. Four principal findings emerged.
 
 First, **selection errors materially distort MCQ scoring.** Among students who answered incorrectly with high confidence, 31.9% of classified responses demonstrated correct understanding of the underlying concept. On individual items, selection error rates reached 81% (Q36, diversification), 41% (Q10, credit reports), and 32% (Q2, mortgages). These students receive a score of zero on the anchor assessment despite possessing the targeted knowledge. The pattern is concentrated on True/False items and negation-framed MCQ items, indicating that item format rather than student knowledge drives the errors.
 
-Second, **"false correct" guesses inflate anchor scores.** Among students who answered correctly but with low confidence, 13.7% were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. On individual items such as Q29 (33.3% guess rate) and Q13 (31.8%), anchor scores overestimate true comprehension.
+Second, **"false correct" guesses inflate anchor scores.** Among students who answered correctly but with low confidence, 13.7% were classified as likely guesses; they could not articulate any understanding of the concept they ostensibly answered correctly. On individual items such as Q29 (33.3% guess rate) and Q13 (31.8%), anchor scores overestimate true comprehension.
 
 Third, **misconception patterns are domain-specific and instructionally actionable.** Five dominant clusters emerged: inflation mechanics confusion (INF-01, the most frequent code at n = 42), risk-return reasoning from exceptions (RISK-02), insurance purpose confusion (INS-01/INS-02), empathy-driven reasoning (INF-05), and format-induced errors. These clusters are specific enough to inform targeted instructional interventions. Because the SDM-10 selects for high-priority responses, these rates should not be extrapolated to the full class without adjusting for item-level coverage (see Limitation 2).
 
@@ -530,12 +530,12 @@ The diagnostic findings from Section 7 translate into 10 specific recommendation
 | 4 | 81% of high-confidence errors on Q36 are selection errors caused by T/F format with negation (34/42) | Table 7.10, Q36 row; Section 7.6 case study | Revise Q36 from True/False to standard MCQ format for the post-assessment | Compare Q36 selection error rate before and after revision |
 | 5 | 41% of high-confidence errors on Q10 are selection errors caused by "which is FALSE" negation framing (16/39) | Table 7.10, Q10 row | Revise Q10 to remove negation framing (rewrite as positive identification) | Compare Q10 selection error rate before and after revision |
 | 6 | Q29 shows 46% misconception rate (INT-06, 11/24) and 33% guess rate among correct respondents (4/12) | Table 7.5, Q29 row; Table 7.7, Q29 row | Add bond pricing segment explaining inverse interest-rate/price relationship with worked numerical examples | Compare pre-post Q29 accuracy, INT-06 prevalence, and confirm guess rate |
-| 7 | Q13 shows 32% knowledge gap rate (6/19) -- unfamiliarity with deductible terminology rather than a specific misconception | Table 7.5, Q13 row | Add insurance terminology module covering deductible, premium, copay, and out-of-pocket maximum definitions | Compare pre-post Q13 knowledge gap rate |
+| 7 | Q13 shows 32% knowledge gap rate (6/19), reflecting unfamiliarity with deductible terminology rather than a specific misconception | Table 7.5, Q13 row | Add insurance terminology module covering deductible, premium, copay, and out-of-pocket maximum definitions | Compare pre-post Q13 knowledge gap rate |
 | 8 | Q9 (83% SE, 5/6) and Q14 (71% SE, 5/7) show format-driven errors disproportionate to conceptual misunderstanding | Table 7.10, Q9/Q14 rows | Flag Q9 and Q14 for format revision; consider rephrasing or converting to MCQ | Compare SE rates before and after revision |
 | 9 | Q2 (36% KG, 8/22) and Q8 (56% misconception INT-05, 19/34) reveal gaps in borrowing mechanics and loan negotiation knowledge | Table 7.5, Q2/Q8 rows | Add credit-literacy instructional module covering mortgage term/interest tradeoffs and consumer loan negotiation | Compare pre-post accuracy on Q2 and Q8; track INT-05 prevalence |
 | 10 | Five dominant misconception clusters emerged across the assessment (Section 7.5) | Section 7.5 cross-item patterns; Figure 5 | Generate per-student misconception profile from pre-course data; distribute targeted review materials before mid-term | Track within-subject misconception resolution rate (pre-post comparison of individual student profiles) |
 
-Recommendations 1--3 and 6--7 target instructional content; recommendations 4--5 and 8 target instrument revision; recommendation 9 targets both; recommendation 10 targets instructional delivery. All instructional changes will be implemented before the post-assessment window, enabling Paper 2 to compare pre-post rates on the specific metrics identified above.
+Recommendations 1–3 and 6–7 target instructional content; recommendations 4–5 and 8 target instrument revision; recommendation 9 targets both; recommendation 10 targets instructional delivery. All instructional changes will be implemented before the post-assessment window, enabling Paper 2 to compare pre-post rates on the specific metrics identified above.
 
 ### 8.3 Implications for Risk Literacy Measurement
 
@@ -543,9 +543,9 @@ The instrument's emphasis on risk-related items (diversification, insurance, ris
 
 ### 8.4 Oral Diagnostics as Future Modality
 
-A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-priority SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth -- for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
+A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-priority SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth; for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
 
-The oral diagnostic would be designed as a constrained clinical-interview script with branching logic: a brief warm-up, then two to three targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations -- including speaking anxiety, language effects, transcription error, and privacy risks associated with voice data -- this modality is proposed only as a small IRB-reviewed volunteer pilot (~20--30 students) to quantify incremental diagnostic value before any scaling. This oral modality is future work and would be implemented only under IRB review with opt-in participation and a non-voice alternative path.
+The oral diagnostic would be designed as a constrained clinical-interview script with branching logic: a brief warm-up, then two to three targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations (including speaking anxiety, language effects, transcription error, and privacy risks associated with voice data), this modality is proposed only as a small IRB-reviewed volunteer pilot (~20–30 students) to quantify incremental diagnostic value before any scaling. This oral modality is future work and would be implemented only under IRB review with opt-in participation and a non-voice alternative path.
 
 ---
 
@@ -577,11 +577,11 @@ Readers should keep the following limitations in mind when interpreting these fi
 
 **Scope boundary.** This independent study paper documents instrument and platform development and pilot operations. Confirmatory evaluation and publishable analyses are planned for a subsequent IRB-reviewed study. Nothing in this section should be read as asserting that IRB approval has been obtained or that the described analyses will necessarily be conducted.
 
-The pilot deployment reported in Sections 4--7 produced several outputs that directly shape the planned Paper 2 design, including instrument revision targets (Section 7.6), a misconception taxonomy for pre-post coding (Appendix C), and baseline coverage estimates (Table 7.5) that inform statistical power for item-level comparisons.
+The pilot deployment reported in Sections 4–7 produced several outputs that directly shape the planned Paper 2 design, including instrument revision targets (Section 7.6), a misconception taxonomy for pre-post coding (Appendix C), and baseline coverage estimates (Table 7.5) that inform statistical power for item-level comparisons.
 
 If approved by the Loyola University Chicago IRB, the following study is planned. A post-course assessment would be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module with an IRB-reviewed consent process for human-subjects research. Paired pre-post analyses would compute learning gains as the difference between post-course and pre-course scores for each student, both overall and by domain. Paired t-tests (or nonparametric equivalents) would assess the statistical significance of mean gains, with standardized effect sizes (within-student Cohen's d) reported.
 
-A multivariable regression framework is planned to model heterogeneity in learning gains as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Separate domain-specific models would reveal whether the predictors of learning gains differ across borrowing, investment, and risk management.
+A multivariable regression framework is planned to model heterogeneity in learning gains as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15–Q28). Separate domain-specific models would reveal whether the predictors of learning gains differ across borrowing, investment, and risk management.
 
 Psychometric validation is planned contingent on adequate sample size. Exploratory Factor Analysis would assess dimensionality within and across domains, Cronbach's alpha would evaluate internal consistency, and item-level statistics would identify items for refinement in future administrations. If IRB-approved, demographic and financial background subgroup comparisons (by gender, race/ethnicity, first-generation status, work experience, financial stress) would be reported with appropriate transparency practices for multiple comparisons.
 
@@ -597,33 +597,33 @@ The publishable evaluation would be conducted only on IRB-consented data. The ex
 
 Akers, B., & Chingos, M. M. (2014). *Are college students borrowing blindly?* Brookings Institution.
 
-Allgood, S., & Walstad, W. B. (2016). The effects of perceived and actual financial literacy on financial behaviors. *Economic Inquiry*, *54*(1), 675--697.
+Allgood, S., & Walstad, W. B. (2016). The effects of perceived and actual financial literacy on financial behaviors. *Economic Inquiry*, *54*(1), 675–697.
 
-Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. *Financial Services Review*, *7*(2), 107--128.
+Chen, H., & Volpe, R. P. (1998). An analysis of personal financial literacy among college students. *Financial Services Review*, *7*(2), 107–128.
 
-Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. *Management Science*, *60*(8), 1861--1883.
+Fernandes, D., Lynch, J. G., Jr., & Netemeyer, R. G. (2014). Financial literacy, financial education, and downstream financial behaviors. *Management Science*, *60*(8), 1861–1883.
 
-Flodén, J. (2025). Grading exams using large language models: A comparison between human and AI grading of exams in higher education using ChatGPT. *British Educational Research Journal*, *51*(1), 201--224.
+Flodén, J. (2025). Grading exams using large language models: A comparison between human and AI grading of exams in higher education using ChatGPT. *British Educational Research Journal*, *51*(1), 201–224.
 
-Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. *International Journal of Consumer Studies*, *45*(1), 80--105.
+Goyal, K., & Kumar, S. (2021). Financial literacy: A systematic review and bibliometric analysis. *International Journal of Consumer Studies*, *45*(1), 80–105.
 
-Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. *Annual Review of Economics*, *5*, 347--373.
+Hastings, J. S., Madrian, B. C., & Skimmyhorn, W. L. (2013). Financial literacy, financial education, and economic outcomes. *Annual Review of Economics*, *5*, 347–373.
 
-Huston, S. J. (2010). Measuring financial literacy. *Journal of Consumer Affairs*, *44*(2), 296--316.
+Huston, S. J. (2010). Measuring financial literacy. *Journal of Consumer Affairs*, *44*(2), 296–316.
 
 Ipatova, E., & Merheb, K. (2023). Re-examining the Dunning-Kruger effect: Objective vs. subjective financial literacy in the young and overconfident (SSRN Working Paper No. 4645450).
 
-Kaiser, T., Lusardi, A., Menkhoff, L., & Urban, C. (2022). Financial education affects financial knowledge and downstream behaviors. *Journal of Financial Economics*, *145*(2), 255--272.
+Kaiser, T., Lusardi, A., Menkhoff, L., & Urban, C. (2022). Financial education affects financial knowledge and downstream behaviors. *Journal of Financial Economics*, *145*(2), 255–272.
 
-Kramer, M. M. (2016). Financial literacy, confidence and financial advice seeking. *Journal of Economic Behavior & Organization*, *131*(Part A), 198--217.
+Kramer, M. M. (2016). Financial literacy, confidence and financial advice seeking. *Journal of Economic Behavior & Organization*, *131*(Part A), 198–217.
 
 Lusardi, A. (2019). Financial literacy and the need for financial education: Evidence and implications. *Swiss Journal of Economics and Statistics*, *155*, Article 1.
 
-Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. *Journal of Economic Literature*, *52*(1), 5--44.
+Lusardi, A., & Mitchell, O. S. (2014). The economic importance of financial literacy: Theory and evidence. *Journal of Economic Literature*, *52*(1), 5–44.
 
-Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. *Journal of Pension Economics and Finance*, *14*(4), 332--368.
+Lusardi, A., & Tufano, P. (2015). Debt literacy, financial experiences, and overindebtedness. *Journal of Pension Economics and Finance*, *14*(4), 332–368.
 
-Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. *Journal of Financial Counseling and Planning*, *20*(1), 15--24.
+Mandell, L., & Klein, L. S. (2009). The impact of financial literacy education on subsequent financial behavior. *Journal of Financial Counseling and Planning*, *20*(1), 15–24.
 
 Mizumoto, A., & Eguchi, M. (2024). Large language models and automated essay scoring of English language learner writing: Insights into validity and reliability. *Computers and Education: Artificial Intelligence*, *6*, 100208.
 
@@ -631,19 +631,19 @@ OECD. (2022). *OECD/INFE toolkit for measuring financial literacy and financial 
 
 Olivos, F., Kamelski, T., & Ascui-Gac, S. (2025). Assessing instructor-AI cooperation for grading essay-type questions in an introductory sociology course. *Teaching Sociology*. Advance online publication. https://doi.org/10.1177/0092055X251397371
 
-Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. *Journal of Financial Service Professionals*, *70*(4), 78--88.
+Porto, N., & Xiao, J. J. (2016). Financial literacy overconfidence and financial advice seeking. *Journal of Financial Service Professionals*, *70*(4), 78–88.
 
-Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. *Journal of Financial Counseling and Planning*, *22*(1), 60--70.
+Robb, C. A., & Woodyard, A. (2011). Financial knowledge and best practice behavior. *Journal of Financial Counseling and Planning*, *22*(1), 60–70.
 
-Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. *Journal of Finance*, *64*(6), 2807--2849.
+Stango, V., & Zinman, J. (2009). Exponential growth bias and household finance. *Journal of Finance*, *64*(6), 2807–2849.
 
-van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. *Journal of Financial Economics*, *101*(2), 449--472.
+van Rooij, M., Lusardi, A., & Alessie, R. (2011). Financial literacy and stock market participation. *Journal of Financial Economics*, *101*(2), 449–472.
 
-Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. *Journal of Consumer Affairs*, *53*(1), 234--259.
+Wagner, J., & Walstad, W. B. (2019). The effects of financial education on short-term and long-term financial behaviors. *Journal of Consumer Affairs*, *53*(1), 234–259.
 
-Willis, L. E. (2011). The financial education fallacy. *American Economic Review*, *101*(3), 429--434.
+Willis, L. E. (2011). The financial education fallacy. *American Economic Review*, *101*(3), 429–434.
 
-Yavuz, F. (2025). Utilizing large language models for EFL essay grading: An examination of reliability and validity in rubric-based assessments. *British Journal of Educational Technology*, *56*(2), 487--506.
+Yavuz, F. (2025). Utilizing large language models for EFL essay grading: An examination of reliability and validity in rubric-based assessments. *British Journal of Educational Technology*, *56*(2), 487–506.
 
 ---
 
@@ -665,13 +665,13 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 | Control | Rule |
 | --- | --- |
-| SDM size | Target 10 items after the 40 anchor questions (5--10 delivered depending on available high-priority subcategories) |
-| Selection basis | Ranked by diagnostic priority score (0--5) at subcategory level |
+| SDM size | Target 10 items after the 40 anchor questions (5–10 delivered depending on available high-priority subcategories) |
+| Selection basis | Ranked by diagnostic priority score (0–5) at subcategory level |
 | Domain balance | At least 2 items per domain (borrowing/credit, investment, risk management) |
 | Subcategory cap | Max 2 SDM items per subcategory |
 | Open-ended cap | Max 3 open-ended items per student |
 | Format fallback | When open-ended cap reached: Open_Diagnose → Lower_MCQ, Open_Confirm → Same_MCQ |
-| Item source | Pre-written 156-variant item bank only; no generated questions |
+| Item source | Pre-written 182-variant item bank only; no generated questions |
 | Grading | SDM-10 is diagnostic only; grade from 40 anchors only |
 | Primary outcomes | RQ1/RQ2 use 26 anchor knowledge items; SDM-10 is secondary diagnostic output |
 
@@ -730,13 +730,13 @@ The diagnostic priority score quantifies residual uncertainty about a student's 
 
 ### Table B.1: Assessment Questions with Categories and Subcategories
 
-Q15--Q28 are preference items (unscored).
+Q15–Q28 are preference items (unscored).
 
 | Category | Subcategory | Count | Q# | Scored |
 | --- | --- | --- | --- | --- |
-| Baseline Covariates | Demographic Characteristics | 5 | B1--B5 | -- |
-| Baseline Covariates | Financial Background & Context | 5 | B6--B10 | -- |
-| Baseline Covariates | Debt status | 2 | B11--B13 | -- |
+| Baseline Covariates | Demographic Characteristics | 5 | B1–B5 | N/A |
+| Baseline Covariates | Financial Background & Context | 5 | B6–B10 | N/A |
+| Baseline Covariates | Debt status | 2 | B11–B13 | N/A |
 | Borrowing, Interest Rates, and Financial Numeracy Knowledge | Compound Interest | 1 | Q1 | Yes |
 | Borrowing, Interest Rates, and Financial Numeracy Knowledge | Borrowing/Mortgages | 1 | Q2 | Yes |
 | Borrowing, Interest Rates, and Financial Numeracy Knowledge | Inflation | 3 | Q3, Q6, Q7 | Yes |
@@ -762,16 +762,16 @@ Q15--Q28 are preference items (unscored).
 | Behavioral and Risk Management Knowledge | Risk Preference in Income | 1 | Q27 | No |
 | Behavioral and Risk Management Knowledge | Scam Skepticism | 1 | Q28 | No |
 | Risk and Return Knowledge | Investing | 4 | Q29, Q30, Q31, Q32 | Yes |
-| Risk and Return Knowledge | Basic Probability -- Percentage to Frequency | 1 | Q33 | Yes |
-| Risk and Return Knowledge | Investment Risk -- Diversification Effect | 1 | Q34 | Yes |
-| Risk and Return Knowledge | Investment Risk -- Risk-Return Relationship | 1 | Q35 | Yes |
-| Risk and Return Knowledge | Risk Management -- Diversification Principle | 1 | Q36 | Yes |
-| Risk and Return Knowledge | Risk Management -- Insurance | 1 | Q37 | Yes |
-| Risk and Return Knowledge | Investment Risk -- Inflation Risk | 1 | Q38 | Yes |
-| Risk and Return Knowledge | Investment Risk -- Asset Class Risk | 1 | Q39 | Yes |
+| Risk and Return Knowledge | Basic Probability: Percentage to Frequency | 1 | Q33 | Yes |
+| Risk and Return Knowledge | Investment Risk: Diversification Effect | 1 | Q34 | Yes |
+| Risk and Return Knowledge | Investment Risk: Risk-Return Relationship | 1 | Q35 | Yes |
+| Risk and Return Knowledge | Risk Management: Diversification Principle | 1 | Q36 | Yes |
+| Risk and Return Knowledge | Risk Management: Insurance | 1 | Q37 | Yes |
+| Risk and Return Knowledge | Investment Risk: Inflation Risk | 1 | Q38 | Yes |
+| Risk and Return Knowledge | Investment Risk: Asset Class Risk | 1 | Q39 | Yes |
 | Risk and Return Knowledge | Crisis/Systemic Risk | 1 | Q40 | Yes |
 
-### B.2: Baseline Covariates (B1--B13, Not Scored)
+### B.2: Baseline Covariates (B1–B13, Not Scored)
 
 These items collect demographic characteristics, financial background, and debt status during the onboarding phase. No responses are scored.
 
@@ -814,53 +814,53 @@ These items collect demographic characteristics, financial background, and debt 
 **B13.** If yes, what is the maturity of your student loan (time until fully repaid) (best estimate)?
 *(A) Less than 5 years | (B) 5 to 10 years | (C) More than 10 years | (D) Do not know | (E) Prefer not to say*
 
-### B.3: Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1--Q10, Scored)
+### B.3: Borrowing, Interest Rates, and Financial Numeracy Knowledge (Q1–Q10, Scored)
 
 **Q1** *(Compound Interest).* Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow?
-*(A) More than $102 | (B) Exactly $102 | (C) Less than $102 | (D) Do not know* — **Answer: A**
+*(A) More than $102 | (B) Exactly $102 | (C) Less than $102 | (D) Do not know*. **Answer: A**
 
 **Q2** *(Borrowing/Mortgages).* A 15-year mortgage typically requires higher monthly payments than a 30-year mortgage, but the total interest paid over the life of the loan will be less. True or false?
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q3** *(Inflation).* High inflation means that the cost of living is increasing rapidly. True or false?
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q4** *(Borrowing/Interest).* You lend $25 to a friend one evening and he gives you $25 back the next day. How much interest has he paid on this loan?
-*(A) $25 | (B) $0 | (C) Do not know* — **Answer: B**
+*(A) $25 | (B) $0 | (C) Do not know*. **Answer: B**
 
 **Q5** *(Saving).* Lyle has a good job and earns enough to pay his bills comfortably each month. In terms of his emergency savings, how much should he have set aside?
-*(A) $200 or so | (B) Money equal to his share of one month's rent/mortgage | (C) The equivalent of three or more months of living expenses | (D) Do not know* — **Answer: C**
+*(A) $200 or so | (B) Money equal to his share of one month's rent/mortgage | (C) The equivalent of three or more months of living expenses | (D) Do not know*. **Answer: C**
 
 **Q6** *(Inflation).* A successful effort to lower inflation would likely be accompanied by which of the following?
-*(A) A decrease in the general level of prices | (B) A slower increase in prices | (C) An increase in employment | (D) Do not know* — **Answer: B**
+*(A) A decrease in the general level of prices | (B) A slower increase in prices | (C) An increase in employment | (D) Do not know*. **Answer: B**
 
 **Q7** *(Inflation).* Inflation can cause difficulty in many ways. Which group would have the greatest problem during periods of high inflation?
-*(A) Young couples with no children who both work | (B) Older, working couples saving for retirement | (C) Retirees living on a fixed income | (D) Do not know* — **Answer: C**
+*(A) Young couples with no children who both work | (B) Older, working couples saving for retirement | (C) Retirees living on a fixed income | (D) Do not know*. **Answer: C**
 
 **Q8** *(Borrowing).* Jayden is shopping for an auto loan. Which of the following can he likely negotiate with the lender?
-*(A) The interest rate | (B) The required down payment | (C) Both | (D) Neither | (E) Do not know* — **Answer: C**
+*(A) The interest rate | (B) The required down payment | (C) Both | (D) Neither | (E) Do not know*. **Answer: C**
 
 **Q9** *(Earning).* Considering the strategy of allocating income, what is the PRIMARY advantage to your household of making a budget?
-*(A) Ensures funds are available for bill paying and saving | (B) Reduces your taxes | (C) Increases rate of return on your investments | (D) Do not know* — **Answer: A**
+*(A) Ensures funds are available for bill paying and saving | (B) Reduces your taxes | (C) Increases rate of return on your investments | (D) Do not know*. **Answer: A**
 
 **Q10** *(Borrowing/Credit).* Which of the following statements regarding credit reports is FALSE?
-*(A) Credit reports are used by employers to screen job applicants | (B) A credit report includes an assessment of your worthiness to receive credit | (C) Your credit report is provided by a single source | (D) Do not know* — **Answer: C**
+*(A) Credit reports are used by employers to screen job applicants | (B) A credit report includes an assessment of your worthiness to receive credit | (C) Your credit report is provided by a single source | (D) Do not know*. **Answer: C**
 
-### B.4: Behavioral and Risk Management -- Factual Knowledge (Q11--Q14, Scored)
+### B.4: Behavioral and Risk Management: Factual Knowledge (Q11–Q14, Scored)
 
 **Q11** *(Risk Diversification).* Please tell me whether this statement is true or false: Buying a single company's stock usually provides a safer return than a stock mutual fund.
-*(A) True | (B) False | (C) Do not know* — **Answer: B**
+*(A) True | (B) False | (C) Do not know*. **Answer: B**
 
 **Q12** *(Insurance).* Which of the following best describes the PRIMARY function of health insurance?
-*(A) Protect against the possibility of large unexpected medical bills | (B) Cover the cost of routine health care expenses | (C) Pay for elective medical procedures | (D) Do not know* — **Answer: A**
+*(A) Protect against the possibility of large unexpected medical bills | (B) Cover the cost of routine health care expenses | (C) Pay for elective medical procedures | (D) Do not know*. **Answer: A**
 
 **Q13** *(Insurance).* What does a home insurance deductible represent?
-*(A) Amount you pay before insurance covers damages | (B) Monthly premium for coverage | (C) Maximum amount insurance will pay | (D) Do not know* — **Answer: A**
+*(A) Amount you pay before insurance covers damages | (B) Monthly premium for coverage | (C) Maximum amount insurance will pay | (D) Do not know*. **Answer: A**
 
 **Q14** *(Risk Diversification).* When an investor spreads money among different assets, the risk of losing money usually:
-*(A) Increases | (B) Decreases | (C) Stays the same | (D) Do not know* — **Answer: B**
+*(A) Increases | (B) Decreases | (C) Stays the same | (D) Do not know*. **Answer: B**
 
-### B.5: Financial Attitudes and Preferences (Q15--Q28, Not Scored)
+### B.5: Financial Attitudes and Preferences (Q15–Q28, Not Scored)
 
 These 14 items capture behavioral attitudes, risk preferences, and financial decision-making tendencies. They are not scored but contribute to the behavioral profile used in the SDM-10 adaptive module.
 
@@ -906,43 +906,43 @@ These 14 items capture behavioral attitudes, risk preferences, and financial dec
 **Q28** *(Scam Skepticism).* If an investment opportunity promises unusually high returns with little explanation of how, what do you do?
 *(A) Invest a small amount just to test it | (B) Ask for more details and do research | (C) Avoid it, it seems too good to be true | (D) Immediately take advantage before it's gone*
 
-### B.6: Risk and Return Knowledge (Q29--Q40, Scored)
+### B.6: Risk and Return Knowledge (Q29–Q40, Scored)
 
 **Q29** *(Investing).* If interest rates rise, what will typically happen to bond prices?
-*(A) They will rise | (B) They will fall | (C) They will stay the same | (D) There is no relationship | (E) Do not know* — **Answer: B**
+*(A) They will rise | (B) They will fall | (C) They will stay the same | (D) There is no relationship | (E) Do not know*. **Answer: B**
 
 **Q30** *(Investing).* An investment with a high return is likely to be high risk. True or false?
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q31** *(Investing).* Which of the following best describes what the stock market does?
-*(A) Results in a gain in wealth for investors | (B) Creates liquidity by guaranteeing investors a profit | (C) Brings people who want to buy stocks together with those who want to sell stocks | (D) Do not know* — **Answer: C**
+*(A) Results in a gain in wealth for investors | (B) Creates liquidity by guaranteeing investors a profit | (C) Brings people who want to buy stocks together with those who want to sell stocks | (D) Do not know*. **Answer: C**
 
-**Q32** *(Investing).* Considering a long time period (e.g., 10--20 years), which asset normally gives the highest return?
-*(A) Savings accounts | (B) Bonds | (C) Stocks | (D) Do not know* — **Answer: C**
+**Q32** *(Investing).* Considering a long time period (e.g., 10–20 years), which asset normally gives the highest return?
+*(A) Savings accounts | (B) Bonds | (C) Stocks | (D) Do not know*. **Answer: C**
 
 **Q33** *(Basic Probability).* In the BIG BUCKS LOTTERY, the chance of winning a $10 prize is 1%. What is your best guess about how many people would win a $10 prize if 1,000 people each buy a single ticket?
-*(A) 5 | (B) 8 | (C) 10 | (D) 12 | (E) Do not know* — **Answer: C**
+*(A) 5 | (B) 8 | (C) 10 | (D) 12 | (E) Do not know*. **Answer: C**
 
 **Q34** *(Diversification Effect).* When an investor spreads money among different assets, does the risk of losing money usually increase, decrease, or stay the same?
-*(A) Increase | (B) Decrease | (C) Stay the same | (D) Do not know* — **Answer: B**
+*(A) Increase | (B) Decrease | (C) Stay the same | (D) Do not know*. **Answer: B**
 
 **Q35** *(Risk-Return Relationship).* If someone offers you the chance to make a lot of money, it is likely that there is also a chance that you will lose a lot of money. True or false?
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q36** *(Diversification Principle).* True or false: It is less likely that you will lose all of your money if you save it in more than one place.
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q37** *(Insurance).* Which of the following insurance policies is most likely to protect you if you cause an accident that injures someone?
-*(A) Health insurance | (B) Homeowner's or renter's insurance | (C) Auto insurance liability coverage | (D) Do not know* — **Answer: C**
+*(A) Health insurance | (B) Homeowner's or renter's insurance | (C) Auto insurance liability coverage | (D) Do not know*. **Answer: C**
 
 **Q38** *(Inflation Risk).* Which of the following types of investment would best protect the purchasing power of a family's savings in the event of a sudden increase in inflation?
-*(A) A 10-year bond paying a fixed rate of interest | (B) A certificate of deposit at a bank | (C) A 25-year home mortgage at a fixed rate | (D) A house financed with a fixed-rate mortgage | (E) Do not know* — **Answer: D**
+*(A) A 10-year bond paying a fixed rate of interest | (B) A certificate of deposit at a bank | (C) A 25-year home mortgage at a fixed rate | (D) A house financed with a fixed-rate mortgage | (E) Do not know*. **Answer: D**
 
 **Q39** *(Asset Class Risk).* True or false: Stocks are generally riskier than bonds.
-*(A) True | (B) False | (C) Do not know* — **Answer: A**
+*(A) True | (B) False | (C) Do not know*. **Answer: A**
 
 **Q40** *(Crisis/Systemic Risk).* What was a key factor contributing to the 2007 to 2008 financial crisis?
-*(A) Strong regulation of mortgage lending | (B) Widespread failure to properly assess and manage financial risk | (C) High household savings rates | (D) Low levels of borrowing by households* — **Answer: B**
+*(A) Strong regulation of mortgage lending | (B) Widespread failure to properly assess and manage financial risk | (C) High household savings rates | (D) Low levels of borrowing by households*. **Answer: B**
 
 ---
 
@@ -1078,15 +1078,15 @@ Four responses produced substantive disagreement among the eight non-disqualifie
 
 - **De-identified data exports.** The following data files are available for download from the project repository:
 
-  - `consented_responses_354.csv` -- Primary analysis dataset containing all anchor and SDM-10 responses for the research-consented subset. Fields: attempt_id, submission_type, submitted_at, duration_s, item_id, item_type, domain, subdomain, is_anchor, is_scored, student_answer, item_score, confidence, answered_at.
-  - `all_responses_421_students.csv` -- Operational dataset including non-consented responses. Used for operational context only; not included in research analyses.
-  - `question_bank_40items.csv` -- Item metadata and answer options for all 40 anchor items plus 13 baseline covariates. Fields: section, subsection, range, question_id, question_text, tags, options, correct_answer.
-  - `diagnose_by_item.csv` -- Item-level diagnose classification results showing misconception, knowledge gap, and selection error percentages with Layer 1 and Layer 2 taxonomy codes for each anchor item.
-  - `confirm_by_item.csv` -- Item-level confirm classification results showing verified, partial, and likely-guess percentages for each anchor item.
-  - `sdm_open_answers.csv` -- De-identified open-ended response text from SDM-10 diagnose and confirm items.
-  - `misconception_taxonomy_observed.csv` -- 62 observed misconception patterns mapped to items and subcategories, with Layer 1 codes, Layer 2 tags, and frequency counts.
-  - `model_selection_concordance.csv` -- 11-model comparison for AI scorer selection, with schema compliance, error rates, throughput, cost estimates, and verdict for each model.
-  - `sdm10_item_bank.xlsx` -- Canonical SDM item bank containing 182 variant rows across 26 anchor items. Fields include anchor ID, variant type, trigger condition, question text, answer options, correct answer, scoring rubric, and misconception tags.
+  - `consented_responses_354.csv`: Primary analysis dataset containing all anchor and SDM-10 responses for the research-consented subset. Fields: attempt_id, submission_type, submitted_at, duration_s, item_id, item_type, domain, subdomain, is_anchor, is_scored, student_answer, item_score, confidence, answered_at.
+  - `all_responses_421_students.csv`: Operational dataset including non-consented responses. Used for operational context only; not included in research analyses.
+  - `question_bank_40items.csv`: Item metadata and answer options for all 40 anchor items plus 13 baseline covariates. Fields: section, subsection, range, question_id, question_text, tags, options, correct_answer.
+  - `diagnose_by_item.csv`: Item-level diagnose classification results showing misconception, knowledge gap, and selection error percentages with Layer 1 and Layer 2 taxonomy codes for each anchor item.
+  - `confirm_by_item.csv`: Item-level confirm classification results showing verified, partial, and likely-guess percentages for each anchor item.
+  - `sdm_open_answers.csv`: De-identified open-ended response text from SDM-10 diagnose and confirm items.
+  - `misconception_taxonomy_observed.csv`: 62 observed misconception patterns mapped to items and subcategories, with Layer 1 codes, Layer 2 tags, and frequency counts.
+  - `model_selection_concordance.csv`: 11-model comparison for AI scorer selection, with schema compliance, error rates, throughput, cost estimates, and verdict for each model.
+  - `sdm10_item_bank.xlsx`: Canonical SDM item bank containing 182 variant rows across 26 anchor items. Fields include anchor ID, variant type, trigger condition, question text, answer options, correct answer, scoring rubric, and misconception tags.
 
 ---
 
@@ -1094,7 +1094,7 @@ Four responses produced substantive disagreement among the eight non-disqualifie
 
 ### F.1 Technology Stack
 
-The assessment is administered through a dedicated web platform -- the Financial Literacy Toolkit -- developed for this study. The platform is built on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The application runs as a Docker containerized service with automated deployment via GitHub Actions and Traefik reverse proxy for SSL termination. The complete source code is publicly available in the project repository (Bolivard, 2026).
+The assessment is administered through a dedicated web platform, the Financial Literacy Toolkit, developed for this study. The platform is built on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The application runs as a Docker containerized service with automated deployment via GitHub Actions and Traefik reverse proxy for SSL termination. The complete source code is publicly available in the project repository (Bolivard, 2026).
 
 ### F.2 Student Authentication and Data Minimization
 
