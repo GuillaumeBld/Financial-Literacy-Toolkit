@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This paper describes the design, implementation, and initial deployment of a 40-item pre-course financial risk literacy assessment for QUIN 102 at Loyola University Chicago. The instrument spans three knowledge domains -- Borrowing and Credit, Risk Management, and Investment and Risk -- using 26 scored and 14 unscored anchor items. A Supplemental Diagnostic Module (SDM-10) adaptively selects up to 10 open-ended follow-up items based on each student's anchor performance; an AI scoring pipeline classifies responses into misconception, knowledge gap, and selection error categories. During the Spring 2026 pilot, 354 research-consented students completed the assessment through a FERPA-compliant web platform built on Next.js and PostgreSQL. The mean anchor score was 67.0% (SD = 17.9%), with notable variation across domains. Among 493 scored diagnostic responses, 53.9% reflected misconceptions, 31.9% selection errors, and 14.2% knowledge gaps. We discuss implications for targeted instruction, outline limitations of the current single-cohort design, and preview a planned validation study that will add pre-post measurement, factor analysis, and heterogeneity modeling.
+This paper describes the design, deployment, and diagnostic findings from a 40-item pre-course financial risk literacy assessment for QUIN 102 at Loyola University Chicago. The instrument spans three knowledge domains -- Borrowing and Credit, Risk Management, and Investment and Risk -- using 26 scored and 14 unscored anchor items. A Supplemental Diagnostic Module (SDM-10) adaptively selects up to 10 open-ended follow-up items based on each student's anchor performance; an AI-assisted rubric classifies responses into misconception, knowledge gap, and selection error categories. During the Spring 2026 pilot, 354 research-consented students completed the assessment. The mean anchor score was 67.0% (SD = 17.9%), with notable variation across domains. Among 493 scored diagnostic responses, 53.9% reflected misconceptions, 31.9% selection errors, and 14.2% knowledge gaps. The selection error finding is central: among students who answered incorrectly with high confidence, nearly one in three demonstrated correct understanding in their open-ended explanation, indicating that raw MCQ scores systematically misrepresent student knowledge on format-sensitive items. The diagnostic results yield 10 specific course improvement recommendations -- spanning instructional content, instrument revision, and delivery changes -- each anchored to evidence and paired with a Paper 2 evaluation criterion. We outline limitations of the current single-cohort design and preview a planned validation study that will add pre-post measurement, factor analysis, and heterogeneity modeling.
 
 ---
 
@@ -24,29 +24,31 @@ This paper describes the design, implementation, and initial deployment of a 40-
    - 3.1 [Assessment Structure](#31-assessment-structure)
    - 3.2 [Scoring Methodology](#32-scoring-methodology)
    - 3.3 [Risk Literacy Emphasis](#33-risk-literacy-emphasis)
-4. [SDM-10 Diagnostic Module](#4-sdm-10-diagnostic-module)
-   - 4.1 [Selection Algorithm and Need Score](#41-selection-algorithm-and-need-score)
-   - 4.2 [Variant Types and Three-Way Classification](#42-variant-types-and-three-way-classification)
-   - 4.3 [AI-Assisted Scoring Pipeline](#43-ai-assisted-scoring-pipeline)
-   - 4.4 [Diagnostic Findings](#44-diagnostic-findings)
-     - 4.4.1 [Open-Ended Response Overview](#441-open-ended-response-overview)
-     - 4.4.2 [Diagnostic Classification Results](#442-diagnostic-classification-results)
-     - 4.4.3 [Confirm Classification Results](#443-confirm-classification-results)
-     - 4.4.4 [Misconception Analysis by Domain](#444-misconception-analysis-by-domain)
-     - 4.4.5 [Selection Error Patterns](#445-selection-error-patterns)
-     - 4.4.6 [Validation Against Manual Analysis](#446-validation-against-manual-analysis)
-     - 4.4.7 [Cross-Item Patterns](#447-cross-item-patterns)
+4. [Assessment Pipeline](#4-assessment-pipeline)
+   - 4.1 [Pipeline Overview and Illustrative Walkthrough](#41-pipeline-overview-and-illustrative-walkthrough)
+   - 4.2 [Adaptive Selection and Diagnostic Priority Score](#42-adaptive-selection-and-diagnostic-priority-score)
+   - 4.3 [Variant Types and Three-Way Classification](#43-variant-types-and-three-way-classification)
+   - 4.4 [AI-Assisted Scoring Pipeline](#44-ai-assisted-scoring-pipeline)
 5. [Platform and Governance Design](#5-platform-and-governance-design)
-   - 5.1 [Technology Stack](#51-technology-stack)
-   - 5.2 [Student Authentication and Data Minimization](#52-student-authentication-and-data-minimization)
-   - 5.3 [Consent Mechanics](#53-consent-mechanics)
+   - 5.1 [Consent Mechanics](#51-consent-mechanics)
 6. [Pilot Operations and Descriptive Statistics](#6-pilot-operations-and-descriptive-statistics)
    - 6.1 [Participation and Completion](#61-participation-and-completion)
-   - 6.2 [Anchor Score Context](#62-anchor-score-context)
-   - 6.3 [Assessment Duration](#63-assessment-duration)
-7. [Discussion](#7-discussion)
-8. [Limitations](#8-limitations)
-9. [Planned Validation Study (Paper 2 Protocol Preview)](#9-planned-validation-study-paper-2-protocol-preview)
+   - 6.2 [Sample Demographics](#62-sample-demographics)
+7. [Results](#7-results)
+   - 7.1 [Anchor Score Distribution and Domain Breakdown](#71-anchor-score-distribution-and-domain-breakdown)
+   - 7.2 [Confidence Calibration Patterns](#72-confidence-calibration-patterns)
+   - 7.3 [Diagnostic Classification: Diagnose Composition](#73-diagnostic-classification-diagnose-composition)
+   - 7.4 [Diagnostic Classification: Confirm Composition](#74-diagnostic-classification-confirm-composition)
+   - 7.5 [Misconception Clusters by Domain](#75-misconception-clusters-by-domain)
+   - 7.6 [Selection Error Patterns and Item Revision Targets](#76-selection-error-patterns-and-item-revision-targets)
+   - 7.7 [AI Scoring Validation](#77-ai-scoring-validation)
+8. [Discussion](#8-discussion)
+   - 8.1 [Key Findings](#81-key-findings)
+   - 8.2 [Course Improvement Recommendations](#82-course-improvement-recommendations)
+   - 8.3 [Implications for Risk Literacy Measurement](#83-implications-for-risk-literacy-measurement)
+   - 8.4 [Oral Diagnostics as Future Modality](#84-oral-diagnostics-as-future-modality)
+9. [Limitations](#9-limitations)
+10. [Planned Validation Study (Paper 2 Protocol Preview)](#10-planned-validation-study-paper-2-protocol-preview)
 - [References](#references)
 - [Declaration of AI and AI-Assisted Technologies](#declaration-of-ai-and-ai-assisted-technologies)
 - [Appendix A: SDM-10 Selection Algorithm and Burden Controls](#appendix-a-sdm-10-selection-algorithm-and-burden-controls)
@@ -54,6 +56,7 @@ This paper describes the design, implementation, and initial deployment of a 40-
 - [Appendix C: Financial Literacy Misconception Taxonomy (Layer 1)](#appendix-c-financial-literacy-misconception-taxonomy-layer-1)
 - [Appendix D: AI Scorer Model Selection Protocol](#appendix-d-ai-scorer-model-selection-protocol)
 - [Appendix E: Supplementary Materials](#appendix-e-supplementary-materials)
+- [Appendix F: Technical Implementation](#appendix-f-technical-implementation)
 
 ---
 
@@ -73,7 +76,7 @@ More specifically, the independent study is organized around two research questi
 
 - **RQ2 (Heterogeneity):** Which baseline behavioral and contextual variables predict heterogeneity in learning gains across students, and do these predictors differ by domain?
 
-RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent study contingent on institutional review board approval (see Section 9). This paper (Paper 1) is an independent study deliverable that documents instrument design, platform implementation, and descriptive diagnostic findings from the pre-course assessment (February 2--9, 2026). It reports no learning gains, no inferential statistics, and no subgroup comparisons. All pre-course results are presented as operational baseline context for the planned validation study, not as standalone research findings. The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture -- in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
+RQ1 and RQ2 require paired pre-post data and will be addressed in a subsequent study contingent on institutional review board approval (see Section 10). This paper (Paper 1) is an independent study deliverable that documents instrument design, platform implementation, and descriptive diagnostic findings from the pre-course assessment (February 2--9, 2026). It reports no learning gains, no inferential statistics, and no subgroup comparisons. All pre-course results are presented as operational baseline context for the planned validation study, not as standalone research findings. The SDM-10's three-way classification of open-ended responses (misconception, knowledge gap, selection error) provides diagnostic information that standard multiple-choice instruments cannot capture -- in particular, the finding that a substantial fraction of incorrect answers reflect selection errors rather than genuine misconceptions, and that a meaningful fraction of correct answers reflect lucky guesses rather than genuine understanding. These findings demonstrate that raw MCQ scores both overstate and understate student knowledge in systematic ways, with implications for instrument design and instructional targeting.
 
 ---
 
@@ -152,38 +155,29 @@ We designed the instrument to be internally consistent and transferable. Althoug
 
 ---
 
-## 4. SDM-10 Diagnostic Module
+## 4. Assessment Pipeline
 
-### 4.1 Selection Algorithm and Need Score
+### 4.1 Pipeline Overview and Illustrative Walkthrough
 
-The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (six variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The SDM-10 draws only from knowledge items (Q1--Q14, Q29--Q40). Preference items (Q15--Q28) do not trigger adaptive follow-up because they assess attitudes rather than factual knowledge.
+The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from a pre-written variant bank ranked by priority (targeting 10, delivering 5--10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). Two illustrative cases show how the pipeline works in practice.
 
-The selection algorithm computes a Need score (0--5) for each of the 26 knowledge subcategories based on three signals from the anchor response: correctness, confidence (1--3 scale), and item format (True/False vs. multiple choice). Higher Need scores indicate greater residual uncertainty. The format-aware adjustment addresses differential guessing probability: a correct True/False response with moderate confidence is assigned a higher Need (Need = 2) than the equivalent multiple-choice response (Need = 1), reflecting the 50% versus approximately 25% chance-level baseline. Incorrect responses with high confidence receive the maximum Need score (Need = 5), signaling a likely misconception requiring open-ended diagnostic follow-up.
+**Case A -- Open_Diagnose (incorrect + high confidence).** A student encounters Q6, which asks what a "successful effort to lower inflation" would likely be accompanied by. The student selects "a decrease in the general level of prices" -- the incorrect answer -- and reports high confidence. Because the combination of incorrectness and high confidence produces a high diagnostic priority, the algorithm assigns an Open_Diagnose variant for the Inflation (Lowering) concept area. The student sees an open-ended prompt: *"You chose 'a decrease in the general level of prices.' In your own words, explain what happens to prices when inflation is lowered."* The student writes: *"If inflation goes down, prices should go down too -- that's what lower inflation means."* The AI scoring pipeline classifies this as a **misconception** (INF-01: confuses a decrease in the rate of price increase with an actual decrease in prices) and assigns taxonomy codes. The classification distinguishes this from a knowledge gap (the student has an active belief, not an absence of knowledge) and from a selection error (the student's reasoning is consistent with the wrong answer, not inconsistent with it).
 
-**Table 4.1: Need Score Mapping (Correctness x Confidence x Format)**
+**Open_Diagnose** is an open-ended prompt assigned when a student answers incorrectly with high confidence. Its diagnostic goal is to distinguish three response types: misconception (a specific wrong mental model), knowledge gap (absence of knowledge), or selection error (correct understanding despite the wrong answer choice).
 
-| Confidence | Correct (MCQ) | Correct (T/F) | Incorrect (MCQ) | Incorrect (T/F) |
-| --- | --- | --- | --- | --- |
-| 1 (Low) | 2 | 3 | 3 | 3 |
-| 2 (Mid) | 1 | 2 | 4 | 4 |
-| 3 (High) | 0 | 0 | 5 | 5 |
+**Case B -- Open_Confirm (correct + low confidence).** The same student answers Q29 correctly -- "bond prices fall when interest rates rise" -- but reports low confidence. Because a correct answer paired with low confidence leaves residual uncertainty about whether the student genuinely understands the concept, the algorithm assigns an Open_Confirm variant. The prompt asks: *"You said bond prices typically fall when interest rates rise. In your own words, explain why this relationship holds."* The student writes: *"I'm not really sure, I think I read it somewhere but I don't remember why."* The AI scoring pipeline classifies this as a **likely guess** -- the student cannot articulate the reasoning behind the correct answer. Without this follow-up, the anchor score of 100% on Q29 would overstate the student's understanding.
 
-The 10-item selection follows a three-phase procedure. Phase 1 enforces domain minimums (at least two items per scoring domain). Phase 2 fills remaining slots in descending Need order. Phase 3 provides fallback if fewer than 10 subcategories have Need > 0, using mastery-probing items from the strongest subcategories. Open-ended items are capped at three per student to limit response burden. The complete algorithm specification is presented in Appendix A.
+**Open_Confirm** is an open-ended prompt assigned when a student answers correctly with low confidence. Its diagnostic goal is to distinguish three response types: verified (genuine understanding), partial (incomplete reasoning), or likely guess (no substantive understanding despite the correct answer).
 
-![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence-accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
+Together, these two cases illustrate the SDM-10's central contribution: standard MCQ scores classify responses as simply correct or incorrect, while the diagnostic module reveals whether incorrect answers reflect misconceptions, knowledge gaps, or format-induced errors, and whether correct answers reflect genuine understanding or fortunate guessing.
 
-### 4.2 Variant Types and Three-Way Classification
+### 4.2 Adaptive Selection and Diagnostic Priority Score
 
-**Table 4.2: Variant Assignment Rules**
+The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 156 variants (six variants per anchor knowledge item) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. See Appendix A for the complete selection specification.
 
-| Anchor Response Pattern | Assigned Variant Type | Diagnostic Goal |
-| --- | --- | --- |
-| Incorrect + High confidence | Open_Diagnose | Surface misconception |
-| Incorrect + Mid confidence | Lower_MCQ | Test foundational understanding |
-| Incorrect + Low confidence | Lower_TF | Confirm basic recognition |
-| Correct + Low confidence | Open_Confirm | Verify understanding vs. guessing |
-| Correct + Mid confidence | Same_MCQ | Confirm at same difficulty |
-| Correct + High confidence | Higher_MCQ | Probe deeper application |
+### 4.3 Variant Types and Three-Way Classification
+
+Each SDM-10 item is drawn from one of six variant types determined by the student's anchor response pattern. Incorrect responses with high confidence trigger Open_Diagnose (open-ended); incorrect with mid confidence trigger Lower_MCQ; incorrect with low confidence trigger Lower_TF. Correct responses with low confidence trigger Open_Confirm (open-ended); correct with mid confidence trigger Same_MCQ; correct with high confidence trigger Higher_MCQ. The variant assignment rules are specified in Appendix A (Table A.3).
 
 Every open-ended response is classified into one of three categories:
 
@@ -195,199 +189,17 @@ This three-way classification drives differentiated instructional follow-up: mis
 
 **Misconception Taxonomy.** A two-layer taxonomy structures the classification. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories (Appendix C). Layer 2 contains item-specific tags derived from observed student response patterns. Layer 1 codes are designed to transfer across assessment contexts and student populations.
 
-### 4.3 AI-Assisted Scoring Pipeline
+### 4.4 AI-Assisted Scoring Pipeline
 
-Open-ended responses are scored using GPT-4.1 (OpenAI) accessed via the OpenRouter API. The model was selected through a multi-model concordance protocol in which 11 large language models from seven providers scored the same 20 responses and were evaluated on five quality criteria: schema compliance, error rate, classification nuance, throughput, and cost (Appendix D).
-
-Each response is processed with an item-specific prompt containing: the anchor question context, the student's selected answer and confidence level, the applicable Layer 1 misconception families with Layer 2 tags, calibration examples drawn from manually reviewed responses, and a structured decision tree for three-way classification. The model returns a structured JSON classification including diagnosis type, taxonomy codes, credit score (0/50/100 measuring diagnostic value), classification confidence (high/medium/low), an evidence quote, and a reasoning summary.
-
-This approach follows established practices for LLM-based assessment scoring (Mizumoto & Eguchi, 2024; Yavuz, 2025) and adopts the collaborative human-AI scoring model in which the LLM serves as a second rater whose low-confidence outputs are flagged for instructor adjudication (Olivos, Kamelski, & Ascui-Gac, 2025). All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification.
-
-### 4.4 Diagnostic Findings
-
-**Important caveat:** The SDM-10 open-ended items are administered only to students whose anchor responses triggered high-Need subcategories (incorrect + high confidence for diagnose, or correct + low confidence for confirm). The open-ended sample therefore reflects the tails of the confidence-accuracy distribution, not a random cross-section of the class. Misconception prevalence estimates from the SDM-10 should not be generalized to the full cohort without accounting for this conditioning.
-
-All analyses in this section are restricted to the research-consented subset (n = 354 of 431 submitted students, 82.1%).
-
-#### 4.4.1 Open-Ended Response Overview
-
-Of the 354 consented students who submitted the assessment, 306 (86.4%) received at least one open-ended item, generating 781 open-ended responses. The AI scoring pipeline processed 778 of these responses with zero errors.
-
-**Table 4.3: SDM-10 Open-Ended Summary (Consented Sample)**
-
-| Metric | Value |
-| --- | --- |
-| Consented students completing SDM-10 | 354 |
-| Students receiving open-ended items | 306 (86.4%) |
-| Total open-ended responses | 781 |
-| Responses scored by AI | 778 |
-| Diagnose responses scored | 493 |
-| Confirm responses scored | 285 |
-| AI scoring model | GPT-4.1 (OpenAI via OpenRouter) |
-| AI scoring error rate | 0 / 778 (0%) |
-
-**Response Quality.** Among diagnose responses, 89.2% were substantive (providing reasoning beyond "I don't know" or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module from the anchor assessment and received no grade incentive to provide detailed explanations.
-
-#### 4.4.2 Diagnostic Classification Results
-
-**Table 4.4: Diagnose Three-Way Classification (Consented, n = 493 scored, 479 classified)**
-
-| Classification | n | % of classified | Interpretation |
-| --- | --- | --- | --- |
-| Misconception | 258 | 53.9% | Active incorrect belief confirmed |
-| Selection error | 153 | 31.9% | Correct understanding, wrong answer |
-| Knowledge gap | 68 | 14.2% | Acknowledged uncertainty, no model |
-| Unclassified | 14 | --- | Ambiguous or insufficient for three-way |
-
-Of the 493 AI-scored diagnose responses, 479 (97.2%) were classified into the three-way taxonomy. Over half of classified responses (53.9%) reflected identifiable misconceptions -- specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. The 14 unclassified responses had ambiguous explanations that did not clearly fit any category. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 4.4 caveat).
-
-**Table 4.5: Diagnose Classification by Item (Consented, items with n >= 5, sorted by diagnose volume)**
-
-| Item | Subdomain | n | Misc. | Misc.% | KG | SE | SE% | Top Tag |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Q7 | Inflation (Fixed Income) | 54 | 34 | 63% | 5 | 14 | 26% | older_workers_worst |
-| Q6 | Inflation (Lowering) | 53 | 42 | 79% | 4 | 6 | 11% | lower_inflation_means_lower_prices |
-| Q36 | Diversification Principle | 42 | 6 | 14% | 2 | 34 | 81% | SE-reversal |
-| Q10 | Credit Reports | 39 | 16 | 41% | 7 | 16 | 41% | SE-selfcorrect |
-| Q8 | Auto Loans | 34 | 19 | 56% | 4 | 10 | 29% | down_payment_only |
-| Q5 | Emergency Fund | 31 | 15 | 48% | 1 | 8 | 26% | one_month_sufficient |
-| Q12 | Health Insurance Purpose | 28 | 23 | 82% | 1 | 4 | 14% | routine_care_primary |
-| Q29 | Interest Rates & Bonds | 24 | 11 | 46% | 8 | 4 | 17% | positive_correlation_belief |
-| Q2 | Borrowing/Mortgages | 22 | 7 | 32% | 8 | 7 | 32% | monthly_vs_total_confusion |
-| Q13 | Insurance Deductible | 19 | 10 | 53% | 6 | 3 | 16% | deductible_is_max_payout |
-| Q30 | Risk-Return Tradeoff | 17 | 14 | 82% | 1 | 0 | 0% | exceptions_disprove_rule |
-| Q37 | Insurance Types | 17 | 7 | 41% | 3 | 7 | 41% | SE-selfcorrect |
-| Q38 | Inflation Protection | 14 | 7 | 50% | 2 | 5 | 36% | fixed_bond_best |
-| Q11 | Stock vs. Mutual Fund | 13 | 4 | 31% | 7 | 2 | 15% | KG-unfamiliar |
-| Q3 | Inflation (Definition) | 13 | 4 | 31% | 3 | 6 | 46% | SE-reversal |
-| Q32 | Long-Term Returns | 11 | 8 | 73% | 1 | 2 | 18% | bonds_safest_therefore_best |
-| Q31 | Stock Market Function | 10 | 6 | 60% | 1 | 3 | 30% | wealth_creation_primary |
-| Q35 | Risk-Return Relationship | 9 | 7 | 78% | 0 | 2 | 22% | real_world_counterexample |
-| Q39 | Stocks vs. Bonds Risk | 9 | 5 | 56% | 2 | 2 | 22% | some_bonds_risky_too |
-| Q14 | Diversification | 7 | 2 | 29% | 0 | 5 | 71% | SE-selfcorrect |
-| Q9 | Budgeting | 6 | 1 | 17% | 0 | 5 | 83% | SE-selfcorrect |
-| Q40 | 2008 Financial Crisis | 6 | 3 | 50% | 1 | 2 | 33% | SE-reversal |
-| Q1 | Compound Interest | 5 | 3 | 60% | 1 | 0 | 0% | interest_as_fee |
-
-Items with the highest misconception density (> 70%) are Q12 (Health Insurance, 82%), Q30 (Risk-Return Tradeoff, 82%), Q6 (Inflation Lowering, 79%), Q35 (Risk-Return, 78%), and Q32 (Long-Term Returns, 73%). These represent topics where student errors are overwhelmingly driven by active incorrect beliefs rather than confusion or carelessness, and where instructional intervention will have the greatest impact. Items with the highest selection error rates are Q9 (83%, small n), Q36 (81%), Q14 (71%), and Q3 (46%), all sharing True/False format with negative or double-negative phrasing.
-
-#### 4.4.3 Confirm Classification Results
-
-**Table 4.6: Confirm Three-Way Classification (Consented, n = 285)**
-
-| Classification | n | % |
-| --- | --- | --- |
-| Verified | 127 | 44.6% |
-| Partial | 119 | 41.8% |
-| Likely guess | 39 | 13.7% |
-
-Among students who answered correctly but with low confidence (the SDM-10 confirm trigger condition), 44.6% demonstrated genuine understanding in their explanation (verified), 41.8% showed partial understanding, and 13.7% were classified as likely guesses -- their explanations showed no understanding of the underlying concept despite selecting the correct answer. Because confirm items are triggered only for low-confidence correct answers, the 13.7% guess rate applies to that conditioned subsample, not to all correct responses. Nonetheless, this finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
-
-**Table 4.7: Confirm Items with Highest Likely-Guess Rates (Consented, confirm n >= 5)**
-
-| Item | Subdomain | Confirm n | Guess n | Guess % |
-| --- | --- | --- | --- | --- |
-| Q29 | Interest Rates & Bonds | 12 | 4 | 33.3% |
-| Q13 | Insurance Deductible | 22 | 7 | 31.8% |
-| Q10 | Credit Reports | 15 | 4 | 26.7% |
-| Q8 | Auto Loans | 13 | 3 | 23.1% |
-| Q11 | Stock vs. Mutual Fund | 26 | 6 | 23.1% |
-| Q30 | Risk-Return Tradeoff | 10 | 2 | 20.0% |
-| Q37 | Insurance Types | 10 | 2 | 20.0% |
-
-Q29 (Bonds & Interest Rates) and Q13 (Insurance Deductible) have the highest guess rates among correct respondents. These topics may warrant additional instructional attention despite appearing well-understood based on raw anchor scores alone.
-
-**Table 4.8: Credit Score Distribution (All Consented Scored, n = 778)**
-
-| Credit Score | n | % |
-| --- | --- | --- |
-| 100 (full diagnostic value) | 541 | 69.5% |
-| 50 (partial diagnostic value) | 129 | 16.6% |
-| 0 (no diagnostic value) | 108 | 13.9% |
-
-#### 4.4.4 Misconception Analysis by Domain
-
-The AI-assisted classification revealed distinct misconception patterns across assessment domains. All per-item rates below are conditional on the SDM-10 diagnose trigger (incorrect + high confidence); they characterize the composition of high-confidence errors, not class-wide misconception prevalence.
-
-**Inflation and Purchasing Power.** The most prevalent misconception was INF-01 (lower inflation equals falling prices), identified in 42 consented diagnose responses -- the single most frequent misconception code in the dataset. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices. On Q7 (which group is most hurt by inflation), empathy-driven reasoning (INF-05, n = 17) led students to select "young couples" because they identified personally with that demographic rather than analyzing fixed-income vulnerability.
-
-**Risk, Return, and Diversification.** On Q36 (diversification principle), 81.0% of diagnose responses from consented students were classified as selection errors -- the highest selection error rate of any item. Students who answered incorrectly could explain why spreading money across assets reduces risk, but selected "False" on the True/False item, likely due to negation confusion or overthinking the word "all." On Q35 (risk-return relationship), students used real-world counterexamples from non-financial domains to argue against the general financial principle (RISK-10), indicating reasoning by analogy rather than domain-specific knowledge.
-
-**Insurance and Risk Management.** On Q12 (primary purpose of health insurance), 82.1% of diagnose responses reflected the misconception that routine care is the primary function of insurance (INS-01, n = 23 of 28), with many students applying frequency-over-severity reasoning: because routine visits are more common, they must be the primary purpose (INS-02). Q13 (deductible definition) showed a high knowledge gap rate (31.6%), indicating unfamiliarity with this technical insurance term rather than a specific misconception.
-
-**Borrowing and Credit.** Credit report knowledge (Q10) showed a 41.0% selection error rate, indicating that many students possessed the correct understanding but were confused by the question's "which is FALSE" framing. On Q2 (mortgage term length and total interest), 31.8% of incorrect responses were selection errors.
-
-**Table 4.9: Top 10 Misconception Codes (Consented Diagnose Responses)**
-
-| Code | Misconception Family | n |
-| --- | --- | --- |
-| INF-01 | Lower inflation = falling prices | 42 |
-| INT-05 | Interest rates not negotiable | 19 |
-| INS-01 | Insurance for routine care | 18 |
-| INF-05 | Empathy-driven inflation reasoning | 17 |
-| INF-03 | Fixed income impact misunderstood | 17 |
-| RISK-02 | Exceptions disprove general rule | 16 |
-| BORROW-05 | Emergency fund amount too low | 14 |
-| BORROW-03 | Employer credit check unknown | 12 |
-| INT-06 | Bond price-interest rate relationship reversed | 11 |
-| INS-03 | Deductible definition wrong | 10 |
-
-#### 4.4.5 Selection Error Patterns
-
-The selection error finding is one of the paper's central contributions. Three items showed selection error rates exceeding 30%:
-
-**Table 4.10: High Selection Error Items (Consented Diagnose)**
-
-| Item | Topic | Format | SE Rate | n | Implication |
-| --- | --- | --- | --- | --- | --- |
-| Q36 | Diversification principle | T/F | 81.0% | 34/42 | T/F format confounds; consider MCQ revision |
-| Q10 | Credit reports (which is FALSE) | MCQ | 41.0% | 16/39 | Negation framing causes errors |
-| Q37 | Insurance types | MCQ | 41.2% | 7/17 | Item phrasing ambiguity |
-| Q2 | Mortgage term and total interest | T/F | 31.8% | 7/22 | T/F reversal common |
-
-**The Q36 case study.** Q36 merits special attention. This True/False item asks whether placing savings in multiple locations (bank, stocks, and bonds) is safer than putting all savings in one place. The correct answer is True. Among consented students, 127 of 354 (35.9%) answered incorrectly. When the SDM-10 probed 42 of the diagnosed students who were both incorrect and confident, 34 (81%) demonstrated correct understanding of diversification. Typical student explanations confirmed they understood the principle of spreading risk across asset classes but had misread or second-guessed the question. The evidence strongly suggests the True/False format or negative phrasing, rather than a lack of knowledge, caused the errors. Q36 should be revised for the post-assessment: the question can be rephrased as a standard multiple-choice item to reduce format-induced errors.
-
-These findings demonstrate that raw MCQ scores materially understate student knowledge on these items. When a student answers incorrectly but explains the concept correctly, the anchor score of 0% misrepresents their understanding.
-
-#### 4.4.6 Validation Against Manual Analysis
-
-Prior to AI scoring, we conducted a manual analysis of response patterns on a calibration sample. Table 4.11 compares the predicted dominant misconception rates from manual analysis with the AI-scored results for the consented sample.
-
-**Table 4.11: Manual Prediction vs. AI Scoring Results (Consented Sample)**
-
-| Item | Metric | Predicted | Actual | Assessment |
-| --- | --- | --- | --- | --- |
-| Q6 | lower_inflation_means_lower_prices | 78% | 56% | Confirmed. AI distributed more to employment_link (21%). |
-| Q36 | Selection error rate | 62% | 81% | Confirmed. Higher than predicted. |
-| Q10 | employer_use_confusion | 33% | 31% | Near-exact match. |
-| Q12 | routine_care_primary | 64% | 56% | Confirmed. Slight redistribution to frequency_over_severity. |
-| Q30 | exceptions_disprove_rule | 67% | 71% | Confirmed. Slightly higher than predicted. |
-
-All five validation benchmarks were confirmed. Three showed exact or near-exact alignment (Q10, Q30, Q12), and two showed the AI distributing classifications more granularly across subtags within the same misconception family (Q6, Q36). The taxonomy is performing as designed: the scoring model produces classifications consistent with human-defined categories while offering finer-grained discrimination within misconception families.
-
-#### 4.4.7 Cross-Item Patterns
-
-Five dominant patterns emerged across the assessment:
-
-1. **Inflation mechanics confusion** -- centered on the distinction between lower inflation rates and lower prices (Q6, Q7), representing the single largest misconception cluster
-2. **Risk-return reasoning from exceptions** -- students cited specific counterexamples to invalidate general financial principles (Q30, Q35), applying inductive reasoning where deductive understanding is required
-3. **Insurance purpose confusion** -- equating frequency of use with primary function (Q12), reflecting a consumer experience bias
-4. **Empathy-driven financial reasoning** -- selecting answers based on personal identification with demographic groups rather than economic logic (Q7)
-5. **Format-induced errors** -- particularly on True/False items (Q36, Q2) where correct knowledge led to incorrect answers due to negation confusion or reversed logic
+Open-ended responses are scored using GPT-4.1 (OpenAI, accessed via OpenRouter). The model was selected through an 11-model concordance protocol evaluating schema compliance, error rate, classification nuance, throughput, and cost (Appendix D). Each response is processed with an item-specific prompt containing anchor question context, the student's answer and confidence, applicable misconception families, calibration examples, and a structured decision tree. The model returns a JSON classification including diagnosis type, taxonomy codes, credit score, confidence level, evidence quote, and reasoning summary. All item selection decisions are deterministic and rule-based; the language model is used only for open-ended response classification.
 
 ---
 
 ## 5. Platform and Governance Design
 
-### 5.1 Technology Stack
+The platform architecture (Next.js 14, PostgreSQL 15, PgBouncer) and student authentication protocol (one-way SHA-256 hashing with per-course pepper) are described in Appendix F.
 
-We administer the assessment through a dedicated web platform -- the Financial Literacy Toolkit -- developed for this study. We built the platform on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The complete source code is publicly available in the project repository (Bolivard, 2026).
-
-### 5.2 Student Authentication and Data Minimization
-
-Students access the platform by entering their course code and student ID. On receipt, the platform immediately transforms each student ID into a one-way cryptographic hash (SHA-256 with a per-course pepper) and discards the raw identifier; all subsequent data storage and analysis use only the hashed key. We store no raw student ID numbers, names, email addresses, or other personally identifiable information in the research dataset. The per-course pepper isolates student hashes across courses, preventing cross-course linkage. Age is collected as a categorical range rather than exact date of birth, and geographic identifiers are not collected.
-
-### 5.3 Consent Mechanics
+### 5.1 Consent Mechanics
 
 The platform implements a two-part consent flow before data collection:
 
@@ -425,7 +237,7 @@ Below we report operational statistics from the pre-course assessment window (Fe
 
 ### 6.1 Participation and Completion
 
-A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment received SDM-10 items. Of these, 300 consented students (84.7%) received the full 10-item module; 54 received between five and nine items due to insufficient high-Need subcategories in their anchor profile (the algorithm could not fill all 10 slots when a student's anchor performance was uniformly strong or weak across subcategories).
+A total of 443 students onboarded onto the platform, of whom 431 submitted completed assessments, yielding a completion rate of 97.3%. Twelve students abandoned the assessment without submission; all abandoned sessions had been idle for more than 45 hours at the time of window closure. All 431 students who submitted the anchor assessment received SDM-10 items. Of these, 300 consented students (84.7%) received the full 10-item module; 54 received between five and nine items due to insufficient high-priority subcategories in their anchor profile (the algorithm could not fill all 10 slots when a student's anchor performance was uniformly strong or weak across subcategories).
 
 **Table 6.0: Counts and Inclusion Rules**
 
@@ -440,11 +252,15 @@ A total of 443 students onboarded onto the platform, of whom 431 submitted compl
 | Withdrawn | 0 | No withdrawals received during the study period |
 | **Research-consented analysis set** | **354** | **Inclusion rule: research_consent = true AND submitted_at IS NOT NULL** |
 
-All tables and statistics in Sections 4 and 6 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
+All tables and statistics in Sections 4, 6, and 7 use the research-consented set (n = 354) unless explicitly noted otherwise. Instructional feedback is delivered to all 431 submitters regardless of consent status.
 
 ![Figure 3. Daily Enrollment and Completion (Feb 2--9, 2026). Full completed cohort: 433 enrolled, 421 completed (97.2%).](figures/fig3_enrollment_timeline.png)
 
+### 6.2 Sample Demographics
+
 The following demographic summary describes the composition of the consented sample for operational context only. No subgroup performance comparisons are reported in Paper 1.
+
+To protect student privacy, demographic cells with fewer than 10 respondents are collapsed into an "Other/Prefer not to say" grouping or reported as suppressed (< 10), to reduce re-identification risk.
 
 **Table 6.1: Sample Demographics (Consented, n = 354)**
 
@@ -452,7 +268,7 @@ The following demographic summary describes the composition of the consented sam
 | --- | --- | --- |
 | Female | 213 | 60.2% |
 | Male | 139 | 39.3% |
-| Prefer not to say | 2 | 0.6% |
+| Other/Prefer not to say | 2 | < 10 (suppressed) |
 | English first language | 278 | 78.5% |
 | Spanish first language | 44 | 12.4% |
 | Other languages | 32 | 9.0% |
@@ -461,13 +277,21 @@ The following demographic summary describes the composition of the consented sam
 
 ![Figure 8. Financial Background and Self-Assessment (N = 421, full completed cohort). Panels show frequency of financial stress and self-rated financial knowledge.](figures/fig8_financial_background.png)
 
-### 6.2 Anchor Score Context
+---
+
+## 7. Results
+
+**Important caveat:** The SDM-10 open-ended items are administered only to students whose anchor responses triggered high-priority subcategories (incorrect + high confidence for diagnose, or correct + low confidence for confirm). The open-ended sample therefore reflects the tails of the confidence-accuracy distribution, not a random cross-section of the class. Misconception prevalence estimates from the SDM-10 should not be generalized to the full cohort without accounting for this conditioning.
+
+All analyses in this section are restricted to the research-consented subset (n = 354 of 431 submitted students, 82.1%).
+
+### 7.1 Anchor Score Distribution and Domain Breakdown
 
 The following score summaries provide operational context for interpreting SDM-10 diagnostic patterns. They are not inferential claims about population-level financial literacy.
 
 For the consented subset (n = 354), the mean anchor score was 67.0% (SD = 17.9%, median = 69.2%) across 26 scored knowledge items. Domain-level means were:
 
-**Table 6.2: Mean Accuracy by Domain (Consented, n = 354)**
+**Table 7.1: Mean Accuracy by Domain (Consented, n = 354)**
 
 | Domain | Items | Mean % Correct |
 | --- | --- | --- |
@@ -479,7 +303,7 @@ Risk and Return Knowledge was the weakest domain, driven primarily by low perfor
 
 ![Figure 2. Domain-Level Performance Comparison (full completed cohort). Error bars show ±1 SD. Dashed line indicates overall mean (66.6%).](figures/fig2_domain_performance.png)
 
-**Table 6.3: Score Distribution by Performance Band (Consented, n = 354)**
+**Table 7.2: Score Distribution by Performance Band (Consented, n = 354)**
 
 | Band | n | % of Sample | Status |
 | --- | --- | --- | --- |
@@ -492,49 +316,246 @@ The largest segment (45.5%) falls in the 50--69% band. Combined with the 12.7% b
 
 ![Figure 1. Pre-Course Overall Score Distribution (N = 421, full completed cohort). Dashed line shows mean (66.6%). The modal bin (60--69%) contains 28.5% of students.](figures/fig1_score_distribution.png)
 
-![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, ≥70%), yellow (moderate, 50--69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
+![Figure 6. Item Difficulty Ranking by Subdomain (N = 421, full completed cohort). Items colored by difficulty tier: green (strong, >=70%), yellow (moderate, 50--69%), red (weak, <50%).](figures/fig6_item_difficulty.png)
 
 The consented SDM-10 mean score (64.4% across 3,340 responses) was lower than the anchor mean (67.0%), confirming that the adaptive selection algorithm appropriately targeted subcategories where students demonstrated weaker performance. These scores provide context for interpreting the SDM-10 diagnostic findings but are not the primary analytical contribution of this paper.
-
-### 6.3 Assessment Duration
 
 The median assessment duration was 18.1 minutes (consented subset). The mean duration (217.2 minutes) was heavily skewed by a small number of sessions left open without completion, including sessions that remained idle for multiple days. The median is the more representative measure of active assessment time.
 
 ![Figure 4. Assessment Submission Time Distribution (N = 421, full completed cohort). Peak submissions occurred between 2--10 PM CST (Chicago time).](figures/fig4_submission_time.png)
 
+### 7.2 Confidence Calibration Patterns
+
+![Figure 5. Confidence Calibration Categories. Distribution of students across calibration groups based on average confidence-accuracy alignment (full completed cohort).](figures/fig5_confidence_calibration.png)
+
+Figure 5 presents the distribution of students across confidence calibration categories based on the alignment between average confidence ratings and anchor accuracy. Calibration patterns inform the SDM-10's adaptive logic: students with high confidence and low accuracy (overconfident) are more likely to trigger Open_Diagnose items, while students with low confidence and high accuracy (underconfident) are more likely to trigger Open_Confirm items. The distribution shows that the majority of students fall within calibrated or mildly overconfident ranges, with a smaller tail of strongly overconfident students whose high-confidence errors drive the diagnose subsample analyzed in Sections 7.3--7.6.
+
+### 7.3 Diagnostic Classification: Diagnose Composition
+
+**SDM conditioning caveat.** The diagnose results below reflect students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition). These rates characterize the composition of high-confidence errors, not class-wide misconception prevalence.
+
+Of the 354 consented students who submitted the assessment, 306 (86.4%) received at least one open-ended item, generating 781 open-ended responses. The AI scoring pipeline processed 778 of these responses with zero errors.
+
+**Table 7.3: SDM-10 Open-Ended Summary (Consented Sample)**
+
+| Metric | Value |
+| --- | --- |
+| Consented students completing SDM-10 | 354 |
+| Students receiving open-ended items | 306 (86.4%) |
+| Total open-ended responses | 781 |
+| Responses scored by AI | 778 |
+| Diagnose responses scored | 493 |
+| Confirm responses scored | 285 |
+| AI scoring model | GPT-4.1 (OpenAI via OpenRouter) |
+| AI scoring error rate | 0 / 778 (0%) |
+
+**Response Quality.** Among diagnose responses, 89.2% were substantive (providing reasoning beyond "I don't know" or blank responses), indicating strong student engagement with the open-ended format despite its diagnostic-only (ungraded) status. Confirm responses showed even higher quality at 93.8% substantive. This engagement rate is notable given that students were not informed that the SDM-10 was a separate module from the anchor assessment and received no grade incentive to provide detailed explanations.
+
+**Table 7.4: Diagnose Three-Way Classification (Consented, n = 493 scored, 479 classified)**
+
+| Classification | n | % of classified | Interpretation |
+| --- | --- | --- | --- |
+| Misconception | 258 | 53.9% | Active incorrect belief confirmed |
+| Selection error | 153 | 31.9% | Correct understanding, wrong answer |
+| Knowledge gap | 68 | 14.2% | Acknowledged uncertainty, no model |
+| Unclassified | 14 | --- | Ambiguous or insufficient for three-way |
+
+Of the 493 AI-scored diagnose responses, 479 (97.2%) were classified into the three-way taxonomy. Over half of classified responses (53.9%) reflected identifiable misconceptions -- specific wrong mental models that can be targeted through instruction. Nearly a third (31.9%) were selection errors, meaning the student demonstrated correct understanding in the explanation despite selecting the wrong anchor answer. This is a central finding: among students who answered incorrectly with high confidence (the SDM-10 diagnose trigger condition), almost one in three does not hold a misconception at all, but rather experienced a mismatch between their knowledge and the item format or phrasing. The 14 unclassified responses had ambiguous explanations that did not clearly fit any category. These rates reflect the high-confidence-incorrect subsample, not the full class (see Section 7 caveat).
+
+**Table 7.5: Diagnose Classification by Item (Consented, items with n >= 5, sorted by diagnose volume)**
+
+| Item | Subdomain | n | Misc. | Misc.% | KG | SE | SE% | Top Tag |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Q7 | Inflation (Fixed Income) | 54 | 34 | 63% | 5 | 14 | 26% | older_workers_worst |
+| Q6 | Inflation (Lowering) | 53 | 42 | 79% | 4 | 6 | 11% | lower_inflation_means_lower_prices |
+| Q36 | Diversification Principle | 42 | 6 | 14% | 2 | 34 | 81% | SE-reversal |
+| Q10 | Credit Reports | 39 | 16 | 41% | 7 | 16 | 41% | SE-selfcorrect |
+| Q8 | Auto Loans | 34 | 19 | 56% | 4 | 10 | 29% | down_payment_only |
+| Q5 | Emergency Fund | 31 | 15 | 48% | 1 | 8 | 26% | one_month_sufficient |
+| Q12 | Health Insurance Purpose | 28 | 23 | 82% | 1 | 4 | 14% | routine_care_primary |
+| Q29 | Interest Rates & Bonds | 24 | 11 | 46% | 8 | 4 | 17% | positive_correlation_belief |
+| Q2 | Borrowing/Mortgages | 22 | 7 | 32% | 8 | 7 | 32% | monthly_vs_total_confusion |
+| Q13 | Insurance Deductible | 19 | 10 | 53% | 6 | 3 | 16% | deductible_is_max_payout |
+| Q30 | Risk-Return Tradeoff | 17 | 14 | 82% | 1 | 0 | 0% | exceptions_disprove_rule |
+| Q37 | Insurance Types | 17 | 7 | 41% | 3 | 7 | 41% | SE-selfcorrect |
+| Q38 | Inflation Protection | 14 | 7 | 50% | 2 | 5 | 36% | fixed_bond_best |
+| Q11 | Stock vs. Mutual Fund | 13 | 4 | 31% | 7 | 2 | 15% | KG-unfamiliar |
+| Q3 | Inflation (Definition) | 13 | 4 | 31% | 3 | 6 | 46% | SE-reversal |
+| Q32 | Long-Term Returns | 11 | 8 | 73% | 1 | 2 | 18% | bonds_safest_therefore_best |
+| Q31 | Stock Market Function | 10 | 6 | 60% | 1 | 3 | 30% | wealth_creation_primary |
+| Q35 | Risk-Return Relationship | 9 | 7 | 78% | 0 | 2 | 22% | real_world_counterexample |
+| Q39 | Stocks vs. Bonds Risk | 9 | 5 | 56% | 2 | 2 | 22% | some_bonds_risky_too |
+| Q14 | Diversification | 7 | 2 | 29% | 0 | 5 | 71% | SE-selfcorrect |
+| Q9 | Budgeting | 6 | 1 | 17% | 0 | 5 | 83% | SE-selfcorrect |
+| Q40 | 2008 Financial Crisis | 6 | 3 | 50% | 1 | 2 | 33% | SE-reversal |
+| Q1 | Compound Interest | 5 | 3 | 60% | 1 | 0 | 0% | interest_as_fee |
+
+Items with the highest misconception density (> 70%) are Q12 (Health Insurance, 82%), Q30 (Risk-Return Tradeoff, 82%), Q6 (Inflation Lowering, 79%), Q35 (Risk-Return, 78%), and Q32 (Long-Term Returns, 73%). These represent topics where student errors are overwhelmingly driven by active incorrect beliefs rather than confusion or carelessness, and where instructional intervention will have the greatest impact. Items with the highest selection error rates are Q9 (83%, small n), Q36 (81%), Q14 (71%), and Q3 (46%), all sharing True/False format with negative or double-negative phrasing.
+
+### 7.4 Diagnostic Classification: Confirm Composition
+
+**SDM conditioning caveat.** The confirm results below reflect students who answered correctly but with low confidence (the SDM-10 confirm trigger condition). The 13.7% guess rate applies to that conditioned subsample, not to all correct responses.
+
+**Table 7.6: Confirm Three-Way Classification (Consented, n = 285)**
+
+| Classification | n | % |
+| --- | --- | --- |
+| Verified | 127 | 44.6% |
+| Partial | 119 | 41.8% |
+| Likely guess | 39 | 13.7% |
+
+Among students who answered correctly but with low confidence, 44.6% demonstrated genuine understanding in their explanation (verified), 41.8% showed partial understanding, and 13.7% were classified as likely guesses -- their explanations showed no understanding of the underlying concept despite selecting the correct answer. This finding validates the SDM-10's approach of probing low-confidence correct answers: on items where guessing is plausible, anchor scores alone overestimate true comprehension.
+
+**Table 7.7: Confirm Items with Highest Likely-Guess Rates (Consented, confirm n >= 5)**
+
+| Item | Subdomain | Confirm n | Guess n | Guess % |
+| --- | --- | --- | --- | --- |
+| Q29 | Interest Rates & Bonds | 12 | 4 | 33.3% |
+| Q13 | Insurance Deductible | 22 | 7 | 31.8% |
+| Q10 | Credit Reports | 15 | 4 | 26.7% |
+| Q8 | Auto Loans | 13 | 3 | 23.1% |
+| Q11 | Stock vs. Mutual Fund | 26 | 6 | 23.1% |
+| Q30 | Risk-Return Tradeoff | 10 | 2 | 20.0% |
+| Q37 | Insurance Types | 10 | 2 | 20.0% |
+
+Q29 (Bonds & Interest Rates) and Q13 (Insurance Deductible) have the highest guess rates among correct respondents. These topics may warrant additional instructional attention despite appearing well-understood based on raw anchor scores alone.
+
+**Table 7.8: Credit Score Distribution (All Consented Scored, n = 778)**
+
+| Credit Score | n | % |
+| --- | --- | --- |
+| 100 (full diagnostic value) | 541 | 69.5% |
+| 50 (partial diagnostic value) | 129 | 16.6% |
+| 0 (no diagnostic value) | 108 | 13.9% |
+
+### 7.5 Misconception Clusters by Domain
+
+**SDM conditioning caveat.** All per-item rates below are conditional on the SDM-10 diagnose trigger (incorrect + high confidence); they characterize the composition of high-confidence errors, not class-wide misconception prevalence.
+
+The AI-assisted classification revealed distinct misconception patterns across assessment domains.
+
+**Inflation and Purchasing Power.** The most prevalent misconception was INF-01 (lower inflation equals falling prices), identified in 42 consented diagnose responses -- the single most frequent misconception code in the dataset. Students systematically confused a decrease in the rate of price increase with an actual decrease in prices. On Q7 (which group is most hurt by inflation), empathy-driven reasoning (INF-05, n = 17) led students to select "young couples" because they identified personally with that demographic rather than analyzing fixed-income vulnerability.
+
+**Risk, Return, and Diversification.** On Q36 (diversification principle), 81.0% of diagnose responses from consented students were classified as selection errors -- the highest selection error rate of any item. Students who answered incorrectly could explain why spreading money across assets reduces risk, but selected "False" on the True/False item, likely due to negation confusion or overthinking the word "all." On Q35 (risk-return relationship), students used real-world counterexamples from non-financial domains to argue against the general financial principle (RISK-10), indicating reasoning by analogy rather than domain-specific knowledge.
+
+**Insurance and Risk Management.** On Q12 (primary purpose of health insurance), 82.1% of diagnose responses reflected the misconception that routine care is the primary function of insurance (INS-01, n = 23 of 28), with many students applying frequency-over-severity reasoning: because routine visits are more common, they must be the primary purpose (INS-02). Q13 (deductible definition) showed a high knowledge gap rate (31.6%), indicating unfamiliarity with this technical insurance term rather than a specific misconception.
+
+**Borrowing and Credit.** Credit report knowledge (Q10) showed a 41.0% selection error rate, indicating that many students possessed the correct understanding but were confused by the question's "which is FALSE" framing. On Q2 (mortgage term length and total interest), 31.8% of incorrect responses were selection errors.
+
+**Table 7.9: Top 10 Misconception Codes (Consented Diagnose Responses)**
+
+| Code | Misconception Family | n |
+| --- | --- | --- |
+| INF-01 | Lower inflation = falling prices | 42 |
+| INT-05 | Interest rates not negotiable | 19 |
+| INS-01 | Insurance for routine care | 18 |
+| INF-05 | Empathy-driven inflation reasoning | 17 |
+| INF-03 | Fixed income impact misunderstood | 17 |
+| RISK-02 | Exceptions disprove general rule | 16 |
+| BORROW-05 | Emergency fund amount too low | 14 |
+| BORROW-03 | Employer credit check unknown | 12 |
+| INT-06 | Bond price-interest rate relationship reversed | 11 |
+| INS-03 | Deductible definition wrong | 10 |
+
+Five dominant patterns emerged across the assessment:
+
+1. **Inflation mechanics confusion** -- centered on the distinction between lower inflation rates and lower prices (Q6, Q7), representing the single largest misconception cluster
+2. **Risk-return reasoning from exceptions** -- students cited specific counterexamples to invalidate general financial principles (Q30, Q35), applying inductive reasoning where deductive understanding is required
+3. **Insurance purpose confusion** -- equating frequency of use with primary function (Q12), reflecting a consumer experience bias
+4. **Empathy-driven financial reasoning** -- selecting answers based on personal identification with demographic groups rather than economic logic (Q7)
+5. **Format-induced errors** -- particularly on True/False items (Q36, Q2) where correct knowledge led to incorrect answers due to negation confusion or reversed logic
+
+### 7.6 Selection Error Patterns and Item Revision Targets
+
+**SDM conditioning caveat.** The selection error rates below are conditional on the SDM-10 diagnose trigger (incorrect + high confidence). They characterize the composition of errors within that subsample rather than cohort-wide rates.
+
+The selection error finding is one of the paper's central contributions. Three items showed selection error rates exceeding 30%:
+
+**Table 7.10: High Selection Error Items (Consented Diagnose)**
+
+| Item | Topic | Format | SE Rate | n | Implication |
+| --- | --- | --- | --- | --- | --- |
+| Q36 | Diversification principle | T/F | 81.0% | 34/42 | T/F format confounds; consider MCQ revision |
+| Q10 | Credit reports (which is FALSE) | MCQ | 41.0% | 16/39 | Negation framing causes errors |
+| Q37 | Insurance types | MCQ | 41.2% | 7/17 | Item phrasing ambiguity |
+| Q2 | Mortgage term and total interest | T/F | 31.8% | 7/22 | T/F reversal common |
+
+**The Q36 case study.** Q36 merits special attention. This True/False item asks whether placing savings in multiple locations (bank, stocks, and bonds) is safer than putting all savings in one place. The correct answer is True. Among consented students, 127 of 354 (35.9%) answered incorrectly. When the SDM-10 probed 42 of the diagnosed students who were both incorrect and confident, 34 (81%) demonstrated correct understanding of diversification. Typical student explanations confirmed they understood the principle of spreading risk across asset classes but had misread or second-guessed the question. The evidence strongly suggests the True/False format or negative phrasing, rather than a lack of knowledge, caused the errors. Q36 should be revised for the post-assessment: the question can be rephrased as a standard multiple-choice item to reduce format-induced errors.
+
+These findings demonstrate that raw MCQ scores materially understate student knowledge on these items. When a student answers incorrectly but explains the concept correctly, the anchor score of 0% misrepresents their understanding.
+
+### 7.7 AI Scoring Validation
+
+Prior to AI scoring, we conducted a manual analysis of response patterns on a calibration sample. Table 7.11 compares the predicted dominant misconception rates from manual analysis with the AI-scored results for the consented sample.
+
+**Table 7.11: Manual Prediction vs. AI Scoring Results (Consented Sample)**
+
+| Item | Metric | Predicted | Actual | Assessment |
+| --- | --- | --- | --- | --- |
+| Q6 | lower_inflation_means_lower_prices | 78% | 56% | Confirmed. AI distributed more to employment_link (21%). |
+| Q36 | Selection error rate | 62% | 81% | Confirmed. Higher than predicted. |
+| Q10 | employer_use_confusion | 33% | 31% | Near-exact match. |
+| Q12 | routine_care_primary | 64% | 56% | Confirmed. Slight redistribution to frequency_over_severity. |
+| Q30 | exceptions_disprove_rule | 67% | 71% | Confirmed. Slightly higher than predicted. |
+
+All five validation benchmarks were confirmed. Three showed exact or near-exact alignment (Q10, Q30, Q12), and two showed the AI distributing classifications more granularly across subtags within the same misconception family (Q6, Q36). The taxonomy is performing as designed: the scoring model produces classifications consistent with human-defined categories while offering finer-grained discrimination within misconception families.
+
 ---
 
-## 7. Discussion
+## 8. Discussion
 
-The SDM-10 diagnostic findings reveal that standard multiple-choice assessment scores both overstate and understate student financial literacy knowledge in systematic, measurable ways. As noted in Section 4.4, all SDM-10 prevalence rates reported below reflect conditioned subsamples -- diagnose items target students who answered incorrectly with high confidence, and confirm items target students who answered correctly with low confidence -- not random cross-sections of the class. The rates characterize what happens within those tails, not the prevalence of misconceptions across the full class.
+### 8.1 Key Findings
 
-**Selection errors materially distort MCQ scoring.** The most striking finding is the magnitude of selection errors: among students who answered incorrectly with high confidence, 31.9% of classified responses demonstrated correct understanding of the underlying concept in their open-ended explanation. On individual items, selection error rates reached 81% (Q36, diversification principle), 41% (Q10, credit reports), and 32% (Q2, mortgages). These students would receive a score of zero on the anchor assessment despite possessing the targeted knowledge. Without the open-ended diagnostic follow-up, these errors would be indistinguishable from genuine misconceptions, leading to misallocation of instructional resources toward remediation that students do not need. The pattern is concentrated on True/False items and negation-framed MCQ items, suggesting that item format rather than student knowledge drives the errors. The 81% selection error rate on Q36 has direct implications for instrument revision: Q36 should be rewritten in multiple-choice format, and Q10's "which is FALSE" framing should be reconsidered.
+The SDM-10 diagnostic findings reveal that standard multiple-choice assessment scores both overstate and understate student financial literacy knowledge in systematic, measurable ways. All SDM-10 prevalence rates reported in Section 7 reflect conditioned subsamples -- diagnose items target students who answered incorrectly with high confidence, and confirm items target students who answered correctly with low confidence -- not random cross-sections of the class. Four principal findings emerged.
 
-**"False correct" guesses inflate anchor scores.** On the confirm side, among students who answered correctly but with low confidence (the SDM-10 confirm trigger), 13.7% were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. That rate applies to the low-confidence-correct tail, not to all correct responses, but it demonstrates that a non-trivial fraction of ostensibly correct answers do not reflect genuine understanding. On individual items with high guessing probability, anchor scores overestimate true comprehension.
+First, **selection errors materially distort MCQ scoring.** Among students who answered incorrectly with high confidence, 31.9% of classified responses demonstrated correct understanding of the underlying concept. On individual items, selection error rates reached 81% (Q36, diversification), 41% (Q10, credit reports), and 32% (Q2, mortgages). These students receive a score of zero on the anchor assessment despite possessing the targeted knowledge. The pattern is concentrated on True/False items and negation-framed MCQ items, indicating that item format rather than student knowledge drives the errors.
 
-**Misconception patterns are domain-specific and instructionally actionable.** Within the high-confidence-incorrect subsample targeted by the SDM-10, five dominant misconception clusters emerged (inflation mechanics confusion, risk-return reasoning from exceptions, insurance purpose confusion, empathy-driven reasoning, and format-induced errors). These clusters are specific enough to inform targeted instructional interventions. For example, the finding that students who were confident and wrong on Q6 systematically confuse "lower inflation" with "falling prices" (INF-01, the most frequent misconception) suggests that QUIN 102 should dedicate explicit instructional time to distinguishing rate of change from level -- a distinction that is foundational to understanding monetary policy but counter-intuitive to many students. Because the SDM-10 selects for high-Need responses, these misconception rates should not be extrapolated to the full class without adjusting for item-level coverage (see Limitation 2).
+Second, **"false correct" guesses inflate anchor scores.** Among students who answered correctly but with low confidence, 13.7% were classified as likely guesses -- they could not articulate any understanding of the concept they ostensibly answered correctly. On individual items such as Q29 (33.3% guess rate) and Q13 (31.8%), anchor scores overestimate true comprehension.
 
-**The three-way classification adds diagnostic value beyond MCQ scores.** Traditional MCQ instruments classify responses into only two categories (correct/incorrect). The SDM-10's three-way classification (misconception/knowledge gap/selection error for diagnose; verified/partial/likely guess for confirm) provides the diagnostic specificity needed to differentiate students who need conceptual correction from those who need format remediation or foundational instruction. None of this information is available from the anchor score alone, and the ability to surface it represents the instrument's primary contribution to measurement methodology in financial literacy evaluation.
+Third, **misconception patterns are domain-specific and instructionally actionable.** Five dominant clusters emerged: inflation mechanics confusion (INF-01, the most frequent code at n = 42), risk-return reasoning from exceptions (RISK-02), insurance purpose confusion (INS-01/INS-02), empathy-driven reasoning (INF-05), and format-induced errors. These clusters are specific enough to inform targeted instructional interventions. Because the SDM-10 selects for high-priority responses, these rates should not be extrapolated to the full class without adjusting for item-level coverage (see Limitation 2).
 
-**Instructional targeting.** The item-level diagnostic data enable prioritized instructional interventions. The following rates are conditional on the SDM-10 trigger (incorrect + high confidence) and reflect the composition of errors within that subsample rather than cohort-wide rates. Critical priority targets include inflation mechanics (Q6, Q7), where 79% and 63% of diagnosed responses, respectively, revealed active misconceptions centered on the rate-versus-level confusion, and health insurance purpose (Q12), where 82% of diagnosed responses reflected the misconception that routine care is the primary function of insurance. High priority targets include risk-return reasoning (Q30, Q35), where the exceptions-disprove-rule pattern indicates a reasoning error about statistical relationships rather than a content knowledge gap, and auto loan factors (Q8), where students recognize individual factors but do not understand their interaction. Items with high selection error rates (Q36, Q9, Q14) require item revision rather than instructional intervention -- the students already understand the material.
+Fourth, **the three-way classification adds diagnostic value beyond MCQ scores.** The SDM-10's classification (misconception/knowledge gap/selection error for diagnose; verified/partial/likely guess for confirm) provides the diagnostic specificity needed to differentiate students who need conceptual correction from those who need format remediation or foundational instruction. None of this information is available from the anchor score alone.
 
-**Implications for risk literacy measurement.** The instrument's emphasis on risk-related items (diversification, insurance, risk-return tradeoffs, crisis awareness) combined with the SDM-10 diagnostic layer provides a richer assessment of risk literacy than traditional knowledge-only measures. The finding that students can often articulate correct risk reasoning but select wrong answers (particularly on diversification items) suggests that the gap between students' conceptual understanding and their ability to translate that understanding into correct MCQ responses is larger in the risk domain than in other domains.
+### 8.2 Course Improvement Recommendations
 
-**Future modality: oral diagnostics for misconception depth (proposed).** A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-Need SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth -- for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
+The diagnostic findings from Section 7 translate into 10 specific recommendations for QUIN 102 instruction and instrument revision. Each recommendation is anchored to a specific finding and evidence source; the final column describes how Paper 2 will evaluate whether the change was effective.
 
-Operationally, the oral diagnostic should be designed as a constrained clinical-interview script with branching logic rather than open-ended chat: a brief warm-up, then two to three targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations -- including speaking anxiety, language and accent effects, transcription error, and privacy risks associated with voice data -- this modality is proposed only as a small IRB-reviewed volunteer pilot (for example, ~20--30 students) evaluated via within-subject comparison against written SDM classifications to quantify incremental diagnostic value before any scaling.
+**Table 8.1: Course Improvement Recommendations**
 
-This oral modality is future work and would be implemented and analyzed only under IRB review with opt-in participation and a non-voice alternative path.
+| # | Finding | Evidence | Recommended Change | Paper 2 Evaluation |
+| --- | --- | --- | --- | --- |
+| 1 | 79% of high-confidence errors on Q6 reflect confusion between inflation rate and price level (INF-01, 42/53 classified) | Table 7.5, Q6 row; Table 7.9, top code | Dedicate explicit instruction to distinguishing "lower inflation" (slower price increases) from "falling prices" (deflation), using rate-vs-level visual aids | Compare pre-post INF-01 prevalence on Q6 diagnose responses |
+| 2 | 82% of high-confidence errors on Q12 reflect belief that routine care is insurance's primary function (INS-01/INS-02, 23/28) | Table 7.5, Q12 row | Add module on health insurance purpose: catastrophic protection vs. routine care, using frequency-vs-severity framing | Compare pre-post Q12 accuracy and INS-01 prevalence |
+| 3 | 82% (Q30, 14/17) and 78% (Q35, 7/9) of high-confidence errors reflect reasoning-from-exceptions (RISK-02) | Table 7.5, Q30/Q35 rows | Introduce risk-return principle using financial-domain examples (historical asset class returns) rather than abstract statements | Compare pre-post RISK-02 prevalence across Q30 and Q35 |
+| 4 | 81% of high-confidence errors on Q36 are selection errors caused by T/F format with negation (34/42) | Table 7.10, Q36 row; Section 7.6 case study | Revise Q36 from True/False to standard MCQ format for the post-assessment | Compare Q36 selection error rate before and after revision |
+| 5 | 41% of high-confidence errors on Q10 are selection errors caused by "which is FALSE" negation framing (16/39) | Table 7.10, Q10 row | Revise Q10 to remove negation framing (rewrite as positive identification) | Compare Q10 selection error rate before and after revision |
+| 6 | Q29 shows 46% misconception rate (INT-06, 11/24) and 33% guess rate among correct respondents (4/12) | Table 7.5, Q29 row; Table 7.7, Q29 row | Add bond pricing segment explaining inverse interest-rate/price relationship with worked numerical examples | Compare pre-post Q29 accuracy, INT-06 prevalence, and confirm guess rate |
+| 7 | Q13 shows 32% knowledge gap rate (6/19) -- unfamiliarity with deductible terminology rather than a specific misconception | Table 7.5, Q13 row | Add insurance terminology module covering deductible, premium, copay, and out-of-pocket maximum definitions | Compare pre-post Q13 knowledge gap rate |
+| 8 | Q9 (83% SE, 5/6) and Q14 (71% SE, 5/7) show format-driven errors disproportionate to conceptual misunderstanding | Table 7.10, Q9/Q14 rows | Flag Q9 and Q14 for format revision; consider rephrasing or converting to MCQ | Compare SE rates before and after revision |
+| 9 | Q2 (36% KG, 8/22) and Q8 (56% misconception INT-05, 19/34) reveal gaps in borrowing mechanics and loan negotiation knowledge | Table 7.5, Q2/Q8 rows | Add credit-literacy instructional module covering mortgage term/interest tradeoffs and consumer loan negotiation | Compare pre-post accuracy on Q2 and Q8; track INT-05 prevalence |
+| 10 | Five dominant misconception clusters emerged across the assessment (Section 7.5) | Section 7.5 cross-item patterns; Figure 5 | Generate per-student misconception profile from pre-course data; distribute targeted review materials before mid-term | Track within-subject misconception resolution rate (pre-post comparison of individual student profiles) |
+
+Recommendations 1--3 and 6--7 target instructional content; recommendations 4--5 and 8 target instrument revision; recommendation 9 targets both; recommendation 10 targets instructional delivery. All instructional changes will be implemented before the post-assessment window, enabling Paper 2 to compare pre-post rates on the specific metrics identified above.
+
+### 8.3 Implications for Risk Literacy Measurement
+
+The instrument's emphasis on risk-related items (diversification, insurance, risk-return tradeoffs, crisis awareness) combined with the SDM-10 diagnostic layer provides a richer assessment of risk literacy than traditional knowledge-only measures. The finding that students can often articulate correct risk reasoning but select wrong answers (particularly on diversification items) suggests that the gap between students' conceptual understanding and their ability to translate that understanding into correct MCQ responses is larger in the risk domain than in other domains.
+
+### 8.4 Oral Diagnostics as Future Modality
+
+A promising extension of the SDM-10 framework is an oral diagnostic modality implemented as a structured, AI-mediated interview calibrated by each student's highest-priority SDM findings. Written open-ended prompts can yield thin responses that limit diagnostic signal, while a short conversation can adaptively probe reasoning, distinguish misreading from conceptual misunderstanding, and classify misconceptions by depth -- for example, shallow misconceptions that collapse after one counterexample versus deep structural misunderstandings that persist under scaffolding. This modality would complement the baseline assessment by adding depth classification and resolution tracking, using the existing misconception taxonomy and rubric applied to transcripts, rather than replacing the anchor assessment.
+
+The oral diagnostic would be designed as a constrained clinical-interview script with branching logic: a brief warm-up, then two to three targeted probes per participant based on their top misconceptions, using new scenarios rather than repeating original items, followed by structured follow-ups designed to test self-correction and persistence. Because oral assessment introduces additional considerations -- including speaking anxiety, language effects, transcription error, and privacy risks associated with voice data -- this modality is proposed only as a small IRB-reviewed volunteer pilot (~20--30 students) to quantify incremental diagnostic value before any scaling. This oral modality is future work and would be implemented only under IRB review with opt-in participation and a non-voice alternative path.
 
 ---
 
-## 8. Limitations
+## 9. Limitations
 
 Readers should keep the following limitations in mind when interpreting these findings.
 
 1. **No causal claims.** Because we report instrument design and pilot diagnostic outputs from a single pre-course assessment, no causal claims about instructional effectiveness can be drawn from Paper 1. Establishing causality requires paired pre-post data, which we plan to report in Paper 2.
 
-2. **SDM subsample conditioning.** The SDM-10 open-ended items are administered only to students whose anchor responses triggered high-Need subcategories (incorrect + high confidence, or correct + low confidence). Misconception prevalence estimates reflect the tails of the confidence-accuracy distribution, not a random cross-section. Per-item coverage ranges from approximately 20% (Q32) to 90% (Q7). Extrapolation to the full cohort is only appropriate when item-level coverage exceeds 50%.
+2. **SDM subsample conditioning.** The SDM-10 open-ended items are administered only to students whose anchor responses triggered high-priority subcategories (incorrect + high confidence, or correct + low confidence). Misconception prevalence estimates reflect the tails of the confidence-accuracy distribution, not a random cross-section. Per-item coverage ranges from approximately 20% (Q32) to 90% (Q7). Extrapolation to the full cohort is only appropriate when item-level coverage exceeds 50%.
 
 3. **Single scoring model.** A single LLM (GPT-4.1) classified all open-ended responses. We selected this model through an 11-model concordance protocol (Appendix D), and it achieved zero schema violations and zero parse errors across the 778 scored consented responses; nevertheless, automated classification may diverge from human judgment on borderline cases. The model assigned "high" confidence to 96.8% of its own classifications, which may indicate underutilization of the uncertainty channel. A human-AI agreement study on a stratified subsample would strengthen reliability evidence.
 
@@ -542,67 +563,33 @@ Readers should keep the following limitations in mind when interpreting these fi
 
 5. **Possible lookup between anchor and SDM.** The SDM-10 is administered immediately after the anchor assessment in the same session. Students may look up answers between the anchor and SDM items, potentially inflating SDM scores. The 100% SDM completion rate and the lower SDM mean score (64.4% vs. 67.0% anchor) provide some evidence against widespread lookup behavior, but the possibility cannot be excluded.
 
-6. **Consent attrition.** Seventy-seven students (17.9% of the cohort) have NULL consent status because they completed the assessment before the research consent screen was deployed. No student actively opted out (see Section 5.3). We exclude the NULL cohort from all research analyses per standard practice (absence of affirmative consent is treated as non-consent). A representativeness check (Section 5.3) shows the consented sample is similar to the full cohort on score distribution and classification distributions, so consent-related selection bias is unlikely. However, the reduction from 431 to 354 students slightly reduces statistical power for item-level analyses with small cell sizes.
+6. **Consent attrition.** Seventy-seven students (17.9% of the cohort) have NULL consent status because they completed the assessment before the research consent screen was deployed. No student actively opted out (see Section 5.1). We exclude the NULL cohort from all research analyses per standard practice (absence of affirmative consent is treated as non-consent). A representativeness check (Section 5.1) shows the consented sample is similar to the full cohort on score distribution and classification distributions, so consent-related selection bias is unlikely. However, the reduction from 431 to 354 students slightly reduces statistical power for item-level analyses with small cell sizes.
 
 7. **Legacy submission types.** Legacy submission types resulting from technical adjustments during the first days of the assessment window account for approximately 20% of submissions. We reviewed and retained these submissions, but they may affect comparability for a subset of respondents.
 
 8. **Variant assignment mismatch.** A software defect caused 40 mismatched SDM variant assignments across 36 students due to a stale anchor score synchronization issue. We identified and filtered the mismatched responses using an anchor_score and confidence cross-check. The bug was subsequently fixed, and the misconception taxonomy is unaffected because we verified that all analyzed responses correspond to correctly triggered variants.
 
-9. **Default consent selection.** The research consent screen presented "Yes, I consent" as the default selection. While no student actively chose to decline (as noted in Section 5.3), the default-yes design may have inflated the consent rate through status quo bias. The consent rate (82.1%) should be interpreted with this limitation in mind. Paper 2 will use a forced active choice design with no default selection.
+9. **Default consent selection.** The research consent screen presented "Yes, I consent" as the default selection. While no student actively chose to decline (as noted in Section 5.1), the default-yes design may have inflated the consent rate through status quo bias. The consent rate (82.1%) should be interpreted with this limitation in mind. Paper 2 will use a forced active choice design with no default selection.
 
 ---
 
-## 9. Planned Validation Study (Paper 2 Protocol Preview)
+## 10. Planned Validation Study (Paper 2 Protocol Preview)
 
 **Scope boundary.** This independent study paper documents instrument and platform development and pilot operations. Confirmatory evaluation and publishable analyses are planned for a subsequent IRB-reviewed study. Nothing in this section should be read as asserting that IRB approval has been obtained or that the described analyses will necessarily be conducted.
 
-### 9.1 How Paper 1 Informs the Planned Study
+The pilot deployment reported in Sections 4--7 produced several outputs that directly shape the planned Paper 2 design, including instrument revision targets (Section 7.6), a misconception taxonomy for pre-post coding (Appendix C), and baseline coverage estimates (Table 7.5) that inform statistical power for item-level comparisons.
 
-The pilot deployment reported in Sections 4--6 produced several outputs that directly shape the Paper 2 design:
+If approved by the Loyola University Chicago IRB, the following study is planned. A post-course assessment would be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module with an IRB-reviewed consent process for human-subjects research. Paired pre-post analyses would compute learning gains as the difference between post-course and pre-course scores for each student, both overall and by domain. Paired t-tests (or nonparametric equivalents) would assess the statistical significance of mean gains, with standardized effect sizes (within-student Cohen's d) reported.
 
-- **Instrument revision targets.** The SDM-10 diagnostic findings identified items requiring revision before the post-assessment. Q36 (81% selection error) will be rewritten in multiple-choice format; Q10's "which is FALSE" framing will be reconsidered; and items with high guess rates (Q32, Q29) will receive improved distractor sets. These revisions will be completed before the post-assessment window.
-- **Misconception taxonomy as outcome framework.** The 62-entry misconception taxonomy (Appendix C) provides a pre-registered coding scheme for the post-assessment open-ended responses, enabling direct pre-post comparison of misconception prevalence within specific clusters.
-- **Governance and consent infrastructure.** The consent mechanics, data minimization architecture, and privacy-preserving authentication documented in Section 5 will carry forward unchanged, ensuring consistent data governance across both assessments.
-- **Baseline coverage estimates.** Item-level SDM coverage rates (Table 4.5) inform the statistical power available for pre-post misconception comparisons. Items with coverage below 30% may require alternative analysis strategies.
+A multivariable regression framework is planned to model heterogeneity in learning gains as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Separate domain-specific models would reveal whether the predictors of learning gains differ across borrowing, investment, and risk management.
 
-### 9.2 Planned Study Design
+Psychometric validation is planned contingent on adequate sample size. Exploratory Factor Analysis would assess dimensionality within and across domains, Cronbach's alpha would evaluate internal consistency, and item-level statistics would identify items for refinement in future administrations. If IRB-approved, demographic and financial background subgroup comparisons (by gender, race/ethnicity, first-generation status, work experience, financial stress) would be reported with appropriate transparency practices for multiple comparisons.
 
-We plan to submit an IRB application to Loyola University Chicago to evaluate the association between QUIN 102 instruction and changes in student financial literacy. If approved, the following analyses are planned:
+A central component of Paper 2 would be the SDM-10 pre-post comparison. Pre-post changes in misconception prevalence, selection error rates, and the distribution of three-way classifications would be analyzed to assess whether instruction reduces specific misconception clusters and improves the alignment between student knowledge and item responses. Paper 2 would pre-specify which misconception codes from the taxonomy are expected to change, based on QUIN 102 curriculum coverage and the 10 recommendations in Table 8.1. Of particular interest is whether the instructional interventions targeting the five dominant misconception clusters identified in Section 7.5 produce measurable reductions in misconception prevalence, and whether the instrument revisions targeting high selection error items (Q36, Q10, Q9, Q14) reduce format-driven errors as predicted.
 
-1. **Post-course assessment administration.** The post-course assessment will be administered during the last week of the Spring 2026 semester, using the same 40-item anchor assessment and SDM-10 module. If approved, the post-assessment will include an IRB-reviewed consent process for human-subjects research.
+Subgroup analyses would examine whether learning gains vary by demographic and financial background characteristics, including gender, race/ethnicity, first-generation status, work experience, and financial stress. These analyses are contingent on IRB approval and would be reported with appropriate transparency practices for multiple comparisons, including false discovery rate adjustments where applicable.
 
-2. **Pre-post paired analyses.** We will compute learning gains as the difference between post-course and pre-course scores for each student, both overall and by domain. Paired t-tests (or nonparametric equivalents) will assess the statistical significance of mean gains, and we will report standardized effect sizes (within-student Cohen's d).
-
-3. **Multivariable regression.** We will model heterogeneity in learning gains as a function of baseline covariates, including demographics, financial background, work status, financial stress, self-rated knowledge, prior product experience, and preference-item responses (Q15--Q28). Separate domain-specific models will reveal whether the predictors of learning gains differ across borrowing, investment, and risk management.
-
-4. **Psychometric validation.** We will run Exploratory Factor Analysis to assess dimensionality within and across domains, use Cronbach's alpha to evaluate internal consistency, and examine item-level statistics to identify items for refinement in future administrations.
-
-5. **Subgroup analyses.** If IRB-approved, demographic and financial background subgroup comparisons (by gender, race/ethnicity, first-generation status, work experience, financial stress) will be reported with appropriate transparency practices for multiple comparisons.
-
-6. **SDM-10 pre-post comparison.** Pre-post changes in misconception prevalence, selection error rates, and the distribution of three-way classifications will be analyzed to assess whether instruction reduces specific misconception clusters and improves the alignment between student knowledge and item responses. Paper 2 will pre-specify which misconception codes from the taxonomy are expected to change, based on QUIN 102 curriculum coverage.
-
-### 9.3 Consent and Privacy
-
-The publishable evaluation will be conducted only on IRB-consented data. The existing consent infrastructure (Section 5.3) separates instructional use from research use; this separation will be maintained in the post-assessment. All student data will remain de-identified using the one-way hashing architecture described in Section 5.2. No raw student identifiers will appear in any dataset or publication.
-
-**Suppression rules.** To protect student privacy in subgroup analyses, Paper 2 will suppress any demographic cell with fewer than 10 observations. Intersectional cells (e.g., gender x race/ethnicity) that fall below this threshold will be reported only in aggregate or omitted. These thresholds follow standard practices for small-sample educational research and are consistent with a FERPA-aware design approach to de-identification.
-
-### 9.4 Intended Use and Prohibited Use
-
-The instrument and platform described in this paper are designed for educational assessment and learning outcome measurement within QUIN 102. The following uses are intended and supported:
-
-- Pre-post measurement of financial literacy knowledge gains
-- Identification of domain-specific misconceptions for instructional targeting
-- Adaptive diagnostic follow-up for students with confidence-accuracy misalignment
-
-The following uses are explicitly outside the scope of this instrument and are not supported by the evidence presented:
-
-- Credit, lending, or financial eligibility decisions
-- Employment screening or hiring decisions
-- High-stakes individual assessment with consequences beyond course feedback
-- Population-level claims about financial literacy without appropriate sampling
-
-Paper 2 will combine the pre-course baseline with post-course results, learning gains analysis, heterogeneity models, and psychometric validation into a comprehensive evaluation of QUIN 102's association with student financial literacy outcomes -- contingent on IRB approval and successful post-assessment administration.
+The publishable evaluation would be conducted only on IRB-consented data. The existing consent infrastructure (Section 5.1) separates instructional use from research use; this separation would be maintained in the post-assessment. All student data would remain de-identified using the one-way hashing architecture described in Appendix F. No raw student identifiers would appear in any dataset or publication. To protect student privacy in subgroup analyses, Paper 2 would suppress any demographic cell with fewer than 10 observations, consistent with the suppression rule applied in Section 6.2. The post-assessment consent screen would implement a forced active choice design (no default selection) to address the status quo bias limitation identified in Section 9.
 
 ---
 
@@ -666,7 +653,7 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 1. **Assessment platform development.** AI-assisted coding tools (GitHub Copilot, Claude Code) were used during development of the web-based assessment platform to accelerate implementation of the user interface, data collection logic, and adaptive routing algorithm. All platform functionality was independently tested and validated by the research team prior to deployment. The complete source code is publicly available for inspection in the project repository (Bolivard, 2026).
 
-2. **Open-ended response scoring.** GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.3.
+2. **Open-ended response scoring.** GPT-4.1 (OpenAI), accessed via the OpenRouter API, served as the automated scoring engine for classifying open-ended student responses into the three-way taxonomy (misconception, knowledge gap, selection error). The model was selected from among 11 candidate LLMs through a multi-model concordance protocol (Appendix D). The scoring rubric, item-specific prompts, misconception taxonomy, and calibration examples were developed entirely by the research team based on manual analysis of student responses. Low-confidence classifications were flagged for human adjudication by the course instructor. This methodological use of LLM-based scoring follows established practices in educational assessment (Mizumoto & Eguchi, 2024; Yavuz, 2025) and is detailed in Section 4.4.
 
 3. **Manuscript preparation.** Generative AI tools assisted with drafting, editing, and formatting portions of this manuscript. All content was reviewed, revised, and verified by the author, who takes full responsibility for the accuracy and integrity of the publication.
 
@@ -678,8 +665,8 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 
 | Control | Rule |
 | --- | --- |
-| SDM size | Target 10 items after the 40 anchor questions (5--10 delivered depending on available high-Need subcategories) |
-| Selection basis | Ranked by Need score (0--5) at subcategory level |
+| SDM size | Target 10 items after the 40 anchor questions (5--10 delivered depending on available high-priority subcategories) |
+| Selection basis | Ranked by diagnostic priority score (0--5) at subcategory level |
 | Domain balance | At least 2 items per domain (borrowing/credit, investment, risk management) |
 | Subcategory cap | Max 2 SDM items per subcategory |
 | Open-ended cap | Max 3 open-ended items per student |
@@ -688,9 +675,9 @@ This study employed AI tools in three capacities, disclosed here in accordance w
 | Grading | SDM-10 is diagnostic only; grade from 40 anchors only |
 | Primary outcomes | RQ1/RQ2 use 26 anchor knowledge items; SDM-10 is secondary diagnostic output |
 
-### Table A.2: Need Score Mapping (Correctness x Confidence x Format)
+### Table A.2: Diagnostic Priority Score Mapping (Correctness x Confidence x Format)
 
-The Need score quantifies residual uncertainty about a student's understanding in each subcategory. Higher values indicate greater need for diagnostic follow-up. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ).
+The diagnostic priority score quantifies residual uncertainty about a student's understanding in each subcategory. Higher values indicate greater need for diagnostic follow-up. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ).
 
 | Confidence | Correct (MCQ) | Correct (T/F) | Incorrect (MCQ) | Incorrect (T/F) |
 | --- | --- | --- | --- | --- |
@@ -713,11 +700,11 @@ The Need score quantifies residual uncertainty about a student's understanding i
 
 | Phase | Purpose | Logic |
 | --- | --- | --- |
-| Phase 1: Domain minimums | Ensure coverage | Select top-Need item from each domain until each has >= 2 items |
-| Phase 2: Need-based filling | Maximize diagnostic value | Fill remaining slots in descending Need order with 5-level tiebreaker |
-| Phase 3: Mastery fallback | Avoid empty slots | If fewer than 10 subcategories have Need > 0, add mastery-probing items from strongest subcategories |
+| Phase 1: Domain minimums | Ensure coverage | Select highest-priority item from each domain until each has >= 2 items |
+| Phase 2: Priority-based filling | Maximize diagnostic value | Fill remaining slots in descending diagnostic priority order with 5-level tiebreaker |
+| Phase 3: Understanding-verification fallback | Avoid empty slots | If fewer than 10 subcategories are flagged for follow-up, add understanding-verification items (labeled `mastery` in the codebase) from strongest subcategories |
 
-### Table A.5: Tiebreaker Hierarchy (When Need Scores Are Equal)
+### Table A.5: Tiebreaker Hierarchy (When Diagnostic Priority Scores Are Equal)
 
 | Priority | Criterion | Rule |
 | --- | --- | --- |
@@ -1046,7 +1033,7 @@ Layer 1 contains 37 generalizable financial literacy misconception families orga
 
 ## Appendix D: AI Scorer Model Selection Protocol
 
-To select the scoring model for the AI-assisted classification pipeline (Section 4.3), we conducted a multi-model concordance evaluation. Twenty identical open-ended student responses (11 diagnose, 9 confirm) were scored by 11 large language models from seven providers, accessed via the OpenRouter API. Models were evaluated on five criteria: (1) JSON schema compliance (whether diagnose items returned the correct diagnose-format output), (2) parse/API error rate, (3) classification nuance (use of partial credit, confidence variation, and balanced classification distributions), (4) throughput (wall-clock time for 20 responses), and (5) estimated cost for the full corpus.
+To select the scoring model for the AI-assisted classification pipeline (Section 4.4), we conducted a multi-model concordance evaluation. Twenty identical open-ended student responses (11 diagnose, 9 confirm) were scored by 11 large language models from seven providers, accessed via the OpenRouter API. Models were evaluated on five criteria: (1) JSON schema compliance (whether diagnose items returned the correct diagnose-format output), (2) parse/API error rate, (3) classification nuance (use of partial credit, confidence variation, and balanced classification distributions), (4) throughput (wall-clock time for 20 responses), and (5) estimated cost for the full corpus.
 
 **Table D.1: Multi-Model Concordance Results (n = 20 identical responses)**
 
@@ -1087,4 +1074,26 @@ Four responses produced substantive disagreement among the eight non-disqualifie
 
 - **Source code repository.** The complete platform source code, data export scripts, and reproducible verification script (`verify_paper_tables.py`) are publicly available in the project repository (Bolivard, 2026).
 
-- **De-identified data exports.** Consented response data (`consented_responses_354.csv`), diagnose classification results (`diagnose_by_item.csv`), confirm classification results (`confirm_by_item.csv`), and the SDM-10 item bank (`sdm10_item_bank.xlsx`) are available for download at: [https://financial-literacy.qualiaai.fr/admin/documents](https://financial-literacy.qualiaai.fr/admin/documents)
+- **De-identified data exports.** The following data files are available for download at: [https://financial-literacy.qualiaai.fr/admin/documents](https://financial-literacy.qualiaai.fr/admin/documents)
+
+  - `consented_responses_354.csv` -- Primary analysis dataset containing all anchor and SDM-10 responses for the research-consented subset. Fields: attempt_id, submission_type, submitted_at, duration_s, item_id, item_type, domain, subdomain, is_anchor, is_scored, student_answer, item_score, confidence, answered_at.
+  - `all_responses_421_students.csv` -- Operational dataset including non-consented responses. Used for operational context only; not included in research analyses.
+  - `question_bank_40items.csv` -- Item metadata and answer options for all 40 anchor items plus 13 baseline covariates. Fields: section, subsection, range, question_id, question_text, tags, options, correct_answer.
+  - `diagnose_by_item.csv` -- Item-level diagnose classification results showing misconception, knowledge gap, and selection error percentages with Layer 1 and Layer 2 taxonomy codes for each anchor item.
+  - `confirm_by_item.csv` -- Item-level confirm classification results showing verified, partial, and likely-guess percentages for each anchor item.
+  - `sdm_open_answers.csv` -- De-identified open-ended response text from SDM-10 diagnose and confirm items.
+  - `misconception_taxonomy_observed.csv` -- 62 observed misconception patterns mapped to items and subcategories, with Layer 1 codes, Layer 2 tags, and frequency counts.
+  - `model_selection_concordance.csv` -- 11-model comparison for AI scorer selection, with schema compliance, error rates, throughput, cost estimates, and verdict for each model.
+  - `sdm10_item_bank.xlsx` -- Canonical SDM item bank containing 182 variant rows across 26 anchor items. Fields include anchor ID, variant type, trigger condition, question text, answer options, correct answer, scoring rubric, and misconception tags.
+
+---
+
+## Appendix F: Technical Implementation
+
+### F.1 Technology Stack
+
+The assessment is administered through a dedicated web platform -- the Financial Literacy Toolkit -- developed for this study. The platform is built on Next.js 14 (App Router) with PostgreSQL 15 as the data store, accessed through PgBouncer connection pooling to support concurrent users. The application runs as a Docker containerized service with automated deployment via GitHub Actions and Traefik reverse proxy for SSL termination. The complete source code is publicly available in the project repository (Bolivard, 2026).
+
+### F.2 Student Authentication and Data Minimization
+
+Students access the platform by entering their course code and student ID. On receipt, the platform immediately transforms each student ID into a one-way cryptographic hash (SHA-256 with a per-course pepper) and discards the raw identifier; all subsequent data storage and analysis use only the hashed key. No raw student ID numbers, names, email addresses, or other personally identifiable information are stored in the research dataset. The per-course pepper isolates student hashes across courses, preventing cross-course linkage. Age is collected as a categorical range rather than exact date of birth, and geographic identifiers are not collected.
