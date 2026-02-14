@@ -159,29 +159,38 @@ We designed the instrument to be internally consistent and transferable. Althoug
 
 ### 4.1 Variant Bank Design
 
-Before describing the selection algorithm, we explain how the follow-up items were constructed. Each of the 26 anchor knowledge items has a set of pre-written variants stored in a 182-row item bank (see Appendix E). Variants were created by varying two axes only: **response format** (multiple-choice, True/False, or open response) and **level of understanding probed** (recognize/select, apply/transfer, or explain reasoning). Table 4.1 shows the resulting design space.
+The SDM-10 does not generate questions on the fly. Instead, we built a bank of pre-written follow-up items so that each student receives a targeted, quality-controlled prompt drawn from a fixed pool. The bank contains 182 variant rows covering all 26 anchor knowledge items (see Appendix E).
 
-**Table 4.1: Variant bank design space: format vs. level of understanding**
+Every variant was created by combining two design choices:
+
+- **Response format**: multiple-choice (MCQ), True/False (T/F), or open response.
+- **Level of understanding probed**: recognize or select the correct answer, apply the concept to a new scenario, or explain reasoning in the student's own words.
+
+Table 4.1 shows how these two axes map to the variant types used in the bank.
+
+**Table 4.1: Variant bank design space (format x level of understanding)**
 
 | Level of understanding | Multiple-choice | True/False | Open response |
 | --- | --- | --- | --- |
 | Recognize/select | Anchor item (scored) | Format variant (same concept) | Not used |
 | Apply/transfer | Scenario variant (MCQ) | Scenario variant (T/F) | Not used |
-| Explain reasoning | Not used | Not used | Open_Diagnose (incorrect + high confidence) or Open_Confirm (correct + low confidence) |
+| Explain reasoning | Not used | Not used | Open_Diagnose or Open_Confirm |
 
-The closed-format variants (multiple-choice and True/False) test recognition and application at increasing transfer distance from the anchor item. Open-response variants occupy the explain-reasoning row exclusively and serve as the primary diagnostic instruments.
+The closed-format variants (MCQ and T/F columns) test whether a student can recognize or apply a concept. Open-response variants appear only in the explain-reasoning row because asking a student to explain in their own words is what makes diagnostic classification possible. These open-response items are the primary diagnostic instruments in the SDM-10.
 
-**Open_Diagnose** is assigned when a student answers the anchor item incorrectly with high confidence. The student is asked to explain the reasoning behind the chosen answer. The response is classified into one of three categories: misconception (a specific wrong mental model), knowledge gap (absence of knowledge), or selection error (correct understanding despite the wrong answer choice).
+**Two types of open-response follow-up.** A student receives at most one open-response follow-up per anchor item, and the type depends entirely on how the student answered that anchor item:
 
-**Open_Confirm** is assigned when a student answers the anchor item correctly with low confidence. The student is asked to explain why the correct answer holds. The response is classified as verified (genuine understanding), partial (incomplete reasoning), or likely guess (no substantive understanding despite the correct answer).
+**Open_Diagnose** is triggered when a student answers an anchor item **incorrectly with high confidence**. The student is asked to explain the reasoning behind the chosen answer. The response is classified as a *misconception* (a specific wrong belief), a *knowledge gap* (absence of knowledge), or a *selection error* (correct understanding despite the wrong answer choice).
 
-Open_Diagnose and Open_Confirm are alternative follow-ups triggered by different anchor states; they are not sequential steps applied to the same item.
+**Open_Confirm** is triggered when a student answers an anchor item **correctly with low confidence**. The student is asked to explain why the correct answer holds. The response is classified as *verified* (genuine understanding), *partial* (incomplete reasoning), or *likely guess* (no substantive understanding despite the correct answer).
 
-**Misconception taxonomy.** A two-layer taxonomy structures the open-ended classification. Layer 1 contains 37 generalizable financial literacy misconception families organized into seven categories (Appendix C). Layer 2 contains item-specific tags derived from observed student response patterns. Layer 1 codes are designed to transfer across assessment contexts and student populations.
+These two types are alternatives, not sequential steps: a given anchor item triggers one or the other based on the student's response, never both.
+
+**Misconception taxonomy.** To ensure consistent coding across items and raters, open-ended responses are classified using a two-layer taxonomy. Layer 1 contains 37 transferable misconception families organized into seven categories (Appendix C). Layer 2 contains item-specific tags derived from observed student response patterns.
 
 ### 4.2 Pipeline Overview and Illustrative Walkthrough
 
-As described in Section 4.1, SDM selection chooses from pre-written variants that vary by format and level of understanding. The SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's answer and confidence, (2) select up to 10 follow-up items from the variant bank ranked by priority (targeting 10, delivering 5–10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). For any given anchor item, a student receives at most one follow-up: either an Open_Diagnose (if the anchor answer was incorrect with high confidence) or an Open_Confirm (if correct with low confidence), but never both. Two illustrative cases show how the pipeline works in practice on two different anchor items.
+Using the pre-written variant bank described in Section 4.1, the SDM-10 pipeline operates in three stages: (1) compute a diagnostic priority for each concept area based on the student's anchor answer and confidence, (2) select up to 10 follow-up items from the bank, ranked by priority (targeting 10, delivering 5–10 depending on available high-priority concepts), and (3) score any open-ended responses using an AI-assisted rubric aligned to the misconception taxonomy. Confidence is captured on a three-level scale (1 = low, 2 = mid, 3 = high). As noted in Section 4.1, each anchor item triggers at most one follow-up, and the two open-response types (Open_Diagnose and Open_Confirm) are alternatives, not sequential steps. Two illustrative cases show how the pipeline works in practice on two different anchor items.
 
 **Case A: Open_Diagnose (incorrect + high confidence).** A student encounters Q6, which asks what a "successful effort to lower inflation" would likely be accompanied by. The student selects "a decrease in the general level of prices" (the incorrect answer) and reports high confidence. Because the combination of incorrectness and high confidence produces a high diagnostic priority, the algorithm assigns an Open_Diagnose variant for the Inflation (Lowering) concept area. The student sees an open-ended prompt: *"You chose 'a decrease in the general level of prices.' In your own words, explain what happens to prices when inflation is lowered."* The student writes: *"If inflation goes down, prices should go down too, that's what lower inflation means."* The AI scoring pipeline classifies this as a **misconception** (INF-01: confuses a decrease in the rate of price increase with an actual decrease in prices) and assigns taxonomy codes. The classification distinguishes this from a knowledge gap (the student has an active belief, not an absence of knowledge) and from a selection error (the student's reasoning is consistent with the wrong answer, not inconsistent with it).
 
@@ -191,7 +200,7 @@ Together, these two cases illustrate the SDM-10's central contribution: standard
 
 ### 4.3 Adaptive Selection and Diagnostic Priority Score
 
-The Supplemental Diagnostic Module (SDM-10) is an adaptive follow-up administered immediately after the 40-item anchor assessment. For each student, the module selects 10 items from a pre-written bank of 182 variants across 26 anchor items (see Appendix E) using an information deficit model that prioritizes subcategories where the anchor response left the most residual uncertainty about the student's understanding. The selection algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect responses with high confidence receive the highest priority, signaling a likely misconception. The format-aware adjustment reflects differential guessing probability (50% for True/False vs. ~25% for MCQ). A three-phase selection procedure enforces domain minimums, fills remaining slots by descending priority, and applies an understanding-verification fallback when fewer than 10 subcategories are flagged. Open-ended items are capped at three per student to limit response burden. Once a subcategory is selected, the specific variant type is determined by the combination of correctness and confidence: six types in total (Open_Diagnose, Open_Confirm, Lower_MCQ, Lower_TF, Same_MCQ, Higher_MCQ), as specified in Appendix A (Table A.3). See Appendix A for the complete selection specification.
+The SDM-10 is administered immediately after the 40-item anchor assessment. For each student, the algorithm computes a diagnostic priority score for each of the 26 knowledge subcategories based on correctness, confidence, and item format (True/False vs. multiple choice). Higher scores indicate greater residual uncertainty; incorrect answers paired with high confidence receive the highest priority. The algorithm then selects up to 10 follow-up items from the variant bank, enforcing domain balance, capping open-ended items at three per student, and applying an understanding-verification fallback when fewer than 10 subcategories are flagged. Once a subcategory is selected, the specific variant type (Open_Diagnose, Open_Confirm, Lower_MCQ, Lower_TF, Same_MCQ, or Higher_MCQ) is determined by the combination of correctness and confidence, as specified in Appendix A (Table A.3). See Appendix A for the complete selection specification including the priority score mapping and three-phase procedure.
 
 ### 4.4 AI-Assisted Scoring Pipeline
 
