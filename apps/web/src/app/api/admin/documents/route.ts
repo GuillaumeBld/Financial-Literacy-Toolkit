@@ -93,11 +93,15 @@ export async function GET(request: NextRequest) {
         const ext = extname(fileParam).toLowerCase();
         const contentType = CONTENT_TYPES[ext] || 'application/octet-stream';
         const fileName = fileParam.split('/').pop() || fileParam;
+        const inline = searchParams.get('inline') === 'true';
+        const disposition = inline
+          ? `inline; filename="${fileName}"`
+          : `attachment; filename="${fileName}"`;
 
         return new Response(fileBuffer, {
           headers: {
             'Content-Type': contentType,
-            'Content-Disposition': `attachment; filename="${fileName}"`,
+            'Content-Disposition': disposition,
             'Content-Length': String(fileBuffer.length),
           },
         });
