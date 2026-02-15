@@ -298,14 +298,9 @@ export default function AdminDashboardPage() {
                 href="/instructor/plan-b"
               />
               <ActionCard
-                title="Documents"
-                description="Shared files for download"
-                href="/admin/documents"
-              />
-              <ActionCard
                 title="Paper 1 Package"
                 description="QUIN 102 submission deliverables"
-                href="/paper1"
+                href="/admin/documents"
               />
             </div>
           </>
