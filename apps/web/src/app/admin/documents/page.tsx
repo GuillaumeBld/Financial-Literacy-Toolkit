@@ -13,6 +13,7 @@ import {
   Database,
   Code,
   BookOpen,
+  ClipboardList,
 } from 'lucide-react';
 
 const ADMIN_USERS = ['gbolivard', 'ajalilv'];
@@ -41,6 +42,23 @@ const SECTIONS: Section[] = [
         name: 'Bolivard_QUIN102_Paper1.docx',
         path: 'Bolivard_QUIN102_Paper1.docx',
         description: 'Primary deliverable',
+      },
+    ],
+  },
+  {
+    id: 'pretest-report',
+    title: 'Pre-Test Results Report',
+    icon: <ClipboardList className="w-5 h-5" />,
+    files: [
+      {
+        name: 'QUIN102_Pretest_Results_Report.docx',
+        path: 'QUIN102_Pretest_Results_Report.docx',
+        description: 'Instructor-facing pre-test report with teaching guidance',
+      },
+      {
+        name: 'QUIN102_Pretest_Report_BuildNote.md',
+        path: 'QUIN102_Pretest_Report_BuildNote.md',
+        description: 'Build note — sources, traceability, verification checklist',
       },
     ],
   },
