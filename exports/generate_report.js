@@ -400,7 +400,7 @@ function standardHeader() {
       new Paragraph({
         children: [
           new TextRun({
-            text: "QUIN 102 Pre-Test Results Report \u2014 Spring 2026",
+            text: "QUIN 102 Pre-Test Results Report - Spring 2026",
             font: "Times New Roman",
             size: 18,
             color: "808080",
@@ -571,7 +571,7 @@ function parseBodyContent(lines, startIndex) {
       continue;
     }
 
-    // H2 heading (##) — always starts on a new page
+    // H2 heading (##) - always starts on a new page
     if (trimmed.startsWith("## ")) {
       const headingText = trimmed.replace(/^##\s+/, "");
       elements.push(

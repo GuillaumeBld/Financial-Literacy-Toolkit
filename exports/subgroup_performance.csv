@@ -1,0 +1,56 @@
+group_variable,group_value,n,mean_score,sd_score,note
+age_range,above-20,59,69.56,18.13,
+age_range,20-or-under,367,65.90,16.96,
+age_range,prefer-not-to-answer,< 10,,,suppressed: n < 10
+financial_stress,rarely,93,69.29,16.72,
+financial_stress,often,81,67.12,15.90,
+financial_stress,never,46,70.97,18.93,
+financial_stress,sometimes,189,64.49,17.27,
+financial_stress,always,18,61.40,12.34,
+financial_stress,prefer-not-to-answer,< 10,,,suppressed: n < 10
+first_generation_college,no,297,66.36,17.73,
+first_generation_college,yes,121,66.44,16.18,
+first_generation_college,prefer-not-to-say,12,66.65,20.65,
+first_generation_college,(missing),< 10,,,suppressed: n < 10
+first_language,spanish,52,62.73,19.19,
+first_language,english,336,66.14,17.19,
+first_language,other,30,72.67,14.94,
+first_language,russian,< 10,,,suppressed: n < 10
+first_language,chinese,< 10,,,suppressed: n < 10
+first_language,prefer-not-to-answer,< 10,,,suppressed: n < 10
+gender,female,251,64.32,17.44,
+gender,male,174,69.19,16.83,
+gender,prefer-not-to-say,< 10,,,suppressed: n < 10
+has_student_loan_debt,prefer-not-to-say,57,66.91,15.73,
+has_student_loan_debt,no,270,65.99,17.91,
+has_student_loan_debt,yes,103,67.16,16.85,
+has_student_loan_debt,(missing),< 10,,,suppressed: n < 10
+overall,all_submitted,431,66.44,17.36,N=431 submitted pretest responses
+overall,consented_only,354,66.07,17.29,n=354 with research consent
+parental_education,high-school-diploma-or-ged,72,62.25,17.09,
+parental_education,some-college-no-degree,51,64.34,19.81,
+parental_education,less-than-high-school,22,61.99,11.30,
+parental_education,associate-degree,20,70.72,19.21,
+parental_education,graduate-or-professional-degree,131,66.87,17.21,
+parental_education,prefer-not-to-answer,13,67.21,27.03,
+parental_education,bachelors-degree,112,69.46,15.78,
+parental_education,dont-know,< 10,,,suppressed: n < 10
+parental_education,(missing),< 10,,,suppressed: n < 10
+race_ethnicity,Hispanic or Latino,94,63.60,19.09,
+race_ethnicity,Asian,54,67.47,16.69,
+race_ethnicity,Black or African American,29,60.76,18.43,
+race_ethnicity,Two or more racial or ethnic backgrounds,28,68.46,14.15,
+race_ethnicity,White or Caucasian,210,67.31,16.60,
+race_ethnicity,Prefer not to say,< 10,,,suppressed: n < 10
+race_ethnicity,Other,< 10,,,suppressed: n < 10
+race_ethnicity,(missing),< 10,,,suppressed: n < 10
+self_rated_knowledge,high,52,73.64,16.81,
+self_rated_knowledge,moderate,253,66.97,16.80,
+self_rated_knowledge,low,107,62.27,17.10,
+self_rated_knowledge,very-low,< 10,,,suppressed: n < 10
+self_rated_knowledge,very-high,< 10,,,suppressed: n < 10
+self_rated_knowledge,prefer-not-to-answer,< 10,,,suppressed: n < 10
+work_experience,no-work-experience,63,67.81,16.86,
+work_experience,full-time,57,71.39,15.25,
+work_experience,part-time,303,64.92,17.68,
+work_experience,prefer-not-to-answer,< 10,,,suppressed: n < 10
