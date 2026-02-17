@@ -58,7 +58,7 @@ const SECTIONS: Section[] = [
       {
         name: 'QUIN102_Pretest_Report_BuildNote.md',
         path: 'QUIN102_Pretest_Report_BuildNote.md',
-        description: 'Build note — sources, traceability, verification checklist',
+        description: 'Build note - sources, traceability, verification checklist',
       },
     ],
   },
@@ -68,14 +68,14 @@ const SECTIONS: Section[] = [
     icon: <ImageIcon className="w-5 h-5" />,
     layout: 'grid',
     files: [
-      { name: 'Fig 1 — Score Distribution', path: 'figures/fig1_score_distribution.png' },
-      { name: 'Fig 2 — Domain Performance', path: 'figures/fig2_domain_performance.png' },
-      { name: 'Fig 3 — Enrollment Timeline', path: 'figures/fig3_enrollment_timeline.png' },
-      { name: 'Fig 4 — Submission Time', path: 'figures/fig4_submission_time.png' },
-      { name: 'Fig 5 — Confidence Calibration', path: 'figures/fig5_confidence_calibration.png' },
-      { name: 'Fig 6 — Item Difficulty', path: 'figures/fig6_item_difficulty.png' },
-      { name: 'Fig 7 — Demographics', path: 'figures/fig7_demographics.png' },
-      { name: 'Fig 8 — Financial Background', path: 'figures/fig8_financial_background.png' },
+      { name: 'Fig 1 -Score Distribution', path: 'figures/fig1_score_distribution.png' },
+      { name: 'Fig 2 -Domain Performance', path: 'figures/fig2_domain_performance.png' },
+      { name: 'Fig 3 -Enrollment Timeline', path: 'figures/fig3_enrollment_timeline.png' },
+      { name: 'Fig 4 -Submission Time', path: 'figures/fig4_submission_time.png' },
+      { name: 'Fig 5 -Confidence Calibration', path: 'figures/fig5_confidence_calibration.png' },
+      { name: 'Fig 6 -Item Difficulty', path: 'figures/fig6_item_difficulty.png' },
+      { name: 'Fig 7 -Demographics', path: 'figures/fig7_demographics.png' },
+      { name: 'Fig 8 -Financial Background', path: 'figures/fig8_financial_background.png' },
     ],
   },
   {
@@ -121,6 +121,18 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatModified(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }) + ' at ' + d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 function getFileBadgeColor(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase();
   switch (ext) {
@@ -152,6 +164,7 @@ function getFileTag(name: string): string {
 export default function DocumentsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
+  const [fileModified, setFileModified] = useState<Record<string, string>>({});
   const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -183,10 +196,13 @@ export default function DocumentsPage() {
       const data = await response.json();
       if (data.success) {
         const sizes: Record<string, number> = {};
+        const modified: Record<string, string> = {};
         for (const file of data.files) {
           sizes[file.path] = file.size;
+          if (file.modified) modified[file.path] = file.modified;
         }
         setFileSizes(sizes);
+        setFileModified(modified);
       }
     } catch (error) {
       console.error('Error loading file sizes:', error);
@@ -257,7 +273,7 @@ export default function DocumentsPage() {
               <div>
                 <h1 className="text-2xl font-bold text-ink">Paper 1 Submission Package</h1>
                 <p className="text-sm text-loyola-gray-600">
-                  QUIN 102 — Bolivard
+                  QUIN 102 -Bolivard
                 </p>
               </div>
             </div>
@@ -311,6 +327,11 @@ export default function DocumentsPage() {
                           {file.description}
                           {fileSizes[file.path] && ` · ${formatFileSize(fileSizes[file.path])}`}
                         </p>
+                        {fileModified[file.path] && (
+                          <p className="text-xs text-loyola-gray-400 mt-0.5">
+                            Last updated: {formatModified(fileModified[file.path])}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <button
@@ -336,6 +357,7 @@ export default function DocumentsPage() {
                     file={file}
                     token={token}
                     size={fileSizes[file.path]}
+                    modified={fileModified[file.path]}
                     isDownloading={downloadingFile === file.path}
                     onDownload={() => handleDownload(file.path, file.path.split('/').pop()!)}
                   />
@@ -359,6 +381,7 @@ export default function DocumentsPage() {
                           <p className="text-xs text-loyola-gray-500">
                             {file.description}
                             {fileSizes[file.path] && ` · ${formatFileSize(fileSizes[file.path])}`}
+                            {fileModified[file.path] && ` · ${formatModified(fileModified[file.path])}`}
                           </p>
                         </div>
                       </div>
@@ -390,12 +413,14 @@ function FigureCard({
   file,
   token,
   size,
+  modified,
   isDownloading,
   onDownload,
 }: {
   file: FileEntry;
   token: string | null;
   size?: number;
+  modified?: string;
   isDownloading: boolean;
   onDownload: () => void;
 }) {
@@ -440,8 +465,12 @@ function FigureCard({
       </div>
       <div className="p-3">
         <p className="text-xs font-medium text-loyola-gray-800 truncate">{file.name}</p>
-        {size && (
-          <p className="text-xs text-loyola-gray-500">{formatFileSize(size)}</p>
+        {(size || modified) && (
+          <p className="text-xs text-loyola-gray-500">
+            {size ? formatFileSize(size) : ''}
+            {size && modified ? ' · ' : ''}
+            {modified ? formatModified(modified) : ''}
+          </p>
         )}
         <button
           onClick={onDownload}
