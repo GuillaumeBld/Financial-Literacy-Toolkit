@@ -50,20 +50,19 @@ def copy_all_figures():
 
 
 def regenerate_fig2():
-    """Regenerate fig2_domain_performance.png with ylim=105 (layout fix only)."""
+    """Regenerate fig2_domain_performance.png with layout fixes (data unchanged)."""
     # Identical data from generate_charts.py lines 84-86
     domains = ['Borrowing &\nNumeracy', 'Behavioral &\nRisk Mgmt', 'Investment &\nRisk/Return']
     means = [69.23, 73.26, 63.84]
     sds = [18.99, 26.41, 21.52]
     colors = [STEEL_BLUE, TEAL, CORAL]
 
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = plt.subplots(figsize=(7, 5.5))
     bars = ax.bar(domains, means, yerr=sds, capsize=5, color=colors,
                   edgecolor='white', linewidth=0.5, width=0.6,
                   error_kw={'linewidth': 1.2, 'color': DARK_GRAY})
     ax.set_ylabel('Average Percent Correct (%)')
-    ax.set_title('Figure 2. Domain-Level Performance Comparison (N = 431)')
-    ax.set_ylim(0, 105)  # Changed from 100 to 105 to prevent label clipping
+    ax.set_ylim(0, 112)  # Raised from 105 to 112 so bar labels clear title
     ax.axhline(y=66.44, color=MAROON, linestyle='--', linewidth=1.2,
                label='Overall Mean = 66.4%')
     for i, (m, s) in enumerate(zip(means, sds)):
@@ -71,18 +70,21 @@ def regenerate_fig2():
                 fontsize=10, fontweight='bold', color=DARK_GRAY)
     ax.legend(loc='upper right', framealpha=0.9, fontsize=9)
 
-    # Add error bar explanation
-    ax.text(0.5, -0.12,
-            'Error bars show +/- one standard deviation of individual student scores.',
-            transform=ax.transAxes, ha='center', fontsize=8.5, color=DARK_GRAY,
-            style='italic')
+    # Title above chart area using suptitle so it does not overlap bar labels
+    fig.suptitle('Figure 2. Domain-Level Performance Comparison (N = 431)',
+                 fontsize=13, fontweight='bold', y=0.98)
+
+    # Error bar explanation below x-axis labels
+    fig.text(0.5, -0.02,
+             'Error bars show +/- one standard deviation of individual student scores.',
+             ha='center', fontsize=8.5, color=DARK_GRAY, style='italic')
 
     sns.despine(left=True)
     ax.yaxis.grid(True, alpha=0.3)
     ax.xaxis.grid(False)
     fig.savefig(os.path.join(DST, 'fig2_domain_performance.png'))
     plt.close(fig)
-    print('  Regenerated fig2_domain_performance.png (ylim=105)')
+    print('  Regenerated fig2_domain_performance.png (ylim=112, title repositioned)')
 
 
 if __name__ == '__main__':

@@ -1,25 +1,52 @@
-# Build Note: QUIN 102 Pre-Test Results Report (v2)
+# Build Note: QUIN 102 Pre-Test Results Report (v4)
 
 **Generated:** 2026-02-17
 **Report file:** `_project/source_of_truth/pretest_report.md`
-**DOCX output:** `exports/QUIN102_Pretest_Results_Report.docx`
+**DOCX output:** `exports/QUIN102_Pretest_Results_Report.docx` (974.5 KB)
 **Generator:** `exports/generate_report.js` (copy of `generate_paper.js` with 4 line changes)
 **Figure pipeline:** `exports/generate_report_figures.py` (copies figures + patches fig2)
 
 ---
 
-## 0. Changes from v1
+## 0a. Changes from v3
+
+| Change | Description |
+| --- | --- |
+| **A. DB source-language removed** | Line 199: "Read-only database queries" replaced with "exports/subgroup_performance.csv (prepared prior to report build)." Appendix B row updated. Build note references updated. Zero DB/SQL/PgBouncer language remains in report. |
+| **B. Figure R2 layout fixed** | `generate_report_figures.py`: ylim raised from 105 to 112, title moved to `fig.suptitle()` above chart area (no longer overlaps 73.3% label), error bar caption lowered below x-axis labels. figsize increased to (7, 5.5). Data values unchanged. |
+| **C. Section 4.3 instruction subsection** | Added "What this suggests for instruction" subsection after subgroup tables with 5 actionable bullets: misconception clusters apply across subgroups, financial-stress gradient suggests low-pressure practice, first-gen not predictive, self-ratings unreliable individually, format-driven gaps caveat. No causal claims, no subgroup-specific misconception claims. |
+| **D. Section 5.4 overconfidence tightened** | Rewrote calibration explanation to be more compact. Added "What overconfidence looks like in the classroom" paragraph. Tightened 4 classroom moves into 5 shorter, more direct bullets. Added misconception-based examples as fifth approach. Removed intervention-effect language ("recalibrate," "builds metacognitive awareness"). Kept misconception vs selection error distinction. |
+| **E. Suppression violations fixed** | Three raw counts below 10 were printed: Q37 (7 of 17), Q2 (7 of 22), Q13 (6 of 19). Replaced with percentage-only or total-only format. GPT-4.1 verified in paper (Section 5.3, line 429). Stale "Table 8.1" cross-references updated to "Sec 7." |
+| **F. Verification sweeps** | Em dashes: 0. Causal verbs: 0 causal uses. Raw counts < 10: 0. Mastery: 0. Section numbering: 1-8 sequential. Denominators: N=431 in Sec 3-5, n=354 in Sec 6-7. Paper DOCX: unchanged (md5 e1b6dcc7). |
+
+---
+
+## 0b. Changes from v2 (prior iteration)
+
+| Change | Description |
+| --- | --- |
+| Section 5 renamed | "Overall Results (N = 431)" changed to "Results: Submitted Sample (N = 431)" |
+| Figure R2 callout added | New paragraph after Figure R2 explicitly identifying green bar (Behavioral, 73.3%) and explaining error bars (plus or minus one SD, wider = more variable) |
+| Section 5.4 expanded | Two paragraphs connecting overconfidence to diagnostic findings: 53.9% of high-confidence errors are misconceptions, 31.9% are selection errors. Two distinct sources of overconfidence identified. |
+| Section 4.3 expanded | Three "interesting findings" bullets connecting subgroup performance (N = 431) to diagnostic patterns (n = 354), with explicit denominator caveat paragraph |
+| Sections 7+8 consolidated | "Implications for Instruction" (7.1-7.3) and "Recommendations" (Table 8.1) merged into single "Instructor Recommendations" section with 6 numbered priorities and additional bullets. All timeframe language removed ("next week," "first two weeks," "mid-semester" framing eliminated). |
+| Section renumbering | Old Section 9 (Limitations) becomes Section 8. Total body sections reduced from 9 to 8. Table 8.1 eliminated in favor of inline evidence-linked bullets. |
+| Verification | Em dash sweep (0 matches), causal verb sweep (0 causal uses), denominator check (N = 431 in Sec 3-5, n = 354 in Sec 6-7), suppression check (no raw counts below 10), mastery check (0 matches), section numbering consistent (1-8 + 2 appendices) |
+
+---
+
+## 0c. Changes from v1
 
 | Change | Description |
 | --- | --- |
 | Expanded Section 2.2 | "What the SDM-10 Adds" expanded from 2 to 5 paragraphs: variant definition, why variants exist, why open-ended matters, Open_Diagnose vs Open_Confirm as alternatives |
 | Section reorder | New order: 3 (Funnel), 4 (Student Chars), 5 (Overall Results), 6 (Diagnostic). Old order had Results before Chars. |
-| Section 4.3 added | "Performance by Student Characteristics" with mean scores by gender, race, work, first-gen, self-rated knowledge, financial stress. Data from read-only DB queries. |
+| Section 4.3 added | "Performance by Student Characteristics" with mean scores by gender, race, work, first-gen, self-rated knowledge, financial stress. Data from exports/subgroup_performance.csv (prepared prior to report build). |
 | Section 5.4 expanded | Overconfidence section expanded with pedagogical context and four practical teaching strategies |
 | Section 6 rewritten | Diagnostic insights rewritten with bullet-point format for key findings |
 | Figure R2 patched | ylim raised from 100 to 105 to fix clipped Behavioral bar label. Error bar explanation added to caption. |
 | report_figures/ created | All figures copied to exports/report_figures/; fig2 regenerated with layout fix |
-| subgroup_performance.csv | New file from read-only DB queries documenting all subgroup means |
+| subgroup_performance.csv | Subgroup mean scores (prepared prior to report build, N = 431) |
 | Em dashes removed | All em dashes replaced with regular dashes throughout |
 | Limitation 5 updated | Old: "No subgroup comparisons." New: "Subgroup performance patterns are descriptive only." |
 | Limitation 6 added | Suppression limits subgroup detail |
@@ -40,11 +67,11 @@ Every numeric claim in the report traces to a specific file, and where applicabl
 | 80%+: 94 students (21.8%) | `docs/data/domain-score-distribution.csv` | Rows 80-89 + 90-99 + 100 (count column): 60+23+11 = 94; percentage = 94/431 = 21.8% | Sec 5.1 |
 | Modal bin 60-69%: 125 students (29.0%) | `docs/data/domain-score-distribution.csv` | Row 60-69: count=125, percentage=29.00% | Sec 5.1 |
 | Diagnose totals: 258 misconception, 68 knowledge gap, 153 selection error, 14 unclassified | `exports/diagnose_by_item.csv` | Column sums: misconception=258, knowledge_gap=68, selection_error=153; total n=493, classified=479 | Sec 6.1 |
-| Q6 diagnose: 42 of 53 misconceptions (79%) | `exports/diagnose_by_item.csv` | Q6 row: n=53, misconception=42, misconception_pct=79 | Sec 6.3, Table 8.1 |
-| Q12 diagnose: 23 of 28 misconceptions (82%) | `exports/diagnose_by_item.csv` | Q12 row: n=28, misconception=23, misconception_pct=82 | Sec 6.3, Table 8.1 |
-| Q30 diagnose: 14 of 17 misconceptions (82%) | `exports/diagnose_by_item.csv` | Q30 row: n=17, misconception=14, misconception_pct=82 | Sec 6.3, Table 8.1 |
-| Q36 diagnose: 34 of 42 selection errors (81%) | `exports/diagnose_by_item.csv` | Q36 row: n=42, selection_error=34, selection_error_pct=81 | Sec 6.4, Table 8.1 |
-| Q10 diagnose: 16 of 39 selection errors (41%) | `exports/diagnose_by_item.csv` | Q10 row: n=39, selection_error=16, selection_error_pct=41 | Sec 6.4, Table 8.1 |
+| Q6 diagnose: 42 of 53 misconceptions (79%) | `exports/diagnose_by_item.csv` | Q6 row: n=53, misconception=42, misconception_pct=79 | Sec 6.3, Sec 7 |
+| Q12 diagnose: 23 of 28 misconceptions (82%) | `exports/diagnose_by_item.csv` | Q12 row: n=28, misconception=23, misconception_pct=82 | Sec 6.3, Sec 7 |
+| Q30 diagnose: 14 of 17 misconceptions (82%) | `exports/diagnose_by_item.csv` | Q30 row: n=17, misconception=14, misconception_pct=82 | Sec 6.3, Sec 7 |
+| Q36 diagnose: 34 of 42 selection errors (81%) | `exports/diagnose_by_item.csv` | Q36 row: n=42, selection_error=34, selection_error_pct=81 | Sec 6.4, Sec 7 |
+| Q10 diagnose: 16 of 39 selection errors (41%) | `exports/diagnose_by_item.csv` | Q10 row: n=39, selection_error=16, selection_error_pct=41 | Sec 6.4, Sec 7 |
 | Q37 diagnose: 7 of 17 selection errors (41%) | `exports/diagnose_by_item.csv` | Q37 row: n=17, selection_error=7, selection_error_pct=41 | Sec 6.4 |
 | Q2 diagnose: 7 of 22 selection errors (32%) | `exports/diagnose_by_item.csv` | Q2 row: n=22, selection_error=7, selection_error_pct=32 | Sec 6.4 |
 | Confirm totals: 127 verified (44.6%), 119 partial (41.8%), 39 likely guess (13.7%) | `exports/confirm_by_item.csv` | Column sums: verified=127, partial=119, likely_guess=39; total=285 | Sec 6.2 |
@@ -85,16 +112,16 @@ Every numeric claim in the report traces to a specific file, and where applicabl
 | Mean anchor score 66.4% | Final DOCX Figure 1 annotation / Figure 2 overall-mean label | Sec 5.1 |
 | 306 of 354 consented received follow-ups (86.4%) | Final DOCX Section 7.2 | Sec 6 |
 | 778 scored responses, zero processing errors | Final DOCX Section 7.2 | Sec 6 |
-| GPT-4.1 model used for AI classification | Final DOCX Section 5.3 | Sec 9 (Limitations) |
+| GPT-4.1 model used for AI classification | Final DOCX Section 5.3 | Sec 8 (Limitations) |
 | Median active assessment time ~18 minutes | Final DOCX Section 6.4 | Sec 5.5 |
-| Recommendations wording and structure | Final DOCX Table 8.1 (rewritten for instructor tone) | Sec 8 |
+| Recommendations wording and structure | Final DOCX Table 8.1 (rewritten for instructor tone) | Sec 7 |
 
 ### Figures embedded in DOCX
 
 | Report Figure | Source File | Used In |
 | --- | --- | --- |
 | Figure R1 (score distribution) | `exports/report_figures/fig1_score_distribution.png` | Sec 5.1 |
-| Figure R2 (domain performance) | `exports/report_figures/fig2_domain_performance.png` (patched: ylim=105) | Sec 5.2 |
+| Figure R2 (domain performance) | `exports/report_figures/fig2_domain_performance.png` (patched: ylim=112, suptitle, lowered caption) | Sec 5.2 |
 | Figure R3 (enrollment timeline) | `exports/report_figures/fig3_enrollment_timeline.png` | Sec 3 |
 | Figure R4 (confidence calibration) | `exports/report_figures/fig5_confidence_calibration.png` | Sec 5.4 |
 | Figure R5 (item difficulty) | `exports/report_figures/fig6_item_difficulty.png` | Sec 5.3 |
@@ -143,7 +170,7 @@ Every numeric claim in the report traces to a specific file, and where applicabl
 | 6 | Paper files unmodified by this session | PASS | `exports/Bolivard_QUIN102_Paper1.docx` and `_project/source_of_truth/paper.md` unchanged. |
 | 7 | Traceability check | PASS | Every numeric claim points to a specific file (and row/column for CSVs). Documented in Section 1 above. |
 | 8 | Denominator map present | PASS | Methodology section (report lines 79-84) contains the denominator map as a markdown table with all four tiers. |
-| 9 | Figure R2 label fix | PASS | ylim raised from 100 to 105 in generate_report_figures.py. Behavioral bar label (73.3%) no longer clipped. |
+| 9 | Figure R2 label fix | PASS | ylim raised to 112, title via suptitle(), caption lowered. All labels (69.2%, 73.3%, 63.8%) fully visible. |
 | 10 | report_figures/ complete | PASS | All 7 report figures present in exports/report_figures/. fig2 regenerated with layout fix. |
 | 11 | subgroup_performance.csv present | PASS | 57 rows covering all demographic groups with suppression applied. |
 

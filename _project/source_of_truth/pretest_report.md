@@ -115,7 +115,7 @@ About 70.3% of students worked part-time. Full-time workers made up 13.2%, and 1
 
 About 28.1% of students identified as first-generation college students. The remainder (68.9%) were not first-generation. A small group (3.0%) preferred not to answer.
 
-*Source: generate_charts.py lines 297-366 (percentages only; categories with fewer than 10 respondents are suppressed).*
+*Source: exports/generate_charts.py lines 297-366 (hardcoded percentages, prepared prior to report build; categories with fewer than 10 respondents are suppressed).*
 
 ### 4.2 Financial Background and Self-Assessment
 
@@ -125,7 +125,7 @@ About 28.1% of students identified as first-generation college students. The rem
 
 **Self-rated financial knowledge.** The majority rated their knowledge as moderate (58.7%). About a quarter rated it as low or very low (combined: 26.9%), and about one in seven rated it as high or very high (combined: 13.7%). Students who preferred not to answer were suppressed.
 
-*Source: generate_charts.py lines 387-420 (percentages only; "Very Low" and "Very High" categories each had fewer than 10 respondents and were collapsed into adjacent categories).*
+*Source: exports/generate_charts.py lines 387-420 (hardcoded percentages, prepared prior to report build; "Very Low" and "Very High" categories each had fewer than 10 respondents and were collapsed into adjacent categories).*
 
 The fact that nearly two-thirds of students experience financial stress at least sometimes is worth keeping in mind. Students dealing with financial pressure may engage differently with course material about budgeting, debt, and savings - not because they lack interest, but because the topics hit close to home.
 
@@ -196,13 +196,27 @@ Self-rated knowledge tracked measured performance in the expected direction. Stu
 
 Students who reported never experiencing financial stress scored about 10 points higher on average than those who reported always experiencing it. The pattern was not strictly linear - students who reported "often" scored slightly above those who said "sometimes" - but the overall trend was clear: more frequent financial stress was associated with lower scores.
 
-*Source: Read-only database queries on N = 431 submitted students, saved to exports/subgroup_performance.csv. All groups with n < 10 are suppressed.*
+*Source: exports/subgroup_performance.csv (prepared prior to report build, N = 431 submitted students). All groups with n < 10 are suppressed.*
 
 **Summary of patterns.** The strongest performance gradients appeared along self-rated knowledge (11-point spread), work experience (6.5-point spread), and financial stress frequency (10-point spread). The absence of a first-generation gap is notable. Racial/ethnic and gender gaps were present but should be interpreted with caution given the many overlapping factors (work status, financial stress, educational background) that this descriptive report does not disentangle.
 
+**Connecting subgroup patterns to diagnostic data.** The performance patterns above describe the full submitted sample (N = 431). The diagnostic data in Section 6 describe the consented subsample (n = 354). These are different denominators, and this report does not cross-tabulate subgroup membership against diagnostic classifications. However, several descriptive patterns across both datasets are worth noting:
+
+- Full-time workers had the highest mean score (71.4%, N = 431), yet the weakest domain for all students, Investment and Risk/Return (63.8%), is also where the most experience-based misconceptions appeared. On Q30 (risk-return tradeoff), 82% of diagnosed responses in the consented sample reflected reasoning from personal counterexamples (RISK-02, n = 354). Direct financial experience may provide both an advantage on straightforward items and a source of misconceptions on items that require abstract reasoning.
+- Students who rated their knowledge as low scored 62.3% on average (N = 431). In the consented diagnostic sample, 14.2% of diagnosed responses were knowledge gaps, meaning the student had no mental model at all (n = 354). Low self-rated knowledge and genuine knowledge gaps are conceptually related, though they describe different things: the first is a self-perception, the second is a classification of specific wrong answers.
+- The gender gap (about 5 points) and the financial stress gradient (about 10 points) are observed in this sample (N = 431), but 31.9% of all high-confidence errors in the diagnostic sample turned out to be selection errors (n = 354). Without item-level subgroup breakdowns, this report cannot determine what portion of any subgroup gap reflects differences in knowledge versus differences in susceptibility to format-driven errors.
+
+**What this suggests for instruction.** The subgroup patterns do not point to subgroup-specific misconceptions, because this report does not have subgroup-by-diagnostic breakdowns. What they do suggest is where to look for students who may need more support, and what class-level issues are most likely to matter for those students.
+
+- **Lower-scoring students are likely hitting the same misconception clusters as the rest of the class, not different ones.** The top misconception patterns (INF-01 inflation confusion, INS-01 insurance purpose, RISK-02 counterexample reasoning) appeared across the full consented sample. Students in subgroups with lower mean scores are likely to encounter these same barriers, possibly at higher rates. Prioritizing these three topics in early instruction is a way to help the students who need it most without singling out any group.
+- **The 10-point financial-stress gradient suggests that financially stressed students may benefit from low-pressure practice opportunities.** Students reporting frequent financial stress scored lower on average (N = 431). Because financial topics hit close to home for these students, low-stakes retrieval practice and "no penalty for wrong answers" framing may make it easier for them to engage with material about budgeting, debt, and insurance without anxiety.
+- **First-generation status is not a useful predictor of who needs help in this class.** First-generation and non-first-generation students scored identically (66.4%). Instructors should not assume first-generation students need extra financial literacy support based on that label alone.
+- **Self-rated knowledge broadly tracks actual performance, but overconfidence is common.** Students who rate themselves highly tend to score higher (73.6% vs. 62.3%, N = 431), but about 30% of all students showed moderate or high overconfidence (Section 5.4). Self-ratings are a rough guide, not a reliable one, for identifying who needs help.
+- **Some of the observed subgroup gaps may be partly format-driven.** With 31.9% of high-confidence errors turning out to be selection errors in the diagnostic sample (n = 354), score differences between groups could reflect different susceptibility to question-format issues rather than different levels of understanding. This is worth keeping in mind before drawing conclusions about which students "know less."
+
 ---
 
-## 5. Overall Results (N = 431)
+## 5. Results: Submitted Sample (N = 431)
 
 ### 5.1 Overall Score Distribution
 
@@ -235,9 +249,11 @@ The 26 scored anchor items span three knowledge domains. Domain-level means (N =
 | Borrowing, Interest, and Numeracy | 10 | 69.2% | 19.0% |
 | Investment and Risk/Return | 12 | 63.8% | 21.5% |
 
-*Source: generate_charts.py lines 85-86 (not available in any CSV; confirmed by Final DOCX Figure 2).*
+*Source: exports/generate_charts.py lines 85-86 (hardcoded values, prepared prior to report build; confirmed by Final DOCX Figure 2).*
 
 ![Figure R2. Domain-Level Performance Comparison (N = 431). Error bars show plus or minus one standard deviation, representing the spread of individual student scores within each domain. The dashed line marks the overall mean (66.4%).](report_figures/fig2_domain_performance.png)
+
+The green bar in Figure R2 represents Behavioral and Risk Management, the strongest domain at 73.3% average correct. The black vertical segments on each bar are error bars showing plus or minus one standard deviation, which indicates the spread of individual student scores within that domain. A wider error bar means more variation. Behavioral and Risk Management has the widest spread (SD = 26.4 percentage points), meaning student performance in this domain was the most variable despite having the highest average.
 
 Investment and Risk/Return is the weakest area, about 10 percentage points below Risk Management. This gap is partly driven by difficult items on inflation protection (Q38, 23.7% correct) and bond pricing (Q29, 36.2% correct), though high selection error counts in this domain mean that some of the apparent weakness is format-related rather than knowledge-related.
 
@@ -251,7 +267,7 @@ The 26 scored anchor items ranged from 92.8% correct (Q4, basic borrowing) down 
 
 **Weakest items** (below 50%): Q38 (Inflation Protection, 23.7%), Q6 (Inflation Lowering, 32.9%), Q29 (Interest Rates and Bonds, 36.2%), Q32 (Long-Term Asset Returns, 52.7%), Q10 (Credit Reports, 52.4%).
 
-*Source: generate_charts.py lines 229-256 (percent correct per item, N = 431).*
+*Source: exports/generate_charts.py lines 229-256 (hardcoded percent correct per item, prepared prior to report build, N = 431).*
 
 The three hardest items all involve relationships that students tend to confuse: what happens to prices when inflation slows (Q6), which assets protect against inflation (Q38), and what happens to bond prices when interest rates change (Q29). These are the areas where targeted instruction is likely to matter most.
 
@@ -266,22 +282,25 @@ Each anchor item includes a confidence rating (1 = low, 2 = mid, 3 = high). We c
 | Moderately Overconfident | 0.10 to 0.30 | 101 | 23.4% |
 | Highly Overconfident | OI >= 0.30 | 30 | 7.0% |
 
-*Source: generate_charts.py lines 190-191 (bin counts from scores.overconfidence_index, N = 431).*
+*Source: exports/generate_charts.py lines 190-191 (hardcoded bin counts, prepared prior to report build, N = 431).*
 
 ![Figure R4. Confidence Calibration Categories (N = 431). OI = average normalized confidence minus average correctness.](report_figures/fig5_confidence_calibration.png)
 
-Most students (69.6%) fall in the underconfident or well-calibrated ranges. About 30% are overconfident to some degree. The 7% who are highly overconfident are the students most likely to resist corrective feedback - they feel sure about answers they are getting wrong.
+Most students (69.6%) fall in the underconfident or well-calibrated ranges. About 30% are overconfident to some degree. The 7% who are highly overconfident are the students most likely to resist corrective feedback.
 
-**Why overconfidence matters for instruction.** Calibration is the alignment between how confident a student feels and how accurate they actually are. A well-calibrated student knows what they know and, just as importantly, knows what they don't know. An overconfident student believes they understand material that they have not actually mastered.
+**Why calibration matters in financial literacy.** Calibration is the alignment between how confident a student feels and how accurate they actually are. In a financial literacy course, miscalibration is especially consequential: a student who is sure they understand how inflation works but actually holds INF-01 (the "lower inflation = falling prices" misconception) will not seek out clarification, will not flag confusion during class, and may carry the wrong mental model into real financial decisions. Overconfident students are less likely to seek help, less likely to revisit material, and more likely to resist correction, because they do not perceive a gap between what they know and what they think they know.
 
-This matters for several practical reasons. Overconfident students are less likely to seek help, because they don't perceive a need for it. They are less likely to revisit material, because they believe they already understand it. And they may resist corrective feedback, interpreting it as contradicting something they are sure about rather than as filling a gap they didn't realize they had. In a financial literacy course, where misconceptions about inflation, insurance, and risk can have real-world consequences, the gap between perceived and actual understanding is especially worth attending to.
+**What overconfidence looks like in the classroom.** Overconfident students are not always the loudest or most disengaged. They often participate actively and answer questions with apparent certainty. The distinguishing feature is that when they get something wrong, they are surprised. They may push back on corrections, restate their original answer, or attribute the error to the question rather than to their understanding. In the pre-test data, this shows up as incorrect answers paired with high confidence ratings.
 
-**Practical approaches for the classroom.** The following are teaching strategies that other instructors have used to address overconfidence. They are not guaranteed to work, and this report does not claim they will change calibration. But they are low-cost, evidence-informed practices that are consistent with what the pre-test data show.
+**Low-cost classroom approaches.** The following are low-cost practices consistent with the pre-test patterns. This report makes no claims about whether they change calibration.
 
-- **Low-stakes retrieval practice.** Before covering new material, give a short ungraded quiz on the previous topic. Students who are overconfident will be surprised by what they get wrong, and the experience of getting it wrong in a low-stakes setting can recalibrate their self-assessment without the anxiety of a graded exam.
-- **Prediction-then-feedback exercises.** Ask students to predict their score on a quiz or assignment before they receive it back. Over time, the gap between predicted and actual performance becomes visible to the student. This builds metacognitive awareness - the ability to judge one's own understanding accurately.
-- **"What are you most confident about?" warm-ups.** At the start of a class session, ask students to write down one thing they feel confident they understand from the reading or last class. Then test that specific claim with a quick question. Students whose confidence was well-placed get confirmation; students whose confidence was misplaced get a low-pressure correction. This surfaces blind spots before they compound.
-- **Normalize uncertainty.** Frame not-knowing as a normal and expected part of learning, not as a failure. When an instructor says "this is a concept that trips up most students the first time they encounter it," it gives overconfident students permission to reconsider their understanding without feeling like they have been singled out.
+- **Low-stakes retrieval quizzes.** Before new material, give a short ungraded quiz on the previous topic. Students who are overconfident encounter their own errors in a setting where the stakes are low.
+- **Predict-then-compare.** Ask students to estimate their score on a quiz before seeing results. The gap between prediction and reality is informative for the student, especially when it recurs.
+- **"What are you most sure about?" warm-ups.** Students write down one concept they feel confident about, then answer a targeted question on that concept. Those who were right get confirmation; those who were wrong get an early, low-pressure signal.
+- **Normalize uncertainty.** Say things like "this is a concept that trips up most students the first time." This makes it easier for overconfident students to reconsider without feeling singled out.
+- **Use misconception-based examples.** Present the most common wrong answers (e.g., "lower inflation means prices go down") and ask students to evaluate them. This is less confrontational than correcting an individual student and lets overconfident students self-identify their own errors.
+
+**Connection to diagnostic findings.** The overconfidence pattern connects directly to the diagnostic data in Section 6. Students who answer incorrectly with high confidence are exactly the students who receive Open_Diagnose follow-ups. Among the 479 classifiable diagnose responses from the consented sample (n = 354), 53.9% reflected misconceptions and 31.9% were selection errors. This means overconfidence in this sample has at least two distinct sources: misconceptions (where the student holds a genuinely wrong belief and needs targeted correction) and selection errors (where the student actually understood the material but was tripped up by the question format). Treating all overconfident students the same way would miss this distinction. About half need better instruction; about a third need better questions.
 
 ### 5.5 Submission Timing
 
@@ -337,8 +356,8 @@ Selection errors were concentrated on items with specific format features:
 
 - **Q36 (diversification principle):** True/False with negation - 81% selection error rate (34 of 42 diagnosed responses). Students who answered "False" could then explain diversification correctly.
 - **Q10 (credit reports):** "Which is FALSE" framing - 41% selection error rate (16 of 39).
-- **Q37 (insurance types):** Phrasing ambiguity - 41% selection error rate (7 of 17).
-- **Q2 (mortgage term and total interest):** True/False reversal - 32% selection error rate (7 of 22).
+- **Q37 (insurance types):** Phrasing ambiguity - 41% selection error rate (17 diagnosed responses).
+- **Q2 (mortgage term and total interest):** True/False reversal - 32% selection error rate (22 diagnosed responses).
 
 *Source: exports/diagnose_by_item.csv (selection_error_pct column for items with n >= 10).*
 
@@ -356,73 +375,59 @@ Treating all three the same way - re-teaching the topic - misses the point for a
 
 ---
 
-## 7. Implications for Instruction
+## 7. Instructor Recommendations
 
-### 7.1 Priorities
+The recommendations below are organized by instructional priority. Each is linked to specific evidence from this report. These are suggestions, not prescriptions. The teaching team should adapt them based on course sequencing and classroom dynamics.
 
-Based on the diagnostic findings, we suggest three tiers of instructional priority:
+**Priority 1: Inflation rate versus price level**
 
-**Tier 1 - Address within the first two weeks:**
-- Inflation rate vs. price level (INF-01, the most common misconception)
-- Insurance as catastrophic protection vs. routine care (INS-01)
-- Bond pricing: inverse interest-rate/price relationship (INT-06)
+- Students consistently confuse "lower inflation" with "falling prices." On Q6, 79% of high-confidence errors in the consented sample reflected this confusion (42 of 53 diagnosed responses, n = 354). The misconception code INF-01 was the single most common in the entire diagnostic dataset.
+- Recommended action: Dedicate direct instruction to the distinction between the inflation rate (which can fall) and the price level (which keeps rising as long as inflation is positive). A two-line graph showing rate vs. level makes this visual and concrete.
+- Post-test check: Compare INF-01 prevalence on Q6 before and after instruction.
 
-**Tier 2 - Address before mid-semester:**
-- Risk-return tradeoff using financial-domain examples (RISK-02)
-- Auto loan and mortgage negotiation basics (INT-05, BORROW-03)
-- Deductible/premium/copay terminology (knowledge gap on Q13)
+**Priority 2: Insurance as catastrophic protection**
 
-**Tier 3 - Reinforce throughout the semester:**
-- Emergency fund sizing (BORROW-05)
-- Stock market function beyond wealth creation (RISK-07)
-- Diversification across asset classes (already well-understood by most, but format-sensitive)
+- On Q12, 82% of high-confidence errors reflected the belief that routine care is health insurance's main function (23 of 28 diagnosed responses, n = 354, INS-01).
+- Recommended action: Open the insurance module with the question "What is the main reason people buy insurance?" and then reframe insurance around catastrophic financial protection. The frequency-vs-severity distinction (routine visits are common but cheap; hospitalizations are rare but financially devastating) maps well to students' own experience.
+- Post-test check: Compare Q12 accuracy and INS-01 prevalence.
 
-### 7.2 What to Change Next Week
+**Priority 3: Risk-return tradeoff using domain-appropriate examples**
 
-These are five concrete actions for the first two weeks of instruction:
+- On Q30, 82% of high-confidence errors reflected reasoning from personal counterexamples (14 of 17 diagnosed responses, n = 354, RISK-02). Students cited specific cases where low-risk investments did well to argue against the general risk-return principle.
+- Recommended action: Introduce risk-return using historical asset-class return data (e.g., decade-by-decade returns for stocks, bonds, and savings) rather than abstract statements. Concrete data makes it harder to dismiss the principle based on individual cases.
+- Post-test check: Compare RISK-02 prevalence.
 
-1. **15-minute inflation module.** Before covering the inflation chapter, spend 15 minutes on the distinction between "inflation is going down" (prices still rising, just more slowly) and "prices are going down" (deflation). A simple two-line graph - one showing the inflation rate, one showing the price level - makes this visual and sticky.
+**Priority 4: Bond pricing worked examples**
 
-2. **Insurance framing correction.** Before the insurance module, open with this question: "What is the main reason people buy insurance?" Let students answer. Then show them that the answer is catastrophic financial protection, not covering routine expenses. The frequency-vs-severity framing (routine visits are common but cheap; hospitalizations are rare but financially devastating) maps well to how students already think about their own experience.
+- Q29 (bond pricing) showed a 46% misconception rate (INT-06: belief that interest rates and bond prices move in the same direction) and a high guess rate among correct respondents (about one-third likely guesses among 12 confirm responses, n = 354).
+- Recommended action: Prepare a worked numerical example showing a $1,000 bond paying 5% interest, then show what happens to its market value when new bonds start paying 6%. Students who see the arithmetic tend to retain the inverse relationship. Verbal explanations alone tend to be less effective.
+- Post-test check: Compare Q29 accuracy and INT-06 prevalence.
 
-3. **Bond pricing worked example.** Prepare a one-page handout showing a $1,000 bond paying 5% interest. Then show what happens to its market value when new bonds start paying 6%. Walk through the arithmetic. Students who see the numbers tend to remember the inverse relationship; students who only hear "bond prices fall when rates rise" tend not to.
+**Priority 5: Insurance terminology**
 
-4. **"Read the question twice" reminder.** For the pre-test, nearly one in three high-confidence errors turned out to be selection errors. Mention to students - without giving away answers - that some questions are tricky to parse, and that reading carefully before answering is worth the extra few seconds. This sets expectations for the post-test.
+- Q13 showed a high knowledge gap rate: about one-third of 19 diagnosed responses reflected genuine unfamiliarity with deductible terminology rather than a wrong belief about it (n = 354).
+- Recommended action: Add an insurance terminology module covering deductible, premium, copay, and out-of-pocket maximum. This is a vocabulary problem, not a reasoning problem.
+- Post-test check: Compare Q13 knowledge gap rate.
 
-5. **Review the misconception taxonomy.** Skim the misconception taxonomy data (Appendix B) to see which codes appear most often. Use that to decide where to slow down during lectures and where to add practice problems. The top five codes account for the bulk of diagnosed misconceptions.
+**Priority 6: Item format revision for the post-test**
 
-### 7.3 Mid-Semester Reinforcement
+- Q36 (diversification principle, True/False with negation) had an 81% selection error rate (34 of 42 diagnosed responses, n = 354). Students understood diversification but picked "False" because of the question format.
+- Q10 (credit reports, "which is FALSE" framing) had a 41% selection error rate (16 of 39).
+- Recommended action: Revise Q36 from True/False to standard MCQ. Rewrite Q10 to remove negation framing. Flag Q9 and Q14 for format review.
+- Post-test check: Compare selection error rates on revised items.
 
-Between mid-semester and the planned post-assessment, consider:
+**Additional recommendations**
 
-- **Misconception spot-checks.** After covering each domain, give students a short ungraded quiz that targets the top misconceptions from the pre-test (INF-01, INS-01, RISK-02). If the same errors show up, revisit the material.
-- **"Myth or fact" exercises.** Take the top misconception codes and turn them into true/false warm-ups at the start of class. For example: "Lower inflation means prices are going down - myth or fact?" This lets students self-correct without the pressure of a graded assessment.
-- **Student-facing feedback.** If the teaching team wants to go further, consider sharing anonymized class-level results (not individual scores) with students so they can see where the class struggled. Transparency about common misconceptions can normalize the idea that financial literacy is something to build, not something you either have or don't.
-
----
-
-## 8. Recommendations
-
-The table below maps each major finding to a specific teaching or assessment change, with a note on how the planned post-assessment (Paper 2, contingent on IRB approval) could check whether the change made a difference.
-
-**Table 8.1: Course Improvement Recommendations**
-
-| # | Finding | Evidence (denominator, source) | Teaching Change | Assessment Change | Post-Test Check (planned, if approved) |
-| --- | --- | --- | --- | --- | --- |
-| 1 | 79% of high-confidence errors on Q6 reflect confusion between inflation rate and price level (INF-01) | diagnose_by_item.csv, Q6 row: 42 of 53 misconceptions (n = 354 consented) | Dedicate instruction to distinguishing "lower inflation" from "falling prices" using rate-vs-level visual aids | - | Compare pre-post INF-01 prevalence on Q6 |
-| 2 | 82% of high-confidence errors on Q12 reflect belief that routine care is insurance's main function (INS-01) | diagnose_by_item.csv, Q12 row: 23 of 28 misconceptions (n = 354) | Add module on health insurance purpose: catastrophic protection vs. routine care | - | Compare pre-post Q12 accuracy and INS-01 prevalence |
-| 3 | 82% of high-confidence errors on Q30 reflect reasoning-from-exceptions (RISK-02) | diagnose_by_item.csv, Q30 row: 14 of 17 misconceptions (n = 354) | Introduce risk-return using historical asset-class return data rather than abstract statements | - | Compare pre-post RISK-02 prevalence |
-| 4 | 81% of high-confidence errors on Q36 are selection errors from T/F format | diagnose_by_item.csv, Q36 row: 34 of 42 selection errors (n = 354) | - | Revise Q36 from True/False to standard MCQ | Compare Q36 selection error rate after revision |
-| 5 | 41% of high-confidence errors on Q10 are selection errors from negation framing | diagnose_by_item.csv, Q10 row: 16 of 39 selection errors (n = 354) | - | Rewrite Q10 to remove "which is FALSE" framing | Compare Q10 selection error rate after revision |
-| 6 | Q29 shows 46% misconception rate (INT-06) and high guess rate among correct respondents | diagnose_by_item.csv, Q29 row (n = 24); confirm_by_item.csv, Q29 row (about one-third guesses) | Add bond pricing segment with worked numerical examples | - | Compare pre-post Q29 accuracy and INT-06 prevalence |
-| 7 | Q13 shows a high knowledge gap rate - unfamiliarity with deductible terminology | diagnose_by_item.csv, Q13 row: about one-third knowledge gaps (n = 19, n = 354) | Add insurance terminology module: deductible, premium, copay, out-of-pocket maximum | - | Compare pre-post Q13 knowledge gap rate |
-| 8 | Several items show format-driven selection errors disproportionate to actual misunderstanding | diagnose_by_item.csv, multiple items with high SE% (n = 354) | - | Flag Q9 and Q14 for format revision; consider converting to MCQ | Compare SE rates before and after revision |
-| 9 | Q2 and Q8 reveal gaps in borrowing mechanics and loan negotiation knowledge | diagnose_by_item.csv, Q8 row: 19 of 34 misconceptions, 56% (n = 354); Q2 row: over one-third knowledge gaps | Add credit-literacy module covering mortgage term/interest tradeoffs and consumer loan negotiation | - | Compare pre-post accuracy on Q2 and Q8 |
-| 10 | Five dominant misconception clusters emerged across the assessment | misconception_taxonomy_observed.csv (62 codes); diagnose_by_item.csv cross-item patterns | Generate per-student misconception profiles from pre-course data; distribute targeted review materials before mid-term | - | Track within-student misconception resolution rate in pre-post comparison |
+- Generate per-student misconception profiles from the pre-course data and distribute targeted review materials before exams. The five dominant misconception clusters (INF-01, INS-01, RISK-02, INF-05, INT-06) account for the bulk of diagnosed misconceptions.
+- Add a credit-literacy module covering mortgage term/interest tradeoffs and consumer loan negotiation. Q2 and Q8 revealed gaps in borrowing mechanics (Q8: 56% misconception rate, 19 of 34 diagnosed responses; Q2: over one-third knowledge gaps, n = 354).
+- Remind students that some assessment questions are format-sensitive. Nearly one in three high-confidence errors in the diagnostic sample were selection errors, not knowledge failures. Setting this expectation before the post-test may be helpful.
+- Use low-stakes retrieval practice, prediction-then-feedback exercises, and uncertainty normalization to address the 30% of students who showed moderate or high overconfidence (N = 431). These students are the most likely to resist corrective feedback because they do not perceive a need for it.
+- After covering each domain, consider giving a short ungraded quiz targeting the top misconceptions from the pre-test (INF-01, INS-01, RISK-02). If the same errors appear, revisit the material. "Myth or fact" warm-ups using the misconception taxonomy can also help students self-correct in a low-pressure setting.
+- If the teaching team wants to go further, consider sharing anonymized class-level results (not individual scores) with students so they can see where the class struggled. Transparency about common misconceptions can normalize the idea that financial literacy is something to build, not something you either have or don't.
 
 ---
 
-## 9. Limitations
+## 8. Limitations
 
 A few things to keep in mind when reading this report:
 
@@ -475,15 +480,15 @@ A few things to keep in mind when reading this report:
 | `exports/Bolivard_QUIN102_Paper1.docx` | Final research paper (authoritative reference for wording, definitions, tables) | Terminology, funnel numbers (653/443/431), Table 7.4/7.6/7.9/8.1 |
 | `docs/data/domain-score-distribution.csv` | Score counts and percentages by 10-point bin (N = 431) | Section 5.1 performance bands, Figure R1 |
 | `docs/data/collection-summary.csv` | Daily enrollment and completion counts (Feb 2-10) | Section 3 participation funnel, Figure R3 |
-| `exports/subgroup_performance.csv` | Mean scores by demographic group (N = 431, read-only DB queries) | Section 4.3 performance by student characteristics |
+| `exports/subgroup_performance.csv` | Mean scores by demographic group (N = 431, prepared prior to report build) | Section 4.3 performance by student characteristics |
 | `exports/report_figures/fig1_score_distribution.png` | Score distribution histogram | Figure R1 |
-| `exports/report_figures/fig2_domain_performance.png` | Domain performance bar chart with error bars (patched: ylim=105) | Figure R2 |
+| `exports/report_figures/fig2_domain_performance.png` | Domain performance bar chart with error bars (patched: ylim=112, title repositioned) | Figure R2 |
 | `exports/report_figures/fig3_enrollment_timeline.png` | Daily enrollment/completion timeline | Figure R3 |
 | `exports/report_figures/fig5_confidence_calibration.png` | Confidence calibration categories (bar + pie) | Figure R4 |
 | `exports/report_figures/fig6_item_difficulty.png` | Item difficulty ranking (26 items) | Figure R5 |
 | `exports/report_figures/fig7_demographics.png` | Demographic panels (6 subplots) | Figure R6 |
 | `exports/report_figures/fig8_financial_background.png` | Financial stress and self-rated knowledge panels | Figure R7 |
-| `exports/diagnose_by_item.csv` | AI classification counts per item: misconception, knowledge gap, selection error (n = 354 consented) | Sections 6.1, 6.3, 6.4, Table 8.1 |
+| `exports/diagnose_by_item.csv` | AI classification counts per item: misconception, knowledge gap, selection error (n = 354 consented) | Sections 6.1, 6.3, 6.4, 7 |
 | `exports/confirm_by_item.csv` | Understanding verification per item: verified, partial, likely guess (n = 354 consented) | Section 6.2 |
 | `exports/misconception_taxonomy_observed.csv` | 62 observed misconception instances by Layer 1 code, Layer 2 tag, and item | Section 6.3 |
-| `exports/generate_charts.py` | Chart generation script; source for domain means (lines 85-86), confidence calibration counts (lines 190-191), item difficulty data (lines 229-256), demographic percentages (lines 297-420) | Sections 4.1, 4.2, 5.2, 5.4, 5.3 |
+| `exports/generate_charts.py` | Chart generation script with hardcoded data values (prepared prior to report build); source for domain means (lines 85-86), confidence calibration counts (lines 190-191), item difficulty data (lines 229-256), demographic percentages (lines 297-420) | Sections 4.1, 4.2, 5.2, 5.4, 5.3 |

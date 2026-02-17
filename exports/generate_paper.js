@@ -74,6 +74,7 @@ function createImageElements(imagePath, captionText) {
         new ImageRun({
           data: imgBuffer,
           transformation: { width: displayWidth, height: displayHeight },
+          type: "png",
         }),
       ],
       alignment: AlignmentType.CENTER,
@@ -696,12 +697,26 @@ function parseTable(lines, startIndex) {
 }
 
 // ─── Parse ordered list ─────────────────────────────────────────────────────
+let _orderedListInstance = 0;
 function parseOrderedList(lines, startIndex) {
+  _orderedListInstance++;
+  const instanceId = _orderedListInstance;
   const items = [];
   let i = startIndex;
 
   while (i < lines.length) {
     const trimmed = lines[i].trim();
+
+    // Skip blank lines between list items if the next non-blank line continues the list
+    if (trimmed === '') {
+      let peek = i + 1;
+      while (peek < lines.length && lines[peek].trim() === '') peek++;
+      if (peek < lines.length && /^\d+\.\s/.test(lines[peek].trim())) {
+        i = peek;
+        continue;
+      }
+      break;
+    }
 
     // Check if this is an ordered list item (top-level: "1. ...")
     const match = trimmed.match(/^(\d+)\.\s+(.*)/);
@@ -771,7 +786,7 @@ function parseOrderedList(lines, startIndex) {
     items.push(
       new Paragraph({
         children: parseInlineFormatting(itemText),
-        numbering: { reference: "numbered-list", level: 0 },
+        numbering: { reference: "numbered-list", level: 0, instance: instanceId },
         spacing: { line: 360, after: 100 },
       })
     );
