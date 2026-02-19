@@ -15,6 +15,8 @@ import {
   Users,
   Zap,
   RefreshCw,
+  X,
+  Info,
 } from 'lucide-react';
 import {
   BarChart,
@@ -88,12 +90,12 @@ interface DashboardCourse {
 const ITEM_RECOMMENDATIONS: Record<string, string> = {
   Q1: 'Walk through a compound interest calculation step by step. Show the difference between simple and compound interest using a $1,000 deposit over 5, 10, and 20 years.',
   Q2: 'Compare two mortgage scenarios side-by-side: 15-year vs 30-year on the same home. Show total interest paid for each. Students often focus on monthly payment without considering total cost.',
-  Q3: 'Show a price index graph over 20 years. Point out that "2% inflation" doesn\'t mean prices stay the same — it means they rise 2% per year, compounding over time.',
+  Q3: 'Show a price index graph over 20 years. Point out that "2% inflation" doesn\'t mean prices stay the same -it means they rise 2% per year, compounding over time.',
   Q4: 'Use a simple loan amortization table to show how each payment splits between principal and interest. Highlight how the ratio changes over the life of a loan.',
   Q5: 'Have students calculate their own monthly expenses, then multiply by 3-6 months. Emphasize that emergency funds should be based on expenses, not income or an arbitrary dollar amount.',
-  Q6: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher — just rising more slowly. A visual timeline of price levels vs. inflation rate clarifies the distinction.',
+  Q6: 'Use a concrete example: if prices rose 8% last year and 3% this year, prices are still higher -just rising more slowly. A visual timeline of price levels vs. inflation rate clarifies the distinction.',
   Q7: 'Define "fixed income" explicitly before discussing inflation impact on different groups. Retirees on fixed pensions lose purchasing power when prices rise, while workers can negotiate raises.',
-  Q8: 'Walk through a real auto loan negotiation scenario. Show that price, interest rate, trade-in value, and loan term are all negotiable — not just one element.',
+  Q8: 'Walk through a real auto loan negotiation scenario. Show that price, interest rate, trade-in value, and loan term are all negotiable -not just one element.',
   Q9: 'Teach the 50/30/20 budgeting framework. Clarify that insurance is a risk management tool within a budget, not a savings or investment vehicle.',
   Q10: 'Brief lesson on credit report access rights. Explain who can check your credit report (employers, landlords, lenders) and the difference between a credit report and credit score.',
   Q11: 'Use a visual comparison: show returns of a single stock vs. a diversified portfolio over 10 years. The single stock has higher highs but also devastating lows.',
@@ -102,7 +104,7 @@ const ITEM_RECOMMENDATIONS: Record<string, string> = {
   Q14: 'Explain diversification with a simple analogy: "Don\'t put all your eggs in one basket." More variety in a portfolio reduces overall risk, not increases it.',
   Q29: 'Draw the inverse relationship on the board: when interest rates go up, existing bond prices go down (and vice versa). Use a seesaw analogy.',
   Q30: 'Teach the difference between general principles and universal rules. Use: "Taller people are generally heavier. Always true? No. Generally true? Yes." Risk-return works the same way.',
-  Q31: 'Explain that the stock market\'s primary function is price discovery and liquidity — allowing buyers and sellers to trade ownership. Wealth creation is a consequence, not the purpose.',
+  Q31: 'Explain that the stock market\'s primary function is price discovery and liquidity -allowing buyers and sellers to trade ownership. Wealth creation is a consequence, not the purpose.',
   Q32: 'Show a historical returns chart (1926-present) comparing stocks, bonds, and savings. Over 20+ year periods, stocks have consistently outperformed despite short-term volatility.',
   Q33: 'Practice converting between percentages and counts: "If 10% of 200 students skip breakfast, how many is that?" Build intuition before applying to financial contexts.',
   Q34: 'Use a portfolio simulation: show that adding different asset types (stocks, bonds, real estate) reduces overall portfolio risk even though each individual asset carries risk.',
@@ -182,6 +184,13 @@ export default function InstructorDashboardPage() {
   const [instructorName, setInstructorName] = useState('');
   const [expandedMisc, setExpandedMisc] = useState<string | null>(null);
   const [showAllEvidence, setShowAllEvidence] = useState<Set<string>>(new Set());
+  const [guideDismissed, setGuideDismissed] = useState(() => typeof window !== 'undefined' && localStorage.getItem('dashboard-guide-dismissed') === '1');
+  const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
+  const [showItemGuide, setShowItemGuide] = useState(false);
+  const [showMiscGuide, setShowMiscGuide] = useState(false);
+  const [showGapGuide, setShowGapGuide] = useState(false);
+  const [showErrorGuide, setShowErrorGuide] = useState(false);
+  const [selectedSeverity, setSelectedSeverity] = useState<SeverityLevel | null>(null);
   const router = useRouter();
 
   const [data, setData] = useState<DashboardData | null>(null);
@@ -236,8 +245,9 @@ export default function InstructorDashboardPage() {
     if (!data) return [];
     let items = data.items;
     if (selectedDomain !== 'All') items = items.filter(i => i.domain === selectedDomain);
+    if (selectedSeverity) items = items.filter(i => getSeverity(i.pctIncorrect) === selectedSeverity);
     return [...items].sort((a, b) => b[sortBy] - a[sortBy]);
-  }, [data, selectedDomain, sortBy]);
+  }, [data, selectedDomain, selectedSeverity, sortBy]);
 
   const topConcerns = useMemo(() => {
     if (!data) return [];
@@ -433,82 +443,82 @@ export default function InstructorDashboardPage() {
         {/* ── OVERVIEW TAB ── */}
         {view === 'overview' && (
           <>
-            {/* Guide Banner */}
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
-              <h2 className="text-sm font-bold text-indigo-900 mb-1">How to Use This Dashboard</h2>
-              <p className="text-xs text-indigo-700 leading-relaxed">
-                This dashboard summarizes your students&apos; performance on the pre-assessment, powered by the SDM-10 diagnostic model.
-                Use <strong>Overview</strong> to see where your class stands overall.
-                Use <strong>Item Analysis</strong> to drill into specific questions and see which answer choices students picked and why.
-                Use <strong>Misconceptions</strong> to identify wrong beliefs, <strong>Knowledge Gaps</strong> to see where students lack foundational knowledge,
-                and <strong>Selection Errors</strong> to find questions where students understood the concept but made a mechanical mistake.
-              </p>
-            </div>
+            {/* Guide Banner - dismissible */}
+            {!guideDismissed && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-4 flex items-start gap-3">
+                <Info className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-indigo-700 leading-relaxed flex-1">
+                  Use <strong>Overview</strong> for class-level performance, <strong>Item Analysis</strong> for per-question diagnostics,
+                  <strong> Misconceptions</strong> / <strong>Knowledge Gaps</strong> / <strong>Selection Errors</strong> for targeted teaching actions.
+                </p>
+                <button
+                  onClick={() => { setGuideDismissed(true); localStorage.setItem('dashboard-guide-dismissed', '1'); }}
+                  className="text-indigo-400 hover:text-indigo-600 transition shrink-0"
+                  title="Dismiss"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* KPI Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white rounded-xl p-5 border border-gray-200">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> Mean Score
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              {[
+                { key: 'mean', icon: <TrendingUp className="w-3.5 h-3.5" />, label: 'Mean Score', value: <span className="text-loyola-maroon">{data.overall.meanScore}%</span>, sub: `Median: ${data.overall.medianScore}%`, tip: 'Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.' },
+                { key: 'students', icon: <Users className="w-3.5 h-3.5" />, label: 'Students', value: <span className="text-gray-900">{data.overall.students}</span>, sub: 'Completed Test 1', tip: 'Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).' },
+                { key: 'overconf', icon: <AlertTriangle className="w-3.5 h-3.5" />, label: 'Overconfidence', value: <span className={Number(overconfidenceRate) > 20 ? 'text-red-600' : Number(overconfidenceRate) > 10 ? 'text-amber-600' : 'text-green-600'}>{overconfidenceRate}%</span>, sub: `${totalConfidentErrors} of ${totalIncorrect} wrong answers`, tip: 'Percentage of wrong answers where the student reported high confidence. Above 15% signals significant overconfidence.' },
+                { key: 'miscon', icon: <Zap className="w-3.5 h-3.5" />, label: 'Misconceptions', value: <span className="text-amber-600">{data.misconceptionSummary.detected}</span>, sub: `across ${itemsWithMisconceptions} questions`, tip: 'Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. See the Misconceptions tab for details.' },
+              ].map(kpi => (
+                <div key={kpi.key} className="bg-white rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    {kpi.icon} {kpi.label}
+                    <button onClick={() => setExpandedKpi(expandedKpi === kpi.key ? null : kpi.key)} className="ml-auto text-gray-300 hover:text-gray-500 transition">
+                      <Info className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="text-2xl font-bold">{kpi.value}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{kpi.sub}</div>
+                  {expandedKpi === kpi.key && (
+                    <p className="text-xs text-gray-500 mt-2 leading-snug border-t border-gray-100 pt-2">{kpi.tip}</p>
+                  )}
                 </div>
-                <div className="text-3xl font-bold text-loyola-maroon">{data.overall.meanScore}%</div>
-                <div className="text-xs text-gray-400 mt-0.5">Median: {data.overall.medianScore}%</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.</p>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-gray-200">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <Users className="w-3.5 h-3.5" /> Students
-                </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overall.students}</div>
-                <div className="text-xs text-gray-400 mt-0.5">Completed Test 1</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).</p>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-gray-200">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Overconfidence Rate
-                </div>
-                <div className={`text-3xl font-bold ${Number(overconfidenceRate) > 20 ? 'text-red-600' : Number(overconfidenceRate) > 10 ? 'text-amber-600' : 'text-green-600'}`}>{overconfidenceRate}%</div>
-                <div className="text-xs text-gray-400 mt-0.5">{totalConfidentErrors} of {totalIncorrect} wrong answers</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Percentage of wrong answers where the student reported high confidence. These are the hardest misconceptions to correct &mdash; students don&apos;t know what they don&apos;t know. Above 15% signals significant overconfidence.</p>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-gray-200">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  <Zap className="w-3.5 h-3.5" /> Misconceptions Detected
-                </div>
-                <div className="text-3xl font-bold text-amber-600">{data.misconceptionSummary.detected}</div>
-                <div className="text-xs text-gray-400 mt-0.5">unique types across {itemsWithMisconceptions} questions</div>
-                <p className="text-[10px] text-gray-400 mt-2 leading-snug">Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. Each type represents a specific reasoning error your students make &mdash; not just a wrong answer. See the Misconceptions tab for details and teaching strategies.</p>
-              </div>
+              ))}
             </div>
 
             {/* Score Distribution + Domain Performance */}
-            <div className="grid lg:grid-cols-3 gap-4 mb-6">
-              <div className="lg:col-span-2 bg-white rounded-xl p-5 border border-gray-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Score Distribution</h3>
-                <p className="text-xs text-gray-400 mb-4">How student scores are spread across the class. Red bars (left) indicate students who may need the most support. Green bars (right) indicate strong performers. A left-skewed distribution suggests the class may need more foundational review.</p>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={scoreDistData}>
-                    <XAxis dataKey="range" tick={{ fontSize: 11, fill: '#6b7280' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} />
-                    <Tooltip
-                      content={({ active, payload }) => active && payload?.length ? (
-                        <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-xs shadow-lg">
-                          {payload[0].payload.range}: <strong>{payload[0].value} students</strong>
-                        </div>
-                      ) : null}
-                    />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {scoreDistData.map((_d, i) => (
-                        <Cell key={i} fill={barColors[i]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <p className="text-xs text-gray-500 mb-3">Red = needs support. Green = strong performers.</p>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={scoreDistData}>
+                      <XAxis dataKey="range" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} />
+                      <Tooltip
+                        content={({ active, payload }) => active && payload?.length ? (
+                          <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-xs shadow-lg">
+                            {payload[0].payload.range}: <strong>{payload[0].value} students</strong>
+                          </div>
+                        ) : null}
+                      />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {scoreDistData.map((_d, i) => (
+                          <Cell key={i} fill={barColors[i]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Domain Performance</h3>
-                <p className="text-xs text-gray-400 mb-4">Average correct rate for each content domain. Red (&lt;65%) = significant gaps to address. Amber (65-74%) = room for improvement. Green (75%+) = generally well understood. Focus your teaching time on red and amber domains.</p>
-                <div className="space-y-5">
+                <p className="text-xs text-gray-500 mb-3">
+                  <span className="text-red-600">Red</span> (&lt;65%) = gaps.{' '}
+                  <span className="text-amber-600">Amber</span> (65-74%) = improve.{' '}
+                  <span className="text-green-600">Green</span> (75%+) = strong.
+                </p>
+                <div className="flex-1 space-y-5 flex flex-col justify-center">
                   {data.domains.map((d, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-sm mb-1.5">
@@ -525,7 +535,7 @@ export default function InstructorDashboardPage() {
                           style={{ width: `${d.pctCorrect}%` }}
                         />
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">{d.totalConfErrors} confident errors across {d.itemCount} items</div>
+                      <div className="text-xs text-gray-500 mt-1">{d.totalConfErrors} confident errors across {d.itemCount} items</div>
                     </div>
                   ))}
                 </div>
@@ -535,7 +545,7 @@ export default function InstructorDashboardPage() {
             {/* Priority Items */}
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Priority Items for Instruction</h3>
-              <p className="text-xs text-gray-400 mb-4">The top {topConcerns.length} items where at least 25% of students answered incorrectly, sorted by confident errors. Click any card to jump to its detailed analysis.</p>
+              <p className="text-xs text-gray-500 mb-3">Top items with 25%+ incorrect, sorted by confident errors. Click to jump to details.</p>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {topConcerns.map(item => {
                   const sev = getSeverity(item.pctIncorrect);
@@ -566,36 +576,48 @@ export default function InstructorDashboardPage() {
         {/* ── ITEMS TAB ── */}
         {view === 'items' && (
           <>
-            {/* Guide */}
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
-              <h2 className="text-sm font-bold text-indigo-900 mb-1">Item Analysis Guide</h2>
-              <p className="text-xs text-indigo-700 leading-relaxed mb-2">
-                Each row is one assessment question. Click any row to expand it and see detailed diagnostics.
-              </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-[11px] text-indigo-700">
-                <div><strong>Status badges:</strong> Based on % incorrect. <span className="text-red-600">Critical</span> (50%+), <span className="text-amber-600">Needs Attention</span> (25-49%), <span className="text-blue-600">Monitor</span> (10-24%), <span className="text-green-600">Strong</span> (&lt;10%).</div>
-                <div><strong>Conf. Errors:</strong> Students who got it wrong AND were confident they were right. These reflect deep-seated misconceptions that simple review won&apos;t fix.</div>
-                <div><strong>Diagnose:</strong> Number of students who received a follow-up question to identify <em>why</em> they answered incorrectly. Higher = more diagnostic data available.</div>
-                <div><strong>Confirm:</strong> Number of students who were correct but uncertain, and received a follow-up to verify their understanding. Helps distinguish lucky guesses from true knowledge.</div>
-              </div>
+            {/* Compact Guide */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-xs text-gray-600 flex-1">Each row is one question. Click to expand diagnostics.</span>
+              <button onClick={() => setShowItemGuide(!showItemGuide)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap flex items-center gap-1">
+                {showItemGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showItemGuide ? 'Hide guide' : 'Show guide'}
+              </button>
             </div>
+            {showItemGuide && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-3 grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-indigo-700">
+                <div><strong>Status badges:</strong> <span className="text-red-600">Critical</span> (50%+), <span className="text-amber-600">Needs Attention</span> (25-49%), <span className="text-blue-600">Monitor</span> (10-24%), <span className="text-green-600">Strong</span> (&lt;10%).</div>
+                <div><strong>Conf. Errors:</strong> Wrong + high confidence. These reflect misconceptions that simple review won&apos;t fix.</div>
+                <div><strong>Diagnose:</strong> Follow-up questions to identify <em>why</em> they answered incorrectly.</div>
+                <div><strong>Confirm:</strong> Follow-up for correct-but-uncertain students to verify understanding.</div>
+              </div>
+            )}
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-3 mb-4 items-center">
+            <div className="flex flex-wrap gap-2 mb-3 items-center">
               <span className="text-xs font-semibold text-gray-500 uppercase">Domain:</span>
               {['All', 'Borrowing & Credit', 'Risk Management', 'Investment & Risk'].map(d => (
                 <button
                   key={d}
                   onClick={() => setSelectedDomain(d)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold border transition ${
                     selectedDomain === d
-                      ? 'bg-loyola-maroon text-white border-loyola-maroon'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                      ? 'bg-loyola-maroon text-white border-loyola-maroon shadow-sm'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-800'
                   }`}
                 >
                   {d}
                 </button>
               ))}
+              {selectedDomain !== 'All' && (
+                <button
+                  onClick={() => setSelectedDomain('All')}
+                  className="text-xs text-loyola-maroon hover:text-red-800 font-medium ml-1"
+                >
+                  Reset
+                </button>
+              )}
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-xs font-semibold text-gray-500 uppercase">Sort:</span>
                 <select
@@ -610,30 +632,52 @@ export default function InstructorDashboardPage() {
               </div>
             </div>
 
-            {/* Summary Counts */}
-            <div className="flex flex-wrap gap-3 mb-4">
-              {[
-                { label: 'Critical', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'critical').length, bg: 'bg-red-50 border-red-200 text-red-700' },
-                { label: 'Needs Attention', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'concern').length, bg: 'bg-amber-50 border-amber-200 text-amber-700' },
-                { label: 'Monitor', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'monitor').length, bg: 'bg-blue-50 border-blue-200 text-blue-700' },
-                { label: 'Strong', count: filteredItems.filter(i => getSeverity(i.pctIncorrect) === 'ok').length, bg: 'bg-green-50 border-green-200 text-green-700' },
-              ].map(s => (
-                <div key={s.label} className={`px-3 py-1.5 rounded-lg border text-xs font-semibold ${s.bg}`}>
-                  {s.count} {s.label}
-                </div>
-              ))}
-              <span className="text-xs text-gray-400 self-center ml-1">{filteredItems.length} items total</span>
+            {/* Severity Filter Badges */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {([
+                { sev: 'critical' as SeverityLevel, label: 'Critical', bg: 'bg-red-50 border-red-200 text-red-700', ring: 'ring-2 ring-red-400' },
+                { sev: 'concern' as SeverityLevel, label: 'Needs Attention', bg: 'bg-amber-50 border-amber-200 text-amber-700', ring: 'ring-2 ring-amber-400' },
+                { sev: 'monitor' as SeverityLevel, label: 'Monitor', bg: 'bg-blue-50 border-blue-200 text-blue-700', ring: 'ring-2 ring-blue-400' },
+                { sev: 'ok' as SeverityLevel, label: 'Strong', bg: 'bg-green-50 border-green-200 text-green-700', ring: 'ring-2 ring-green-400' },
+              ]).map(s => {
+                const count = data.items.filter(i =>
+                  (selectedDomain === 'All' || i.domain === selectedDomain) && getSeverity(i.pctIncorrect) === s.sev
+                ).length;
+                const isActive = selectedSeverity === s.sev;
+                return (
+                  <button
+                    key={s.label}
+                    onClick={() => setSelectedSeverity(isActive ? null : s.sev)}
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition ${s.bg} ${isActive ? s.ring : 'hover:shadow-sm'}`}
+                  >
+                    {count} {s.label}
+                  </button>
+                );
+              })}
+              {selectedSeverity && (
+                <button
+                  onClick={() => setSelectedSeverity(null)}
+                  className="text-xs text-loyola-maroon hover:text-red-800 font-medium self-center ml-1"
+                >
+                  Clear
+                </button>
+              )}
+              <span className="text-xs text-gray-500 self-center ml-auto">{filteredItems.length} items</span>
             </div>
 
             {/* Item Table */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto max-h-[65vh] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 z-10">
                     <tr className="bg-gray-50 border-b border-gray-200">
-                      {['Item', 'Subdomain', 'Status', '% Incorrect', 'Conf. Errors', 'Diagnose', 'Confirm'].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                      ))}
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Item</th>
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Subdomain</th>
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">% Incorrect</th>
+                      <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Conf. Errors</th>
+                      <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Diagnose</th>
+                      <th className="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Confirm</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -645,25 +689,28 @@ export default function InstructorDashboardPage() {
                           <tr
                             key={item.id}
                             onClick={() => setSelectedItem(isSelected ? null : item.id)}
-                            className={`cursor-pointer border-b border-gray-100 transition ${
+                            className={`cursor-pointer border-b border-gray-100 transition group ${
                               isSelected ? 'bg-indigo-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                            } hover:bg-indigo-50/50`}
+                            } hover:bg-gray-100`}
                           >
-                            <td className="px-4 py-3 font-bold text-gray-900 flex items-center gap-1.5">
-                              {isSelected ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+                            <td className="px-3 py-2 font-bold text-gray-900 flex items-center gap-1.5">
+                              {isSelected
+                                ? <ChevronDown className="w-4 h-4 text-loyola-maroon transition-transform" />
+                                : <ChevronRight className="w-4 h-4 text-loyola-maroon group-hover:translate-x-0.5 transition-transform" />
+                              }
                               {item.id}
                             </td>
-                            <td className="px-4 py-3 text-gray-600">{item.subdomain}</td>
-                            <td className="px-4 py-3"><SeverityBadge level={sev} /></td>
-                            <td className="px-4 py-3">
+                            <td className="px-3 py-2 text-gray-600">{item.subdomain}</td>
+                            <td className="px-3 py-2"><SeverityBadge level={sev} /></td>
+                            <td className="px-3 py-2">
                               <ProgressBar
                                 pct={item.pctIncorrect}
                                 color={sev === 'critical' ? 'bg-red-500' : sev === 'concern' ? 'bg-amber-500' : sev === 'monitor' ? 'bg-blue-500' : 'bg-green-500'}
                               />
                             </td>
-                            <td className={`px-4 py-3 font-bold ${item.confidentErrors >= 30 ? 'text-red-600' : 'text-gray-700'}`}>{item.confidentErrors}</td>
-                            <td className="px-4 py-3 text-gray-500">{item.diagnoseN}</td>
-                            <td className="px-4 py-3 text-gray-500">{item.confirmN}</td>
+                            <td className={`px-3 py-2 text-right font-bold tabular-nums ${item.confidentErrors >= 30 ? 'text-red-600' : 'text-gray-700'}`}>{item.confidentErrors}</td>
+                            <td className="px-3 py-2 text-right text-gray-500 tabular-nums">{item.diagnoseN}</td>
+                            <td className="px-3 py-2 text-right text-gray-500 tabular-nums">{item.confirmN}</td>
                           </tr>
                           {isSelected && (
                             <tr key={`${item.id}-detail`}>
@@ -674,7 +721,7 @@ export default function InstructorDashboardPage() {
                                     {/* Error Confidence */}
                                     <div>
                                       <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Error Confidence Distribution</h4>
-                                      <p className="text-[10px] text-gray-400 mb-2">How confident were students who got this wrong? High-confidence errors indicate misconceptions; low-confidence errors may self-correct with review.</p>
+                                      <p className="text-xs text-gray-500 mb-2">High-confidence errors indicate misconceptions; low-confidence may self-correct.</p>
                                       <div className="flex gap-4">
                                         {[
                                           { label: 'Low', val: item.confDist.low, color: 'text-green-600' },
@@ -683,7 +730,7 @@ export default function InstructorDashboardPage() {
                                         ].map(c => (
                                           <div key={c.label} className="text-center flex-1">
                                             <div className={`text-2xl font-bold ${c.color}`}>{c.val}</div>
-                                            <div className="text-xs text-gray-400">{c.label} conf.</div>
+                                            <div className="text-xs text-gray-500">{c.label} conf.</div>
                                           </div>
                                         ))}
                                       </div>
@@ -691,11 +738,11 @@ export default function InstructorDashboardPage() {
                                     {/* Distractors */}
                                     <div>
                                       <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Distractor Distribution</h4>
-                                      <p className="text-[10px] text-gray-400 mb-2">Which wrong answers did students choose? The most popular distractor often reveals a common reasoning pattern or misconception you can address in class.</p>
+                                      <p className="text-xs text-gray-500 mb-2">Most popular distractor often reveals a common reasoning pattern.</p>
                                       <div className="flex flex-wrap gap-2">
                                         {Object.entries(item.distractors).sort((a, b) => b[1] - a[1]).map(([opt, n]) => (
                                           <div key={opt} className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs">
-                                            <strong>{opt}</strong>: {n} <span className="text-gray-400">({item.incorrect > 0 ? (n / item.incorrect * 100).toFixed(0) : 0}%)</span>
+                                            <strong>{opt}</strong>: {n} <span className="text-gray-500">({item.incorrect > 0 ? (n / item.incorrect * 100).toFixed(0) : 0}%)</span>
                                           </div>
                                         ))}
                                       </div>
@@ -703,7 +750,7 @@ export default function InstructorDashboardPage() {
                                     {/* SDM Follow-up Coverage */}
                                     <div>
                                       <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Diagnostic Follow-ups</h4>
-                                      <p className="text-[10px] text-gray-400 mb-2">Students selected by the SDM-10 adaptive algorithm for open-ended follow-up questions on this item. More follow-ups = more reliable diagnostic data.</p>
+                                      <p className="text-xs text-gray-500 mb-2">More follow-ups = more reliable diagnostic data.</p>
                                       <div className="text-xs text-gray-600 space-y-1.5">
                                         <div><strong className="text-red-600">{item.diagnoseN}</strong> students asked <em>why they chose wrong</em> (of {item.incorrect} who answered incorrectly)</div>
                                         <div><strong className="text-blue-600">{item.confirmN}</strong> students asked <em>to confirm understanding</em> (of {item.uncertainCorrect} who were correct but unsure)</div>
@@ -712,9 +759,9 @@ export default function InstructorDashboardPage() {
                                   </div>
                                   {/* Misconceptions */}
                                   <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Misconception Breakdown</h4>
-                                  <p className="text-[10px] text-gray-400 mb-2">Specific wrong beliefs identified through diagnostic follow-ups. <span className="text-red-500 font-medium">Red</span> = active misconception (student holds a wrong belief). <span className="text-purple-500 font-medium">Purple</span> = selection error (student understood but chose wrong). <span className="text-gray-500 font-medium">Gray</span> = knowledge gap (student didn&apos;t know).</p>
+                                  <p className="text-xs text-gray-500 mb-2"><span className="text-red-500 font-medium">Red</span> = misconception. <span className="text-purple-500 font-medium">Purple</span> = selection error. <span className="text-gray-600 font-medium">Gray</span> = knowledge gap.</p>
                                   {item.misconceptions.length === 0 ? (
-                                    <p className="text-xs text-gray-400 italic">No diagnostic follow-up data for this item. This means few students were flagged for follow-up, so the error rate is likely low or confidence was low.</p>
+                                    <p className="text-xs text-gray-500 italic">No diagnostic follow-up data for this item.</p>
                                   ) : (
                                     <div className="space-y-1">
                                       {item.misconceptions.map((m, mi) => (
@@ -723,7 +770,7 @@ export default function InstructorDashboardPage() {
                                             <div className={`text-xs font-semibold ${m.diagnosisType === 'selection_error' ? 'text-purple-600' : m.diagnosisType === 'knowledge_gap' ? 'text-gray-500' : 'text-red-600'}`}>
                                               {m.label}
                                             </div>
-                                            <div className="text-[10px] text-gray-400 font-mono">{m.tag}</div>
+                                            <div className="text-xs text-gray-500 font-mono">{m.tag}</div>
                                           </div>
                                           <ProgressBar
                                             pct={m.pct}
@@ -751,25 +798,26 @@ export default function InstructorDashboardPage() {
         {/* ── MISCONCEPTIONS TAB ── */}
         {view === 'misconceptions' && (
           <>
-            {/* Guide */}
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
-              <h2 className="text-sm font-bold text-indigo-900 mb-1">Understanding Misconceptions</h2>
-              <p className="text-xs text-indigo-700 leading-relaxed mb-2">
-                This tab shows the specific wrong beliefs your students hold, identified through SDM-10 diagnostic follow-up questions.
-                Unlike a simple &quot;% incorrect&quot; metric, these reveal <em>why</em> students are getting questions wrong, so you can tailor your instruction to directly address those beliefs.
-                Click any row to see the actual student responses that led to this classification.
-              </p>
-              <p className="text-[11px] text-indigo-600 mt-1">
-                Only true misconceptions are shown below. Selection errors and knowledge gaps are filtered out &mdash; see the Item Analysis tab for the full breakdown per question.
-              </p>
+            {/* Compact Guide */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-xs text-gray-600 flex-1">Wrong beliefs your students hold, ranked by prevalence. Click any row to see student responses.</span>
+              <button onClick={() => setShowMiscGuide(!showMiscGuide)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap flex items-center gap-1">
+                {showMiscGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showMiscGuide ? 'Hide' : 'More info'}
+              </button>
             </div>
+            {showMiscGuide && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-3 text-xs text-indigo-700 leading-relaxed">
+                Unlike a simple &quot;% incorrect&quot; metric, these reveal <em>why</em> students are getting questions wrong, so you can tailor instruction to directly address those beliefs.
+                Only true misconceptions are shown below. Selection errors and knowledge gaps are filtered out - see the Item Analysis tab for the full breakdown per question.
+              </div>
+            )}
 
             {/* Class-wide misconceptions */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
+            <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Class-Wide Misconception Prevalence</h3>
-              <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. The percentage shows what fraction of students who received a diagnostic follow-up for that question hold this specific belief. Focus on items near the top for maximum impact.
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Ranked by students affected. Focus on items near the top for maximum impact.</p>
               <div className="space-y-0.5">
                 {(() => {
                   const allMisc: (Misconception & { itemId: string; subdomain: string })[] = [];
@@ -788,28 +836,24 @@ export default function InstructorDashboardPage() {
                       <div key={i}>
                         <button
                           onClick={() => setExpandedMisc(isExpanded ? null : key)}
-                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                          className="w-full flex items-center gap-3 py-2.5 px-3 border-b border-gray-100 hover:bg-gray-100 rounded-lg transition text-left"
                         >
                           <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
-                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                            <div className="text-xs text-gray-600">{m.subdomain}</div>
                           </div>
                           <div className="w-48">
-                            <ProgressBar
-                              pct={m.pct}
-                              color="bg-red-500"
-                            />
+                            <ProgressBar pct={m.pct} color="bg-red-500" />
                           </div>
-                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200">
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right tabular-nums">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200">
                             Misconception
                           </span>
-                          {m.evidence && m.evidence.length > 0 && (
-                            isExpanded
-                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-                          )}
+                          {isExpanded
+                            ? <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />
+                            : <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+                          }
                         </button>
                         {isExpanded && (() => {
                           const allShown = showAllEvidence.has(key);
@@ -827,7 +871,7 @@ export default function InstructorDashboardPage() {
                                     <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
                                       <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
                                       {e.reasoning && (
-                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                        <p className="text-gray-500 mt-1.5"><span className="font-medium text-gray-600">AI Analysis:</span> {e.reasoning}</p>
                                       )}
                                     </div>
                                   ))}
@@ -856,8 +900,8 @@ export default function InstructorDashboardPage() {
             {dynamicRecommendations.length > 0 && (
               <div className="bg-white rounded-xl p-5 border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Instructional Recommendations</h3>
-                <p className="text-xs text-gray-400 mb-2">Actionable teaching suggestions generated from the diagnostic data. Priority levels are based on total students affected by misconceptions for each question.</p>
-                <div className="text-[11px] text-gray-400 mb-5 flex flex-wrap gap-4">
+                <p className="text-xs text-gray-500 mb-2">Teaching suggestions based on diagnostic data, prioritized by students affected.</p>
+                <div className="text-xs text-gray-500 mb-4 flex flex-wrap gap-4">
                   <span><span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1" />Critical = 15+ students affected, address immediately</span>
                   <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />High = 5-14 students affected, plan a lesson segment</span>
                   <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />Monitor = 2-4 students affected, brief mention may suffice</span>
@@ -890,22 +934,24 @@ export default function InstructorDashboardPage() {
         {/* ── KNOWLEDGE GAPS TAB ── */}
         {view === 'knowledge-gaps' && (
           <>
-            <div className="bg-gray-100 border border-gray-300 rounded-xl p-4 mb-6">
-              <h2 className="text-sm font-bold text-gray-800 mb-1">Understanding Knowledge Gaps</h2>
-              <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                Knowledge gaps represent cases where students simply did not know the answer &mdash; they left it blank, said &quot;I don&apos;t know,&quot; or gave a vague response
-                that showed no existing belief to correct. Unlike misconceptions (wrong beliefs), knowledge gaps are easier to address: students are starting from zero, not from a wrong foundation.
-              </p>
-              <p className="text-[11px] text-gray-500 mt-1">
-                Click any row to see the actual student responses classified as knowledge gaps.
-              </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-xs text-gray-600 flex-1">Topics where students had no prior knowledge. Easier to address than misconceptions. Click rows to see responses.</span>
+              <button onClick={() => setShowGapGuide(!showGapGuide)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap flex items-center gap-1">
+                {showGapGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showGapGuide ? 'Hide' : 'More info'}
+              </button>
             </div>
+            {showGapGuide && (
+              <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-3 text-xs text-gray-600 leading-relaxed">
+                Knowledge gaps represent cases where students left it blank, said &quot;I don&apos;t know,&quot; or gave a vague response with no existing belief to correct.
+                Unlike misconceptions, these are easier to address - students are starting from zero, not from a wrong foundation.
+              </div>
+            )}
 
-            <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
+            <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Knowledge Gap Prevalence</h3>
-              <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. The percentage shows what fraction of diagnosed students for that question showed this gap. These students need foundational instruction &mdash; they lack the knowledge entirely rather than holding wrong beliefs.
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Ranked by students affected. These students need foundational instruction.</p>
               <div className="space-y-0.5">
                 {(() => {
                   const allGaps: (Misconception & { itemId: string; subdomain: string })[] = [];
@@ -918,7 +964,7 @@ export default function InstructorDashboardPage() {
                   });
                   allGaps.sort((a, b) => b.n - a.n);
                   if (allGaps.length === 0) {
-                    return <p className="text-sm text-gray-400 italic py-4">No knowledge gaps identified in the diagnostic data.</p>;
+                    return <p className="text-sm text-gray-500 italic py-4">No knowledge gaps identified in the diagnostic data.</p>;
                   }
                   return allGaps.map((m, i) => {
                     const key = `kg-${m.itemId}-${m.tag}`;
@@ -927,25 +973,24 @@ export default function InstructorDashboardPage() {
                       <div key={i}>
                         <button
                           onClick={() => setExpandedMisc(isExpanded ? null : key)}
-                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                          className="w-full flex items-center gap-3 py-2.5 px-3 border-b border-gray-100 hover:bg-gray-100 rounded-lg transition text-left"
                         >
                           <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
-                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                            <div className="text-xs text-gray-600">{m.subdomain}</div>
                           </div>
                           <div className="w-48">
                             <ProgressBar pct={m.pct} color="bg-gray-400" />
                           </div>
-                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-300">
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right tabular-nums">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-300">
                             Knowledge Gap
                           </span>
-                          {m.evidence && m.evidence.length > 0 && (
-                            isExpanded
-                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-                          )}
+                          {isExpanded
+                            ? <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />
+                            : <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+                          }
                         </button>
                         {isExpanded && (() => {
                           const allShown = showAllEvidence.has(key);
@@ -963,7 +1008,7 @@ export default function InstructorDashboardPage() {
                                     <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
                                       <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
                                       {e.reasoning && (
-                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                        <p className="text-gray-500 mt-1.5"><span className="font-medium text-gray-600">AI Analysis:</span> {e.reasoning}</p>
                                       )}
                                     </div>
                                   ))}
@@ -1005,12 +1050,9 @@ export default function InstructorDashboardPage() {
               const topGaps = allGaps.slice(0, 5);
               const totalStudents = allGaps.reduce((s, g) => s + g.totalN, 0);
               return (
-                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <h3 className="text-sm font-semibold text-gray-700 mb-1">Teaching Guidance</h3>
-                  <p className="text-xs text-gray-400 mb-4">
-                    Knowledge gaps are easier to address than misconceptions &mdash; students are starting from zero, not from a wrong foundation.
-                    Focus on introducing these concepts clearly rather than correcting existing beliefs.
-                  </p>
+                  <p className="text-xs text-gray-500 mb-3">Focus on introducing these concepts clearly rather than correcting existing beliefs.</p>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <p className="text-sm text-gray-700 mb-2">
                       <strong>{totalStudents} total knowledge gap instances</strong> across {allGaps.length} questions.
@@ -1018,7 +1060,7 @@ export default function InstructorDashboardPage() {
                     </p>
                     <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
                       {topGaps.map(g => (
-                        <li key={g.itemId}><strong>{g.itemId}</strong> {g.subdomain} &mdash; {g.totalN} student{g.totalN > 1 ? 's' : ''} had no prior knowledge</li>
+                        <li key={g.itemId}><strong>{g.itemId}</strong> {g.subdomain}  - {g.totalN} student{g.totalN > 1 ? 's' : ''} had no prior knowledge</li>
                       ))}
                     </ul>
                     <p className="text-sm text-gray-700 mt-3">
@@ -1035,23 +1077,24 @@ export default function InstructorDashboardPage() {
         {/* ── SELECTION ERRORS TAB ── */}
         {view === 'selection-errors' && (
           <>
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
-              <h2 className="text-sm font-bold text-purple-900 mb-1">Understanding Selection Errors</h2>
-              <p className="text-xs text-purple-700 leading-relaxed mb-2">
-                Selection errors occur when students understood the concept but chose the wrong answer due to a mechanical mistake &mdash; misreading the question,
-                reversing their intended choice, or self-correcting during the diagnostic follow-up. These are <strong>not</strong> knowledge deficits: the student
-                already knows the material, they just made an error in execution.
-              </p>
-              <p className="text-[11px] text-purple-600 mt-1">
-                Click any row to see the actual student responses. High selection error rates on a question may indicate confusing wording that should be revised for future tests.
-              </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-xs text-gray-600 flex-1">Students who understood the concept but chose wrong due to mechanical mistakes. Not knowledge deficits.</span>
+              <button onClick={() => setShowErrorGuide(!showErrorGuide)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap flex items-center gap-1">
+                {showErrorGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showErrorGuide ? 'Hide' : 'More info'}
+              </button>
             </div>
+            {showErrorGuide && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 text-xs text-purple-700 leading-relaxed">
+                Selection errors occur when students misread the question, reversed their choice, or self-corrected during the diagnostic follow-up.
+                High selection error rates on a question may indicate confusing wording that should be revised for future tests.
+              </div>
+            )}
 
-            <div className="bg-white rounded-xl p-5 border border-gray-200 mb-6">
+            <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Selection Error Prevalence</h3>
-              <p className="text-xs text-gray-400 mb-5">
-                Ranked by number of students affected. The percentage shows what fraction of diagnosed students for that question made this type of error. Unlike misconceptions, these typically do not require additional teaching &mdash; but high counts on a single question suggest the question wording may need improvement.
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Ranked by students affected. High counts suggest question wording may need improvement.</p>
               <div className="space-y-0.5">
                 {(() => {
                   const allSE: (Misconception & { itemId: string; subdomain: string })[] = [];
@@ -1064,7 +1107,7 @@ export default function InstructorDashboardPage() {
                   });
                   allSE.sort((a, b) => b.n - a.n);
                   if (allSE.length === 0) {
-                    return <p className="text-sm text-gray-400 italic py-4">No selection errors identified in the diagnostic data.</p>;
+                    return <p className="text-sm text-gray-500 italic py-4">No selection errors identified in the diagnostic data.</p>;
                   }
                   return allSE.map((m, i) => {
                     const key = `se-${m.itemId}-${m.tag}`;
@@ -1073,25 +1116,24 @@ export default function InstructorDashboardPage() {
                       <div key={i}>
                         <button
                           onClick={() => setExpandedMisc(isExpanded ? null : key)}
-                          className="w-full flex items-center gap-4 py-3 px-4 border-b border-gray-50 hover:bg-gray-50 rounded-lg transition text-left"
+                          className="w-full flex items-center gap-3 py-2.5 px-3 border-b border-gray-100 hover:bg-gray-100 rounded-lg transition text-left"
                         >
                           <span className="text-sm font-bold text-loyola-maroon w-10">{m.itemId}</span>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-gray-800 truncate">{m.label}</div>
-                            <div className="text-xs text-gray-400">{m.subdomain}</div>
+                            <div className="text-xs text-gray-600">{m.subdomain}</div>
                           </div>
                           <div className="w-48">
                             <ProgressBar pct={m.pct} color="bg-purple-500" />
                           </div>
-                          <span className="text-xs font-semibold text-gray-600 w-14 text-right">n = {m.n}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200">
+                          <span className="text-xs font-semibold text-gray-600 w-14 text-right tabular-nums">n = {m.n}</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-600 border border-purple-200">
                             Selection Error
                           </span>
-                          {m.evidence && m.evidence.length > 0 && (
-                            isExpanded
-                              ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                              : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
-                          )}
+                          {isExpanded
+                            ? <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />
+                            : <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+                          }
                         </button>
                         {isExpanded && (() => {
                           const allShown = showAllEvidence.has(key);
@@ -1109,7 +1151,7 @@ export default function InstructorDashboardPage() {
                                     <div key={j} className="bg-gray-50 rounded-lg p-3 text-xs">
                                       <p className="text-gray-700 italic">&ldquo;{e.studentAnswer}&rdquo;</p>
                                       {e.reasoning && (
-                                        <p className="text-gray-400 mt-1.5"><span className="font-medium text-gray-500">AI Analysis:</span> {e.reasoning}</p>
+                                        <p className="text-gray-500 mt-1.5"><span className="font-medium text-gray-600">AI Analysis:</span> {e.reasoning}</p>
                                       )}
                                     </div>
                                   ))}
@@ -1151,12 +1193,9 @@ export default function InstructorDashboardPage() {
               const topSE = allSE.slice(0, 5);
               const totalStudents = allSE.reduce((s, e) => s + e.totalN, 0);
               return (
-                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <h3 className="text-sm font-semibold text-gray-700 mb-1">Question Design Insights</h3>
-                  <p className="text-xs text-gray-400 mb-4">
-                    Selection errors are primarily a question design signal, not a knowledge signal.
-                    Use this data to improve question clarity for future assessments.
-                  </p>
+                  <p className="text-xs text-gray-500 mb-3">Selection errors are a question design signal, not a knowledge signal.</p>
                   <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                     <p className="text-sm text-gray-700 mb-2">
                       <strong>{totalStudents} total selection errors</strong> across {allSE.length} questions.
@@ -1164,12 +1203,12 @@ export default function InstructorDashboardPage() {
                     </p>
                     <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
                       {topSE.map(s => (
-                        <li key={s.itemId}><strong>{s.itemId}</strong> {s.subdomain} &mdash; {s.totalN} student{s.totalN > 1 ? 's' : ''} understood but chose wrong</li>
+                        <li key={s.itemId}><strong>{s.itemId}</strong> {s.subdomain}  - {s.totalN} student{s.totalN > 1 ? 's' : ''} understood but chose wrong</li>
                       ))}
                     </ul>
                     <p className="text-sm text-gray-700 mt-3">
                       <strong>Action items:</strong> Review questions with high selection error rates for confusing wording, double negatives, or ambiguous answer choices.
-                      These students do <em>not</em> need additional instruction &mdash; they already understand the material.
+                      These students do <em>not</em> need additional instruction  - they already understand the material.
                     </p>
                   </div>
                 </div>
