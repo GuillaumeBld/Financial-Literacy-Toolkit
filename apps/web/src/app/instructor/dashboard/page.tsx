@@ -17,6 +17,7 @@ import {
   RefreshCw,
   X,
   Info,
+  Download,
 } from 'lucide-react';
 import {
   BarChart,
@@ -123,13 +124,13 @@ const getSeverity = (pct: number): SeverityLevel =>
   pct >= 50 ? 'critical' : pct >= 25 ? 'concern' : pct >= 10 ? 'monitor' : 'ok';
 
 const severityConfig: Record<SeverityLevel, { label: string; bg: string; text: string; border: string }> = {
-  critical: { label: 'Priority', bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' },
-  concern:  { label: 'Needs Attention', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  critical: { label: 'Priority', bg: 'bg-red-50', text: 'text-loyola-maroon', border: 'border-red-200' },
+  concern:  { label: 'Needs Attention', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
   monitor:  { label: 'Monitor', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
   ok:       { label: 'Strong', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
 };
 
-const barColors = ['#8B0015', '#8B0015', '#8B0015', '#B8860B', '#B8860B', '#F1BE48', '#F1BE48', '#10b981', '#10b981', '#10b981'];
+const barColors = ['#8B0015', '#8B0015', '#8B0015', '#EA580C', '#EA580C', '#6366F1', '#6366F1', '#10b981', '#10b981', '#10b981'];
 
 // ── Components ────────────────────────────────────────────
 function QuestionPreview({ item }: { item: DashboardItem }) {
@@ -241,6 +242,28 @@ export default function InstructorDashboardPage() {
     if (token) fetchData(token);
   };
 
+  const handleDownloadReport = async () => {
+    const token = localStorage.getItem('instructor-token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/instructor/report', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'QUIN102_Pretest_Results_Report.docx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Report download failed. Please try again.');
+    }
+  };
+
   const filteredItems = useMemo(() => {
     if (!data) return [];
     let items = data.items;
@@ -328,8 +351,8 @@ export default function InstructorDashboardPage() {
     }
 
     const sections: { priority: string; dot: string; title: string; card: string; items: RecItem[] }[] = [];
-    if (critical.length > 0) sections.push({ priority: 'Critical', dot: 'bg-loyola-maroon', title: 'text-loyola-maroon', card: 'bg-amber-50 border-amber-200', items: critical });
-    if (high.length > 0) sections.push({ priority: 'High', dot: 'bg-amber-500', title: 'text-amber-600', card: 'bg-amber-50 border-amber-200', items: high });
+    if (critical.length > 0) sections.push({ priority: 'Critical', dot: 'bg-loyola-maroon', title: 'text-loyola-maroon', card: 'bg-red-50 border-red-200', items: critical });
+    if (high.length > 0) sections.push({ priority: 'High', dot: 'bg-orange-500', title: 'text-orange-600', card: 'bg-orange-50 border-orange-200', items: high });
     if (monitor.length > 0) sections.push({ priority: 'Monitor', dot: 'bg-blue-500', title: 'text-blue-600', card: 'bg-blue-50 border-blue-200', items: monitor });
     return sections;
   }, [data]);
@@ -400,6 +423,14 @@ export default function InstructorDashboardPage() {
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
+              <button
+                onClick={handleDownloadReport}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-loyola-maroon rounded-lg hover:bg-red-900 transition"
+                title="Download Pre-Test Report"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Report</span>
+              </button>
               {isAdmin && (
                 <button
                   onClick={() => {
@@ -466,8 +497,8 @@ export default function InstructorDashboardPage() {
               {[
                 { key: 'mean', icon: <TrendingUp className="w-3.5 h-3.5" />, label: 'Mean Score', value: <span className="text-loyola-maroon">{data.overall.meanScore}%</span>, sub: `Median: ${data.overall.medianScore}%`, tip: 'Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.' },
                 { key: 'students', icon: <Users className="w-3.5 h-3.5" />, label: 'Students', value: <span className="text-gray-900">{data.overall.students}</span>, sub: 'Completed Test 1', tip: 'Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).' },
-                { key: 'overconf', icon: <AlertTriangle className="w-3.5 h-3.5" />, label: 'Overconfidence', value: <span className={Number(overconfidenceRate) > 20 ? 'text-amber-600' : Number(overconfidenceRate) > 10 ? 'text-amber-500' : 'text-green-600'}>{overconfidenceRate}%</span>, sub: `${totalConfidentErrors} of ${totalIncorrect} wrong answers`, tip: 'Percentage of wrong answers where the student reported high confidence. Above 15% signals significant overconfidence.' },
-                { key: 'miscon', icon: <Zap className="w-3.5 h-3.5" />, label: 'Misconceptions', value: <span className="text-amber-600">{data.misconceptionSummary.detected}</span>, sub: `across ${itemsWithMisconceptions} questions`, tip: 'Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. See the Misconceptions tab for details.' },
+                { key: 'overconf', icon: <AlertTriangle className="w-3.5 h-3.5" />, label: 'Overconfidence', value: <span className={Number(overconfidenceRate) > 20 ? 'text-orange-600' : Number(overconfidenceRate) > 10 ? 'text-orange-500' : 'text-green-600'}>{overconfidenceRate}%</span>, sub: `${totalConfidentErrors} of ${totalIncorrect} wrong answers`, tip: 'Percentage of wrong answers where the student reported high confidence. Above 15% signals significant overconfidence.' },
+                { key: 'miscon', icon: <Zap className="w-3.5 h-3.5" />, label: 'Misconceptions', value: <span className="text-orange-600">{data.misconceptionSummary.detected}</span>, sub: `across ${itemsWithMisconceptions} questions`, tip: 'Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. See the Misconceptions tab for details.' },
               ].map(kpi => (
                 <div key={kpi.key} className="bg-white rounded-lg p-3 border border-gray-200">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -489,7 +520,7 @@ export default function InstructorDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Score Distribution</h3>
-                <p className="text-xs text-gray-500 mb-3">Maroon = below average. Gold = typical range. Green = strong.</p>
+                <p className="text-xs text-gray-500 mb-3">Maroon = below average. Orange = developing. Indigo = typical range. Green = strong.</p>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={scoreDistData}>
@@ -514,8 +545,8 @@ export default function InstructorDashboardPage() {
               <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Domain Performance</h3>
                 <p className="text-xs text-gray-500 mb-3">
-                  <span className="text-amber-600">Amber</span> (&lt;65%) = focus area.{' '}
-                  <span className="text-yellow-600">Gold</span> (65-74%) = developing.{' '}
+                  <span className="text-orange-600">Orange</span> (&lt;65%) = focus area.{' '}
+                  <span className="text-blue-600">Blue</span> (65-74%) = developing.{' '}
                   <span className="text-green-600">Green</span> (75%+) = strong.
                 </p>
                 <div className="flex-1 space-y-5 flex flex-col justify-center">
@@ -523,14 +554,14 @@ export default function InstructorDashboardPage() {
                     <div key={i}>
                       <div className="flex justify-between text-sm mb-1.5">
                         <span className="font-medium text-gray-700">{d.name}</span>
-                        <span className={`font-bold ${d.pctCorrect < 65 ? 'text-amber-600' : d.pctCorrect < 75 ? 'text-yellow-600' : 'text-green-600'}`}>
+                        <span className={`font-bold ${d.pctCorrect < 65 ? 'text-orange-600' : d.pctCorrect < 75 ? 'text-blue-600' : 'text-green-600'}`}>
                           {d.pctCorrect}%
                         </span>
                       </div>
                       <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-700 ${
-                            d.pctCorrect < 65 ? 'bg-amber-500' : d.pctCorrect < 75 ? 'bg-yellow-500' : 'bg-green-500'
+                            d.pctCorrect < 65 ? 'bg-orange-500' : d.pctCorrect < 75 ? 'bg-blue-500' : 'bg-green-500'
                           }`}
                           style={{ width: `${d.pctCorrect}%` }}
                         />
@@ -587,7 +618,7 @@ export default function InstructorDashboardPage() {
             </div>
             {showItemGuide && (
               <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-3 grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-indigo-700">
-                <div><strong>Status badges:</strong> <span className="text-amber-800">Priority</span> (50%+), <span className="text-amber-600">Needs Attention</span> (25-49%), <span className="text-blue-600">Monitor</span> (10-24%), <span className="text-green-600">Strong</span> (&lt;10%).</div>
+                <div><strong>Status badges:</strong> <span className="text-loyola-maroon">Priority</span> (50%+), <span className="text-orange-600">Needs Attention</span> (25-49%), <span className="text-blue-600">Monitor</span> (10-24%), <span className="text-green-600">Strong</span> (&lt;10%).</div>
                 <div><strong>Conf. Errors:</strong> Wrong + high confidence. These reflect misconceptions that simple review won&apos;t fix.</div>
                 <div><strong>Diagnose:</strong> Follow-up questions to identify <em>why</em> they answered incorrectly.</div>
                 <div><strong>Confirm:</strong> Follow-up for correct-but-uncertain students to verify understanding.</div>
@@ -635,8 +666,8 @@ export default function InstructorDashboardPage() {
             {/* Severity Filter Badges */}
             <div className="flex flex-wrap gap-2 mb-3">
               {([
-                { sev: 'critical' as SeverityLevel, label: 'Priority', bg: 'bg-amber-50 border-amber-200 text-amber-800', ring: 'ring-2 ring-amber-400' },
-                { sev: 'concern' as SeverityLevel, label: 'Needs Attention', bg: 'bg-amber-50 border-amber-200 text-amber-700', ring: 'ring-2 ring-amber-400' },
+                { sev: 'critical' as SeverityLevel, label: 'Priority', bg: 'bg-red-50 border-red-200 text-loyola-maroon', ring: 'ring-2 ring-red-400' },
+                { sev: 'concern' as SeverityLevel, label: 'Needs Attention', bg: 'bg-orange-50 border-orange-200 text-orange-700', ring: 'ring-2 ring-orange-400' },
                 { sev: 'monitor' as SeverityLevel, label: 'Monitor', bg: 'bg-blue-50 border-blue-200 text-blue-700', ring: 'ring-2 ring-blue-400' },
                 { sev: 'ok' as SeverityLevel, label: 'Strong', bg: 'bg-green-50 border-green-200 text-green-700', ring: 'ring-2 ring-green-400' },
               ]).map(s => {
@@ -705,10 +736,10 @@ export default function InstructorDashboardPage() {
                             <td className="px-3 py-2">
                               <ProgressBar
                                 pct={item.pctIncorrect}
-                                color={sev === 'critical' ? 'bg-amber-500' : sev === 'concern' ? 'bg-yellow-500' : sev === 'monitor' ? 'bg-blue-500' : 'bg-green-500'}
+                                color={sev === 'critical' ? 'bg-loyola-maroon' : sev === 'concern' ? 'bg-orange-500' : sev === 'monitor' ? 'bg-blue-500' : 'bg-green-500'}
                               />
                             </td>
-                            <td className={`px-3 py-2 text-right font-bold tabular-nums ${item.confidentErrors >= 30 ? 'text-amber-600' : 'text-gray-700'}`}>{item.confidentErrors}</td>
+                            <td className={`px-3 py-2 text-right font-bold tabular-nums ${item.confidentErrors >= 30 ? 'text-orange-600' : 'text-gray-700'}`}>{item.confidentErrors}</td>
                             <td className="px-3 py-2 text-right text-gray-500 tabular-nums">{item.diagnoseN}</td>
                             <td className="px-3 py-2 text-right text-gray-500 tabular-nums">{item.confirmN}</td>
                           </tr>
@@ -725,8 +756,8 @@ export default function InstructorDashboardPage() {
                                       <div className="flex gap-4">
                                         {[
                                           { label: 'Low', val: item.confDist.low, color: 'text-green-600' },
-                                          { label: 'Medium', val: item.confDist.med, color: 'text-amber-500' },
-                                          { label: 'High', val: item.confDist.high, color: 'text-amber-600' },
+                                          { label: 'Medium', val: item.confDist.med, color: 'text-blue-500' },
+                                          { label: 'High', val: item.confDist.high, color: 'text-orange-600' },
                                         ].map(c => (
                                           <div key={c.label} className="text-center flex-1">
                                             <div className={`text-2xl font-bold ${c.color}`}>{c.val}</div>
@@ -847,7 +878,7 @@ export default function InstructorDashboardPage() {
                             <ProgressBar pct={m.pct} color="bg-loyola-maroon" />
                           </div>
                           <span className="text-xs font-semibold text-gray-600 w-14 text-right tabular-nums">n = {m.n}</span>
-                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
                             Misconception
                           </span>
                           {isExpanded
@@ -862,7 +893,7 @@ export default function InstructorDashboardPage() {
                             : [];
                           const hasMore = m.evidence && m.evidence.length > 5;
                           return (
-                            <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-amber-200 pl-4">
+                            <div className="ml-14 mr-4 mb-3 mt-1 space-y-2 border-l-2 border-orange-200 pl-4">
                               {itemMap[m.itemId] && <QuestionPreview item={itemMap[m.itemId]} />}
                               {visible.length > 0 && (
                                 <>
@@ -903,7 +934,7 @@ export default function InstructorDashboardPage() {
                 <p className="text-xs text-gray-500 mb-2">Teaching suggestions based on diagnostic data, prioritized by students affected.</p>
                 <div className="text-xs text-gray-500 mb-4 flex flex-wrap gap-4">
                   <span><span className="inline-block w-2 h-2 rounded-full bg-loyola-maroon mr-1" />Critical = 15+ students affected, address first</span>
-                  <span><span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1" />High = 5-14 students affected, plan a lesson segment</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-orange-500 mr-1" />High = 5-14 students affected, plan a lesson segment</span>
                   <span><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />Monitor = 2-4 students affected, brief mention may suffice</span>
                 </div>
 
