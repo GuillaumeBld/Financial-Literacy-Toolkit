@@ -70,8 +70,15 @@ interface DashboardItem {
 interface DashboardData {
   overall: {
     students: number;
+    roster: number;
     meanScore: number;
     medianScore: number;
+    modeRange: string;
+    minScore: number;
+    maxScore: number;
+    variance: number;
+    stddev: number;
+    stddevPct: number;
     totalDiagnose: number;
     totalConfirm: number;
     scoreDist: number[];
@@ -492,28 +499,70 @@ export default function InstructorDashboardPage() {
               </div>
             )}
 
-            {/* KPI Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              {[
-                { key: 'mean', icon: <TrendingUp className="w-3.5 h-3.5" />, label: 'Mean Score', value: <span className="text-loyola-maroon">{data.overall.meanScore}%</span>, sub: `Median: ${data.overall.medianScore}%`, tip: 'Average percentage of the 26 scored knowledge questions answered correctly. This is a baseline before your course instruction.' },
-                { key: 'students', icon: <Users className="w-3.5 h-3.5" />, label: 'Students', value: <span className="text-gray-900">{data.overall.students}</span>, sub: 'Completed Test 1', tip: 'Total students who completed the full pre-assessment (26 knowledge items + optional SDM-10 follow-up).' },
-                { key: 'overconf', icon: <AlertTriangle className="w-3.5 h-3.5" />, label: 'Overconfidence', value: <span className={Number(overconfidenceRate) > 20 ? 'text-orange-600' : Number(overconfidenceRate) > 10 ? 'text-orange-500' : 'text-green-600'}>{overconfidenceRate}%</span>, sub: `${totalConfidentErrors} of ${totalIncorrect} wrong answers`, tip: 'Percentage of wrong answers where the student reported high confidence. Above 15% signals significant overconfidence.' },
-                { key: 'miscon', icon: <Zap className="w-3.5 h-3.5" />, label: 'Misconceptions', value: <span className="text-orange-600">{data.misconceptionSummary.detected}</span>, sub: `across ${itemsWithMisconceptions} questions`, tip: 'Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. See the Misconceptions tab for details.' },
-              ].map(kpi => (
-                <div key={kpi.key} className="bg-white rounded-lg p-3 border border-gray-200">
+            {/* Descriptive Statistics + Diagnostic KPIs */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
+              {/* Descriptive Statistics Table */}
+              <div className="lg:col-span-2 bg-white rounded-lg p-4 border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" /> Descriptive Statistics
+                </h3>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-x-4 gap-y-2">
+                  {[
+                    { label: 'Mean', value: `${data.overall.meanScore}%` },
+                    { label: 'Median', value: `${data.overall.medianScore}%` },
+                    { label: 'Mode', value: data.overall.modeRange },
+                    { label: 'High', value: `${data.overall.maxScore}%` },
+                    { label: 'Low', value: `${data.overall.minScore}%` },
+                    { label: 'Variance', value: `${data.overall.variance}` },
+                    { label: 'Std Dev', value: `${data.overall.stddev}` },
+                    { label: 'Std Dev %', value: `${data.overall.stddevPct}%` },
+                    { label: 'Responses', value: `${data.overall.students}` },
+                    { label: '% of Roster', value: data.overall.roster > 0 ? `${Math.round(data.overall.students / data.overall.roster * 1000) / 10}%` : 'N/A' },
+                  ].map(stat => (
+                    <div key={stat.label} className="text-center py-1.5">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{stat.label}</div>
+                      <div className="text-sm font-bold text-gray-900 mt-0.5">{stat.value}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-gray-400 mt-2 border-t border-gray-100 pt-2">
+                  {data.overall.students} of {data.overall.roster > 0 ? data.overall.roster : '?'} enrolled students completed the pre-assessment (26 scored knowledge items).
+                </div>
+              </div>
+
+              {/* Diagnostic KPIs */}
+              <div className="flex flex-col gap-3">
+                <div className="bg-white rounded-lg p-3 border border-gray-200 flex-1">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                    {kpi.icon} {kpi.label}
-                    <button onClick={() => setExpandedKpi(expandedKpi === kpi.key ? null : kpi.key)} className="ml-auto text-gray-300 hover:text-gray-500 transition">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Overconfidence
+                    <button onClick={() => setExpandedKpi(expandedKpi === 'overconf' ? null : 'overconf')} className="ml-auto text-gray-300 hover:text-gray-500 transition">
                       <Info className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="text-2xl font-bold">{kpi.value}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{kpi.sub}</div>
-                  {expandedKpi === kpi.key && (
-                    <p className="text-xs text-gray-500 mt-2 leading-snug border-t border-gray-100 pt-2">{kpi.tip}</p>
+                  <div className="text-2xl font-bold">
+                    <span className={Number(overconfidenceRate) > 20 ? 'text-orange-600' : Number(overconfidenceRate) > 10 ? 'text-orange-500' : 'text-green-600'}>{overconfidenceRate}%</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">{totalConfidentErrors} of {totalIncorrect} wrong answers</div>
+                  {expandedKpi === 'overconf' && (
+                    <p className="text-xs text-gray-500 mt-2 leading-snug border-t border-gray-100 pt-2">Percentage of wrong answers where the student reported high confidence. Above 15% signals significant overconfidence.</p>
                   )}
                 </div>
-              ))}
+                <div className="bg-white rounded-lg p-3 border border-gray-200 flex-1">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    <Zap className="w-3.5 h-3.5" /> Misconceptions
+                    <button onClick={() => setExpandedKpi(expandedKpi === 'miscon' ? null : 'miscon')} className="ml-auto text-gray-300 hover:text-gray-500 transition">
+                      <Info className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    <span className="text-orange-600">{data.misconceptionSummary.detected}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">across {itemsWithMisconceptions} questions</div>
+                  {expandedKpi === 'miscon' && (
+                    <p className="text-xs text-gray-500 mt-2 leading-snug border-t border-gray-100 pt-2">Distinct wrong beliefs identified through SDM-10 diagnostic follow-ups. See the Misconceptions tab for details.</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Score Distribution + Domain Performance */}

@@ -63,11 +63,20 @@ export async function GET(request: NextRequest) {
       misconceptionRows,
       totalPossibleResult,
       studentCount,
+      rosterCount,
     ] = await Promise.all([
-      // Q1: Mean and median scores
-      queryOne<{ mean_score: number; median_score: number }>(`
+      // Q1: Descriptive statistics
+      queryOne<{
+        mean_score: number; median_score: number;
+        min_score: number; max_score: number;
+        variance: number; stddev: number;
+      }>(`
         SELECT ROUND(AVG(overall)::numeric, 2) as mean_score,
-               ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY overall)::numeric, 2) as median_score
+               ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY overall)::numeric, 2) as median_score,
+               ROUND(MIN(overall)::numeric, 2) as min_score,
+               ROUND(MAX(overall)::numeric, 2) as max_score,
+               ROUND(VARIANCE(overall)::numeric, 2) as variance,
+               ROUND(STDDEV(overall)::numeric, 2) as stddev
         FROM scores s JOIN attempts a ON s.attempt_id = a.attempt_id
         WHERE a.course_id = $1 AND a.submitted_at IS NOT NULL
       `, [targetCourseId]),
@@ -165,11 +174,26 @@ export async function GET(request: NextRequest) {
         SELECT COUNT(*)::int as count FROM attempts
         WHERE course_id = $1 AND submitted_at IS NOT NULL
       `, [targetCourseId]),
+
+      // Q10: Total enrolled (roster) count
+      queryOne<{ count: number }>(`
+        SELECT COUNT(DISTINCT user_id)::int as count FROM enrollments
+        WHERE course_id = $1 AND role = 'student'
+      `, [targetCourseId]),
     ]);
 
     const students = studentCount?.count || 0;
+    const roster = rosterCount?.count || students;
     const meanScore = Number(scoreStats?.mean_score) || 0;
     const medianScore = Number(scoreStats?.median_score) || 0;
+    const minScore = Number(scoreStats?.min_score) || 0;
+    const maxScore = Number(scoreStats?.max_score) || 0;
+    const variance = Number(scoreStats?.variance) || 0;
+    const stddev = Number(scoreStats?.stddev) || 0;
+    const stddevPct = meanScore > 0 ? Math.round(stddev / meanScore * 1000) / 10 : 0;
+
+    // Mode: most common score bucket (rounded to nearest integer)
+    // Compute from score distribution after building it
 
     // Build score distribution array (10 buckets: 0-9, 10-19, ..., 90-100)
     const scoreDistArray = new Array(10).fill(0);
@@ -182,6 +206,14 @@ export async function GET(request: NextRequest) {
         scoreDistArray[9] += row.count;
       }
     }
+
+    // Compute mode as midpoint of the most populated bucket
+    let modeBucket = 0;
+    let modeMax = 0;
+    for (let i = 0; i < scoreDistArray.length; i++) {
+      if (scoreDistArray[i] > modeMax) { modeMax = scoreDistArray[i]; modeBucket = i; }
+    }
+    const modeRange = modeBucket === 9 ? '90-100%' : `${modeBucket * 10}-${modeBucket * 10 + 9}%`;
 
     // Build lookup maps for per-item assembly
     const distractorMap: Record<string, Record<string, number>> = {};
@@ -317,8 +349,15 @@ export async function GET(request: NextRequest) {
     const data = {
       overall: {
         students,
+        roster,
         meanScore,
         medianScore,
+        modeRange,
+        minScore,
+        maxScore,
+        variance,
+        stddev,
+        stddevPct,
         totalDiagnose,
         totalConfirm,
         scoreDist: scoreDistArray,
