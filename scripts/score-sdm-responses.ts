@@ -239,6 +239,100 @@ function mapConfidence(conf: unknown): number {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // ---------------------------------------------------------------------------
+// QUERY BUILDER (exported for unit tests)
+// ---------------------------------------------------------------------------
+
+interface CursorData {
+  last_completed_response_id: string;
+  last_completed_created_at: string;
+}
+
+export interface ScorerQueryOptions {
+  item: string;
+  limit: number;
+  cursor: CursorData | null;
+}
+
+export interface ScorerQuery {
+  sql: string;
+  params: unknown[];
+}
+
+/**
+ * Build the scorer SELECT query with optional item filter, keyset pagination
+ * cursor, and row limit. Extracted for testability of parameter binding order.
+ */
+export function buildScorerQuery(opts: ScorerQueryOptions): ScorerQuery {
+  let sql = `
+      SELECT r.response_id, r.raw_answer, r.confidence, r.created_at,
+             i.variant_type, i.anchor_item_id, i.subdomain, i.domain
+      FROM responses r
+      JOIN items i ON r.item_id = i.item_id
+      WHERE i.variant_type IN ('Open_Diagnose', 'Open_Confirm')
+        AND r.ai_flags IS NULL
+    `;
+  const params: unknown[] = [];
+
+  if (opts.item) {
+    params.push(opts.item);
+    sql += ` AND i.anchor_item_id = $${params.length}`;
+  }
+
+  if (opts.cursor) {
+    params.push(
+      opts.cursor.last_completed_created_at,
+      opts.cursor.last_completed_response_id
+    );
+    sql += ` AND (r.created_at, r.response_id) > ($${params.length - 1}, $${params.length})`;
+  }
+
+  sql += " ORDER BY r.created_at, r.response_id";
+
+  if (opts.limit > 0) {
+    params.push(opts.limit);
+    sql += ` LIMIT $${params.length}`;
+  }
+
+  return { sql, params };
+}
+
+// ---------------------------------------------------------------------------
+// CURSOR HELPER
+// ---------------------------------------------------------------------------
+
+/**
+ * Upsert the scoring_cursor checkpoint row. Errors are non-fatal — a failed
+ * cursor write is logged and swallowed so that a transient DB blip does not
+ * terminate a long overnight run.
+ */
+async function upsertCursor(
+  pool: InstanceType<typeof Pool>,
+  row: { response_id: string; created_at: string },
+  stats: { success: number; errors: number },
+  context: string
+): Promise<void> {
+  try {
+    await pool.query(
+      `INSERT INTO scoring_cursor
+         (run_key, last_completed_response_id, last_completed_created_at, run_started_at, responses_scored, responses_errored)
+       VALUES ('sdm_scorer', $1, $2, NOW(), $3, $4)
+       ON CONFLICT (run_key) DO UPDATE SET
+         last_completed_response_id = EXCLUDED.last_completed_response_id,
+         last_completed_created_at  = EXCLUDED.last_completed_created_at,
+         responses_scored            = EXCLUDED.responses_scored,
+         responses_errored           = EXCLUDED.responses_errored,
+         run_started_at              = COALESCE(scoring_cursor.run_started_at, EXCLUDED.run_started_at),
+         updated_at                  = NOW()`,
+      [row.response_id, row.created_at, stats.success, stats.errors]
+    );
+  } catch (err) {
+    console.error(
+      `WARN: cursor upsert failed [${context}] (response_id=${row.response_id}): ${String(err).slice(0, 200)}`
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // MAIN
 // ---------------------------------------------------------------------------
 interface ResponseRow {
@@ -291,32 +385,11 @@ async function main() {
     }
 
     // Build query
-    let sql = `
-      SELECT r.response_id, r.raw_answer, r.confidence, r.created_at,
-             i.variant_type, i.anchor_item_id, i.subdomain, i.domain
-      FROM responses r
-      JOIN items i ON r.item_id = i.item_id
-      WHERE i.variant_type IN ('Open_Diagnose', 'Open_Confirm')
-        AND r.ai_flags IS NULL
-    `;
-    const params: unknown[] = [];
-
-    if (opts.item) {
-      params.push(opts.item);
-      sql += ` AND i.anchor_item_id = $${params.length}`;
-    }
-
-    if (cursor) {
-      params.push(cursor.last_completed_created_at, cursor.last_completed_response_id);
-      sql += ` AND (r.created_at, r.response_id) > ($${params.length - 1}, $${params.length})`;
-    }
-
-    sql += " ORDER BY r.created_at, r.response_id";
-
-    if (opts.limit > 0) {
-      params.push(opts.limit);
-      sql += ` LIMIT $${params.length}`;
-    }
+    const { sql, params } = buildScorerQuery({
+      item: opts.item,
+      limit: opts.limit,
+      cursor,
+    });
 
     const { rows } = await pool.query<ResponseRow>(sql, params);
 
@@ -367,6 +440,12 @@ async function main() {
     }
 
     // Scoring loop (counters resume from cursor if resuming)
+    // resumeOffset captures prior-run totals so per-run deltas can be derived
+    // in the summary without losing cumulative progress tracking in stats.
+    const resumeOffset = {
+      success: cursor?.responses_scored ?? 0,
+      errors: cursor?.responses_errored ?? 0,
+    };
     const stats = {
       success: cursor?.responses_scored ?? 0,
       errors: cursor?.responses_errored ?? 0,
@@ -397,19 +476,7 @@ async function main() {
           `[${i + 1}/${rows.length}] SKIP: no config for ${row.anchor_item_id}`
         );
         // Upsert cursor after no_config error
-        await pool.query(
-          `INSERT INTO scoring_cursor
-             (run_key, last_completed_response_id, last_completed_created_at, run_started_at, responses_scored, responses_errored)
-           VALUES ('sdm_scorer', $1, $2, NOW(), $3, $4)
-           ON CONFLICT (run_key) DO UPDATE SET
-             last_completed_response_id = EXCLUDED.last_completed_response_id,
-             last_completed_created_at  = EXCLUDED.last_completed_created_at,
-             responses_scored            = EXCLUDED.responses_scored,
-             responses_errored           = EXCLUDED.responses_errored,
-             run_started_at              = COALESCE(scoring_cursor.run_started_at, EXCLUDED.run_started_at),
-             updated_at                  = NOW()`,
-          [row.response_id, row.created_at, stats.success, stats.errors]
-        );
+        await upsertCursor(pool, row, stats, "no_config");
         continue;
       }
 
@@ -500,29 +567,29 @@ async function main() {
       await sleep(opts.delay);
 
       // Upsert cursor after each row (success or api_error)
-      await pool.query(
-        `INSERT INTO scoring_cursor
-           (run_key, last_completed_response_id, last_completed_created_at, run_started_at, responses_scored, responses_errored)
-         VALUES ('sdm_scorer', $1, $2, NOW(), $3, $4)
-         ON CONFLICT (run_key) DO UPDATE SET
-           last_completed_response_id = EXCLUDED.last_completed_response_id,
-           last_completed_created_at  = EXCLUDED.last_completed_created_at,
-           responses_scored            = EXCLUDED.responses_scored,
-           responses_errored           = EXCLUDED.responses_errored,
-           run_started_at              = COALESCE(scoring_cursor.run_started_at, EXCLUDED.run_started_at),
-           updated_at                  = NOW()`,
-        [row.response_id, row.created_at, stats.success, stats.errors]
-      );
+      await upsertCursor(pool, row, stats, "success/api_error");
     }
 
     // Summary
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const thisRunSuccess = stats.success - resumeOffset.success;
+    const thisRunErrors = stats.errors - resumeOffset.errors;
+    const isResume = resumeOffset.success > 0 || resumeOffset.errors > 0;
+
     console.log(`\n=== SDM-10 AI Scoring Complete ===`);
     console.log(`Model: ${opts.model}`);
-    console.log(`Total processed: ${rows.length}`);
-    console.log(`Successful: ${stats.success}`);
-    console.log(`Errors: ${stats.errors}`);
+    if (isResume) {
+      console.log(`This run: ${thisRunSuccess} scored, ${thisRunErrors} errors (${rows.length} rows fetched)`);
+      console.log(`Cumulative: ${stats.success} scored, ${stats.errors} errors`);
+    } else {
+      console.log(`Total processed: ${rows.length}`);
+      console.log(`Successful: ${stats.success}`);
+      console.log(`Errors: ${stats.errors}`);
+    }
     console.log(`Time: ${elapsed}s`);
+    if (isResume) {
+      console.log(`\nNote: distribution stats reflect this run's ${rows.length} rows only.`);
+    }
     console.log(`\nDIAGNOSE DISTRIBUTION:`);
     const dTotal =
       stats.diagnose.misconception +
@@ -574,7 +641,10 @@ process.on("SIGINT", () => {
   process.exit(0);
 });
 
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+// Only run main when executed directly (not when imported by tests)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+  });
+}
