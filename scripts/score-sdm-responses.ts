@@ -125,7 +125,7 @@ IMPORTANT:
 // ---------------------------------------------------------------------------
 // PROMPT BUILDERS
 // ---------------------------------------------------------------------------
-function buildDiagnosePrompt(config: ItemConfig, responseText: string): string {
+export function buildDiagnosePrompt(config: ItemConfig, responseText: string): string {
   return `ITEM CONTEXT:
   Anchor Question: ${config.question}
   Options: ${config.options}
@@ -141,7 +141,7 @@ STUDENT'S OPEN-ENDED RESPONSE:
 Classify this response. Output JSON only.`;
 }
 
-function buildConfirmPrompt(config: ItemConfig, responseText: string): string {
+export function buildConfirmPrompt(config: ItemConfig, responseText: string): string {
   return `ITEM CONTEXT:
   Anchor Question: ${config.question}
   Correct Answer: ${config.correct_answer}
@@ -201,7 +201,7 @@ async function callOpenRouter(
 // ---------------------------------------------------------------------------
 // RESPONSE PARSING
 // ---------------------------------------------------------------------------
-function parseAiResponse(text: string): Record<string, unknown> {
+export function parseAiResponse(text: string): Record<string, unknown> {
   let cleaned = text.trim();
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
@@ -214,7 +214,7 @@ function parseAiResponse(text: string): Record<string, unknown> {
   }
 }
 
-function extractResponseText(rawAnswer: unknown): string {
+export function extractResponseText(rawAnswer: unknown): string {
   if (typeof rawAnswer === "string") return rawAnswer;
   if (rawAnswer && typeof rawAnswer === "object") {
     const obj = rawAnswer as Record<string, unknown>;
@@ -223,7 +223,7 @@ function extractResponseText(rawAnswer: unknown): string {
   return String(rawAnswer || "");
 }
 
-function mapConfidence(conf: unknown): number {
+export function mapConfidence(conf: unknown): number {
   switch (conf) {
     case "high":
       return 0.9;
@@ -237,6 +237,90 @@ function mapConfidence(conf: unknown): number {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// ---------------------------------------------------------------------------
+// PUBLIC TYPES (exported for use by callers and tests)
+// ---------------------------------------------------------------------------
+export interface ScoreInput {
+  responseId: string;
+  rawAnswer: unknown;
+  variantType: string; // 'Open_Diagnose' | 'Open_Confirm'
+  anchorItemId: string;
+}
+
+export interface ScoreResult {
+  responseId: string;
+  aiFlags: Record<string, unknown>;
+  score?: number;         // credit value: 0, 50, or 100
+  aiConfidence?: number;  // mapped: 0.5 | 0.7 | 0.9
+  error?: string;         // present when scoring failed
+}
+
+export type ApiCaller = (systemPrompt: string, userPrompt: string) => Promise<string>;
+
+// ---------------------------------------------------------------------------
+// STATELESS SCORER (exported — no DB, no process.env access)
+// ---------------------------------------------------------------------------
+export async function score(
+  input: ScoreInput,
+  callApi: ApiCaller
+): Promise<ScoreResult> {
+  const config = ITEM_CONFIGS[input.anchorItemId];
+
+  if (!config) {
+    return {
+      responseId: input.responseId,
+      error: "no_config",
+      aiFlags: {
+        error: "no_config",
+        anchor_item_id: input.anchorItemId,
+        scored_at: new Date().toISOString(),
+      },
+    };
+  }
+
+  const responseText = extractResponseText(input.rawAnswer);
+  const isDiagnose = input.variantType === "Open_Diagnose";
+  const userPrompt = isDiagnose
+    ? buildDiagnosePrompt(config, responseText)
+    : buildConfirmPrompt(config, responseText);
+
+  let aiText: string;
+  try {
+    aiText = await callApi(SYSTEM_PROMPT, userPrompt);
+  } catch (err) {
+    return {
+      responseId: input.responseId,
+      error: "api_error",
+      aiFlags: {
+        error: "api_error",
+        message: String(err).slice(0, 200),
+        scored_at: new Date().toISOString(),
+      },
+    };
+  }
+
+  const parsed = parseAiResponse(aiText);
+  parsed.scored_at = new Date().toISOString();
+
+  if (parsed.error) {
+    return {
+      responseId: input.responseId,
+      error: String(parsed.error),
+      aiFlags: parsed,
+    };
+  }
+
+  const credit = typeof parsed.credit === "number" ? parsed.credit : 0;
+  const conf = mapConfidence(parsed.classification_confidence);
+
+  return {
+    responseId: input.responseId,
+    aiFlags: parsed,
+    score: credit,
+    aiConfidence: conf,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // MAIN
@@ -359,101 +443,60 @@ async function main() {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const config = ITEM_CONFIGS[row.anchor_item_id];
 
-      if (!config) {
-        const errorFlags = {
-          error: "no_config",
-          anchor_item_id: row.anchor_item_id,
-          scored_at: new Date().toISOString(),
-          model: opts.model,
-        };
+      const result = await score(
+        {
+          responseId: row.response_id,
+          rawAnswer: row.raw_answer,
+          variantType: row.variant_type,
+          anchorItemId: row.anchor_item_id,
+        },
+        (sys, usr) => callOpenRouter(sys, usr, apiKey!, opts.model)
+      );
+
+      if (result.error) {
         await pool.query(
           "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
-          [JSON.stringify(errorFlags), row.response_id]
+          [JSON.stringify(result.aiFlags), result.responseId]
         );
         stats.errors++;
-        console.warn(
-          `[${i + 1}/${rows.length}] SKIP: no config for ${row.anchor_item_id}`
+        if (result.error === "no_config") {
+          console.warn(
+            `[${i + 1}/${rows.length}] SKIP: no config for ${row.anchor_item_id}`
+          );
+        } else {
+          console.error(
+            `  [${i + 1}] ERROR on ${row.anchor_item_id}: ${result.aiFlags.message ?? result.error}`
+          );
+          await sleep(2000); // backoff on API error
+        }
+      } else {
+        await pool.query(
+          "UPDATE responses SET ai_flags = $1, score = $2, ai_confidence = $3 WHERE response_id = $4",
+          [JSON.stringify(result.aiFlags), result.score, result.aiConfidence, result.responseId]
         );
-        continue;
+        stats.success++;
+
+        // Track distributions
+        const isDiagnose = row.variant_type === "Open_Diagnose";
+        if (isDiagnose) {
+          const dt = result.aiFlags.diagnosis_type as string;
+          if (dt in stats.diagnose)
+            stats.diagnose[dt as keyof typeof stats.diagnose]++;
+        } else {
+          const ul = result.aiFlags.understanding_level as string;
+          if (ul in stats.confirm)
+            stats.confirm[ul as keyof typeof stats.confirm]++;
+        }
+        const confLevel = result.aiFlags.classification_confidence as string;
+        if (confLevel in stats.confidence)
+          stats.confidence[confLevel as keyof typeof stats.confidence]++;
       }
 
-      const responseText = extractResponseText(row.raw_answer);
-      const isDiagnose = row.variant_type === "Open_Diagnose";
-      const userPrompt = isDiagnose
-        ? buildDiagnosePrompt(config, responseText)
-        : buildConfirmPrompt(config, responseText);
-
-      try {
-        const aiText = await callOpenRouter(
-          SYSTEM_PROMPT,
-          userPrompt,
-          apiKey!,
-          opts.model
+      if (opts.verbose) {
+        console.log(
+          `  [${i + 1}] ${row.anchor_item_id} ${row.variant_type}: ${JSON.stringify(result.aiFlags).slice(0, 120)}`
         );
-        const parsed = parseAiResponse(aiText);
-
-        // Add metadata
-        parsed.scored_at = new Date().toISOString();
-        parsed.model = opts.model;
-        parsed.scorer_version = "1.0";
-
-        if (parsed.error) {
-          await pool.query(
-            "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
-            [JSON.stringify(parsed), row.response_id]
-          );
-          stats.errors++;
-        } else {
-          const credit =
-            typeof parsed.credit === "number" ? parsed.credit : 0;
-          const conf = mapConfidence(parsed.classification_confidence);
-
-          await pool.query(
-            "UPDATE responses SET ai_flags = $1, score = $2, ai_confidence = $3 WHERE response_id = $4",
-            [JSON.stringify(parsed), credit, conf, row.response_id]
-          );
-
-          stats.success++;
-
-          // Track distributions
-          if (isDiagnose) {
-            const dt = parsed.diagnosis_type as string;
-            if (dt in stats.diagnose)
-              stats.diagnose[dt as keyof typeof stats.diagnose]++;
-          } else {
-            const ul = parsed.understanding_level as string;
-            if (ul in stats.confirm)
-              stats.confirm[ul as keyof typeof stats.confirm]++;
-          }
-
-          const confLevel = parsed.classification_confidence as string;
-          if (confLevel in stats.confidence)
-            stats.confidence[confLevel as keyof typeof stats.confidence]++;
-        }
-
-        if (opts.verbose) {
-          console.log(
-            `  [${i + 1}] ${row.anchor_item_id} ${row.variant_type}: ${JSON.stringify(parsed).slice(0, 120)}`
-          );
-        }
-      } catch (err) {
-        const errorFlags = {
-          error: "api_error",
-          message: String(err).slice(0, 200),
-          scored_at: new Date().toISOString(),
-          model: opts.model,
-        };
-        await pool.query(
-          "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
-          [JSON.stringify(errorFlags), row.response_id]
-        );
-        stats.errors++;
-        console.error(
-          `  [${i + 1}] ERROR on ${row.anchor_item_id}: ${String(err).slice(0, 100)}`
-        );
-        await sleep(2000); // backoff on error
       }
 
       // Progress
@@ -515,13 +558,17 @@ async function main() {
   }
 }
 
-// Graceful shutdown
-process.on("SIGINT", () => {
-  console.log("\nInterrupted. Partial results saved to DB.");
-  process.exit(0);
-});
+// Run main() only when executed directly (not when imported by tests)
+import { fileURLToPath } from "node:url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // Graceful shutdown
+  process.on("SIGINT", () => {
+    console.log("\nInterrupted. Partial results saved to DB.");
+    process.exit(0);
+  });
 
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+  main().catch((err) => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+  });
+}
