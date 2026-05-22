@@ -65,6 +65,7 @@ assertEqual(extractResponseText({ response: "res" }), "res", "object with .respo
 assertEqual(extractResponseText(null), "", "null → empty string");
 assertEqual(extractResponseText(undefined), "", "undefined → empty string");
 assertEqual(extractResponseText(42), "42", "number → string");
+assertEqual(extractResponseText({ value: "my answer" }), '{"value":"my answer"}', "object with no known key → JSON.stringify fallback");
 
 // --------------------------------------------------------------------------
 // TEST 2: parseAiResponse()
@@ -80,6 +81,10 @@ assertEqual(parsed1.diagnosis_type, "misconception", "valid JSON: diagnosis_type
 const fenced = '```json\n{"credit": 50}\n```';
 const parsed2 = parseAiResponse(fenced);
 assertEqual(parsed2.credit, 50, "fenced JSON: credit=50");
+
+const bareFenced = '```\n{"credit": 0}\n```';
+const parsed2b = parseAiResponse(bareFenced);
+assertEqual(parsed2b.credit, 0, "bare-fenced JSON (no language tag): credit=0");
 
 const bad = "not json at all";
 const parsed3 = parseAiResponse(bad);
@@ -158,7 +163,8 @@ async function runAsyncTests() {
   const r2 = await score(q1Input, failApi);
   assertEqual(r2.error, "api_error", "API error → error=api_error");
   assertEqual(r2.responseId, "resp-002", "responseId preserved on api_error");
-  assert(String(r2.aiFlags.message).includes("network failure"), "error message captured");
+  assert(typeof r2.aiFlags.message === "string", "error message field is string");
+  assert((r2.aiFlags.message as string).includes("network failure"), "error message captured");
 
   // 6c: parse error from API response → returns parse error
   const parseFailApi = async () => "this is not json";
@@ -182,15 +188,17 @@ async function runAsyncTests() {
   assertEqual(r4.aiConfidence, 0.9, "high confidence → 0.9");
   assertEqual(r4.responseId, "resp-002", "responseId preserved on success");
 
-  // 6e: successful Confirm scoring
+  // 6e: successful Confirm scoring — also verifies prompt routing
   const confirmInput: ScoreInput = {
     responseId: "resp-003",
     rawAnswer: "I knew the formula",
     variantType: "Open_Confirm",
     anchorItemId: "Q1",
   };
-  const confirmMock = async () =>
-    JSON.stringify({
+  let capturedPrompt = "";
+  const confirmMock = async (_sys: string, usr: string) => {
+    capturedPrompt = usr;
+    return JSON.stringify({
       understanding_level: "partial",
       credit: 50,
       classification_confidence: "medium",
@@ -198,10 +206,47 @@ async function runAsyncTests() {
       evidence_quote: "I knew the formula",
       reasoning_summary: "Vague explanation",
     });
+  };
   const r5 = await score(confirmInput, confirmMock);
   assert(!r5.error, "confirm score → no error");
   assertEqual(r5.score, 50, "credit=50 mapped to score");
   assertEqual(r5.aiConfidence, 0.7, "medium confidence → 0.7");
+  assert(capturedPrompt.includes("RUBRIC FOR THIS ITEM"), "Open_Confirm routes to confirm prompt (rubric present)");
+  assert(!capturedPrompt.includes("MISCONCEPTION TAXONOMY"), "Open_Confirm does not use diagnose prompt");
+
+  // 6f: non-numeric credit in AI response → score defaults to 0
+  const stringCreditApi = async () =>
+    JSON.stringify({
+      diagnosis_type: "misconception",
+      credit: "100",
+      classification_confidence: "high",
+      layer1_code: "INT-01",
+      layer2_tag: "compound-growth",
+      evidence_quote: "I thought...",
+      reasoning_summary: "Some summary",
+    });
+  const r6 = await score(q1Input, stringCreditApi);
+  assert(!r6.error, "string credit → no error (silent fallback)");
+  assertEqual(r6.score, 0, "non-numeric credit → score defaults to 0");
+
+  // 6g: metadata passed to score() is merged into aiFlags on success
+  const metaMock = async () =>
+    JSON.stringify({
+      diagnosis_type: "knowledge_gap",
+      credit: 0,
+      classification_confidence: "low",
+      layer1_code: "INT-01",
+      layer2_tag: "basic",
+      evidence_quote: "IDK",
+      reasoning_summary: "No reasoning",
+    });
+  const r7 = await score(
+    { ...q1Input, metadata: { model: "test-model", scorer_version: "1.0" } },
+    metaMock
+  );
+  assert(!r7.error, "metadata input → no error");
+  assertEqual(r7.aiFlags.model as string, "test-model", "model metadata merged into aiFlags");
+  assertEqual(r7.aiFlags.scorer_version as string, "1.0", "scorer_version metadata merged into aiFlags");
 }
 
 runAsyncTests()

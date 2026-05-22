@@ -210,6 +210,7 @@ export function parseAiResponse(text: string): Record<string, unknown> {
   try {
     return JSON.parse(cleaned);
   } catch {
+    console.warn(`[parseAiResponse] Failed to parse AI response: ${cleaned.slice(0, 80)}`);
     return { error: "parse_failed", raw: cleaned.slice(0, 200) };
   }
 }
@@ -244,8 +245,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export interface ScoreInput {
   responseId: string;
   rawAnswer: unknown;
-  variantType: string; // 'Open_Diagnose' | 'Open_Confirm'
+  variantType: 'Open_Diagnose' | 'Open_Confirm';
   anchorItemId: string;
+  metadata?: Record<string, unknown>; // optional caller-provided fields merged into aiFlags on success
 }
 
 export interface ScoreResult {
@@ -260,6 +262,9 @@ export type ApiCaller = (systemPrompt: string, userPrompt: string) => Promise<st
 
 // ---------------------------------------------------------------------------
 // STATELESS SCORER (exported — no DB, no process.env access)
+// Returns ScoreResult with error field set on no_config / api_error / parse failure;
+// score and aiConfidence populated only on success. Optional metadata in ScoreInput
+// is merged into aiFlags on success (use to inject model, scorer_version, etc.).
 // ---------------------------------------------------------------------------
 export async function score(
   input: ScoreInput,
@@ -313,6 +318,10 @@ export async function score(
 
   const credit = typeof parsed.credit === "number" ? parsed.credit : 0;
   const conf = mapConfidence(parsed.classification_confidence);
+
+  if (input.metadata) {
+    Object.assign(parsed, input.metadata);
+  }
 
   return {
     responseId: input.responseId,
@@ -448,8 +457,9 @@ async function main() {
         {
           responseId: row.response_id,
           rawAnswer: row.raw_answer,
-          variantType: row.variant_type,
+          variantType: row.variant_type as 'Open_Diagnose' | 'Open_Confirm',
           anchorItemId: row.anchor_item_id,
+          metadata: { model: opts.model, scorer_version: "1.0" },
         },
         (sys, usr) => callOpenRouter(sys, usr, apiKey!, opts.model)
       );
@@ -468,7 +478,9 @@ async function main() {
           console.error(
             `  [${i + 1}] ERROR on ${row.anchor_item_id}: ${result.aiFlags.message ?? result.error}`
           );
-          await sleep(2000); // backoff on API error
+          if (result.error === "api_error") {
+            await sleep(2000); // backoff on rate-limit / transient API error
+          }
         }
       } else {
         await pool.query(
