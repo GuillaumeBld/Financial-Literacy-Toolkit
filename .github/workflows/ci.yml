@@ -18,8 +18,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: ${{ hashFiles('apps/web/package-lock.json') != '' && 'npm' || '' }}
-          cache-dependency-path: ${{ hashFiles('apps/web/package-lock.json') != '' && 'apps/web/package-lock.json' || '' }}
+          cache: 'npm'
+          cache-dependency-path: 'apps/web/package-lock.json'
       
       - name: Install dependencies
         working-directory: apps/web
