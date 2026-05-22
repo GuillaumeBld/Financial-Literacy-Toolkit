@@ -245,6 +245,7 @@ interface ResponseRow {
   response_id: string;
   raw_answer: unknown;
   confidence: number;
+  created_at: string;
   variant_type: string;
   anchor_item_id: string;
   subdomain: string;
@@ -275,9 +276,23 @@ async function main() {
   });
 
   try {
+    // Read checkpoint cursor
+    const cursorRes = await pool.query<{
+      last_completed_response_id: string;
+      last_completed_created_at: string;
+      responses_scored: number;
+      responses_errored: number;
+    }>(
+      "SELECT last_completed_response_id, last_completed_created_at, responses_scored, responses_errored FROM scoring_cursor WHERE run_key = 'sdm_scorer'"
+    );
+    const cursor = cursorRes.rows[0] ?? null;
+    if (cursor) {
+      console.log(`Resuming from response_id=${cursor.last_completed_response_id} (previously scored=${cursor.responses_scored}, errored=${cursor.responses_errored})`);
+    }
+
     // Build query
     let sql = `
-      SELECT r.response_id, r.raw_answer, r.confidence,
+      SELECT r.response_id, r.raw_answer, r.confidence, r.created_at,
              i.variant_type, i.anchor_item_id, i.subdomain, i.domain
       FROM responses r
       JOIN items i ON r.item_id = i.item_id
@@ -291,7 +306,12 @@ async function main() {
       sql += ` AND i.anchor_item_id = $${params.length}`;
     }
 
-    sql += " ORDER BY r.created_at";
+    if (cursor) {
+      params.push(cursor.last_completed_created_at, cursor.last_completed_response_id);
+      sql += ` AND (r.created_at, r.response_id) > ($${params.length - 1}, $${params.length})`;
+    }
+
+    sql += " ORDER BY r.created_at, r.response_id";
 
     if (opts.limit > 0) {
       params.push(opts.limit);
@@ -346,10 +366,10 @@ async function main() {
       return;
     }
 
-    // Scoring loop
+    // Scoring loop (counters resume from cursor if resuming)
     const stats = {
-      success: 0,
-      errors: 0,
+      success: cursor?.responses_scored ?? 0,
+      errors: cursor?.responses_errored ?? 0,
       diagnose: { misconception: 0, knowledge_gap: 0, selection_error: 0 },
       confirm: { verified: 0, partial: 0, likely_guess: 0 },
       confidence: { high: 0, medium: 0, low: 0 },
@@ -375,6 +395,20 @@ async function main() {
         stats.errors++;
         console.warn(
           `[${i + 1}/${rows.length}] SKIP: no config for ${row.anchor_item_id}`
+        );
+        // Upsert cursor after no_config error
+        await pool.query(
+          `INSERT INTO scoring_cursor
+             (run_key, last_completed_response_id, last_completed_created_at, run_started_at, responses_scored, responses_errored)
+           VALUES ('sdm_scorer', $1, $2, NOW(), $3, $4)
+           ON CONFLICT (run_key) DO UPDATE SET
+             last_completed_response_id = EXCLUDED.last_completed_response_id,
+             last_completed_created_at  = EXCLUDED.last_completed_created_at,
+             responses_scored            = EXCLUDED.responses_scored,
+             responses_errored           = EXCLUDED.responses_errored,
+             run_started_at              = COALESCE(scoring_cursor.run_started_at, EXCLUDED.run_started_at),
+             updated_at                  = NOW()`,
+          [row.response_id, row.created_at, stats.success, stats.errors]
         );
         continue;
       }
@@ -464,6 +498,21 @@ async function main() {
       }
 
       await sleep(opts.delay);
+
+      // Upsert cursor after each row (success or api_error)
+      await pool.query(
+        `INSERT INTO scoring_cursor
+           (run_key, last_completed_response_id, last_completed_created_at, run_started_at, responses_scored, responses_errored)
+         VALUES ('sdm_scorer', $1, $2, NOW(), $3, $4)
+         ON CONFLICT (run_key) DO UPDATE SET
+           last_completed_response_id = EXCLUDED.last_completed_response_id,
+           last_completed_created_at  = EXCLUDED.last_completed_created_at,
+           responses_scored            = EXCLUDED.responses_scored,
+           responses_errored           = EXCLUDED.responses_errored,
+           run_started_at              = COALESCE(scoring_cursor.run_started_at, EXCLUDED.run_started_at),
+           updated_at                  = NOW()`,
+        [row.response_id, row.created_at, stats.success, stats.errors]
+      );
     }
 
     // Summary
@@ -510,6 +559,10 @@ async function main() {
     console.log(`  high:   ${stats.confidence.high}`);
     console.log(`  medium: ${stats.confidence.medium}`);
     console.log(`  low:    ${stats.confidence.low} (review recommended)`);
+
+    // Clear checkpoint — clean completion
+    await pool.query("DELETE FROM scoring_cursor WHERE run_key = 'sdm_scorer'");
+    console.log("Cursor cleared.");
   } finally {
     await pool.end();
   }
@@ -517,7 +570,7 @@ async function main() {
 
 // Graceful shutdown
 process.on("SIGINT", () => {
-  console.log("\nInterrupted. Partial results saved to DB.");
+  console.log("\nInterrupted. Partial results saved to DB. Re-run to resume from checkpoint.");
   process.exit(0);
 });
 
