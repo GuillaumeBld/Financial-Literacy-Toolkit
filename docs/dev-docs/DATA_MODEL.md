@@ -158,6 +158,28 @@ users ─┬─ enrollments ─── courses
 | *_Open_Confirm | FALSE | - | SDM variant |
 | *_Open_Diagnose | FALSE | - | SDM variant |
 
+## Operational Tables
+
+### scoring_cursor
+
+Operational checkpoint for the SDM scoring pipeline. Single-row table — cleared automatically
+on clean completion; persists across interruptions to support resume.
+
+```sql
+scoring_cursor(
+  run_key TEXT PRIMARY KEY,                              -- constant: 'sdm_scorer'
+  last_completed_response_id UUID,                       -- response_id of last processed row
+  last_completed_created_at TIMESTAMP WITH TIME ZONE,    -- keyset pagination anchor
+  run_started_at TIMESTAMP WITH TIME ZONE NOT NULL,      -- preserved across resumes via COALESCE
+  responses_scored INTEGER NOT NULL DEFAULT 0,           -- cumulative count
+  responses_errored INTEGER NOT NULL DEFAULT 0,          -- cumulative count
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+)
+```
+
+> **Operator note**: Inspect a live run: `SELECT * FROM scoring_cursor;`
+> Reset after a bad run: `DELETE FROM scoring_cursor WHERE run_key = 'sdm_scorer';`
+
 ## See Also
 
 - `infra/schema.sql` - Full schema with constraints
