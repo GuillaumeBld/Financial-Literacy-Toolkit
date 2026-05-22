@@ -210,7 +210,7 @@ function parseAiResponse(text: string): Record<string, unknown> {
   try {
     return JSON.parse(cleaned);
   } catch {
-    return { error: "parse_failed", raw: cleaned.slice(0, 200) };
+    return { error_type: "parse_failed", raw: cleaned.slice(0, 200) };
   }
 }
 
@@ -238,9 +238,39 @@ function mapConfidence(conf: unknown): number {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+function isTransientError(errorType: string, message: string): boolean {
+  if (errorType !== "api_error") return false;
+  return /429|timeout|ECONNRESET|ETIMEDOUT|ENOTFOUND/i.test(message);
+}
+
+function buildErrorFlags(
+  errorType: string,
+  message: string,
+  model: string,
+  retryCount = 0
+): AiErrorFlags {
+  return {
+    error_type: errorType,
+    message,
+    scored_at: new Date().toISOString(),
+    model,
+    retry_count: retryCount,
+    eligible_for_retry: isTransientError(errorType, message),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // MAIN
 // ---------------------------------------------------------------------------
+interface AiErrorFlags {
+  error_type: string;
+  message: string;
+  scored_at: string;
+  model: string;
+  retry_count: number;
+  eligible_for_retry: boolean;
+}
+
 interface ResponseRow {
   response_id: string;
   raw_answer: unknown;
@@ -363,10 +393,12 @@ async function main() {
 
       if (!config) {
         const errorFlags = {
-          error: "no_config",
+          ...buildErrorFlags(
+            "no_config",
+            `No item config found for anchor_item_id: ${row.anchor_item_id}`,
+            opts.model
+          ),
           anchor_item_id: row.anchor_item_id,
-          scored_at: new Date().toISOString(),
-          model: opts.model,
         };
         await pool.query(
           "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
@@ -399,10 +431,18 @@ async function main() {
         parsed.model = opts.model;
         parsed.scorer_version = "1.0";
 
-        if (parsed.error) {
+        if (parsed.error_type) {
+          const errorFlags = {
+            ...buildErrorFlags(
+              parsed.error_type as string,
+              `AI response parse failed: ${(parsed.raw as string) ?? ""}`.slice(0, 200),
+              opts.model
+            ),
+            ...(parsed.raw !== undefined ? { raw: parsed.raw } : {}),
+          };
           await pool.query(
             "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
-            [JSON.stringify(parsed), row.response_id]
+            [JSON.stringify(errorFlags), row.response_id]
           );
           stats.errors++;
         } else {
@@ -439,12 +479,8 @@ async function main() {
           );
         }
       } catch (err) {
-        const errorFlags = {
-          error: "api_error",
-          message: String(err).slice(0, 200),
-          scored_at: new Date().toISOString(),
-          model: opts.model,
-        };
+        const msg = String(err).slice(0, 200);
+        const errorFlags = buildErrorFlags("api_error", msg, opts.model);
         await pool.query(
           "UPDATE responses SET ai_flags = $1 WHERE response_id = $2",
           [JSON.stringify(errorFlags), row.response_id]
