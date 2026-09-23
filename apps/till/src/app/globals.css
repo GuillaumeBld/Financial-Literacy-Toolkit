@@ -218,7 +218,37 @@ h1 { font-size: clamp(32px, 5vw, 48px); margin: 0 0 16px; }
 
 .card.on { box-shadow: var(--shadow-md); outline: 2px solid var(--primary); outline-offset: 0; }
 
-.card b { display: block; }
+.tile {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 12px 14px;
+  display: grid;
+  gap: 2px;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+.aside-balance {
+  margin: 6px 0 4px;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  color: var(--incoming);
+}
+
+.sheet p { margin: 0; }
+.sheet p + p { margin-top: 4px; }
+.sheet label { margin-top: 14px; }
+
+.card b, .tile b { display: block; }
 
 .money { font-size: 15px; font-weight: 600; }
 

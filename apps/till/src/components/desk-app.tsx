@@ -210,10 +210,10 @@ export function DeskApp() {
       <section className="stack">
         <div className="sheet" style={{ padding: 12 }}>
           <p className="kicker">{plan === "desk" ? "Offre Bureau" : "Solo"}</p>
-          <p className="money">{money(totals.chase)} à relancer</p>
-          <p className="fine">
-            {money(totals.filed)} prêt à classer · {money(totals.review)} en attente
-          </p>
+          <p className="aside-balance">{money(totals.chase)}</p>
+          <p className="fine">à relancer si les lettres partent</p>
+          <p className="fine">{money(totals.filed)} prêt à classer</p>
+          <p className="fine">{money(totals.review)} en attente</p>
           <label>
             Votre taux pour classer les dépenses
             <input
@@ -225,7 +225,7 @@ export function DeskApp() {
               onChange={(event) => setTaxRate(Number(event.target.value) / 100)}
             />
           </label>
-          <div className="row">
+          <div className="stack">
             <button className="btn-quiet" type="button" onClick={downloadCsv}>Exporter</button>
             <button className="btn-quiet" type="button" onClick={() => replace(seed(), "harbor")}>
               Reprendre la semaine d'exemple

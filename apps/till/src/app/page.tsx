@@ -48,7 +48,7 @@ export default function HomePage() {
       <section className="section">
         <div className="board">
           {chase.map((row) => (
-            <article className="card" key={row.item.id}>
+            <article className="tile" key={row.item.id}>
               <b>{row.item.counterparty}</b>
               <span className="money">
                 {money(row.item.amount)} · {dueLabel(row.item.dueOn, row.item.asOf)}
@@ -58,7 +58,7 @@ export default function HomePage() {
               </span>
             </article>
           ))}
-          <article className="card">
+          <article className="tile">
             <b>Kite &amp; Co</b>
             <span className="money">{money(1100)} · laissé de côté</span>
             <span className="fine">Ils ont refusé. Un autre message ne ramènera rien.</span>
