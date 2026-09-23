@@ -203,10 +203,10 @@ export function DeskApp() {
     URL.revokeObjectURL(url);
   }
 
-  if (!rows || !current) return <p className="wait">Ouverture du bureau…</p>;
+  if (!rows || !current) return <p className="wait" role="status">Ouverture du bureau…</p>;
 
   return (
-    <main className="desk">
+    <div className="desk">
       <section className="stack">
         <div className="sheet" style={{ padding: 12 }}>
           <p className="kicker">{plan === "desk" ? "Offre Bureau" : "Solo"}</p>
@@ -303,7 +303,11 @@ export function DeskApp() {
             </button>
           </div>
         ) : null}
-        {notice ? <p className="notice">{notice}</p> : null}
+        {notice ? (
+          <p className="notice" role="alert">
+            {notice}
+          </p>
+        ) : null}
       </section>
 
       <section>
@@ -316,7 +320,7 @@ export function DeskApp() {
       </section>
 
       <Detail key={current.item.id} row={current} pending={pending} onJev={() => runJev(current.item)} />
-    </main>
+    </div>
   );
 }
 
@@ -343,6 +347,7 @@ function Queue({
           key={row.item.id}
           type="button"
           className={row.item.id === selected ? "card on" : "card"}
+          aria-pressed={row.item.id === selected}
           onClick={() => onSelect(row.item.id)}
         >
           <b>{row.item.counterparty}</b>
@@ -353,9 +358,8 @@ function Queue({
           </span>
           <span className="fine">
             {row.item.kind === "invoice" ? dueLabel(row.item.dueOn, row.item.asOf) : row.item.text}
-            {" · "}
-            {row.raw.source === "jev" ? row.raw.model : "En local"}
           </span>
+          <span className="fine">{row.raw.source === "jev" ? row.raw.model : "En local"}</span>
         </button>
       ))}
     </section>

@@ -12,10 +12,12 @@ export default function HomePage() {
   const harbor = rows.find((row) => row.item.id === "harbor");
 
   return (
-    <main>
+    <main id="contenu">
       <section className="hero">
-        <p className="kicker">Pour les indépendants qui ont déjà fait le travail</p>
-        <h1>Encaissez l'argent qu'on vous doit déjà.</h1>
+        <h1>
+          <span className="balance">{money(totals.chase)}</span>
+          à encaisser si vous envoyez les deux lettres.
+        </h1>
         <p className="lede">
           Till lit une facture, un reçu ou un export Midday, puis décide quoi relancer,
           quoi classer, et quoi laisser. Jev chiffre les chances. Une règle dans le code
