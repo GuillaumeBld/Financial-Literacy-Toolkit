@@ -83,6 +83,10 @@ Financial-Literacy-Toolkit/
 | `docs/data/collection-summary.csv` | Daily enrollment and completion statistics |
 | `docs/data/domain-score-distribution.csv` | Score distribution by range |
 
+## Till
+
+`apps/till` est une caisse pour indépendants, en français, séparée de l'évaluation étudiante. Elle s'appuie sur Jev pour décider quoi relancer et quoi classer, et importe un CSV Midday ou un JSON receipt-ocr. Elle ne lit aucune donnée étudiante. Voir [apps/till/README.md](apps/till/README.md).
+
 ## Technology
 
 - **Application**: Next.js 14 (App Router), React 18, TypeScript
