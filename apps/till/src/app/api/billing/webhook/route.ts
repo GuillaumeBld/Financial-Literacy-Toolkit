@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
     return NextResponse.json(
-      { error: "Set STRIPE_WEBHOOK_SECRET to accept Stripe events." },
+      { error: "Définissez STRIPE_WEBHOOK_SECRET pour accepter les événements Stripe." },
       { status: 501 },
     );
   }
@@ -18,14 +18,14 @@ export async function POST(request: Request) {
     secret,
   );
   if (!valid) {
-    return NextResponse.json({ error: "Invalid Stripe signature." }, { status: 400 });
+    return NextResponse.json({ error: "Signature Stripe invalide." }, { status: 400 });
   }
   let eventType = "unknown";
   try {
     const event = JSON.parse(payload) as { type?: string };
     eventType = event.type ?? "unknown";
   } catch {
-    return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
+    return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
   return NextResponse.json({ received: true, type: eventType });
 }

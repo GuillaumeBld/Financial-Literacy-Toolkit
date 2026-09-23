@@ -1,4 +1,4 @@
-import { cents, clamp, daysUntil, pct, usd } from "./format";
+import { cents, clamp, daysUntil, money, pct } from "./format";
 import { LETTER_LABEL } from "./letters";
 import {
   GATES,
@@ -26,24 +26,24 @@ function explain(
   letter: LetterId,
 ): string {
   const who = item.counterparty;
-  const amt = usd(item.amount);
+  const amt = money(item.amount);
   const conf = pct(raw.book.confidence);
   if (action === "chase") {
-    return `${who}: ${amt} is income. If you follow up this week, the chance it arrives is ${pct(raw.willCollect)}. Book confidence is ${conf}, so ${LETTER_LABEL[letter].toLowerCase()} can go out.`;
+    return `${who} : ${amt} est une recette. Si vous relancez cette semaine, la chance d'encaisser est ${pct(raw.willCollect)}. La confiance sur le livre est ${conf}, donc « ${LETTER_LABEL[letter]} » peut partir.`;
   }
   if (action === "file") {
-    return `${who}: ${amt} is an expense. The chance it is a business cost you would keep is ${pct(raw.deductible)}, above the file line, at ${conf} book confidence.`;
+    return `${who} : ${amt} est une dépense. La chance que ce soit un coût professionnel à garder est ${pct(raw.deductible)}, au-dessus du seuil, avec ${conf} de confiance.`;
   }
   if (action === "review" && raw.book.choice === "expense") {
-    return `${who}: ${amt} sits in the middle of the deduction screen (${pct(raw.deductible)}). Till will not file it until you do.`;
+    return `${who} : ${amt} est au milieu du filtre de déduction (${pct(raw.deductible)}). Till ne le classe pas tant que vous ne le faites pas.`;
   }
   if (action === "review") {
-    return `${who}: ${amt} is not clear enough to act on. Book confidence is ${conf}, and the chance you collect is ${pct(raw.willCollect)}.`;
+    return `${who} : ${amt} n'est pas assez clair pour agir. Confiance sur le livre ${conf}, chance d'encaisser ${pct(raw.willCollect)}.`;
   }
   if (letter === "write_off" || raw.letter.choice === "write_off") {
-    return `${who}: ${amt} looks like income you will not collect (${pct(raw.willCollect)}). Till drops it instead of drafting another chase.`;
+    return `${who} : ${amt} ressemble à une recette que vous n'encaisserez pas (${pct(raw.willCollect)}). Till la laisse de côté plutôt que d'écrire une relance de plus.`;
   }
-  return `${who}: ${amt} is ${raw.book.choice}. Till leaves it out of the chase and the file.`;
+  return `${who} : ${amt} est ${bookLabel(raw.book.choice).toLowerCase()}. Till le sort de la relance et du classement.`;
 }
 
 export function interpret(
@@ -152,29 +152,29 @@ export function weekTotals(rows: Interpreted[]): {
 
 export function toCsv(rows: Interpreted[]): string {
   const header = [
-    "counterparty",
-    "amount",
+    "contrepartie",
+    "montant",
     "action",
-    "book",
-    "will_collect",
+    "livre",
+    "chance_encaissement",
     "deductible",
-    "book_confidence",
-    "expected_cash",
-    "kept_at_your_rate",
-    "letter",
+    "confiance",
+    "encaisse_attendu",
+    "conserve_a_votre_taux",
+    "lettre",
   ];
   const lines = rows.map((row) =>
     [
       csvCell(row.item.counterparty),
       row.item.amount.toFixed(2),
-      row.action,
-      row.raw.book.choice,
+      actionLabel(row.action),
+      bookLabel(row.raw.book.choice),
       row.raw.willCollect.toFixed(2),
       row.raw.deductible.toFixed(2),
       row.raw.book.confidence.toFixed(2),
       row.expectedCash.toFixed(2),
       row.kept.toFixed(2),
-      row.letter,
+      LETTER_LABEL[row.letter],
     ].join(","),
   );
   return [header.join(","), ...lines].join("\n");
@@ -188,12 +188,25 @@ function csvCell(value: string): string {
 export function bookLabel(book: Book): string {
   switch (book) {
     case "income":
-      return "Income";
+      return "Recette";
     case "expense":
-      return "Expense";
+      return "Dépense";
     case "transfer":
-      return "Transfer";
+      return "Virement";
     case "ignore":
-      return "Personal";
+      return "Personnel";
+  }
+}
+
+export function actionLabel(action: Action): string {
+  switch (action) {
+    case "chase":
+      return "Relancer";
+    case "file":
+      return "Classer";
+    case "review":
+      return "À voir";
+    case "drop":
+      return "Laisser";
   }
 }

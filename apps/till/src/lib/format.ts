@@ -1,12 +1,12 @@
-export function usd(n: number): string {
-  return new Intl.NumberFormat("en-US", {
+export function money(n: number): string {
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   }).format(n);
 }
 
 export function pct(n: number): string {
-  return `${Math.round(n * 100)}%`;
+  return `${Math.round(n * 100)} %`;
 }
 
 export function cents(n: number): number {
@@ -34,10 +34,10 @@ export function daysUntil(due: string | null, asOf: string): number | null {
 
 export function dueLabel(due: string | null, asOf: string): string {
   const n = daysUntil(due, asOf);
-  if (n === null) return "No due date";
-  if (n === 0) return "Due today";
-  if (n === 1) return "Due tomorrow";
-  if (n > 1) return `Due in ${n} days`;
-  if (n === -1) return "1 day late";
-  return `${-n} days late`;
+  if (n === null) return "Pas de date d'échéance";
+  if (n === 0) return "Dû aujourd'hui";
+  if (n === 1) return "Dû demain";
+  if (n > 1) return `Dû dans ${n} jours`;
+  if (n === -1) return "1 jour de retard";
+  return `${-n} jours de retard`;
 }

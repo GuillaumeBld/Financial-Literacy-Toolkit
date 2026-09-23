@@ -13,7 +13,7 @@ export function ownerOpen(): boolean {
 
 export function signDesk(now = Date.now()): string {
   const secret = signingSecret();
-  if (!secret) throw new Error("Set TILL_COOKIE_SECRET or STRIPE_SECRET_KEY before selling Desk.");
+  if (!secret) throw new Error("Définissez TILL_COOKIE_SECRET ou STRIPE_SECRET_KEY avant de vendre Bureau.");
   const exp = now + THIRTY_TWO_DAYS * 1000;
   const body = Buffer.from(JSON.stringify({ plan: "desk", exp })).toString("base64url");
   const sig = createHmac("sha256", secret).update(body).digest("base64url");

@@ -63,17 +63,17 @@ export type Interpreted = {
 };
 
 export const URGENCY = [
-  "Nothing happens if you wait a week",
-  "Worth handling this week",
-  "Money or a relationship moves in a day or two",
-  "Late, refused, or about to be lost",
+  "Rien ne bouge si vous attendez une semaine",
+  "À traiter cette semaine",
+  "L'argent ou la relation bouge dans un jour ou deux",
+  "En retard, refusé, ou sur le point d'être perdu",
 ] as const;
 
 export const RELATIONSHIP = [
-  "Ordinary commercial tone",
-  "Cooling off or delaying",
-  "Strained, excuses stacking up",
-  "Hostile, refused, or threatening",
+  "Ton commercial ordinaire",
+  "Ça se refroidit, ou ça traîne",
+  "Tendu, les excuses s'empilent",
+  "Hostile, refus, ou menace",
 ] as const;
 
 export const SAMPLE_TODAY = "2026-09-23";

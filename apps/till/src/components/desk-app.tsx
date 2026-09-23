@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { dueLabel, isoToday, pct, usd } from "@/lib/format";
+import { dueLabel, isoToday, money, pct } from "@/lib/format";
 import { itemFromReceiptOcr, itemsFromCsv } from "@/lib/intake";
 import { LETTER_LABEL, renderLetter } from "@/lib/letters";
-import { bookLabel, byAction, interpret, toCsv, weekTotals } from "@/lib/money";
+import { actionLabel, bookLabel, byAction, interpret, toCsv, weekTotals } from "@/lib/money";
 import { rehearse } from "@/lib/rehearsal";
 import { samples } from "@/lib/samples";
 import {
@@ -22,7 +22,7 @@ import {
 type Row = { item: Item; raw: RawReading };
 type Plan = "solo" | "desk";
 
-const STORAGE = "till.desk.v1";
+const STORAGE = "till.desk.v2";
 
 function seed(): Row[] {
   return samples.map((item) => ({ item, raw: rehearse(item) }));
@@ -91,10 +91,10 @@ export function DeskApp() {
         const payload = (await response.json()) as { plan?: Plan; error?: string };
         if (response.ok && payload.plan === "desk") {
           setPlan("desk");
-          setNotice("Desk is on. Run an item on Jev when you want the live score.");
+          setNotice("Bureau est actif. Lancez une ligne sur Jev pour le score en direct.");
         } else if (payload.error) setNotice(payload.error);
       })
-      .catch(() => setNotice("Could not confirm the checkout."));
+      .catch(() => setNotice("Impossible de confirmer le paiement."));
   }, [params]);
 
   const interpreted = useMemo(
@@ -113,7 +113,7 @@ export function DeskApp() {
     event.preventDefault();
     const amount = Number(draft.amount);
     if (!draft.counterparty.trim() || !Number.isFinite(amount) || amount <= 0) {
-      setNotice("Add a name and an amount greater than zero.");
+      setNotice("Ajoutez un nom et un montant supérieur à zéro.");
       return;
     }
     const item: Item = {
@@ -143,22 +143,22 @@ export function DeskApp() {
     replace([...(rows ?? []), ...imported], imported[0].item.id);
     setImportText("");
     setShowCsv(false);
-    setNotice(`Added ${imported.length} from the CSV.`);
+    setNotice(`Ajout de ${imported.length} ligne${imported.length > 1 ? "s" : ""} depuis le CSV.`);
   }
 
   function importReceipt() {
     try {
       const item = itemFromReceiptOcr(JSON.parse(importText));
       if (!item) {
-        setNotice("That JSON needs merchant_name and total_amount, the receipt-ocr shape.");
+        setNotice("Ce JSON doit contenir merchant_name et total_amount, le format de receipt-ocr.");
         return;
       }
       replace([{ item, raw: rehearse(item) }, ...(rows ?? [])], item.id);
       setImportText("");
       setShowReceipt(false);
-      setNotice(`Added ${item.counterparty} from receipt-ocr.`);
+      setNotice(`Ajout de ${item.counterparty} depuis receipt-ocr.`);
     } catch {
-      setNotice("That was not JSON.");
+      setNotice("Ce n'était pas du JSON.");
     }
   }
 
@@ -178,7 +178,7 @@ export function DeskApp() {
         error?: string;
       };
       if (payload.upgrade) {
-        setNotice(payload.notice || "Desk is $19 a month.");
+        setNotice(payload.notice || "Bureau coûte 19 € par mois.");
         return;
       }
       if (payload.raw && rows) {
@@ -187,7 +187,7 @@ export function DeskApp() {
       if (payload.notice) setNotice(payload.notice);
       if (payload.error) setNotice(payload.error);
     } catch {
-      setNotice("The reading did not complete.");
+      setNotice("La lecture n'a pas abouti.");
     } finally {
       setPending(false);
     }
@@ -198,24 +198,24 @@ export function DeskApp() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "till-desk.csv";
+    link.download = "till-caisse.csv";
     link.click();
     URL.revokeObjectURL(url);
   }
 
-  if (!rows || !current) return <p className="wait">Opening the desk…</p>;
+  if (!rows || !current) return <p className="wait">Ouverture du bureau…</p>;
 
   return (
     <main className="desk">
       <section className="stack">
         <div className="sheet" style={{ padding: 12 }}>
-          <p className="kicker">{plan === "desk" ? "Desk plan" : "Solo"}</p>
-          <p className="money">{usd(totals.chase)} to chase</p>
+          <p className="kicker">{plan === "desk" ? "Offre Bureau" : "Solo"}</p>
+          <p className="money">{money(totals.chase)} à relancer</p>
           <p className="fine">
-            {usd(totals.filed)} ready to file · {usd(totals.review)} waiting on you
+            {money(totals.filed)} prêt à classer · {money(totals.review)} en attente
           </p>
           <label>
-            Your rate for ranking expenses
+            Votre taux pour classer les dépenses
             <input
               type="number"
               min={0}
@@ -226,27 +226,27 @@ export function DeskApp() {
             />
           </label>
           <div className="row">
-            <button className="btn-quiet" type="button" onClick={downloadCsv}>CSV</button>
+            <button className="btn-quiet" type="button" onClick={downloadCsv}>Exporter</button>
             <button className="btn-quiet" type="button" onClick={() => replace(seed(), "harbor")}>
-              Reset sample week
+              Reprendre la semaine d'exemple
             </button>
           </div>
         </div>
 
         <form className="stack" onSubmit={addManual}>
           <label>
-            Kind
+            Type
             <select
               value={draft.kind}
               onChange={(event) => setDraft({ ...draft, kind: event.target.value as Kind })}
             >
-              <option value="invoice">Invoice</option>
-              <option value="receipt">Receipt</option>
+              <option value="invoice">Facture</option>
+              <option value="receipt">Reçu</option>
               <option value="note">Note</option>
             </select>
           </label>
           <label>
-            Who
+            Qui
             <input
               value={draft.counterparty}
               onChange={(event) => setDraft({ ...draft, counterparty: event.target.value })}
@@ -254,7 +254,7 @@ export function DeskApp() {
             />
           </label>
           <label>
-            Amount
+            Montant
             <input
               inputMode="decimal"
               value={draft.amount}
@@ -263,7 +263,7 @@ export function DeskApp() {
             />
           </label>
           <label>
-            Due
+            Échéance
             <input
               type="date"
               value={draft.dueOn}
@@ -271,22 +271,22 @@ export function DeskApp() {
             />
           </label>
           <label>
-            What they said
+            Ce qu'on vous a écrit
             <textarea
               value={draft.text}
               onChange={(event) => setDraft({ ...draft, text: event.target.value })}
-              placeholder="We might push this to next quarter."
+              placeholder="On va peut-être repousser ça au trimestre prochain."
             />
           </label>
-          <button className="btn" type="submit">Add to the desk</button>
+          <button className="btn" type="submit">Ajouter au bureau</button>
         </form>
 
         <div className="row">
           <button className="btn-quiet" type="button" onClick={() => { setShowCsv((v) => !v); setShowReceipt(false); }}>
-            Midday CSV
+            CSV Midday
           </button>
           <button className="btn-quiet" type="button" onClick={() => { setShowReceipt((v) => !v); setShowCsv(false); }}>
-            receipt-ocr JSON
+            JSON receipt-ocr
           </button>
         </div>
         {showCsv || showReceipt ? (
@@ -299,7 +299,7 @@ export function DeskApp() {
                 : '{"merchant_name":"Adobe","total_amount":59.99,"transaction_date":"2026-09-20","line_items":[]}'}
             />
             <button className="btn" type="button" onClick={showCsv ? importCsv : importReceipt}>
-              {showCsv ? "Import CSV" : "Import receipt"}
+              {showCsv ? "Importer le CSV" : "Importer le reçu"}
             </button>
           </div>
         ) : null}
@@ -307,12 +307,12 @@ export function DeskApp() {
       </section>
 
       <section>
-        <Queue title="Chase" hint="Sorted by amount × chance it arrives" rows={byAction(interpreted, "chase")} selected={current.item.id} onSelect={setSelected} />
+        <Queue title="Relancer" hint="Trié par montant × chance d'encaisser" rows={byAction(interpreted, "chase")} selected={current.item.id} onSelect={setSelected} />
         <div className="queues">
-          <Queue title="Review" hint="Held. Confidence or the deduction is in the middle." rows={byAction(interpreted, "review")} selected={current.item.id} onSelect={setSelected} />
-          <Queue title="File" hint="Clear enough to keep, at your rate" rows={byAction(interpreted, "file")} selected={current.item.id} onSelect={setSelected} />
+          <Queue title="À voir" hint="Retenu. La confiance ou la déduction est au milieu." rows={byAction(interpreted, "review")} selected={current.item.id} onSelect={setSelected} />
+          <Queue title="Classer" hint="Assez clair pour garder, à votre taux" rows={byAction(interpreted, "file")} selected={current.item.id} onSelect={setSelected} />
         </div>
-        <Queue title="Left alone" hint="Personal, a transfer, or a client who will not pay" rows={byAction(interpreted, "drop")} selected={current.item.id} onSelect={setSelected} />
+        <Queue title="Laissé de côté" hint="Personnel, un virement, ou un client qui ne paiera pas" rows={byAction(interpreted, "drop")} selected={current.item.id} onSelect={setSelected} />
       </section>
 
       <Detail key={current.item.id} row={current} pending={pending} onJev={() => runJev(current.item)} />
@@ -337,7 +337,7 @@ function Queue({
     <section>
       <h2>{title}</h2>
       <p className="fine">{hint}</p>
-      {rows.length === 0 ? <p className="fine">Nothing here.</p> : null}
+      {rows.length === 0 ? <p className="fine">Rien ici.</p> : null}
       {rows.map((row) => (
         <button
           key={row.item.id}
@@ -347,14 +347,14 @@ function Queue({
         >
           <b>{row.item.counterparty}</b>
           <span className="money">
-            {usd(row.item.amount)}
-            {row.action === "chase" ? ` · ${usd(row.expectedCash)} expected` : ""}
-            {row.action === "file" ? ` · ${usd(row.kept)} kept` : ""}
+            {money(row.item.amount)}
+            {row.action === "chase" ? ` · ${money(row.expectedCash)} attendu` : ""}
+            {row.action === "file" ? ` · ${money(row.kept)} conservé` : ""}
           </span>
           <span className="fine">
             {row.item.kind === "invoice" ? dueLabel(row.item.dueOn, row.item.asOf) : row.item.text}
             {" · "}
-            {row.raw.source === "jev" ? row.raw.model : "Local"}
+            {row.raw.source === "jev" ? row.raw.model : "En local"}
           </span>
         </button>
       ))}
@@ -385,50 +385,50 @@ function Detail({
 
   return (
     <aside className="sheet detail">
-      <span className={`pill ${row.action}`}>{row.action}</span>
+      <span className={`pill ${row.action}`}>{actionLabel(row.action)}</span>
       <h2>{row.item.counterparty}</h2>
-      <p className="money">{usd(row.item.amount)}</p>
+      <p className="money">{money(row.item.amount)}</p>
       <p>{row.explanation}</p>
       {letter ? (
         <>
           <p className="fine">
-            {row.letter === "write_off" ? "Note for you, not a letter to send." : LETTER_LABEL[row.letter]}
+            {row.letter === "write_off" ? "Note pour vous, pas une lettre à envoyer." : LETTER_LABEL[row.letter]}
           </p>
           <p className="letter">{letter}</p>
           {row.letter !== "write_off" ? (
             <button className="btn-quiet" type="button" onClick={copy}>
-              {copied ? "Copied" : "Copy letter"}
+              {copied ? "Copié" : "Copier la lettre"}
             </button>
           ) : null}
         </>
       ) : null}
 
-      <h3>Book</h3>
+      <h3>Livre</h3>
       {BOOKS.map((book) => (
         <Meter key={book} label={bookLabel(book)} value={row.raw.book.probabilities[book]} mark={row.raw.book.choice === book} />
       ))}
-      <p className="fine">Book confidence {pct(row.raw.book.confidence)}. Below 55% stays in review.</p>
+      <p className="fine">Confiance sur le livre {pct(row.raw.book.confidence)}. Sous 55 %, la ligne reste à voir.</p>
 
-      <h3>Odds</h3>
-      <Meter label="Arrives if you follow up" value={row.raw.willCollect} />
-      <Meter label="Worth a follow-up today" value={row.raw.worthChase} />
-      <Meter label="Business cost to keep" value={row.raw.deductible} />
+      <h3>Chances</h3>
+      <Meter label="Encaisse si vous relancez" value={row.raw.willCollect} />
+      <Meter label="Une relance aujourd'hui en vaut la peine" value={row.raw.worthChase} />
+      <Meter label="Coût professionnel à garder" value={row.raw.deductible} />
 
-      <h3>Pressure</h3>
+      <h3>Pression</h3>
       <p className="fine">
-        Urgency {row.raw.urgency.score.toFixed(1)} of 3 — {level(URGENCY, row.raw.urgency.score)}.
-        Relationship {row.raw.relationship.score.toFixed(1)} of 3 — {level(RELATIONSHIP, row.raw.relationship.score)}.
+        Urgence {row.raw.urgency.score.toFixed(1)} sur 3 — {level(URGENCY, row.raw.urgency.score)}.
+        Relation {row.raw.relationship.score.toFixed(1)} sur 3 — {level(RELATIONSHIP, row.raw.relationship.score)}.
       </p>
       <p className="fine">
-        Letter weights: {LETTERS.map((id) => `${LETTER_LABEL[id]} ${pct(row.raw.letter.probabilities[id])}`).join(" · ")}
+        Poids des lettres : {LETTERS.map((id) => `${LETTER_LABEL[id]} ${pct(row.raw.letter.probabilities[id])}`).join(" · ")}
       </p>
       <p className="fine">
         {row.raw.source === "jev"
-          ? `Jev ${row.raw.model}${row.raw.inputTokens ? `, ${row.raw.inputTokens} input tokens` : ""}.`
-          : "Local rehearsal. Desk runs the same seven questions on Jev."}
+          ? `Jev ${row.raw.model}${row.raw.inputTokens ? `, ${row.raw.inputTokens} jetons en entrée` : ""}.`
+          : "Répétition locale. Bureau pose les mêmes sept questions à Jev."}
       </p>
       <button className="btn" type="button" onClick={onJev} disabled={pending}>
-        {pending ? "Asking Jev…" : "Run on Jev"}
+        {pending ? "Demande à Jev…" : "Lancer sur Jev"}
       </button>
     </aside>
   );
@@ -437,7 +437,7 @@ function Detail({
 function Meter({ label, value, mark }: { label: string; value: number; mark?: boolean }) {
   return (
     <div className="meter">
-      <span className="fine">{mark ? `${label} · chosen` : label} {pct(value)}</span>
+      <span className="fine">{mark ? `${label} · retenu` : label} {pct(value)}</span>
       <i><b style={{ width: `${Math.round(value * 100)}%` }} /></i>
     </div>
   );

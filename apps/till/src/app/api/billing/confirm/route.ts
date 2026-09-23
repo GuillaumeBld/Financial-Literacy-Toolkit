@@ -7,12 +7,12 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY;
   if (!secret) {
-    return NextResponse.json({ error: "Stripe is not configured." }, { status: 501 });
+    return NextResponse.json({ error: "Stripe n'est pas configuré." }, { status: 501 });
   }
   const body = (await request.json()) as { sessionId?: string };
   const sessionId = body.sessionId;
   if (!sessionId || !sessionId.startsWith("cs_")) {
-    return NextResponse.json({ error: "Missing checkout session." }, { status: 400 });
+    return NextResponse.json({ error: "Session de paiement manquante." }, { status: 400 });
   }
 
   const response = await fetch(
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     response.ok &&
     (session.payment_status === "paid" || session.status === "complete");
   if (!paid) {
-    return NextResponse.json({ error: "That checkout is not paid yet." }, { status: 402 });
+    return NextResponse.json({ error: "Ce paiement n'est pas encore confirmé." }, { status: 402 });
   }
 
   cookies().set(COOKIE, signDesk(), {

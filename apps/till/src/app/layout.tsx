@@ -22,24 +22,24 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Till — chase the cash you are already owed",
+  title: "Till — encaissez l'argent qu'on vous doit déjà",
   description:
-    "A cash desk for freelancers. Jev scores which invoice to chase and which receipt to file. $19 a month.",
+    "Une caisse pour indépendants. Jev décide quelle facture relancer et quel reçu classer. 19 € par mois.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
         <div className="wrap">
           <header className="top">
             <a className="brand" href="/">
               <strong>Till</strong>
-              <span>Cash desk</span>
+              <span>Caisse</span>
             </a>
             <nav className="nav">
-              <a href="/desk">Desk</a>
-              <a href="/#pricing">Pricing</a>
+              <a href="/desk">Bureau</a>
+              <a href="/#pricing">Tarif</a>
             </nav>
           </header>
           {children}

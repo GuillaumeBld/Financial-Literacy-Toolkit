@@ -16,9 +16,9 @@ export function CheckoutButton() {
         window.location.href = payload.url;
         return;
       }
-      setMessage(payload.error || "Checkout is not available.");
+      setMessage(payload.error || "Le paiement n'est pas disponible.");
     } catch {
-      setMessage("Checkout is not available.");
+      setMessage("Le paiement n'est pas disponible.");
     } finally {
       setPending(false);
     }
@@ -27,7 +27,7 @@ export function CheckoutButton() {
   return (
     <div>
       <button className="btn" type="button" onClick={start} disabled={pending}>
-        {pending ? "Opening checkout…" : "Subscribe — $19/mo"}
+        {pending ? "Ouverture du paiement…" : "S'abonner — 19 €/mois"}
       </button>
       {message ? <p className="fine">{message}</p> : null}
     </div>

@@ -1,46 +1,48 @@
 # Till
 
-A cash desk for freelancers. It decides which invoice to chase, which receipt to file, and which item to leave alone.
+Une caisse pour indépendants. Elle décide quelle facture relancer, quel reçu classer, et quelle ligne laisser.
 
-Solo is free and runs on this device. Desk is $19 a month and sends each item to [Jev](https://typesafe.ai/), TypeSafe’s decision model. Jev answers seven narrow questions (book, letter, two chase odds, a deduction screen, urgency, relationship). Till combines them in code and will not auto-file a low-confidence answer.
+Solo est gratuit et tourne sur cet appareil. Bureau coûte 19 € par mois et envoie chaque ligne à [Jev](https://typesafe.ai/), le modèle de décision de TypeSafe. Jev répond à sept questions étroites : le livre, la lettre, deux chances de relance, un filtre de dépense, l'urgence, la relation. Till les combine dans le code et ne classe pas une réponse peu sûre.
 
-## What you can sell
+L'interface, les lettres et la semaine d'exemple sont en français.
 
-- **Solo — $0.** Sample week, your own items, local readings, copy-ready letters, CSV.
-- **Desk — $19/month.** The same desk, scored by Jev, after Stripe checkout.
+## Ce que vous pouvez vendre
 
-The letter is a template Till fills in. Jev only picks which template. Nothing is emailed unless the user copies it.
+- **Solo — 0 €.** Semaine d'exemple, vos lignes, lectures locales, lettres à copier, CSV.
+- **Bureau — 19 €/mois.** Le même bureau, noté par Jev, après un paiement Stripe.
 
-Intake uses two projects from Guillaume’s stars:
+La lettre est un modèle que Till remplit. Jev choisit seulement lequel. Rien n'est envoyé tant que l'utilisateur ne copie pas le texte.
 
-- [midday](https://github.com/midday-ai/midday) transaction CSV (`date,description,amount,category,notes`)
-- [receipt-ocr](https://github.com/bhimrazy/receipt-ocr) JSON (`merchant_name`, `total_amount`, `transaction_date`, `line_items`)
+Deux projets déjà en favori servent d'entrée :
 
-## Run
+- le CSV de transactions [Midday](https://github.com/midday-ai/midday) (`date`, `description`, `amount` ou `montant`, `category`)
+- le JSON [receipt-ocr](https://github.com/bhimrazy/receipt-ocr) (`merchant_name`, `total_amount`, `transaction_date`, `line_items`)
 
-From the repo root:
+## Lancer
+
+Depuis la racine du dépôt :
 
 ```bash
 pnpm install
 pnpm --filter till dev
 ```
 
-Open http://localhost:3210
+Ouvrir http://localhost:3210
 
-## Charge for Desk
+## Encaisser Bureau
 
-Set these on the server:
+À poser sur le serveur :
 
 - `TYPESAFE_API_KEY` — Jev
 - `STRIPE_SECRET_KEY`
-- `STRIPE_PRICE_DESK` — a recurring $19 price id
-- `STRIPE_WEBHOOK_SECRET` — so signed Stripe events are accepted
-- `TILL_COOKIE_SECRET` — signs the 32-day Desk cookie (falls back to the Stripe secret)
+- `STRIPE_PRICE_DESK` — un prix récurrent à 19 €
+- `STRIPE_WEBHOOK_SECRET` — pour accepter les événements Stripe signés
+- `TILL_COOKIE_SECRET` — signe le cookie Bureau de 32 jours (sinon, le secret Stripe)
 
-`TILL_OPEN=1` treats every visitor as Desk. Use that only on a machine you control.
+`TILL_OPEN=1` traite chaque visiteur comme Bureau. À réserver à une machine que vous contrôlez.
 
-Without Stripe keys, checkout explains what is missing and the desk still runs. Without a Jev key, Desk stays on the local reading.
+Sans clés Stripe, le paiement explique ce qui manque et le bureau tourne quand même. Sans clé Jev, Bureau reste sur la lecture locale.
 
-Till is a priority desk, not a tax advisor. The “kept” number uses a rate the user sets (default 25%) so expenses can be ranked. It is not a filing position.
+Till classe des priorités. Ce n'est pas un conseiller fiscal. Le montant « conservé » utilise un taux choisi par l'utilisateur (25 % par défaut) pour comparer les dépenses. Ce n'est pas une position de déclaration.
 
-Access from a successful checkout lasts 32 days. Canceling a subscription in Stripe does not revoke that cookie early; pair the webhook with a customer record before relying on it for a larger list.
+L'accès après un paiement réussi dure 32 jours. Annuler l'abonnement dans Stripe ne révoque pas ce cookie plus tôt.

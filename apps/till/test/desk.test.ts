@@ -3,7 +3,8 @@ import { createHmac } from "node:crypto";
 import test from "node:test";
 import { deskCookieValid, signDesk, verifyStripeSignature } from "../src/lib/billing";
 import { itemFromReceiptOcr, itemsFromCsv } from "../src/lib/intake";
-import { renderLetter } from "../src/lib/letters";
+import { money } from "../src/lib/format";
+import { formatDay, renderLetter } from "../src/lib/letters";
 import { parseReading } from "../src/lib/jev";
 import { byAction, interpret, weekTotals } from "../src/lib/money";
 import { rehearse } from "../src/lib/rehearsal";
@@ -62,9 +63,9 @@ test("a low book confidence never auto-files", () => {
 test("letter template carries the amount and the name", () => {
   const harbor = samples[0];
   const text = renderLetter("due_today", harbor);
-  assert.match(text, /Harbor & Co/);
-  assert.match(text, /\$6,800\.00/);
-  assert.match(text, /Sep 25, 2026/);
+  assert.match(text, /Bonjour Harbor & Co/);
+  assert.ok(text.includes(money(6800)));
+  assert.ok(text.includes(formatDay("2026-09-25")));
 });
 
 test("rehearsal probabilities cover every option", () => {
@@ -181,7 +182,7 @@ test("transfer between your own accounts is dropped", () => {
     kind: "note" as const,
     counterparty: "Checking",
     amount: 500,
-    text: "Moved my own money from checking to savings.",
+    text: "Virement de mon propre argent du compte courant vers l'épargne.",
   };
   assert.equal(interpret(item, rehearse(item), tax).action, "drop");
 });

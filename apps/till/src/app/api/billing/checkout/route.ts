@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Checkout needs STRIPE_SECRET_KEY and STRIPE_PRICE_DESK on the server. The desk runs without them.",
+          "Le paiement a besoin de STRIPE_SECRET_KEY et STRIPE_PRICE_DESK sur le serveur. Le bureau fonctionne sans.",
       },
       { status: 501 },
     );
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const payload = (await response.json()) as { url?: string; error?: { message?: string } };
   if (!response.ok || !payload.url) {
     return NextResponse.json(
-      { error: payload.error?.message || "Stripe did not open a checkout session." },
+      { error: payload.error?.message || "Stripe n'a pas ouvert de session de paiement." },
       { status: 502 },
     );
   }

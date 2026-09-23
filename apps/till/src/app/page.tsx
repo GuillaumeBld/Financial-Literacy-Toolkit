@@ -1,5 +1,5 @@
 import { CheckoutButton } from "@/components/checkout-button";
-import { dueLabel, usd } from "@/lib/format";
+import { dueLabel, money } from "@/lib/format";
 import { byAction, interpret, weekTotals } from "@/lib/money";
 import { rehearse } from "@/lib/rehearsal";
 import { renderLetter } from "@/lib/letters";
@@ -14,32 +14,32 @@ export default function HomePage() {
   return (
     <main>
       <section className="hero">
-        <p className="kicker">For freelancers who already did the work</p>
-        <h1>Get the cash you are already owed.</h1>
+        <p className="kicker">Pour les indépendants qui ont déjà fait le travail</p>
+        <h1>Encaissez l'argent qu'on vous doit déjà.</h1>
         <p className="lede">
-          Till reads an invoice, a receipt, or a Midday export and decides what to chase,
-          what to file, and what to leave alone. Jev scores the odds. A gate in the code
-          holds back anything it is not sure about. The letter is a template, filled with
-          the amount and the name, ready to copy.
+          Till lit une facture, un reçu ou un export Midday, puis décide quoi relancer,
+          quoi classer, et quoi laisser. Jev chiffre les chances. Une règle dans le code
+          retient ce qui n'est pas sûr. La lettre est un modèle, rempli avec le montant
+          et le nom, prêt à copier.
         </p>
         <div className="row">
-          <a className="btn" href="/desk">Open the sample week</a>
-          <a className="btn-quiet" href="#pricing">$19 a month</a>
+          <a className="btn" href="/desk">Ouvrir la semaine d'exemple</a>
+          <a className="btn-quiet" href="#pricing">19 € par mois</a>
         </div>
       </section>
 
-      <section className="sheet totals" aria-label="Sample week">
+      <section className="sheet totals" aria-label="Semaine d'exemple">
         <article>
-          <span>Sample week, if you send the letters</span>
-          <strong>{usd(totals.chase)}</strong>
+          <span>Semaine d'exemple, si vous envoyez les lettres</span>
+          <strong>{money(totals.chase)}</strong>
         </article>
         <article>
-          <span>Expenses clear enough to file</span>
-          <strong>{usd(totals.filed)}</strong>
+          <span>Dépenses assez claires pour classer</span>
+          <strong>{money(totals.filed)}</strong>
         </article>
         <article>
-          <span>Held for you to decide</span>
-          <strong>{usd(totals.review)}</strong>
+          <span>Retenu, à vous de trancher</span>
+          <strong>{money(totals.review)}</strong>
         </article>
       </section>
 
@@ -49,17 +49,17 @@ export default function HomePage() {
             <article className="card" key={row.item.id}>
               <b>{row.item.counterparty}</b>
               <span className="money">
-                {usd(row.item.amount)} · {dueLabel(row.item.dueOn, row.item.asOf)}
+                {money(row.item.amount)} · {dueLabel(row.item.dueOn, row.item.asOf)}
               </span>
               <span className="fine">
-                {usd(row.expectedCash)} expected if you follow up
+                {money(row.expectedCash)} attendu si vous relancez
               </span>
             </article>
           ))}
           <article className="card">
             <b>Kite &amp; Co</b>
-            <span className="money">$1,100.00 · left alone</span>
-            <span className="fine">They refused. Another email will not collect it.</span>
+            <span className="money">{money(1100)} · laissé de côté</span>
+            <span className="fine">Ils ont refusé. Un autre message ne ramènera rien.</span>
           </article>
         </div>
       </section>
@@ -67,26 +67,26 @@ export default function HomePage() {
       {harbor ? (
         <section className="section split">
           <div>
-            <h2>The letter is chosen, not written by a model.</h2>
+            <h2>La lettre est choisie, pas rédigée par un modèle.</h2>
             <p>
-              Jev picks one of six letters. Till fills in the name, the amount, and the
-              date. You copy it. Nothing is sent on its own.
+              Jev choisit l'une des six lettres. Till remplit le nom, le montant et la
+              date. Vous la copiez. Rien n'est envoyé tout seul.
             </p>
             <p className="letter">{renderLetter(harbor.letter, harbor.item)}</p>
           </div>
           <div>
-            <h2>What you bring in</h2>
+            <h2>Ce que vous apportez</h2>
             <ol className="steps">
               <li>
-                A Midday transactions CSV — date, description, amount, category — from
-                the export you already starred.
+                Un CSV de transactions Midday — date, description, montant, catégorie —
+                depuis l'export que vous avez déjà mis en favori.
               </li>
               <li>
-                A receipt-ocr JSON file: merchant, total, date, and line items.
+                Un JSON receipt-ocr : commerçant, total, date et lignes.
               </li>
               <li>
-                Or type the note a client actually sent. Seven narrow questions, one
-                Jev call, then the gate.
+                Ou saisissez le mot qu'un client a vraiment envoyé. Sept questions
+                étroites, un appel à Jev, puis la règle.
               </li>
             </ol>
           </div>
@@ -94,25 +94,25 @@ export default function HomePage() {
       ) : null}
 
       <section className="section" id="pricing">
-        <h2>Price</h2>
+        <h2>Tarif</h2>
         <div className="sheet prices">
           <article className="price">
             <h3>Solo</h3>
-            <div className="amt">$0</div>
+            <div className="amt">0 €</div>
             <ul>
-              <li>The sample week and your own items, on this device</li>
-              <li>Local readings, letters, and a CSV</li>
-              <li>Enough to see the order of the chase</li>
+              <li>La semaine d'exemple et vos propres lignes, sur cet appareil</li>
+              <li>Lectures locales, lettres, et un CSV</li>
+              <li>De quoi voir l'ordre des relances</li>
             </ul>
-            <p><a className="btn-quiet" href="/desk">Use the desk</a></p>
+            <p><a className="btn-quiet" href="/desk">Ouvrir le bureau</a></p>
           </article>
           <article className="price">
-            <h3>Desk</h3>
-            <div className="amt">$19<span className="fine">/mo</span></div>
+            <h3>Bureau</h3>
+            <div className="amt">19 €<span className="fine">/mois</span></div>
             <ul>
-              <li>The same items, scored by Jev</li>
-              <li>Confidence stays visible, and low confidence stays in review</li>
-              <li>You pay for the decision, not for another chatbot ledger</li>
+              <li>Les mêmes lignes, notées par Jev</li>
+              <li>La confiance reste visible, et le doute reste à voir</li>
+              <li>Vous payez la décision, pas un autre grand livre bavard</li>
             </ul>
             <CheckoutButton />
           </article>
@@ -120,10 +120,11 @@ export default function HomePage() {
       </section>
 
       <p className="foot">
-        Till ranks work. It is not a tax advisor, an accountant, or a lawyer. The
-        “kept” figure uses a rate you set, 25% unless you change it, so you can compare
-        expenses. It is not a filing position. A refused invoice is dropped because the
-        chance of collection is low, not because a model said the debt disappeared.
+        Till classe le travail. Ce n'est ni un conseiller fiscal, ni un expert-comptable,
+        ni un avocat. Le montant « conservé » utilise un taux que vous fixez, 25 % sauf
+        si vous le changez, pour comparer les dépenses. Ce n'est pas une position de
+        déclaration. Une facture refusée est laissée de côté parce que la chance
+        d'encaisser est faible, pas parce qu'un modèle a effacé la dette.
       </p>
     </main>
   );

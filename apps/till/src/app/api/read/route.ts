@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as { item?: Item; live?: boolean };
   const item = body.item;
   if (!item || !item.counterparty || !Number.isFinite(item.amount) || item.amount <= 0) {
-    return NextResponse.json({ error: "Add a counterparty and an amount." }, { status: 400 });
+    return NextResponse.json({ error: "Ajoutez une contrepartie et un montant." }, { status: 400 });
   }
 
   const entitled = deskCookieValid(cookies().get(COOKIE)?.value);
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       {
         upgrade: true,
         raw: rehearse(item),
-        notice: "Desk is $19 a month. It runs this same item on Jev.",
+        notice: "Bureau coûte 19 € par mois. Il envoie cette ligne à Jev.",
       },
       { status: 402 },
     );
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       upgrade: false,
       raw: rehearse(item),
       notice: body.live
-        ? "Desk is on, and the server has no TYPESAFE_API_KEY yet, so this reading stayed local."
+        ? "Bureau est actif, mais le serveur n'a pas encore de TYPESAFE_API_KEY. Cette lecture reste en local."
         : null,
     });
   }
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       upgrade: false,
       raw: rehearse(item),
-      notice: "Jev did not answer. Till kept the local reading.",
+      notice: "Jev n'a pas répondu. Till garde la lecture locale.",
     });
   }
 }

@@ -18,50 +18,50 @@ export function questionsFor(): Record<string, unknown> {
   return {
     book: {
       type: "choice",
-      instructions: "Which book should this item be filed under?",
+      instructions: "Dans quel livre ranger cet élément ?",
       criteria: {
-        income: "Money a client owes or is paying for work",
-        expense: "A cost of doing the work",
-        transfer: "Moving your own money between your own accounts",
-        ignore: "Personal, a duplicate, or not a business item",
+        income: "De l'argent qu'un client doit, ou paie, pour un travail",
+        expense: "Un coût du travail",
+        transfer: "Un mouvement de votre propre argent entre vos comptes",
+        ignore: "Personnel, un doublon, ou hors de l'activité",
       },
     },
     letter: {
       type: "choice",
       instructions:
-        "Which collection letter, if any, fits this item? Choose none unless it is money a client owes.",
+        "Quelle relance, s'il y en a une, convient ? Choisir aucune, sauf s'il s'agit d'argent qu'on vous doit.",
       criteria: {
-        gentle_nudge: "Open invoice, relationship still fine, a short reminder is enough",
-        due_today: "Due within a few days",
-        past_due_firm: "Meaningfully late, but the client has not refused",
-        final_notice: "Long overdue, one last ask before you stop the work",
-        write_off: "They refused, disputed, or said they will not pay",
-        none: "Not money owed to you, or nothing should be sent",
+        gentle_nudge: "Facture ouverte, relation encore bonne, un court rappel suffit",
+        due_today: "Échéance dans quelques jours",
+        past_due_firm: "Nettement en retard, mais le client n'a pas refusé",
+        final_notice: "Très en retard, une dernière demande avant d'arrêter le travail",
+        write_off: "Refus, litige, ou ils ont dit qu'ils ne paieront pas",
+        none: "Ce n'est pas de l'argent qu'on vous doit, ou il ne faut rien envoyer",
       },
     },
     will_collect: {
       type: "noul",
       instructions:
-        "If you follow up this week, will the income in this item actually arrive?",
+        "Si vous relancez cette semaine, cet encaissement arrivera-t-il vraiment ?",
     },
     worth_chase: {
       type: "noul",
       instructions:
-        "Is a follow-up today worth the time, given the amount and the odds of payment?",
+        "Une relance aujourd'hui vaut-elle le temps, vu le montant et les chances d'être payé ?",
     },
     deductible: {
       type: "noul",
       instructions:
-        "Is this a reasonable ordinary business cost a freelancer would keep, rather than a personal cost? Meals and mixed trips only partly qualify.",
+        "Est-ce une dépense professionnelle courante qu'un indépendant garderait, plutôt qu'un coût personnel ? Les repas et les déplacements mixtes ne comptent qu'en partie.",
     },
     urgency: {
       type: "score",
-      instructions: "How soon does this item need a human decision?",
+      instructions: "Dans quel délai cet élément demande-t-il une décision humaine ?",
       criteria: [...URGENCY],
     },
     relationship: {
       type: "score",
-      instructions: "How strained is the client relationship in this note?",
+      instructions: "À quel point la relation client est-elle tendue dans cette note ?",
       criteria: [...RELATIONSHIP],
     },
   };
@@ -82,9 +82,9 @@ export function stateFor(item: Item): Record<string, unknown> {
 
 export function parseReading(payload: unknown): RawReading {
   const body = asRecord(payload);
-  if (!body) throw new Error("Jev returned an empty body.");
+  if (!body) throw new Error("Jev a renvoyé un corps vide.");
   const answers = asRecord(body.answers);
-  if (!answers) throw new Error("Jev returned no answers.");
+  if (!answers) throw new Error("Jev n'a renvoyé aucune réponse.");
   const model = typeof body.model === "string" ? body.model : "jev-latest";
   const usage = asRecord(body.usage);
   const inputTokens =
@@ -113,7 +113,7 @@ function parseChoice<T extends string>(
   const probabilities = asRecord(record?.probabilities);
   const confidence = record?.confidence;
   if (typeof choice !== "string" || !keys.includes(choice as T) || !probabilities) {
-    throw new Error("Jev choice was missing a known option.");
+    throw new Error("Le choix Jev ne correspond à aucune option connue.");
   }
   const out = {} as Record<T, number>;
   for (const key of keys) {
@@ -134,7 +134,7 @@ function parseNoul(value: unknown): number {
   const record = asRecord(value);
   const n = record?.noul;
   if (typeof n !== "number" || !Number.isFinite(n)) {
-    throw new Error("Jev noul was missing.");
+    throw new Error("Le noul Jev est absent.");
   }
   return clamp(n, 0, 1);
 }
@@ -144,7 +144,7 @@ function parseScore(value: unknown): Score {
   const score = record?.score;
   const confidence = record?.confidence;
   if (typeof score !== "number" || !Number.isFinite(score)) {
-    throw new Error("Jev score was missing.");
+    throw new Error("Le score Jev est absent.");
   }
   return {
     score,
@@ -175,7 +175,7 @@ export async function readWithJev(item: Item, apiKey: string): Promise<RawReadin
   });
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(`Jev responded ${response.status}.`);
+    throw new Error(`Jev a répondu ${response.status}.`);
   }
   return parseReading(JSON.parse(text) as unknown);
 }

@@ -39,39 +39,39 @@ function blob(item: Item): string {
 }
 
 function hostile(text: string): boolean {
-  return /won'?t pay|will not pay|stop emailing|never paying|chargeback|see you in court|do not contact/.test(
+  return /won'?t pay|will not pay|stop emailing|never paying|chargeback|see you in court|do not contact|ne paierons pas|ne payerons pas|n'allons pas payer|arrêtez de m'écrire|arretez de m'ecrire|cessez de m'écrire|ne paye pas|ne paie pas|refusons de payer/.test(
     text,
   );
 }
 
 function personal(text: string): boolean {
-  return /grocer|whole foods|trader joe|supermarket|apartment rent|netflix|personal/.test(
+  return /grocer|whole foods|trader joe|supermarket|apartment rent|netflix|personal|courses|épicerie|epicerie|appartement|personnel|personnelle/.test(
     text,
   );
 }
 
 function transfer(text: string): boolean {
-  return /checking to savings|savings to checking|transfer between|moved my own money|own account/.test(
+  return /checking to savings|savings to checking|transfer between|moved my own money|own account|mon propre argent|virement entre|compte courant vers/.test(
     text,
   );
 }
 
 function software(text: string): boolean {
-  return /adobe|figma|github|aws|google workspace|creative cloud|domain name|notion|linear\.app|software/.test(
+  return /adobe|figma|github|aws|google workspace|creative cloud|domain name|notion|linear\.app|software|logiciel/.test(
     text,
   );
 }
 
 function mixedTrip(text: string): boolean {
-  return /flight|united|hotel|airbnb|conference|lyft|uber|airfare/.test(text);
+  return /flight|united|hotel|airbnb|conference|lyft|uber|airfare|vol pour|conférence|avion|hôtel/.test(text);
 }
 
 function meal(text: string): boolean {
-  return /coffee|latte|lunch|dinner|restaurant|meal|cafe|café/.test(text);
+  return /coffee|latte|lunch|dinner|restaurant|meal|cafe|café|déjeuner|dîner|diner|dejeuner|repas/.test(text);
 }
 
 function delaying(text: string): boolean {
-  return /next quarter|next month|push this|might push|when we can|cash is tight/.test(
+  return /next quarter|next month|push this|might push|when we can|cash is tight|trimestre prochain|mois prochain|repousser/.test(
     text,
   );
 }
@@ -109,7 +109,7 @@ export function rehearse(item: Item): RawReading {
     deductible = 0.04;
     willCollect = 0.02;
     worthChase = 0.02;
-  } else if (item.kind === "invoice" || /invoice|net 30|amount due/.test(text)) {
+  } else if (item.kind === "invoice" || /invoice|net 30|amount due|facture|échéance|echeance/.test(text)) {
     book = "income";
     if (hostile(text)) {
       letter = "write_off";

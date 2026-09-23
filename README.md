@@ -85,7 +85,7 @@ Financial-Literacy-Toolkit/
 
 ## Till
 
-`apps/till` is a separate cash desk for freelancers (not the student assessment). It uses Jev for chase and filing decisions, and imports a Midday CSV or receipt-ocr JSON. It does not read student data. See [apps/till/README.md](apps/till/README.md).
+`apps/till` est une caisse pour indépendants, en français, séparée de l'évaluation étudiante. Elle s'appuie sur Jev pour décider quoi relancer et quoi classer, et importe un CSV Midday ou un JSON receipt-ocr. Elle ne lit aucune donnée étudiante. Voir [apps/till/README.md](apps/till/README.md).
 
 ## Technology
 

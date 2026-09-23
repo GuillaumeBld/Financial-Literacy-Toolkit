@@ -1,30 +1,30 @@
 import type { Item, LetterId } from "./types";
-import { usd } from "./format";
+import { money } from "./format";
 
 export const LETTER_LABEL: Record<LetterId, string> = {
-  gentle_nudge: "Gentle nudge",
-  due_today: "Due soon",
-  past_due_firm: "Past due",
-  final_notice: "Final notice",
-  write_off: "Write off",
-  none: "No letter",
+  gentle_nudge: "Relance douce",
+  due_today: "Échéance proche",
+  past_due_firm: "Impayé",
+  final_notice: "Dernier avis",
+  write_off: "Passer en perte",
+  none: "Pas de lettre",
 };
 
 export function renderLetter(id: LetterId, item: Item): string {
-  const amount = usd(item.amount);
+  const amount = money(item.amount);
   const name = item.counterparty;
-  const due = item.dueOn ? formatDay(item.dueOn) : "the due date";
+  const due = item.dueOn ? formatDay(item.dueOn) : "la date d'échéance";
   switch (id) {
     case "gentle_nudge":
-      return `Hi ${name} — invoice ${amount} is still open. I can resend the PDF if that helps. If it is already in your queue, no need to reply.`;
+      return `Bonjour ${name} — la facture de ${amount} est toujours ouverte. Je peux renvoyer le PDF si ça aide. Si elle est déjà dans votre file, inutile de répondre.`;
     case "due_today":
-      return `Hi ${name} — a reminder that ${amount} is due ${due}. Reply with the payment date and I will mark it on my side.`;
+      return `Bonjour ${name} — rappel : ${amount} est dû le ${due}. Répondez avec la date de paiement et je le note de mon côté.`;
     case "past_due_firm":
-      return `Hi ${name} — ${amount} was due ${due} and is still open. Please send payment this week, or tell me the date it will go out.`;
+      return `Bonjour ${name} — ${amount}, dû le ${due}, est toujours ouvert. Merci d'envoyer le règlement cette semaine, ou de me dire la date à laquelle il partira.`;
     case "final_notice":
-      return `Hi ${name} — ${amount}, due ${due}, is still unpaid. This is my last note before I close the invoice and stop work on the account.`;
+      return `Bonjour ${name} — ${amount}, dû le ${due}, reste impayé. Ceci est mon dernier message avant de clôturer la facture et d'arrêter le travail sur le compte.`;
     case "write_off":
-      return `${name} — closing ${amount} on my side. I will not send more reminders.`;
+      return `${name} — je clôture ${amount} de mon côté. Je n'enverrai plus de relance.`;
     default:
       return "";
   }
@@ -34,7 +34,7 @@ export function formatDay(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;
   const date = new Date(Date.UTC(y, m - 1, d));
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("fr-FR", {
     month: "short",
     day: "numeric",
     year: "numeric",

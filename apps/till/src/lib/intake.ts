@@ -43,7 +43,7 @@ export function itemFromReceiptOcr(
     amount: Math.round(total * 100) / 100,
     issuedOn: issued,
     dueOn: null,
-    text: names.join(", ") || "Receipt",
+    text: names.join(", ") || "Reçu",
     source: "receipt-ocr",
     asOf,
   };
@@ -55,20 +55,31 @@ export function itemsFromCsv(
 ): { items: Item[]; error: string | null } {
   const rows = parseCsv(text);
   if (rows.length < 2) {
-    return { items: [], error: "The CSV needs a header row and at least one item." };
+    return { items: [], error: "Le CSV doit avoir une ligne d'en-tête et au moins une ligne." };
   }
   const header = rows[0].map((cell) => cell.trim().toLowerCase());
   const col = (...names: string[]) => header.findIndex((cell) => names.includes(cell));
   const dateCol = col("date", "issued", "issued_on", "transaction_date");
-  const nameCol = col("description", "merchant", "counterparty", "name", "merchant_name");
-  const amountCol = col("amount", "total", "total_amount");
-  const categoryCol = col("category");
-  const notesCol = col("notes", "note", "memo");
-  const dueCol = col("due", "due_on", "due_date");
+  const nameCol = col(
+    "description",
+    "merchant",
+    "counterparty",
+    "name",
+    "merchant_name",
+    "libellé",
+    "libelle",
+    "commerçant",
+    "commercant",
+  );
+  const amountCol = col("amount", "total", "total_amount", "montant");
+  const categoryCol = col("category", "catégorie", "categorie");
+  const notesCol = col("notes", "note", "memo", "remarque");
+  const dueCol = col("due", "due_on", "due_date", "échéance", "echeance");
   if (nameCol < 0 || amountCol < 0) {
     return {
       items: [],
-      error: "Need description and amount columns. A Midday export (date, description, amount, category) works.",
+      error:
+        "Il faut les colonnes description et montant. Un export Midday (date, description, amount, category) convient.",
     };
   }
 
@@ -81,9 +92,9 @@ export function itemsFromCsv(
     const notes = notesCol >= 0 ? (row[notesCol] ?? "").trim() : "";
     const issued = dateCol >= 0 ? normalizeDate(row[dateCol] ?? "") : asOf;
     const dueFromCol = dueCol >= 0 ? normalizeDate(row[dueCol] ?? "") : null;
-    const dueFromNotes = notes.match(/due\s+(\d{4}-\d{2}-\d{2})/i)?.[1] ?? null;
-    const income = /income|invoice|client payment/i.test(category) || amount > 0 && !category;
-    const kind: Kind = amount < 0 || /expense|software|meal|travel|supplies/i.test(category)
+    const dueFromNotes = notes.match(/(?:due|échéance|echeance)\s+(\d{4}-\d{2}-\d{2})/i)?.[1] ?? null;
+    const income = /income|invoice|client payment|recette|facture|encaissement/i.test(category) || amount > 0 && !category;
+    const kind: Kind = amount < 0 || /expense|software|meal|travel|supplies|dépense|depense|logiciel|repas|déplacement|deplacement|fournitures/i.test(category)
       ? "receipt"
       : income
         ? "invoice"
@@ -101,7 +112,7 @@ export function itemsFromCsv(
     });
   }
   if (!items.length) {
-    return { items: [], error: "No usable rows. Each row needs a name and a non-zero amount." };
+    return { items: [], error: "Aucune ligne utilisable. Chaque ligne doit avoir un nom et un montant non nul." };
   }
   return { items, error: null };
 }
