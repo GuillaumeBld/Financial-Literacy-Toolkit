@@ -83,6 +83,10 @@ Financial-Literacy-Toolkit/
 | `docs/data/collection-summary.csv` | Daily enrollment and completion statistics |
 | `docs/data/domain-score-distribution.csv` | Score distribution by range |
 
+## Till
+
+`apps/till` is a separate cash desk for freelancers (not the student assessment). It uses Jev for chase and filing decisions, and imports a Midday CSV or receipt-ocr JSON. It does not read student data. See [apps/till/README.md](apps/till/README.md).
+
 ## Technology
 
 - **Application**: Next.js 14 (App Router), React 18, TypeScript
