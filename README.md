@@ -87,6 +87,10 @@ Financial-Literacy-Toolkit/
 
 `apps/till` est une caisse pour indépendants, en français, séparée de l'évaluation étudiante. Elle s'appuie sur Jev pour décider quoi relancer et quoi classer, et importe un CSV Midday ou un JSON receipt-ocr. Elle ne lit aucune donnée étudiante. Voir [apps/till/README.md](apps/till/README.md).
 
+## Lisière
+
+`apps/lisiere` met le prix Polymarket d'un marché à côté de la distribution Jev. Les barres bougent quand la foule bouge, et encore quand un fait est ajouté. Le papier ne s'ouvre que si le code passe les seuils. Voir [apps/lisiere/README.md](apps/lisiere/README.md).
+
 ## Technology
 
 - **Application**: Next.js 14 (App Router), React 18, TypeScript

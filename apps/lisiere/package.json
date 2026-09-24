@@ -1,0 +1,24 @@
+{
+  "name": "lisiere",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3220",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3220",
+    "type-check": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "tsx": "^4.19.3",
+    "typescript": "^5.3.3"
+  }
+}
