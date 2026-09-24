@@ -64,6 +64,16 @@ test("gamma rows become competitive binary markets", () => {
   });
   assert.equal(blown, null);
   assert.equal(marketsFromGamma([row, { id: "x" }]).length, 1);
+  const over = {
+    ...row,
+    id: "over",
+    slug: "over",
+    question: "Over?",
+    outcomes: '["Over","Under"]',
+    volume24hr: 9000,
+  };
+  const ranked = marketsFromGamma([over, row]);
+  assert.equal(ranked[0].id, "1");
 });
 
 test("a paper marks to the live price and prints the trader command", () => {

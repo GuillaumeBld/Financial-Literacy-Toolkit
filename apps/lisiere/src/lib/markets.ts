@@ -75,13 +75,16 @@ export function marketFromGamma(value: unknown): Market | null {
 
 export function marketsFromGamma(payload: unknown): Market[] {
   if (!Array.isArray(payload)) return [];
-  const out: Market[] = [];
-  for (const row of payload) {
-    const market = marketFromGamma(row);
-    if (market) out.push(market);
-    if (out.length === 10) break;
-  }
-  return out;
+  return payload
+    .map(marketFromGamma)
+    .filter((market): market is Market => market !== null)
+    .sort((a, b) => {
+      const ay = /^(yes|oui)$/i.test(a.outcomes[0]) ? 0 : 1;
+      const by = /^(yes|oui)$/i.test(b.outcomes[0]) ? 0 : 1;
+      if (ay !== by) return ay - by;
+      return b.volume24hr - a.volume24hr;
+    })
+    .slice(0, 10);
 }
 
 function asPair(value: unknown): [string, string] | null {
